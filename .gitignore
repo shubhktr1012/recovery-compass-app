@@ -57,6 +57,12 @@ pnpm-lock.yaml
 *.swp
 *.swo
 *~
+.cursor/
+.windsurf/
+.agent/
+.agents/
+.claude/
+
 
 # Testing
 coverage/
