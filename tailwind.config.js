@@ -5,6 +5,11 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        forest: "#05290C",
+        sage: "#E6F2EF",
+        surface: "#F5F5F7",
+        success: "#056936",
+        danger: "#EF4444",
         background: "oklch(1 0 0)", // White
         foreground: "oklch(0.2547 0.0545 124.54)", // Deep dark green text
 
@@ -34,8 +39,21 @@ module.exports = {
         ring: "oklch(0.2547 0.0545 124.54)",
       },
       fontFamily: {
-        sans: ["Satoshi", "System"],
-        serif: ["Erode", "Georgia"],
+        sans: ["Satoshi-Regular", "System"],
+        serif: ["Erode-Regular", "Georgia"],
+        satoshi: ["Satoshi-Regular", "System"],
+        "satoshi-medium": ["Satoshi-Medium", "System"],
+        "satoshi-bold": ["Satoshi-Bold", "System"],
+        erode: ["Erode-Regular", "Georgia"],
+        "erode-italic": ["Erode-Italic", "Georgia"],
+        "erode-light": ["Erode-Light", "Georgia"],
+        "erode-light-italic": ["Erode-LightItalic", "Georgia"],
+        "erode-medium": ["Erode-Medium", "Georgia"],
+        "erode-medium-italic": ["Erode-MediumItalic", "Georgia"],
+        "erode-semibold": ["Erode-Semibold", "Georgia"],
+        "erode-semibold-italic": ["Erode-SemiboldItalic", "Georgia"],
+        "erode-bold": ["Erode-Bold", "Georgia"],
+        "erode-bold-italic": ["Erode-BoldItalic", "Georgia"],
       }
     },
   },
