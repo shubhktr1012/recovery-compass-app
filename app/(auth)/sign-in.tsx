@@ -111,7 +111,8 @@ export default function SignIn() {
                                     onBlur={onBlur}
                                     onChangeText={onChange}
                                     value={value}
-                                    secureTextEntry
+                                    isPassword
+                                    autoCapitalize="none"
                                     error={errors.password?.message}
                                 />
                             )}

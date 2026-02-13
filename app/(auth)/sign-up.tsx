@@ -40,12 +40,13 @@ export default function SignUp() {
 
             if (error) throw error;
 
-            if (sessionData.user) {
-                // Successful signup
+            if (sessionData.user && sessionData.session) {
+                // Auto-confirm mode: session exists, user can continue.
                 router.replace('/(auth)/personalization' as Href);
-            } else if (sessionData.session === null && !sessionData.user) {
-                // Verify email case (should not happen if auto-confirm is on, but handle it)
-                Alert.alert('Check your email', 'We sent you a confirmation link.');
+            } else {
+                // Email confirmation mode: do not enter personalization until authenticated.
+                Alert.alert('Check your email', 'Verify your account, then sign in to continue setup.');
+                router.replace('/sign-in' as Href);
             }
 
         } catch (error: any) {
@@ -107,7 +108,8 @@ export default function SignUp() {
                                     onBlur={onBlur}
                                     onChangeText={onChange}
                                     value={value}
-                                    secureTextEntry
+                                    isPassword
+                                    autoCapitalize="none"
                                     error={errors.password?.message}
                                 />
                             )}

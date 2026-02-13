@@ -4,7 +4,6 @@ import { useRouter, Href } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { useMutation } from '@tanstack/react-query';
 
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/Button';
@@ -13,6 +12,7 @@ import * as Haptics from 'expo-haptics';
 import { useProfile } from '@/providers/profile';
 import { useAuth } from '@/providers/auth';
 import { AppColors } from '@/constants/theme';
+import { AppStorage } from '@/lib/storage';
 
 // --- DATA ---
 const TRIGGERS_LIST = [
@@ -40,6 +40,8 @@ export default function Personalization() {
     const { refreshProfile } = useProfile();
     const { user } = useAuth();
     const [step, setStep] = useState(0);
+    const [loading, setLoading] = useState(false);
+    const [showAndroidPicker, setShowAndroidPicker] = useState(false);
     const [data, setData] = useState<WizardData>({
         cigarettesPerDay: '',
         yearsSmoked: '',
@@ -76,6 +78,42 @@ export default function Personalization() {
         });
     };
 
+    const saveProfile = async () => {
+        setLoading(true);
+        try {
+            if (!user) {
+                throw new Error('No user found');
+            }
+
+            const { error } = await supabase
+                .from('profiles')
+                .update({
+                    cigarettes_per_day: parseInt(data.cigarettesPerDay, 10),
+                    quit_date: data.quitDate.toISOString(),
+                    triggers: data.triggers,
+                    onboarding_complete: true,
+                    updated_at: new Date().toISOString(),
+                })
+                .eq('id', user.id);
+
+            if (error) throw error;
+
+            // Ensure the intro flow never reappears after account setup.
+            await AppStorage.setItem('hasSeenOnboarding', 'true');
+
+            // Refresh profile to update context
+            await refreshProfile();
+
+            // Success! Navigate to Paywall
+            router.replace('/paywall' as Href);
+
+        } catch (error: any) {
+            Alert.alert('Error Saving Profile', error.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const handleNext = async () => {
         if (step < steps.length - 1) {
             // Validation per step
@@ -89,41 +127,6 @@ export default function Personalization() {
             setStep(step + 1);
         } else {
             await saveProfile();
-        }
-    };
-
-    const saveProfileMutation = useMutation({
-        mutationFn: async (wizardData: WizardData) => {
-            if (!user) {
-                throw new Error('No user found');
-            }
-
-            const { error } = await supabase
-                .from('profiles')
-                .update({
-                    cigarettes_per_day: parseInt(wizardData.cigarettesPerDay, 10),
-                    // years_smoked: parseInt(wizardData.yearsSmoked), // Assuming we add this column later or just use it for analytics
-                    quit_date: wizardData.quitDate.toISOString(),
-                    triggers: wizardData.triggers,
-                    onboarding_complete: true,
-                    updated_at: new Date().toISOString(),
-                })
-                .eq('id', user.id);
-
-            if (error) throw error;
-        },
-    });
-
-    const saveProfile = async () => {
-        try {
-            await saveProfileMutation.mutateAsync(data);
-            await refreshProfile();
-
-            // Success!
-            router.replace('/paywall' as Href); // Navigate to Paywall next
-
-        } catch (error: any) {
-            Alert.alert('Error Saving Profile', error.message);
         }
     };
 
@@ -162,14 +165,29 @@ export default function Personalization() {
                                 textColor={AppColors.forest}
                             />
                         ) : (
-                            <Button
-                                label={data.quitDate.toLocaleDateString()}
-                                onPress={() => {/* Show Android Picker Logic - Simplified for now */ }}
-                                variant="outline"
-                            />
+                            <>
+                                <Button
+                                    label={data.quitDate.toLocaleDateString()}
+                                    onPress={() => setShowAndroidPicker(true)}
+                                    variant="outline"
+                                />
+                                {showAndroidPicker && (
+                                    <DateTimePicker
+                                        value={data.quitDate}
+                                        mode="date"
+                                        display="default"
+                                        onChange={(e, date) => {
+                                            setShowAndroidPicker(false);
+                                            if (date) handleUpdate('quitDate', date);
+                                        }}
+                                    />
+                                )}
+                            </>
                         )}
                         <Text className="text-gray-500 text-sm text-center">
-                            Accurate tracking starts from this moment.
+                            {Platform.OS === 'ios'
+                                ? 'Accurate tracking starts from this moment.'
+                                : 'Select the date you quit or plan to quit.'}
                         </Text>
                     </View>
                 );
@@ -245,7 +263,7 @@ export default function Personalization() {
                     <Button
                         label={step === steps.length - 1 ? "Complete Setup" : "Next"}
                         onPress={handleNext}
-                        loading={saveProfileMutation.isPending}
+                        loading={loading}
                         size="lg"
                     />
                     {step > 0 && (

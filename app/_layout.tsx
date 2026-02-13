@@ -94,7 +94,7 @@ function RootLayoutContent() {
       if (!profile || !profile.onboarding_complete) {
         // Redirect to Personalization if not there
         if ((segments[1] as string) !== 'personalization') {
-          router.replace('/personalization' as Href);
+          router.replace('/(auth)/personalization' as Href);
         }
         return;
       }
