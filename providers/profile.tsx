@@ -23,14 +23,14 @@ interface ProfileContextType {
 }
 
 const PROFILE_COLUMNS = 'id, email, onboarding_complete, quit_date, cigarettes_per_day, triggers, created_at, updated_at';
-const PROFILE_QUERY_KEY = (userId: string | null) => ['profile', userId];
+export const PROFILE_QUERY_KEY = (userId: string | null) => ['profile', userId];
 
 const ProfileContext = createContext<ProfileContextType>({
   profile: null,
   isLoading: true,
   isSubscribed: false,
-  refreshProfile: async () => {},
-  setSubscriptionStatus: () => {},
+  refreshProfile: async () => { },
+  setSubscriptionStatus: () => { },
 });
 
 const fetchProfileFromApi = async (userId: string) => {

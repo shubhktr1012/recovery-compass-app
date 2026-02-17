@@ -58,8 +58,8 @@ export default function Paywall() {
                         A specialized protocol to break the physical addiction loop and reset your environment.
                     </Text>
                     <View className="mb-6">
-                        <Text className="font-satoshi-bold text-3xl text-forest">$9.99</Text>
-                        <Text className="font-satoshi text-gray-400 text-sm">One-time payment</Text>
+                        <Text className="font-satoshi-bold text-3xl text-forest">₹599</Text>
+                        <Text className="font-satoshi text-gray-400 text-sm">One-time payment (INR)</Text>
                     </View>
                     <Button
                         label="Start 6-Day Reset"
@@ -84,8 +84,8 @@ export default function Paywall() {
                         Complete rewiring of habits, emotional regulation, and identity. The full protocol.
                     </Text>
                     <View className="mb-6">
-                        <Text className="font-satoshi-bold text-3xl text-white">$49.99</Text>
-                        <Text className="font-satoshi text-gray-400 text-sm">One-time payment</Text>
+                        <Text className="font-satoshi-bold text-3xl text-white">₹6,549</Text>
+                        <Text className="font-satoshi text-gray-400 text-sm">One-time payment (INR)</Text>
                     </View>
                     <Button
                         label="Start Full Journey"

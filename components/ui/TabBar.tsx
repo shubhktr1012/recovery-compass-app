@@ -1,6 +1,4 @@
-import { View, Platform } from 'react-native';
-import { useLinkBuilder } from '@react-navigation/native';
-import { PlatformPressable } from '@react-navigation/elements';
+import { View, Platform, Pressable } from 'react-native';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { BlurView } from 'expo-blur';
 import { IconSymbol } from '@/components/ui/icon-symbol';
@@ -9,7 +7,6 @@ import * as Haptics from 'expo-haptics';
 import { AppColors } from '@/constants/theme';
 
 export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
-    const { buildHref } = useLinkBuilder();
     const insets = useSafeAreaInsets();
 
     return (
@@ -69,9 +66,9 @@ export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
                     };
 
                     return (
-                        <PlatformPressable
+                        <Pressable
                             key={route.key}
-                            href={buildHref(route.name, route.params)}
+                            accessibilityRole="button"
                             accessibilityState={isFocused ? { selected: true } : {}}
                             accessibilityLabel={options.tabBarAccessibilityLabel}
                             onPress={onPress}
@@ -85,7 +82,7 @@ export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
                                     color={isFocused ? AppColors.white : AppColors.iconMuted}
                                 />
                             </View>
-                        </PlatformPressable>
+                        </Pressable>
                     );
                 })}
             </BlurView>

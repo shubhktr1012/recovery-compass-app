@@ -9,10 +9,11 @@ import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import * as Haptics from 'expo-haptics';
-import { useProfile } from '@/providers/profile';
+import { PROFILE_QUERY_KEY, useProfile } from '@/providers/profile';
 import { useAuth } from '@/providers/auth';
 import { AppColors } from '@/constants/theme';
 import { AppStorage } from '@/lib/storage';
+import { useQueryClient } from '@tanstack/react-query';
 
 // --- DATA ---
 const TRIGGERS_LIST = [
@@ -37,6 +38,7 @@ type WizardData = {
 
 export default function Personalization() {
     const router = useRouter();
+    const queryClient = useQueryClient();
     const { refreshProfile } = useProfile();
     const { user } = useAuth();
     const [step, setStep] = useState(0);
@@ -85,23 +87,40 @@ export default function Personalization() {
                 throw new Error('No user found');
             }
 
-            const { error } = await supabase
+            const profilePayload = {
+                id: user.id,
+                email: user.email ?? null,
+                cigarettes_per_day: parseInt(data.cigarettesPerDay, 10),
+                quit_date: data.quitDate.toISOString(),
+                triggers: data.triggers,
+                onboarding_complete: true,
+                updated_at: new Date().toISOString(),
+            };
+
+            const { data: persistedProfile, error } = await supabase
                 .from('profiles')
-                .update({
-                    cigarettes_per_day: parseInt(data.cigarettesPerDay, 10),
-                    quit_date: data.quitDate.toISOString(),
-                    triggers: data.triggers,
-                    onboarding_complete: true,
-                    updated_at: new Date().toISOString(),
-                })
-                .eq('id', user.id);
+                .upsert(profilePayload, { onConflict: 'id' })
+                .select('id, onboarding_complete, cigarettes_per_day, quit_date, triggers')
+                .single();
 
             if (error) throw error;
+            if (!persistedProfile?.onboarding_complete) {
+                throw new Error('Profile setup did not persist. Please try again.');
+            }
 
             // Ensure the intro flow never reappears after account setup.
             await AppStorage.setItem('hasSeenOnboarding', 'true');
 
-            // Refresh profile to update context
+            // Optimistically update the cache to prevent redirect loop
+            queryClient.setQueryData(PROFILE_QUERY_KEY(user.id), (old: any) => ({
+                ...old,
+                onboarding_complete: true,
+                cigarettes_per_day: parseInt(data.cigarettesPerDay, 10),
+                quit_date: data.quitDate.toISOString(),
+                triggers: data.triggers,
+            }));
+
+            // Refresh profile to persist and sync
             await refreshProfile();
 
             // Success! Navigate to Paywall
