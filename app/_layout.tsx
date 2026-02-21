@@ -1,7 +1,7 @@
 import "../global.css";
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useFonts } from 'expo-font';
-import { Stack, useRouter, useSegments, Href } from 'expo-router';
+import { Stack, useRouter, useSegments, Href, useRootNavigationState } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import 'react-native-reanimated';
 import { StatusBar } from 'expo-status-bar';
@@ -9,6 +9,8 @@ import { AuthProvider, useAuth } from '../providers/auth';
 import { ProfileProvider, useProfile } from '../providers/profile';
 import { AppQueryProvider } from '../providers/query';
 import { AppStorage } from '../lib/storage';
+import Purchases, { LOG_LEVEL } from 'react-native-purchases';
+import { Platform } from 'react-native';
 import { AppErrorBoundary } from '@/components/AppErrorBoundary';
 import ErodeRegular from '@/assets/fonts/Erode-Regular.otf';
 import ErodeItalic from '@/assets/fonts/Erode-Italic.otf';
@@ -55,15 +57,19 @@ function RootLayoutContent() {
 
   const isLoading = isAuthLoading || (session ? isProfileLoading : false);
   const isNavigationReady = fontsLoaded && !isLoading;
+  const rootNavigationState = useRootNavigationState();
+  const pendingRedirectRef = useRef<Href | null>(null);
 
   useEffect(() => {
-    if (!isNavigationReady) return;
+    if (!isNavigationReady || !rootNavigationState?.key) return;
 
     const inAuthGroup = segments[0] === '(auth)';
-    // const inTabsGroup = segments[0] === '(tabs)'; // Not used yet
+    const inTabsGroup = segments[0] === '(tabs)';
     const inPaywall = (segments[0] as string) === 'paywall';
 
     const checkRouting = async () => {
+      let target: Href | null = null;
+
       // 1. If NOT logged in
       if (!session) {
         // If not in auth group, force redirect to Sign In or Intro
@@ -77,49 +83,68 @@ function RootLayoutContent() {
         const hasSeenIntro = await AppStorage.getItem('hasSeenOnboarding');
 
         if (!inAuthGroup) {
-          if (!hasSeenIntro) {
-            router.replace('/onboarding' as Href);
-          } else {
-            router.replace('/sign-in' as Href);
-          }
+          target = (!hasSeenIntro ? '/onboarding' : '/sign-in') as Href;
         }
-        return;
-      }
-
-      // 2. If Logged In, checking Profile
-      // If no profile loaded yet (but session exists), wait? 
-      // The isLoading flag handles the initial fetch, so profile 'should' be there if created.
-      // But if user just signed up, trigger might verify it.
-
-      if (!profile || !profile.onboarding_complete) {
+      } else if (!profile || !profile.onboarding_complete) {
+        // 2. If Logged In, checking Profile
         // Redirect to Personalization if not there
         if ((segments[1] as string) !== 'personalization') {
-          router.replace('/(auth)/personalization' as Href);
+          target = '/(auth)/personalization' as Href;
         }
-        return;
-      }
-
-      // 3. User is Logged In + Profile Complete -> Check Subscription
-      if (!isSubscribed) {
+      } else if (!isSubscribed) {
+        // 3. User is Logged In + Profile Complete -> Check Subscription
         if (!inPaywall) {
-          router.replace('/paywall' as Href);
+          target = '/paywall' as Href;
         }
+      } else if (!inTabsGroup) {
+        // 4. Everything Good -> Go to Home
+        target = '/(tabs)' as Href;
+      }
+
+      if (!target) {
+        pendingRedirectRef.current = null;
         return;
       }
 
-      // 4. Everything Good -> Go to Home
-      // Only redirect if currently in auth or paywall
-      if (inAuthGroup || inPaywall) {
-        router.replace('/(tabs)' as Href);
-      }
+      // Avoid queuing repeated identical redirects while navigation state updates.
+      if (pendingRedirectRef.current === target) return;
+      pendingRedirectRef.current = target;
+      router.navigate(target);
     };
 
-    checkRouting();
+    void checkRouting();
 
     // Hide Splash Screen once we start processing logic
-    SplashScreen.hideAsync();
+    void SplashScreen.hideAsync();
+  }, [isNavigationReady, rootNavigationState?.key, session, profile, isSubscribed, segments, router]);
 
-  }, [isNavigationReady, session, profile, isSubscribed, segments, router]);
+// Initialize RevenueCat
+useEffect(() => {
+  const initRevenueCat = async () => {
+    Purchases.setLogLevel(LOG_LEVEL.VERBOSE);
+
+    // Platform-specific API keys
+    const iosApiKey = process.env.EXPO_PUBLIC_REVENUECAT_APPLE_KEY;
+    const androidApiKey = process.env.EXPO_PUBLIC_REVENUECAT_GOOGLE_KEY;
+
+    if (Platform.OS === 'ios' && iosApiKey) {
+       Purchases.configure({apiKey: iosApiKey});
+    } else if (Platform.OS === 'android' && androidApiKey) {
+       Purchases.configure({apiKey: androidApiKey});
+    }
+    
+    // If we have a logged in user, tell RevenueCat who they are!
+    if (session?.user?.id) {
+      try {
+        await Purchases.logIn(session.user.id);
+      } catch (e) {
+        console.error("Error logging into RevenueCat:", e);
+      }
+    }
+  };
+  
+  initRevenueCat();
+}, [session?.user?.id]);
 
   if (!fontsLoaded || isLoading) {
     return null; // Keep Splash Screen visible

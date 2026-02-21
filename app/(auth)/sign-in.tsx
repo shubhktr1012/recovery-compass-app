@@ -41,15 +41,8 @@ export default function SignIn() {
             if (error) throw error;
 
             if (sessionData.user) {
-                // Successful login
-                // TODO: Check if personalization is complete, else redirect there
-                // For now, assume if they log in, they might need to go to Home or check profile
-                // Let's rely on _layout checking the profile status.
-                // But since _layout check runs on mount, we might need to manually push.
-                // We'll redirect to a loading state or just refresh? 
-                // Actually, supabase auth state change should trigger context updates if we have a provider.
-                // For now, let's just push to Home and let the layout guard handle redirection if needed.
-                router.replace('/(tabs)' as Href);
+                // Root layout guard handles post-login routing (tabs/paywall/personalization).
+                return;
             }
 
         } catch (error: any) {

@@ -123,8 +123,8 @@ export default function Personalization() {
             // Refresh profile to persist and sync
             await refreshProfile();
 
-            // Success! Navigate to Paywall
-            router.replace('/paywall' as Href);
+            // Success! Root guard will keep enforcing paywall until subscribed.
+            router.navigate('/paywall' as Href);
 
         } catch (error: any) {
             Alert.alert('Error Saving Profile', error.message);
