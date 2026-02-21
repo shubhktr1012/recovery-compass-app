@@ -79,6 +79,7 @@ secrets/
 # Temporary files
 tmp/
 temp/
+supabase/.temp/
 
 app-example
 
