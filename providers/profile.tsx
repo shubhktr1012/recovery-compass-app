@@ -2,6 +2,7 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useS
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/providers/auth';
+import Purchases, { CustomerInfo } from 'react-native-purchases';
 
 export interface UserProfile {
   id: string;
@@ -63,6 +64,43 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     },
     enabled: Boolean(userId),
   });
+
+  // Check RevenueCat Entitlements
+  const checkEntitlements = useCallback(async () => {
+    try {
+      const customerInfo = await Purchases.getCustomerInfo();
+      // Look for the specific entitlement exactly as named in the RevenueCat dashboard
+      if (typeof customerInfo.entitlements.active['Recovery Compass Pro'] !== "undefined") {
+        setIsSubscribed(true);
+      } else {
+        setIsSubscribed(false);
+      }
+    } catch (e) {
+      console.error("Error fetching Customer Info from RevenueCat:", e);
+      setIsSubscribed(false);
+    }
+  }, []);
+
+  // Listen to CustomerInfo updates globally
+  useEffect(() => {
+    // Initial fetch when mounted
+    checkEntitlements();
+
+    // Subscribe to ongoing updates (e.g. when a purchase completes)
+    const updateListener = (customerInfo: CustomerInfo) => {
+      if (typeof customerInfo.entitlements.active['Recovery Compass Pro'] !== "undefined") {
+        setIsSubscribed(true);
+      } else {
+        setIsSubscribed(false);
+      }
+    };
+
+    Purchases.addCustomerInfoUpdateListener(updateListener);
+
+    return () => {
+      Purchases.removeCustomerInfoUpdateListener(updateListener);
+    };
+  }, [checkEntitlements]);
 
   const refreshProfile = useCallback(
     async () => {
