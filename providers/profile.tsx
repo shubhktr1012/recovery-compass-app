@@ -1,6 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { useAuth } from '@/providers/auth';
 import Purchases, { CustomerInfo } from 'react-native-purchases';
 
@@ -13,6 +14,8 @@ export interface UserProfile {
   triggers: string[] | null;
   created_at: string;
   updated_at: string;
+  expo_push_token?: string | null;
+  push_opt_in?: boolean;
 }
 
 interface ProfileContextType {
@@ -23,7 +26,7 @@ interface ProfileContextType {
   setSubscriptionStatus: (status: boolean) => void;
 }
 
-const PROFILE_COLUMNS = 'id, email, onboarding_complete, quit_date, cigarettes_per_day, triggers, created_at, updated_at';
+const PROFILE_COLUMNS = 'id, email, onboarding_complete, quit_date, cigarettes_per_day, triggers, created_at, updated_at, expo_push_token, push_opt_in';
 export const PROFILE_QUERY_KEY = (userId: string | null) => ['profile', userId];
 
 const ProfileContext = createContext<ProfileContextType>({
@@ -54,7 +57,6 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [isSubscribed, setIsSubscribed] = useState(false);
-
   const userId = user?.id ?? null;
   const profileQuery = useQuery({
     queryKey: PROFILE_QUERY_KEY(userId),
@@ -64,6 +66,86 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     },
     enabled: Boolean(userId),
   });
+  const shouldRegisterPush = Boolean(userId && profileQuery.data?.onboarding_complete);
+  const { expoPushToken, permissionStatus, error: pushError } = usePushNotifications({
+    enabled: shouldRegisterPush,
+  });
+
+  useEffect(() => {
+    if (!userId) return;
+
+    const profile = profileQuery.data;
+    if (!profile?.onboarding_complete) return;
+
+    const token = expoPushToken?.data ?? null;
+    const shouldClearPush =
+      permissionStatus === 'denied' &&
+      Boolean(profile.expo_push_token || profile.push_opt_in);
+
+    let nextToken: string | null = null;
+    let nextOptIn = false;
+
+    if (token) {
+      nextToken = token;
+      nextOptIn = true;
+    } else if (shouldClearPush) {
+      nextToken = null;
+      nextOptIn = false;
+    } else {
+      return;
+    }
+
+    if (
+      profile.expo_push_token === nextToken &&
+      Boolean(profile.push_opt_in) === nextOptIn
+    ) {
+      return;
+    }
+
+    let isCancelled = false;
+
+    const syncPushState = async () => {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          expo_push_token: nextToken,
+          push_opt_in: nextOptIn,
+        })
+        .eq('id', userId);
+
+      if (error) throw error;
+    };
+
+    void syncPushState()
+      .then(() => {
+        if (isCancelled) return;
+        queryClient.setQueryData<UserProfile | null>(
+          PROFILE_QUERY_KEY(userId),
+          (currentProfile) =>
+            currentProfile
+              ? {
+                  ...currentProfile,
+                  expo_push_token: nextToken,
+                  push_opt_in: nextOptIn,
+                }
+              : currentProfile
+        );
+      })
+      .catch((syncError) => {
+        if (isCancelled) return;
+        console.error('Failed to sync push notification state', syncError);
+      });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [
+    expoPushToken?.data,
+    permissionStatus,
+    profileQuery.data,
+    queryClient,
+    userId,
+  ]);
 
   // Check RevenueCat Entitlements
   const checkEntitlements = useCallback(async () => {
@@ -126,6 +208,12 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
       console.error('Error fetching profile:', profileQuery.error);
     }
   }, [profileQuery.error]);
+
+  useEffect(() => {
+    if (pushError) {
+      console.error('Push registration error:', pushError);
+    }
+  }, [pushError]);
 
   const value = useMemo(
     () => ({

@@ -53,15 +53,45 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_logs: {
+        Row: {
+          created_at: string
+          id: string
+          message_type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message_type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message_type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           active_program: string | null
           cigarettes_per_day: number | null
           created_at: string | null
           email: string | null
+          expo_push_token: string | null
           id: string
           onboarding_complete: boolean | null
+          preferred_push_hour: number
+          push_opt_in: boolean
+          quiet_hours_end: number
+          quiet_hours_start: number
           quit_date: string | null
+          revenuecat_app_user_id: string | null
+          subscription_status: string | null
+          subscription_tier: string | null
+          timezone: string
           triggers: string[] | null
           updated_at: string | null
         }
@@ -70,9 +100,18 @@ export type Database = {
           cigarettes_per_day?: number | null
           created_at?: string | null
           email?: string | null
+          expo_push_token?: string | null
           id: string
           onboarding_complete?: boolean | null
+          preferred_push_hour?: number
+          push_opt_in?: boolean
+          quiet_hours_end?: number
+          quiet_hours_start?: number
           quit_date?: string | null
+          revenuecat_app_user_id?: string | null
+          subscription_status?: string | null
+          subscription_tier?: string | null
+          timezone?: string
           triggers?: string[] | null
           updated_at?: string | null
         }
@@ -81,9 +120,18 @@ export type Database = {
           cigarettes_per_day?: number | null
           created_at?: string | null
           email?: string | null
+          expo_push_token?: string | null
           id?: string
           onboarding_complete?: boolean | null
+          preferred_push_hour?: number
+          push_opt_in?: boolean
+          quiet_hours_end?: number
+          quiet_hours_start?: number
           quit_date?: string | null
+          revenuecat_app_user_id?: string | null
+          subscription_status?: string | null
+          subscription_tier?: string | null
+          timezone?: string
           triggers?: string[] | null
           updated_at?: string | null
         }
