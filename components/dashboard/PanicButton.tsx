@@ -1,14 +1,17 @@
 import { TouchableOpacity, View, Text } from 'react-native';
+import { Href, useRouter } from 'expo-router';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { BlurView } from 'expo-blur';
 import { AppColors } from '@/constants/theme';
 
 export function PanicButton() {
+    const router = useRouter();
+
     return (
         <View className="absolute bottom-24 right-6 items-center z-50">
             <TouchableOpacity
                 activeOpacity={0.8}
-                onPress={() => alert('Launching Panic Mode...')}
+                onPress={() => router.push('/modal' as Href)}
                 className="rounded-full shadow-lg shadow-red-900/40"
                 style={{
                     shadowColor: AppColors.danger,

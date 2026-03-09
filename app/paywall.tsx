@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, Alert, ActivityIndicator } from 'react-native';
-import { useRouter, Href } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Button } from '@/components/ui/Button';
+import { captureError } from '@/lib/monitoring';
 import { useProfile } from '@/providers/profile';
 import Purchases, { PurchasesPackage } from 'react-native-purchases';
+import { getDisplayNameForProgram, getProgramSlugForPackage } from '@/lib/revenuecat/config';
 
 export default function Paywall() {
     const router = useRouter();
-    const { setSubscriptionStatus } = useProfile();
+    const { access, refreshAccess, setProgramAccess } = useProfile();
     const [loading, setLoading] = useState(false);
     const [packages, setPackages] = useState<PurchasesPackage[]>([]);
     const [fetchingOfferings, setFetchingOfferings] = useState(true);
@@ -23,6 +25,7 @@ export default function Paywall() {
                 }
             } catch (e) {
                 console.error("Error fetching offerings", e);
+                void captureError(e, { source: 'paywall', metadata: { stage: 'get_offerings' } });
                 Alert.alert("Error", "Could not load subscription options.");
             } finally {
                 setFetchingOfferings(false);
@@ -32,17 +35,38 @@ export default function Paywall() {
         getOfferings();
     }, []);
 
+    const eligiblePackages = packages.filter((pack) => {
+        const slug = getProgramSlugForPackage(pack);
+        return slug ? access.eligibleProducts.includes(slug) : false;
+    });
+    const isUpgradeFlow =
+        access.ownedProgram === 'six_day_reset' &&
+        (access.purchaseState === 'owned_completed' || access.purchaseState === 'owned_archived');
+
     const handlePurchase = async (pack: PurchasesPackage) => {
         setLoading(true);
+        const programSlug = getProgramSlugForPackage(pack);
         try {
-            const { customerInfo } = await Purchases.purchasePackage(pack);
-            
-            if (typeof customerInfo.entitlements.active['Recovery Compass Pro'] !== "undefined") {
-                Alert.alert('Success', 'Welcome to Recovery Compass Pro!');
-                setSubscriptionStatus(true);
+            await Purchases.purchasePackage(pack);
+
+            if (programSlug) {
+                await setProgramAccess(programSlug);
             }
+
+            await refreshAccess();
+
+            Alert.alert('Success', `Your ${getPackageDisplayName(pack)} is now unlocked.`);
+            router.replace('/(tabs)/program');
         } catch (e: any) {
             if (!e.userCancelled) {
+                void captureError(e, {
+                    source: 'paywall',
+                    metadata: {
+                        packageIdentifier: pack.identifier,
+                        programSlug: programSlug ?? 'unknown',
+                        stage: 'purchase',
+                    },
+                });
                 Alert.alert('Purchase Failed', e.message);
             }
         } finally {
@@ -53,14 +77,15 @@ export default function Paywall() {
     const handleRestore = async () => {
         setLoading(true);
         try {
-            const customerInfo = await Purchases.restorePurchases();
-            if (typeof customerInfo.entitlements.active['Recovery Compass Pro'] !== "undefined") {
-                Alert.alert('Success', 'Purchases restored successfully!');
-                setSubscriptionStatus(true);
-            } else {
-                Alert.alert('Restore Failed', 'No active subscription found.');
+            await Purchases.restorePurchases();
+            const snapshot = await refreshAccess();
+            if (!snapshot?.ownedProgram) {
+                Alert.alert('Restore Failed', 'No eligible Recovery Compass purchase was found for this account.');
+                return;
             }
+            Alert.alert('Success', 'Purchases restored successfully!');
         } catch (e: any) {
+            void captureError(e, { source: 'paywall', metadata: { stage: 'restore' } });
             Alert.alert('Restore Failed', e.message);
         } finally {
             setLoading(false);
@@ -68,9 +93,8 @@ export default function Paywall() {
     };
 
     const getPackageDisplayName = (pack: PurchasesPackage) => {
-        if (pack.packageType === "WEEKLY") return "Weekly";
-        if (pack.packageType === "MONTHLY") return "Monthly";
-        if (pack.packageType === "ANNUAL") return "Yearly";
+        const programSlug = getProgramSlugForPackage(pack);
+        if (programSlug) return getDisplayNameForProgram(programSlug);
         return pack.product.title;
     };
 
@@ -80,24 +104,27 @@ export default function Paywall() {
             <ScrollView contentContainerClassName="p-6 pb-20">
                 <View className="items-center mb-10 mt-4">
                     <Text className="font-erode-bold text-3xl text-forest text-center mb-2">
-                        Commit to Your Freedom
+                        {isUpgradeFlow ? 'Your Reset Is Complete' : 'Commit to Your Freedom'}
                     </Text>
                     <Text className="font-satoshi text-gray-500 text-center text-lg">
-                        Choose the plan that fits your journey.
+                        {isUpgradeFlow
+                            ? 'Unlock the 90-Day Quit to continue with daily guided recovery work.'
+                            : 'Choose the program path that fits your journey.'}
                     </Text>
                 </View>
 
                 {fetchingOfferings ? (
                     <ActivityIndicator size="large" color="#2A3F33" className="mt-10" />
-                ) : packages.length === 0 ? (
+                ) : eligiblePackages.length === 0 ? (
                     <View className="items-center mt-10">
                         <Text className="font-satoshi border border-dashed border-gray-300 p-4 rounded-xl text-gray-500 text-center">
-                            No subscription packages found. Please check your RevenueCat configuration in the dashboard. Ensure you have activated an offering with Weekly, Monthly, and Yearly products attached.
+                            No eligible purchases are available for this account right now. This usually means this account already owns the highest available program path.
                         </Text>
                     </View>
                 ) : (
-                    packages.map((pack, index) => {
-                        const isPrimary = index === packages.length - 1; // Make the longest/last one primary (usually Yearly)
+                    eligiblePackages.map((pack) => {
+                        const programSlug = getProgramSlugForPackage(pack);
+                        const isPrimary = programSlug === 'ninety_day_transform';
                         
                         return (
                             <View 
@@ -120,7 +147,10 @@ export default function Paywall() {
                                 </View>
                                 
                                 <Text className={`font-satoshi mb-6 leading-6 ${isPrimary ? 'text-gray-300' : 'text-gray-500'}`}>
-                                    {pack.product.description || "Unlock full access to the Recovery Compass Pro protocol."}
+                                    {pack.product.description ||
+                                        (programSlug === 'six_day_reset'
+                                            ? 'A finite six-day intervention designed to break autopilot and build immediate control.'
+                                            : 'A long-form ninety-day guided path with daily audio, reflection, and structured practice.')}
                                 </Text>
                                 
                                 <View className="mb-6">
@@ -151,7 +181,7 @@ export default function Paywall() {
                 </View>
 
                 <Text className="text-center text-gray-400 text-xs mt-8">
-                    Secured by RevenueCat
+                    One-time program unlocks. Restore anytime from this screen.
                 </Text>
 
             </ScrollView>

@@ -1,7 +1,4 @@
 import { supabase } from '../supabase';
-import { Database } from '../../types/database.types';
-
-type ProgramProgress = Database['public']['Tables']['program_progress']['Row'];
 
 export async function unlockNextDay(userId: string, programId: string, dayId: number) {
     const { data, error } = await supabase

@@ -52,8 +52,25 @@ export default function SignIn() {
         }
     };
 
-    const handleOAuthLogin = (provider: 'google' | 'apple') => {
-        Alert.alert('Coming Soon', `${provider} login is not yet configured.`);
+    const handleForgotPassword = async () => {
+        const email = control._formValues.email?.trim();
+
+        if (!email) {
+            Alert.alert('Email required', 'Enter your email first so we know where to send the reset link.');
+            return;
+        }
+
+        try {
+            const { error } = await supabase.auth.resetPasswordForEmail(email, {
+                redirectTo: 'recoverycompassapp://sign-in',
+            });
+
+            if (error) throw error;
+
+            Alert.alert('Check your email', 'We sent a password reset link to your inbox.');
+        } catch (error: any) {
+            Alert.alert('Reset failed', error?.message ?? 'Please try again.');
+        }
     };
 
     return (
@@ -111,7 +128,10 @@ export default function SignIn() {
                             )}
                         />
 
-                        <Text className="text-right text-forest font-satoshi-medium text-sm">
+                        <Text
+                            className="text-right text-forest font-satoshi-medium text-sm"
+                            onPress={() => void handleForgotPassword()}
+                        >
                             Forgot Password?
                         </Text>
 
@@ -121,25 +141,6 @@ export default function SignIn() {
                             loading={loading}
                             className="mt-4"
                             size="lg"
-                        />
-                    </View>
-
-                    <View className="mt-8 flex-row items-center justify-between">
-                        <View className="h-px bg-gray-200 flex-1" />
-                        <Text className="mx-4 text-gray-400 font-satoshi text-sm">or continue with</Text>
-                        <View className="h-px bg-gray-200 flex-1" />
-                    </View>
-
-                    <View className="mt-8 space-y-4">
-                        <Button
-                            label="Google"
-                            variant="secondary"
-                            onPress={() => handleOAuthLogin('google')}
-                        />
-                        <Button
-                            label="Apple"
-                            variant="secondary"
-                            onPress={() => handleOAuthLogin('apple')}
                         />
                     </View>
 

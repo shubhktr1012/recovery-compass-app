@@ -10,8 +10,10 @@ import { ProfileProvider, useProfile } from '../providers/profile';
 import { AppQueryProvider } from '../providers/query';
 import { AppStorage } from '../lib/storage';
 import Purchases, { LOG_LEVEL } from 'react-native-purchases';
-import { Platform } from 'react-native';
+import { LogBox, Platform } from 'react-native';
 import { AppErrorBoundary } from '@/components/AppErrorBoundary';
+import { validatePublicEnv } from '@/lib/env';
+import { installGlobalErrorHandler } from '@/lib/monitoring';
 import ErodeRegular from '@/assets/fonts/Erode-Regular.otf';
 import ErodeItalic from '@/assets/fonts/Erode-Italic.otf';
 import ErodeLight from '@/assets/fonts/Erode-Light.otf';
@@ -26,13 +28,14 @@ import SatoshiRegular from '@/assets/fonts/Satoshi-Regular.otf';
 import SatoshiMedium from '@/assets/fonts/Satoshi-Medium.otf';
 import SatoshiBold from '@/assets/fonts/Satoshi-Bold.otf';
 
-import { LogBox } from 'react-native';
-
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
 // Ignore the SafeAreaView deprecation warning as it comes from dependencies
 LogBox.ignoreLogs(['SafeAreaView has been deprecated']);
+
+const publicEnv = validatePublicEnv();
+const uninstallGlobalErrorHandler = installGlobalErrorHandler();
 
 function RootLayoutContent() {
   const { session, isLoading: isAuthLoading } = useAuth();
@@ -59,6 +62,9 @@ function RootLayoutContent() {
   const isNavigationReady = fontsLoaded && !isLoading;
   const rootNavigationState = useRootNavigationState();
   const pendingRedirectRef = useRef<Href | null>(null);
+  const hasConfiguredPurchasesRef = useRef(false);
+  const revenueCatLoginInFlightRef = useRef<string | null>(null);
+  const lastRevenueCatUserIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!isNavigationReady || !rootNavigationState?.key) return;
@@ -89,7 +95,7 @@ function RootLayoutContent() {
         // 2. If Logged In, checking Profile
         // Redirect to Personalization if not there
         if ((segments[1] as string) !== 'personalization') {
-          target = '/(auth)/personalization' as Href;
+          target = '/personalization' as Href;
         }
       } else if (!isSubscribed) {
         // 3. User is Logged In + Profile Complete -> Check Subscription
@@ -118,33 +124,55 @@ function RootLayoutContent() {
     void SplashScreen.hideAsync();
   }, [isNavigationReady, rootNavigationState?.key, session, profile, isSubscribed, segments, router]);
 
-// Initialize RevenueCat
-useEffect(() => {
-  const initRevenueCat = async () => {
+  // Initialize RevenueCat once.
+  useEffect(() => {
+    if (hasConfiguredPurchasesRef.current) return;
+
     Purchases.setLogLevel(LOG_LEVEL.VERBOSE);
 
-    // Platform-specific API keys
-    const iosApiKey = process.env.EXPO_PUBLIC_REVENUECAT_APPLE_KEY;
-    const androidApiKey = process.env.EXPO_PUBLIC_REVENUECAT_GOOGLE_KEY;
+    const iosApiKey = publicEnv.revenueCatAppleKey;
+    const androidApiKey = publicEnv.revenueCatGoogleKey;
 
     if (Platform.OS === 'ios' && iosApiKey) {
-       Purchases.configure({apiKey: iosApiKey});
+      Purchases.configure({ apiKey: iosApiKey });
+      hasConfiguredPurchasesRef.current = true;
     } else if (Platform.OS === 'android' && androidApiKey) {
-       Purchases.configure({apiKey: androidApiKey});
+      Purchases.configure({ apiKey: androidApiKey });
+      hasConfiguredPurchasesRef.current = true;
+    } else {
+      console.warn('RevenueCat API key missing for current platform.');
     }
-    
-    // If we have a logged in user, tell RevenueCat who they are!
-    if (session?.user?.id) {
+  }, []);
+
+  // Log in RevenueCat user after SDK is configured.
+  useEffect(() => {
+    if (!session?.user?.id) {
+      revenueCatLoginInFlightRef.current = null;
+      lastRevenueCatUserIdRef.current = null;
+      return;
+    }
+
+    if (!hasConfiguredPurchasesRef.current) return;
+    if (revenueCatLoginInFlightRef.current === session.user.id) return;
+    if (lastRevenueCatUserIdRef.current === session.user.id) return;
+
+    const loginToRevenueCat = async () => {
+      revenueCatLoginInFlightRef.current = session.user.id;
+
       try {
         await Purchases.logIn(session.user.id);
+        lastRevenueCatUserIdRef.current = session.user.id;
       } catch (e) {
-        console.error("Error logging into RevenueCat:", e);
+        console.error('Error logging into RevenueCat:', e);
+      } finally {
+        if (revenueCatLoginInFlightRef.current === session.user.id) {
+          revenueCatLoginInFlightRef.current = null;
+        }
       }
-    }
-  };
-  
-  initRevenueCat();
-}, [session?.user?.id]);
+    };
+
+    void loginToRevenueCat();
+  }, [session?.user?.id]);
 
   if (!fontsLoaded || isLoading) {
     return null; // Keep Splash Screen visible
@@ -162,6 +190,10 @@ useEffect(() => {
 
 export default function RootLayout() {
   const [boundaryResetCount, setBoundaryResetCount] = useState(0);
+
+  useEffect(() => () => {
+    uninstallGlobalErrorHandler();
+  }, []);
 
   return (
     <AppQueryProvider>

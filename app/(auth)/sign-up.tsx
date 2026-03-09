@@ -41,8 +41,22 @@ export default function SignUp() {
             if (error) throw error;
 
             if (sessionData.user && sessionData.session) {
+                const { error: profileError } = await supabase
+                    .from('profiles')
+                    .upsert(
+                        {
+                            id: sessionData.user.id,
+                            email: sessionData.user.email ?? null,
+                            onboarding_complete: false,
+                            updated_at: new Date().toISOString(),
+                        },
+                        { onConflict: 'id' }
+                    );
+
+                if (profileError) throw profileError;
+
                 // Auto-confirm mode: session exists, user can continue.
-                router.replace('/(auth)/personalization' as Href);
+                router.replace('/personalization' as Href);
             } else {
                 // Email confirmation mode: do not enter personalization until authenticated.
                 Alert.alert('Check your email', 'Verify your account, then sign in to continue setup.');
@@ -54,10 +68,6 @@ export default function SignUp() {
         } finally {
             setLoading(false);
         }
-    };
-
-    const handleOAuthLogin = (provider: 'google' | 'apple') => {
-        Alert.alert('Coming Soon', `${provider} login is not yet configured.`);
     };
 
     return (
@@ -121,25 +131,6 @@ export default function SignUp() {
                             loading={loading}
                             className="mt-4"
                             size="lg"
-                        />
-                    </View>
-
-                    <View className="mt-8 flex-row items-center justify-between">
-                        <View className="h-px bg-gray-200 flex-1" />
-                        <Text className="mx-4 text-gray-400 font-satoshi text-sm">or continue with</Text>
-                        <View className="h-px bg-gray-200 flex-1" />
-                    </View>
-
-                    <View className="mt-8 space-y-4">
-                        <Button
-                            label="Google"
-                            variant="secondary"
-                            onPress={() => handleOAuthLogin('google')}
-                        />
-                        <Button
-                            label="Apple"
-                            variant="secondary"
-                            onPress={() => handleOAuthLogin('apple')}
                         />
                     </View>
 

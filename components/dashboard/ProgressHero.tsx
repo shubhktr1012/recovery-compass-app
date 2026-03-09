@@ -1,13 +1,12 @@
 import { View, Text } from 'react-native';
 import { useEffect, useMemo, useState } from 'react';
+import { useOnboardingResponse } from '@/hooks/useOnboardingResponse';
+import { formatInr, getOnboardingProjection } from '@/lib/onboarding-metrics';
 import { useProfile } from '@/providers/profile';
-
-const COST_PER_PACK = 12;
-const CIGS_PER_PACK = 20;
-const COST_PER_CIG = COST_PER_PACK / CIGS_PER_PACK;
 
 export function ProgressHero() {
     const { profile } = useProfile();
+    const onboardingQuery = useOnboardingResponse();
     const [nowMs, setNowMs] = useState(Date.now());
 
     useEffect(() => {
@@ -19,65 +18,70 @@ export function ProgressHero() {
     }, []);
 
     const metrics = useMemo(() => {
-        if (!profile?.quit_date) {
-            return { days: 0, hours: 0, moneySaved: 0, cigsAvoided: 0 };
-        }
-
-        const quitDateMs = new Date(profile.quit_date).getTime();
-        const diffMs = Math.max(0, nowMs - quitDateMs);
+        const projection = getOnboardingProjection(onboardingQuery.data ?? null);
+        const startMs = profile?.created_at ? new Date(profile.created_at).getTime() : null;
+        const diffMs = startMs ? Math.max(0, nowMs - startMs) : 0;
 
         const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
         const hours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
 
-        const cigarettesPerDay = profile.cigarettes_per_day ?? 0;
-        const elapsedDays = diffMs / (1000 * 60 * 60 * 24);
-        const cigsAvoided = Math.floor(cigarettesPerDay * elapsedDays);
-        const moneySaved = Math.floor(cigsAvoided * COST_PER_CIG);
+        return {
+            avoidedUnits90Days: projection.avoidedUnits90Days,
+            days,
+            hours,
+            primaryGoal: projection.primaryGoal,
+            projectedSavings90Days: projection.projectedSavings90Days,
+            targetSelection: projection.targetSelection,
+        };
+    }, [nowMs, onboardingQuery.data, profile?.created_at]);
 
-        return { days, hours, moneySaved, cigsAvoided };
-    }, [nowMs, profile?.cigarettes_per_day, profile?.quit_date]);
+    const unitsLabel = metrics.targetSelection === 'Quit Alcohol'
+        ? 'Drinks avoided'
+        : metrics.targetSelection === 'Quit Smoking'
+            ? 'Cigarettes avoided'
+            : 'Vices sidestepped';
 
     return (
-        <View className="bg-forest rounded-3xl p-6 mb-6 shadow-md">
-            <Text className="text-white/70 font-satoshi text-sm uppercase mb-1 tracking-widest">
-                Smoke Free Time
+        <View className="mb-6 overflow-hidden rounded-[32px] bg-forest p-6 shadow-md">
+            <View className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10" />
+            <View className="absolute -bottom-12 right-12 h-28 w-28 rounded-full bg-white/5" />
+            <Text className="mb-1 font-satoshi text-sm uppercase tracking-[2px] text-white/70">
+                Your 90-Day Projection
+            </Text>
+            <Text className="mb-2 font-erode-bold text-5xl text-white">
+                {formatInr(metrics.projectedSavings90Days)}
+            </Text>
+            <Text className="mb-6 max-w-[280px] font-satoshi text-base text-white/85">
+                Potential money back over the next 90 days if you stick to the plan.
             </Text>
 
-            <View className="flex-row items-baseline mb-6">
-                <Text className="text-white font-erode-bold text-5xl mr-2">
-                    {metrics.days}
-                </Text>
-                <Text className="text-white/90 font-satoshi text-xl mr-4">
-                    Days
-                </Text>
-                <Text className="text-white font-erode-bold text-5xl mr-2">
-                    {metrics.hours}
-                </Text>
-                <Text className="text-white/90 font-satoshi text-xl">
-                    Hrs
-                </Text>
-            </View>
+            <View className="mb-4 h-px w-full bg-white/10" />
 
-            <View className="h-px bg-white/10 w-full mb-4" />
-
-            <View className="flex-row justify-between items-center">
+            <View className="flex-row items-center justify-between rounded-[24px] border border-white/10 bg-white/5 p-4">
                 <View>
-                    <Text className="text-white/60 font-satoshi text-xs mb-1">
-                        Money Saved
+                    <Text className="mb-1 font-satoshi text-xs text-white/60">
+                        Plan In Motion
                     </Text>
-                    <Text className="text-white font-satoshi-bold text-xl">
-                        ${metrics.moneySaved.toLocaleString()}
+                    <Text className="font-satoshi-bold text-xl text-white">
+                        {metrics.days}d {metrics.hours}h
                     </Text>
                 </View>
-                <View>
-                    <Text className="text-white/60 font-satoshi text-xs mb-1">
-                        Cigs Avoided
+                <View className="items-end">
+                    <Text className="mb-1 font-satoshi text-xs text-white/60">
+                        {unitsLabel}
                     </Text>
-                    <Text className="text-white font-satoshi-bold text-xl">
-                        {metrics.cigsAvoided}
+                    <Text className="font-satoshi-bold text-xl text-white">
+                        {metrics.avoidedUnits90Days.toLocaleString()}
                     </Text>
                 </View>
             </View>
+
+            {metrics.primaryGoal ? (
+                <View className="mt-4 rounded-[24px] border border-white/10 bg-white/5 p-4">
+                    <Text className="mb-1 font-satoshi text-xs text-white/60">Why this matters</Text>
+                    <Text className="font-satoshi text-base leading-7 text-white">{metrics.primaryGoal}</Text>
+                </View>
+            ) : null}
         </View>
     );
 }

@@ -1,47 +1,58 @@
 import { useEffect, useRef, useState } from 'react';
 import { AppState, Platform } from 'react-native';
 import * as Device from 'expo-device';
-import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
+import type {
+  ExpoPushToken,
+  Notification,
+} from 'expo-notifications';
 
 interface UsePushNotificationsOptions {
   enabled?: boolean;
 }
 
+type NotificationsModule = typeof import('expo-notifications');
+type NotificationPermissionStatus = 'granted' | 'denied' | 'undetermined';
+type NotificationSubscription = { remove: () => void };
+
 export interface PushNotificationState {
-  expoPushToken?: Notifications.ExpoPushToken;
-  notification?: Notifications.Notification;
-  permissionStatus?: Notifications.PermissionStatus;
+  expoPushToken?: ExpoPushToken;
+  notification?: Notification;
+  permissionStatus?: NotificationPermissionStatus;
   error?: Error;
 }
 
 interface RegisterResult {
-  token?: Notifications.ExpoPushToken;
-  permissionStatus: Notifications.PermissionStatus;
+  token?: ExpoPushToken;
+  permissionStatus: NotificationPermissionStatus;
 }
 
 export const usePushNotifications = (
   options: UsePushNotificationsOptions = {}
 ): PushNotificationState => {
   const { enabled = true } = options;
-  const [expoPushToken, setExpoPushToken] = useState<
-    Notifications.ExpoPushToken | undefined
-  >();
-  const [notification, setNotification] = useState<
-    Notifications.Notification | undefined
-  >();
-  const [permissionStatus, setPermissionStatus] = useState<
-    Notifications.PermissionStatus | undefined
-  >();
+  const [expoPushToken, setExpoPushToken] = useState<ExpoPushToken | undefined>();
+  const [notification, setNotification] = useState<Notification | undefined>();
+  const [permissionStatus, setPermissionStatus] = useState<NotificationPermissionStatus | undefined>();
   const [error, setError] = useState<Error | undefined>();
 
-  const notificationListener = useRef<Notifications.Subscription | null>(null);
-  const responseListener = useRef<Notifications.Subscription | null>(null);
+  const notificationsModuleRef = useRef<NotificationsModule | null>(null);
+  const notificationListener = useRef<NotificationSubscription | null>(null);
+  const responseListener = useRef<NotificationSubscription | null>(null);
 
   useEffect(() => {
     if (!enabled) {
       setExpoPushToken(undefined);
       setPermissionStatus(undefined);
+      setError(undefined);
+      notificationsModuleRef.current = null;
+      return;
+    }
+
+    // Android remote push support was removed from Expo Go (SDK 53+).
+    if (isUnsupportedExpoGoAndroidRuntime()) {
+      setPermissionStatus('undetermined');
+      setExpoPushToken(undefined);
       setError(undefined);
       return;
     }
@@ -50,31 +61,40 @@ export const usePushNotifications = (
     setError(undefined);
     setExpoPushToken(undefined);
 
-    registerForPushNotificationsAsync().then(
-      (result) => {
-        if (!isMounted) return;
-        setPermissionStatus(result.permissionStatus);
-        setExpoPushToken(result.token);
-      },
-      (err: unknown) => {
+    getNotificationsModule()
+      .then((notificationsModule) => {
+        if (!isMounted || !notificationsModule) return;
+
+        notificationsModuleRef.current = notificationsModule;
+
+        return registerForPushNotificationsAsync(notificationsModule).then((result) => {
+          if (!isMounted) return;
+
+          setPermissionStatus(result.permissionStatus);
+          setExpoPushToken(result.token);
+
+          notificationListener.current =
+            notificationsModule.addNotificationReceivedListener((receivedNotification) => {
+              setNotification(receivedNotification);
+            });
+
+          responseListener.current =
+            notificationsModule.addNotificationResponseReceivedListener((response) => {
+              console.log('Notification response received:', response);
+            });
+        });
+      })
+      .catch((err: unknown) => {
         if (!isMounted) return;
         setError(err instanceof Error ? err : new Error('Failed to register push notifications.'));
-      }
-    );
-
-    notificationListener.current =
-      Notifications.addNotificationReceivedListener((notification) => {
-        setNotification(notification);
-      });
-
-    responseListener.current =
-      Notifications.addNotificationResponseReceivedListener((response) => {
-        console.log('Notification response received:', response);
       });
 
     const appStateSub = AppState.addEventListener('change', (state) => {
       if (state !== 'active') return;
-      Notifications.getPermissionsAsync()
+      const notificationsModule = notificationsModuleRef.current;
+      if (!notificationsModule) return;
+
+      notificationsModule.getPermissionsAsync()
         .then(({ status }) => setPermissionStatus(status))
         .catch(() => {
           // Ignore non-critical permission refresh errors.
@@ -83,6 +103,7 @@ export const usePushNotifications = (
 
     return () => {
       isMounted = false;
+      notificationsModuleRef.current = null;
       if (notificationListener.current) {
         notificationListener.current.remove();
       }
@@ -101,23 +122,41 @@ export const usePushNotifications = (
   };
 };
 
-async function registerForPushNotificationsAsync(): Promise<RegisterResult> {
-  let token: Notifications.ExpoPushToken | undefined;
+function isUnsupportedExpoGoAndroidRuntime(): boolean {
+  const isExpoGo =
+    Constants.executionEnvironment === 'storeClient' ||
+    Constants.appOwnership === 'expo';
+
+  return Platform.OS === 'android' && isExpoGo;
+}
+
+async function getNotificationsModule(): Promise<NotificationsModule | null> {
+  if (isUnsupportedExpoGoAndroidRuntime()) {
+    return null;
+  }
+
+  return import('expo-notifications');
+}
+
+async function registerForPushNotificationsAsync(
+  notificationsModule: NotificationsModule
+): Promise<RegisterResult> {
+  let token: ExpoPushToken | undefined;
 
   if (Platform.OS === 'android') {
-    await Notifications.setNotificationChannelAsync('default', {
+    await notificationsModule.setNotificationChannelAsync('default', {
       name: 'default',
-      importance: Notifications.AndroidImportance.MAX,
+      importance: notificationsModule.AndroidImportance.MAX,
       vibrationPattern: [0, 250, 250, 250],
       lightColor: '#FF231F7C',
     });
   }
 
-  const { status: existingStatus } = await Notifications.getPermissionsAsync();
+  const { status: existingStatus } = await notificationsModule.getPermissionsAsync();
   let finalStatus = existingStatus;
 
   if (existingStatus !== 'granted') {
-    const { status } = await Notifications.requestPermissionsAsync();
+    const { status } = await notificationsModule.requestPermissionsAsync();
     finalStatus = status;
   }
 
@@ -131,14 +170,15 @@ async function registerForPushNotificationsAsync(): Promise<RegisterResult> {
   }
 
   const projectId =
+    process.env.EXPO_PUBLIC_EAS_PROJECT_ID ??
     Constants?.expoConfig?.extra?.eas?.projectId ??
     Constants?.easConfig?.projectId;
 
   // Always attempt with projectId first. Fall back to no-arg for dev setups.
   try {
-    token = await Notifications.getExpoPushTokenAsync({ projectId });
+    token = await notificationsModule.getExpoPushTokenAsync({ projectId });
   } catch {
-    token = await Notifications.getExpoPushTokenAsync();
+    token = await notificationsModule.getExpoPushTokenAsync();
   }
 
   return {

@@ -1,6 +1,6 @@
 import * as SecureStore from 'expo-secure-store';
-
 import { Platform } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const ExpoSecureStoreAdapter = {
     getItem: (key: string) => {
@@ -27,8 +27,6 @@ export const ExpoSecureStoreAdapter = {
         return SecureStore.deleteItemAsync(key);
     },
 };
-
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const AppStorage = {
     setItem: async (key: string, value: string) => {

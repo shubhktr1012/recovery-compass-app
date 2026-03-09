@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      client_error_events: {
+        Row: {
+          component_stack: string | null
+          created_at: string
+          id: string
+          message: string
+          metadata: Json | null
+          source: string
+          stack: string | null
+          user_id: string | null
+        }
+        Insert: {
+          component_stack?: string | null
+          created_at?: string
+          id?: string
+          message: string
+          metadata?: Json | null
+          source: string
+          stack?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          component_stack?: string | null
+          created_at?: string
+          id?: string
+          message?: string
+          metadata?: Json | null
+          source?: string
+          stack?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       journal_entries: {
         Row: {
           cravings_level: number | null
@@ -56,20 +89,94 @@ export type Database = {
       notification_logs: {
         Row: {
           created_at: string
+          delivery_status: string | null
+          error_message: string | null
           id: string
           message_type: string
+          queue_id: string | null
           user_id: string
         }
         Insert: {
           created_at?: string
+          delivery_status?: string | null
+          error_message?: string | null
           id?: string
           message_type: string
+          queue_id?: string | null
           user_id: string
         }
         Update: {
           created_at?: string
+          delivery_status?: string | null
+          error_message?: string | null
           id?: string
           message_type?: string
+          queue_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_logs_queue_id_fkey"
+            columns: ["queue_id"]
+            isOneToOne: false
+            referencedRelation: "smart_notification_queue"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      onboarding_responses: {
+        Row: {
+          age: number | null
+          created_at: string | null
+          daily_consumption_amount: number | null
+          daily_consumption_cost: number | null
+          full_name: string | null
+          id: string
+          language_selection: string | null
+          mental_toll: boolean | null
+          past_attempts: string | null
+          physical_toll: string | null
+          primary_goal: string | null
+          root_cause: string | null
+          target_selection: string | null
+          triggers: string[] | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          age?: number | null
+          created_at?: string | null
+          daily_consumption_amount?: number | null
+          daily_consumption_cost?: number | null
+          full_name?: string | null
+          id?: string
+          language_selection?: string | null
+          mental_toll?: boolean | null
+          past_attempts?: string | null
+          physical_toll?: string | null
+          primary_goal?: string | null
+          root_cause?: string | null
+          target_selection?: string | null
+          triggers?: string[] | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          age?: number | null
+          created_at?: string | null
+          daily_consumption_amount?: number | null
+          daily_consumption_cost?: number | null
+          full_name?: string | null
+          id?: string
+          language_selection?: string | null
+          mental_toll?: boolean | null
+          past_attempts?: string | null
+          physical_toll?: string | null
+          primary_goal?: string | null
+          root_cause?: string | null
+          target_selection?: string | null
+          triggers?: string[] | null
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: []
@@ -77,7 +184,6 @@ export type Database = {
       profiles: {
         Row: {
           active_program: string | null
-          cigarettes_per_day: number | null
           created_at: string | null
           email: string | null
           expo_push_token: string | null
@@ -87,17 +193,14 @@ export type Database = {
           push_opt_in: boolean
           quiet_hours_end: number
           quiet_hours_start: number
-          quit_date: string | null
           revenuecat_app_user_id: string | null
           subscription_status: string | null
           subscription_tier: string | null
           timezone: string
-          triggers: string[] | null
           updated_at: string | null
         }
         Insert: {
           active_program?: string | null
-          cigarettes_per_day?: number | null
           created_at?: string | null
           email?: string | null
           expo_push_token?: string | null
@@ -107,17 +210,14 @@ export type Database = {
           push_opt_in?: boolean
           quiet_hours_end?: number
           quiet_hours_start?: number
-          quit_date?: string | null
           revenuecat_app_user_id?: string | null
           subscription_status?: string | null
           subscription_tier?: string | null
           timezone?: string
-          triggers?: string[] | null
           updated_at?: string | null
         }
         Update: {
           active_program?: string | null
-          cigarettes_per_day?: number | null
           created_at?: string | null
           email?: string | null
           expo_push_token?: string | null
@@ -127,24 +227,108 @@ export type Database = {
           push_opt_in?: boolean
           quiet_hours_end?: number
           quiet_hours_start?: number
-          quit_date?: string | null
           revenuecat_app_user_id?: string | null
           subscription_status?: string | null
           subscription_tier?: string | null
           timezone?: string
-          triggers?: string[] | null
           updated_at?: string | null
         }
         Relationships: []
       }
+      program_access: {
+        Row: {
+          archived_at: string | null
+          completion_state: string
+          completed_at: string | null
+          created_at: string
+          current_day: number | null
+          owned_program: string | null
+          purchase_state: string
+          revenuecat_product_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          archived_at?: string | null
+          completion_state?: string
+          completed_at?: string | null
+          created_at?: string
+          current_day?: number | null
+          owned_program?: string | null
+          purchase_state?: string
+          revenuecat_product_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          archived_at?: string | null
+          completion_state?: string
+          completed_at?: string | null
+          created_at?: string
+          current_day?: number | null
+          owned_program?: string | null
+          purchase_state?: string
+          revenuecat_product_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      program_days: {
+        Row: {
+          audio_url: string | null
+          content_text: string
+          created_at: string | null
+          day_number: number
+          duration_minutes: number | null
+          id: string
+          program_id: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          audio_url?: string | null
+          content_text: string
+          created_at?: string | null
+          day_number: number
+          duration_minutes?: number | null
+          id?: string
+          program_id: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          audio_url?: string | null
+          content_text?: string
+          created_at?: string | null
+          day_number?: number
+          duration_minutes?: number | null
+          id?: string
+          program_id?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "program_days_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "programs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       program_progress: {
         Row: {
           completed_at: string
+          completed_days: number[] | null
           content_completed: boolean | null
           created_at: string
+          current_day: number | null
           day_id: number
           id: string
           program_id: string
+          program_uuid: string | null
           status: string
           time_spent_seconds: number | null
           updated_at: string
@@ -152,11 +336,14 @@ export type Database = {
         }
         Insert: {
           completed_at?: string
+          completed_days?: number[] | null
           content_completed?: boolean | null
           created_at?: string
+          current_day?: number | null
           day_id: number
           id?: string
           program_id: string
+          program_uuid?: string | null
           status?: string
           time_spent_seconds?: number | null
           updated_at?: string
@@ -164,15 +351,56 @@ export type Database = {
         }
         Update: {
           completed_at?: string
+          completed_days?: number[] | null
           content_completed?: boolean | null
           created_at?: string
+          current_day?: number | null
           day_id?: number
           id?: string
           program_id?: string
+          program_uuid?: string | null
           status?: string
           time_spent_seconds?: number | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "program_progress_program_uuid_fkey"
+            columns: ["program_uuid"]
+            isOneToOne: false
+            referencedRelation: "programs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      programs: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          duration_days: number
+          id: string
+          requires_audio: boolean | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          duration_days: number
+          id?: string
+          requires_audio?: boolean | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          duration_days?: number
+          id?: string
+          requires_audio?: boolean | null
+          title?: string
+          updated_at?: string | null
         }
         Relationships: []
       }

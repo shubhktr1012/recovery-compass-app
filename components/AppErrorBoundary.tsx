@@ -1,5 +1,6 @@
 import React from 'react';
 import { SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
+import { captureError } from '@/lib/monitoring';
 
 interface AppErrorBoundaryProps {
   children: React.ReactNode;
@@ -22,6 +23,10 @@ export class AppErrorBoundary extends React.Component<AppErrorBoundaryProps, App
 
   public componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error('App error boundary caught an error:', error, errorInfo);
+    void captureError(error, {
+      source: 'error_boundary',
+      componentStack: errorInfo.componentStack,
+    });
   }
 
   public componentDidUpdate(prevProps: AppErrorBoundaryProps) {

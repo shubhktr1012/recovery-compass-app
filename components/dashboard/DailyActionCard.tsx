@@ -26,34 +26,42 @@ export function DailyActionCard({
         <TouchableOpacity
             activeOpacity={0.9}
             onPress={() => router.push(route)}
-            className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 mb-6"
+            className="relative mb-6 overflow-hidden rounded-[30px] border border-gray-200 bg-white p-6 shadow-sm"
         >
-            <View className="flex-row justify-between items-start mb-4">
-                <View className="bg-sage px-3 py-1 rounded-full">
-                    <Text className="text-forest font-satoshi-bold text-xs uppercase">
+            <View className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-sage/80" />
+            <View className="mb-4 flex-row items-start justify-between">
+                <View className="rounded-full bg-sage px-3 py-1">
+                    <Text className="font-satoshi-bold text-xs uppercase text-forest">
                         Day {dayNumber}
                     </Text>
                 </View>
                 <IconSymbol name="chevron.right" size={20} color={AppColors.forest} />
             </View>
 
-            <Text className="font-erode-bold text-2xl text-forest mb-2 leading-tight">
+            <Text className="mb-2 font-erode-bold text-2xl leading-tight text-forest">
                 {title}
             </Text>
 
-            <Text className="font-satoshi text-gray-500 mb-4 leading-6" numberOfLines={3}>
+            <Text className="mb-5 font-satoshi leading-6 text-gray-500" numberOfLines={3}>
                 {description}
             </Text>
 
-            <View className="flex-row items-center">
-                <IconSymbol name="play.circle.fill" size={20} color={AppColors.success} />
-                <Text className="ml-2 font-satoshi-bold text-success">
-                    {ctaLabel}
-                </Text>
-                <Text className="ml-2 text-gray-300">•</Text>
-                <Text className="ml-2 text-gray-400 font-satoshi text-sm">
-                    {duration}
-                </Text>
+            <View className="flex-row items-center justify-between">
+                <View className="flex-row items-center">
+                    <IconSymbol name="play.circle.fill" size={20} color={AppColors.success} />
+                    <Text className="ml-2 font-satoshi-bold text-success">
+                        {ctaLabel}
+                    </Text>
+                    <Text className="ml-2 text-gray-300">•</Text>
+                    <Text className="ml-2 font-satoshi text-sm text-gray-400">
+                        {duration}
+                    </Text>
+                </View>
+                <View className="rounded-full border border-forest/10 px-3 py-1">
+                    <Text className="font-satoshi-bold text-xs uppercase tracking-[1.6px] text-forest/75">
+                        Continue
+                    </Text>
+                </View>
             </View>
         </TouchableOpacity>
     );

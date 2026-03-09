@@ -1,6 +1,10 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
+import Purchases from 'react-native-purchases';
 import { supabase } from '../lib/supabase';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { queryClient, QUERY_PERSIST_STORAGE_KEY } from './query';
+import { AccessService } from '@/lib/access/service';
 
 interface AuthContextType {
   session: Session | null;
@@ -67,7 +71,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    // 1. Sign out of Supabase auth first.
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      throw error;
+    }
+
+    // 2. Clear query client in-memory cache.
+    queryClient.clear();
+
+    // 3. Clear offline persisted queries.
+    try {
+      await AsyncStorage.removeItem(QUERY_PERSIST_STORAGE_KEY);
+    } catch (e) {
+      console.error('Failed to clear offline query cache', e);
+    }
+
+    try {
+      await AccessService.clear();
+    } catch (e) {
+      console.error('Failed to clear program access cache', e);
+    }
+
+    try {
+      await Purchases.logOut();
+    } catch (e) {
+      console.error('Failed to log out RevenueCat user', e);
+    }
   };
 
   return (
