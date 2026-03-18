@@ -47,7 +47,11 @@
       "reactCompiler": true
     },
     "extra": {
-      "releaseChannel": "production"
+      "releaseChannel": "production",
+      "router": {},
+      "eas": {
+        "projectId": "aaa4fd59-057e-489b-aa97-8885e00d8394"
+      }
     }
   }
 }
