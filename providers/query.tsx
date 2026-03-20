@@ -68,7 +68,7 @@ export function AppQueryProvider({ children }: { children: React.ReactNode }) {
           shouldDehydrateQuery: (query) => {
             // Explicitly whitelist queries to save to plaintext AsyncStorage
             // E.g., Profile is safe. Avoid caching raw journal entries if highly sensitive.
-            const safeKeys = ['profile', 'onboarding-response'];
+            const safeKeys = ['profile', 'onboarding-response', 'programs', 'program', 'program-day'];
             return safeKeys.some((key) => query.queryKey[0] === key);
           },
         },

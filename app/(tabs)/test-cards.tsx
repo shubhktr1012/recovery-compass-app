@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -6,7 +6,7 @@ import { Href, router } from 'expo-router';
 
 import { CardRenderer } from '@/components/cards/CardRenderer';
 import { Button } from '@/components/ui/Button';
-import { ContentRepository } from '@/content';
+import { useDay, useProgram } from '@/content';
 import type { ProgramSlug } from '@/types/content';
 
 type PreviewSelection = {
@@ -30,12 +30,8 @@ const PREVIEW_OPTIONS: PreviewSelection[] = [
 
 export default function TestCardsScreen() {
   const [selected, setSelected] = useState<PreviewSelection>(PREVIEW_OPTIONS[0]);
-
-  const previewDay = useMemo(
-    () => ContentRepository.getDay(selected.programSlug, selected.dayNumber),
-    [selected.dayNumber, selected.programSlug]
-  );
-  const previewProgram = ContentRepository.getProgram(selected.programSlug);
+  const { day: previewDay } = useDay(selected.programSlug, selected.dayNumber);
+  const { program: previewProgram } = useProgram(selected.programSlug);
 
   return (
     <SafeAreaView className="flex-1 bg-surface">
@@ -67,21 +63,25 @@ export default function TestCardsScreen() {
             label="Open in V2 Pager"
             variant="secondary"
             onPress={() =>
-              router.push('/day-detail?programSlug=six_day_reset&dayNumber=1' as Href)
+              router.push(
+                `/day-detail?programSlug=${selected.programSlug}&dayNumber=${selected.dayNumber}` as Href
+              )
             }
           />
         </View>
 
-        <View className="mb-6 rounded-3xl border border-gray-200 bg-white p-5">
-          <Text className="mb-2 font-satoshi-bold text-xs uppercase tracking-wide text-forest/60">
-            Program snapshot
-          </Text>
-          <Text className="mb-2 font-erode-semibold text-3xl text-forest">{previewProgram.name}</Text>
-          <Text className="font-satoshi text-base leading-7 text-gray-700">{previewProgram.description}</Text>
-          <Text className="mt-4 font-satoshi text-sm text-forest/70">
-            Status: {previewProgram.contentStatus} · Sample days loaded: {previewProgram.days.length}
-          </Text>
-        </View>
+        {previewProgram ? (
+          <View className="mb-6 rounded-3xl border border-gray-200 bg-white p-5">
+            <Text className="mb-2 font-satoshi-bold text-xs uppercase tracking-wide text-forest/60">
+              Program snapshot
+            </Text>
+            <Text className="mb-2 font-erode-semibold text-3xl text-forest">{previewProgram.name}</Text>
+            <Text className="font-satoshi text-base leading-7 text-gray-700">{previewProgram.description}</Text>
+            <Text className="mt-4 font-satoshi text-sm text-forest/70">
+              Status: {previewProgram.contentStatus} · Days available: {previewProgram.days.length}
+            </Text>
+          </View>
+        ) : null}
 
         {previewDay ? (
           <View className="gap-4">

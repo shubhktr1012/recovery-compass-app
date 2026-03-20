@@ -11,7 +11,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { CardRenderer } from '@/components/cards/CardRenderer';
 import { Button } from '@/components/ui/Button';
-import { ContentRepository } from '@/content';
+import { useDay, useProgram } from '@/content';
 import type { DayContent, ProgramSlug } from '@/types/content';
 
 const PROGRAM_SLUGS: ProgramSlug[] = [
@@ -113,27 +113,17 @@ export default function DayDetailScreen() {
   const rawDayNumber = normalizeRouteParam(params.dayNumber);
   const dayNumber = rawDayNumber ? Number(rawDayNumber) : Number.NaN;
   const programSlug = isProgramSlug(rawProgramSlug) ? rawProgramSlug : null;
-
-  const dayContent = useMemo<DayContent | null>(() => {
-    if (!programSlug || !Number.isInteger(dayNumber) || dayNumber < 1) {
-      return null;
-    }
-
-    return ContentRepository.getDay(programSlug, dayNumber);
-  }, [dayNumber, programSlug]);
-
-  const program = useMemo(() => {
-    if (!programSlug) return null;
-    return ContentRepository.getProgram(programSlug);
-  }, [programSlug]);
+  const normalizedDayNumber = Number.isInteger(dayNumber) && dayNumber >= 1 ? dayNumber : null;
+  const { day: dayContent, isLoading: isDayLoading } = useDay(programSlug, normalizedDayNumber);
+  const { program, isLoading: isProgramLoading } = useProgram(programSlug);
 
   const storageKey = useMemo(() => {
-    if (!programSlug || !Number.isInteger(dayNumber) || dayNumber < 1) {
+    if (!programSlug || !normalizedDayNumber) {
       return null;
     }
 
-    return getProgressStorageKey(programSlug, dayNumber);
-  }, [dayNumber, programSlug]);
+    return getProgressStorageKey(programSlug, normalizedDayNumber);
+  }, [normalizedDayNumber, programSlug]);
 
   useEffect(() => {
     if (!dayContent || !storageKey) {
@@ -216,6 +206,10 @@ export default function DayDetailScreen() {
 
   if (!programSlug || !Number.isInteger(dayNumber) || dayNumber < 1) {
     return <ErrorState message="The requested day detail route is missing a valid program slug or day number." />;
+  }
+
+  if ((isDayLoading && !dayContent) || (isProgramLoading && !program)) {
+    return <LoadingState />;
   }
 
   if (!dayContent || !program) {
