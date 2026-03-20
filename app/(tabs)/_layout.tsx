@@ -136,6 +136,12 @@ export default function TabLayout() {
           tabBarIcon: ({ focused }) => <TabIcon focused={focused} name="person.fill" />,
         }}
       />
+      <Tabs.Screen
+        name="test-cards"
+        options={{
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }

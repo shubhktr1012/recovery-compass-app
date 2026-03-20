@@ -1,0 +1,58 @@
+import type { ProgramCatalogEntry, ProgramSlug } from '@/types/content';
+
+export const PROGRAM_METADATA: Record<ProgramSlug, ProgramCatalogEntry> = {
+  six_day_reset: {
+    slug: 'six_day_reset',
+    name: '6-Day Control',
+    description: 'A focused six-day reset that interrupts autopilot and builds immediate control.',
+    totalDays: 6,
+    category: 'smoking',
+    hasAudio: false,
+    contentStatus: 'sample',
+  },
+  ninety_day_transform: {
+    slug: 'ninety_day_transform',
+    name: '90-Day Quit Smoking',
+    description: 'A long-form smoking recovery path with daily reflection and guided audio.',
+    totalDays: 90,
+    category: 'smoking',
+    hasAudio: true,
+    contentStatus: 'sample',
+  },
+  sleep_disorder_reset: {
+    slug: 'sleep_disorder_reset',
+    name: 'Sleep Disorder Reset',
+    description: 'A structured sleep-support program with daily text and future audio sessions.',
+    totalDays: 21,
+    category: 'sleep',
+    hasAudio: true,
+    contentStatus: 'placeholder',
+  },
+  energy_vitality: {
+    slug: 'energy_vitality',
+    name: 'Energy & Vitality',
+    description: 'A program focused on restoring energy, rhythm, and daily momentum.',
+    totalDays: 42,
+    category: 'energy',
+    hasAudio: false,
+    contentStatus: 'placeholder',
+  },
+  age_reversal: {
+    slug: 'age_reversal',
+    name: 'Age Reversal',
+    description: 'A longevity-focused program with daily guidance and shared CALM support.',
+    totalDays: 90,
+    category: 'aging',
+    hasAudio: false,
+    contentStatus: 'placeholder',
+  },
+  male_sexual_health: {
+    slug: 'male_sexual_health',
+    name: 'Male Sexual Health',
+    description: 'A confidence and regulation program with shared CALM support.',
+    totalDays: 45,
+    category: 'sexual_health',
+    hasAudio: false,
+    contentStatus: 'placeholder',
+  },
+};

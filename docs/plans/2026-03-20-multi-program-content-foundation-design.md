@@ -33,7 +33,7 @@ Add a parallel V2 content layer alongside the existing app code:
 - `content/programs/`
 - `content/index.ts`
 - `components/cards/`
-- `app/test-cards.tsx`
+- `app/(tabs)/test-cards.tsx`
 
 Do not replace the current V1 program types or repository during this phase.
 
