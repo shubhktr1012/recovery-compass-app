@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
-import { Audio } from 'expo-av';
+import { setAudioModeAsync, useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
 import { Ionicons } from '@expo/vector-icons';
 
 import { getCachedAudioUri, prefetchAudioAsset, resolvePlayableAudioUri } from '@/lib/audio-cache';
@@ -13,23 +13,19 @@ interface ProgramAudioPlayerProps {
 }
 
 export function ProgramAudioPlayer({ audio }: ProgramAudioPlayerProps) {
-  const soundRef = useRef<Audio.Sound | null>(null);
+  const player = useAudioPlayer(null, { updateInterval: 250 });
+  const status = useAudioPlayerStatus(player);
+  const pendingPlayRef = useRef(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isCached, setIsCached] = useState(false);
   const [isPrefetching, setIsPrefetching] = useState(false);
-  useEffect(() => {
-    void Audio.setAudioModeAsync({
-      playsInSilentModeIOS: true,
-      staysActiveInBackground: false,
-    });
 
-    return () => {
-      if (soundRef.current) {
-        void soundRef.current.unloadAsync();
-      }
-    };
+  useEffect(() => {
+    void setAudioModeAsync({
+      playsInSilentMode: true,
+      shouldPlayInBackground: false,
+    });
   }, []);
 
   useEffect(() => {
@@ -72,41 +68,38 @@ export function ProgramAudioPlayer({ audio }: ProgramAudioPlayerProps) {
     };
   }, [audio.storagePath]);
 
+  useEffect(() => {
+    if (!pendingPlayRef.current || !status.isLoaded) return;
+
+    pendingPlayRef.current = false;
+    player.play();
+    setIsLoading(false);
+  }, [player, status.isLoaded]);
+
   const handleTogglePlayback = async () => {
+    if (isLoading) return;
+
     try {
       setError(null);
 
-      if (soundRef.current) {
-        const status = await soundRef.current.getStatusAsync();
-
-        if (status.isLoaded && status.isPlaying) {
-          await soundRef.current.pauseAsync();
-          setIsPlaying(false);
+      if (status.isLoaded) {
+        if (status.playing) {
+          player.pause();
           return;
         }
 
-        if (status.isLoaded) {
-          await soundRef.current.playAsync();
-          setIsPlaying(true);
-          return;
-        }
+        player.play();
+        return;
       }
 
       setIsLoading(true);
       const { uri, cached } = await resolvePlayableAudioUri(audio.storagePath);
       setIsCached(cached);
-      const { sound } = await Audio.Sound.createAsync(
-        { uri },
-        { shouldPlay: true },
-        (status) => {
-          if (!status.isLoaded) return;
-          setIsPlaying(status.isPlaying);
-        }
-      );
-
-      soundRef.current = sound;
-      setIsPlaying(true);
+      pendingPlayRef.current = true;
+      player.replace({ uri });
     } catch (playbackError) {
+      pendingPlayRef.current = false;
+      setIsLoading(false);
       console.error('Audio playback failed', playbackError);
       void captureError(playbackError, {
         source: 'audio',
@@ -115,8 +108,6 @@ export function ProgramAudioPlayer({ audio }: ProgramAudioPlayerProps) {
         },
       });
       setError('Audio could not be played right now.');
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -134,7 +125,7 @@ export function ProgramAudioPlayer({ audio }: ProgramAudioPlayerProps) {
             <ActivityIndicator color="white" />
           ) : (
             <Ionicons
-              name={isPlaying ? 'pause' : 'play'}
+              name={status.playing ? 'pause' : 'play'}
               size={22}
               color={AppColors.white}
             />
@@ -142,7 +133,7 @@ export function ProgramAudioPlayer({ audio }: ProgramAudioPlayerProps) {
         </View>
         <View className="flex-1">
           <Text className="font-satoshi-bold text-white text-base">
-            {isPlaying ? 'Pause audio' : 'Play audio'}
+            {status.playing ? 'Pause audio' : 'Play audio'}
           </Text>
           <Text className="font-satoshi text-white/70 text-sm mt-1">
             {audio.durationSeconds

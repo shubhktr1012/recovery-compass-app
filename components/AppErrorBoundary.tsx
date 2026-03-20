@@ -1,5 +1,6 @@
 import React from 'react';
-import { SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { captureError } from '@/lib/monitoring';
 
 interface AppErrorBoundaryProps {
