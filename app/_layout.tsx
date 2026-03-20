@@ -116,6 +116,14 @@ function RootLayoutContent() {
       // Avoid queuing repeated identical redirects while navigation state updates.
       if (pendingRedirectRef.current === target) return;
       pendingRedirectRef.current = target;
+
+      // Use replace for guard-driven paywall redirects so the root stack handles the
+      // sibling top-level route reliably during app launch.
+      if (target === '/paywall') {
+        router.replace(target);
+        return;
+      }
+
       router.navigate(target);
     };
 
