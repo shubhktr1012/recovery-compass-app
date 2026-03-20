@@ -72,6 +72,7 @@ function RootLayoutContent() {
     const inAuthGroup = segments[0] === '(auth)';
     const inTabsGroup = segments[0] === '(tabs)';
     const inPaywall = (segments[0] as string) === 'paywall';
+    const inDayDetail = (segments[0] as string) === 'day-detail';
 
     const checkRouting = async () => {
       let target: Href | null = null;
@@ -102,7 +103,7 @@ function RootLayoutContent() {
         if (!inPaywall) {
           target = '/paywall' as Href;
         }
-      } else if (!inTabsGroup) {
+      } else if (!inTabsGroup && !inDayDetail) {
         // 4. Everything Good -> Go to Home
         target = '/(tabs)' as Href;
       }
@@ -182,6 +183,7 @@ function RootLayoutContent() {
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="(auth)" />
+      <Stack.Screen name="day-detail" />
       <Stack.Screen name="paywall" options={{ presentation: 'fullScreenModal', gestureEnabled: false }} />
       <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
     </Stack>

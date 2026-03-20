@@ -52,6 +52,7 @@
     "react-hook-form": "^7.71.1",
     "react-native": "0.81.5",
     "react-native-gesture-handler": "~2.28.0",
+    "react-native-pager-view": "6.9.1",
     "react-native-purchases": "^9.10.3",
     "react-native-purchases-ui": "^9.10.3",
     "react-native-reanimated": "~4.1.1",
