@@ -75,56 +75,58 @@ function RootLayoutContent() {
     const inDayDetail = (segments[0] as string) === 'day-detail';
 
     const checkRouting = async () => {
-      let target: Href | null = null;
+      try {
+        if (!isNavigationReady || !rootNavigationState?.key) return;
 
-      // 1. If NOT logged in
-      if (!session) {
-        // If not in auth group, force redirect to Sign In or Intro
-        // But wait, Intro is in Auth group too? 
-        // Let's assume:
-        // /onboarding -> Intro
-        // /sign-in -> Login
-        // /sign-up -> Signup
+        let target: Href | null = null;
 
-        // If user hasn't seen onboarding, show that first.
-        const hasSeenIntro = await AppStorage.getItem('hasSeenOnboarding');
+        // 1. If NOT logged in
+        if (!session) {
+          // If not in auth group, force redirect to Sign In or Intro
+          // But wait, Intro is in Auth group too? 
+          // Let's assume:
+          // /onboarding -> Intro
+          // /sign-in -> Login
+          // /sign-up -> Signup
 
-        if (!inAuthGroup) {
-          target = (!hasSeenIntro ? '/onboarding' : '/sign-in') as Href;
+          // If user hasn't seen onboarding, show that first.
+          const hasSeenIntro = await AppStorage.getItem('hasSeenOnboarding');
+
+          if (!inAuthGroup) {
+            target = (!hasSeenIntro ? '/onboarding' : '/sign-in') as Href;
+          }
+        } else if (!profile || !profile.onboarding_complete) {
+          // 2. If Logged In, checking Profile
+          // Redirect to Personalization if not there
+          if ((segments[1] as string) !== 'personalization') {
+            target = '/(auth)/personalization' as Href;
+          }
+        } else if (!isSubscribed) {
+          // 3. User is Logged In + Profile Complete -> Check Subscription
+          if (!inPaywall) {
+            target = '/paywall' as Href;
+          }
+        } else if (!inTabsGroup && !inDayDetail) {
+          // 4. Everything Good -> Go to Home
+          target = '/(tabs)' as Href;
         }
-      } else if (!profile || !profile.onboarding_complete) {
-        // 2. If Logged In, checking Profile
-        // Redirect to Personalization if not there
-        if ((segments[1] as string) !== 'personalization') {
-          target = '/personalization' as Href;
+
+        if (!target) {
+          pendingRedirectRef.current = null;
+          return;
         }
-      } else if (!isSubscribed) {
-        // 3. User is Logged In + Profile Complete -> Check Subscription
-        if (!inPaywall) {
-          target = '/paywall' as Href;
-        }
-      } else if (!inTabsGroup && !inDayDetail) {
-        // 4. Everything Good -> Go to Home
-        target = '/(tabs)' as Href;
-      }
 
-      if (!target) {
-        pendingRedirectRef.current = null;
-        return;
-      }
+        // Avoid queuing repeated identical redirects while navigation state updates.
+        if (pendingRedirectRef.current === target) return;
+        pendingRedirectRef.current = target;
 
-      // Avoid queuing repeated identical redirects while navigation state updates.
-      if (pendingRedirectRef.current === target) return;
-      pendingRedirectRef.current = target;
-
-      // Use replace for guard-driven paywall redirects so the root stack handles the
-      // sibling top-level route reliably during app launch.
-      if (target === '/paywall') {
+        // Guard redirects should replace the current route instead of dispatching nested
+        // navigate actions, which can target the wrong navigator during app launch.
         router.replace(target);
-        return;
+      } catch (routingError) {
+        pendingRedirectRef.current = null;
+        console.warn('Route guard skipped due to navigation not being ready yet.', routingError);
       }
-
-      router.navigate(target);
     };
 
     void checkRouting();

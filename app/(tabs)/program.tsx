@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
-import { Href, useRouter } from 'expo-router';
+import { Href, router } from 'expo-router';
 import { useProfile } from '@/providers/profile';
 import { TimelineItem } from '@/components/program/TimelineItem';
 import { ProgramCard } from '@/components/program/ProgramCard';
@@ -10,7 +10,6 @@ import { ProgramRepository } from '@/lib/programs/repository';
 import { ProgramSlug } from '@/lib/programs/types';
 
 export default function ProgramScreen() {
-  const router = useRouter();
   const { access, progress } = useProfile();
 
   const { activeProgram, completedDays, currentDay, program } = useMemo(() => {

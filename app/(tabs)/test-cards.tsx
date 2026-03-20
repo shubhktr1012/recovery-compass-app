@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
+import { Href, router } from 'expo-router';
 
 import { CardRenderer } from '@/components/cards/CardRenderer';
 import { Button } from '@/components/ui/Button';
@@ -62,6 +63,13 @@ export default function TestCardsScreen() {
               />
             );
           })}
+          <Button
+            label="Open in V2 Pager"
+            variant="secondary"
+            onPress={() =>
+              router.push('/day-detail?programSlug=six_day_reset&dayNumber=1' as Href)
+            }
+          />
         </View>
 
         <View className="mb-6 rounded-3xl border border-gray-200 bg-white p-5">
