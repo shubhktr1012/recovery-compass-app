@@ -60,7 +60,7 @@ export default function ProgramScreen() {
                   activeOpacity={isLocked ? 1 : 0.9}
                   disabled={isLocked}
                   onPress={() =>
-                    router.push(`/program/${activeProgram}/${day.dayNumber}` as Href)
+                    router.push(`/day-detail?programSlug=${activeProgram}&dayNumber=${day.dayNumber}` as Href)
                   }
                 >
                   <ProgramCard
