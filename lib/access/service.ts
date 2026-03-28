@@ -236,7 +236,7 @@ export class AccessService {
           archived_at: snapshot.archivedAt,
           revenuecat_product_id: revenueCatProductId,
         },
-        { onConflict: 'user_id' }
+        { onConflict: 'user_id,owned_program' }
       );
 
       if (error) throw error;

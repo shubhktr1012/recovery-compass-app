@@ -161,6 +161,7 @@ serve(async (req: Request) => {
                 .from('program_access')
                 .select('owned_program, completion_state, current_day, completed_at, archived_at')
                 .eq('user_id', appUserId)
+                .eq('owned_program', purchasedProgram)
                 .maybeSingle();
 
             if (accessFetchError) {
@@ -191,7 +192,7 @@ serve(async (req: Request) => {
                     completed_at: existingAccess?.completed_at ?? null,
                     archived_at: existingAccess?.archived_at ?? null,
                     revenuecat_product_id: purchasedProductId,
-                }, { onConflict: 'user_id' });
+                }, { onConflict: 'user_id,owned_program' });
 
             if (accessUpsertError) {
                 console.error("Program Access Upsert Error:", accessUpsertError);
