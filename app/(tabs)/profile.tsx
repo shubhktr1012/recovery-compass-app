@@ -13,9 +13,10 @@ import { ProgramRepository } from '@/lib/programs/repository';
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const { user, signOut } = useAuth();
+  const { deleteAccount, user, signOut } = useAuth();
   const { access, profile, progress, refreshAccess } = useProfile();
   const onboardingQuery = useOnboardingResponse();
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
 
@@ -65,6 +66,48 @@ export default function ProfileScreen() {
     } finally {
       setIsRestoring(false);
     }
+  };
+
+  const performDeleteAccount = async () => {
+    try {
+      setIsDeletingAccount(true);
+      await deleteAccount();
+      Alert.alert('Account deleted', 'Your Recovery Compass account and app data have been permanently deleted.');
+    } catch (error: any) {
+      Alert.alert('Delete account failed', error?.message ?? 'Please try again.');
+    } finally {
+      setIsDeletingAccount(false);
+    }
+  };
+
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      'Delete account?',
+      'This starts permanent account deletion. You will lose access to your Recovery Compass data on this device.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Continue',
+          style: 'destructive',
+          onPress: () => {
+            Alert.alert(
+              'This cannot be undone',
+              'Deleting your account permanently removes your profile, onboarding answers, journal entries, and program progress.',
+              [
+                { text: 'Keep Account', style: 'cancel' },
+                {
+                  text: 'Delete Account',
+                  style: 'destructive',
+                  onPress: () => {
+                    void performDeleteAccount();
+                  },
+                },
+              ]
+            );
+          },
+        },
+      ]
+    );
   };
 
   const activeProgram = access.ownedProgram ? ProgramRepository.getProgram(access.ownedProgram) : null;
@@ -166,9 +209,22 @@ export default function ProfileScreen() {
           ) : null}
         </View>
 
+        <View className="rounded-3xl bg-white border border-red-200 p-5 mb-6">
+          <Text className="font-erode-semibold text-2xl text-forest mb-2">Delete Account</Text>
+          <Text className="font-satoshi text-gray-600 leading-7 mb-4">
+            Permanently delete your Recovery Compass account, questionnaire data, journal entries, and program progress. This action cannot be undone.
+          </Text>
+          <Button
+            label="Delete Account"
+            variant="destructive"
+            onPress={handleDeleteAccount}
+            loading={isDeletingAccount}
+          />
+        </View>
+
         <Button
           label="Sign Out"
-          variant="destructive"
+          variant="outline"
           onPress={handleSignOut}
           loading={isSigningOut}
           size="lg"

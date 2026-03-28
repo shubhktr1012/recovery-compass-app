@@ -7,7 +7,6 @@
 
 ## Launch Blockers (must fix before ANY submission)
 
-- [ ] Delete Account flow (Apple rejects without this)
 - [ ] Fix program tab → route day taps to V2 day-detail instead of V1
 - [ ] Remove test-cards from tab bar
 - [ ] App icon from Anjan (1024x1024 PNG)
@@ -26,6 +25,7 @@
 - [x] PagerView day-detail screen (swipe, tap, progress persistence)
 - [x] Skeleton, ErrorState, OfflineBanner components
 - [x] Auth flow (sign up, sign in, forgot password)
+- [x] Delete Account flow (Supabase Edge Function live, auth deletion + cascade cleanup verified)
 - [x] Profile with access status + restore purchases
 - [x] SOS modal (basic breathing)
 - [x] Content seed generator script
