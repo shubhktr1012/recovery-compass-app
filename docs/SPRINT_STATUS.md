@@ -1,18 +1,17 @@
 # Sprint Status — Recovery Compass
 
-> Last updated: March 28, 2026
+> Last updated: March 29, 2026
 > Branch: `rebuild/multi-program`
-> Launch programs: 6-Day Reset, 90-Day Quit, Age Reversal (3 of 6)
-> Deferred programs: Sleep (21d), Energy (14d), Men's Health (30d) — waiting on Anjan's updated content
+> Questionnaire foundation: ready
+> Sellable catalog: 6 products configured in RevenueCat with placeholder pricing
+> Final content pending from Anjan: Sleep (21d), Energy (14d), Men's Health (30d)
 
 ## Launch Blockers (must fix before ANY submission)
 
-- [ ] Fix program tab → route day taps to V2 day-detail instead of V1
-- [ ] Remove test-cards from tab bar
 - [ ] App icon from Anjan (1024x1024 PNG)
-- [ ] Multi-program questionnaire (copy received, needs implementation)
-- [ ] Multi-program paywall (show 3 launch programs with pricing)
-- [ ] Supabase sync error fix ✅ DONE (onConflict updated)
+- [ ] Final public pricing for all 6 programs
+- [ ] Updated Sleep / Energy / Men's Health content + duration refresh from Anjan
+- [ ] Final QA sweep on questionnaire → paywall → purchase → program access
 
 ## Completed
 
@@ -23,13 +22,19 @@
 - [x] Triple fallback: Supabase → TanStack cache → local static
 - [x] Premium card renderer (10 card views, visual upgrade)
 - [x] PagerView day-detail screen (swipe, tap, progress persistence)
+- [x] Program tab routes unlocked days to V2 top-level day-detail
 - [x] Skeleton, ErrorState, OfflineBanner components
 - [x] Auth flow (sign up, sign in, forgot password)
 - [x] Delete Account flow (Supabase Edge Function live, auth deletion + cascade cleanup verified)
+- [x] Multi-program questionnaire foundation (quick profile, self-select vs guided path, persistence, recommendation routing)
+- [x] Questionnaire UI first draft (premium mobile layout, clear progress, polished selection states)
+- [x] Multi-program paywall foundation (program-targeted paywall handoff, duplicate-package fix, purchase/restore path verified)
+- [x] RevenueCat 6-product catalog configured with placeholder pricing
 - [x] Profile with access status + restore purchases
 - [x] SOS modal (basic breathing)
 - [x] Content seed generator script
 - [x] Root layout auth guard (hardened, multi-route support)
+- [x] Test-cards route hidden from tab bar (`href: null` already configured)
 - [x] Xcode + Android Studio installed and configured
 - [x] Apple Developer account active
 - [x] Premium card design reference HTML (V2)
@@ -38,14 +43,13 @@
 
 ## In Progress
 
+- [ ] Questionnaire minor polish and edge-case cleanup
+- [ ] Paywall visual polish / merchandising refinement
 - [ ] Visual overhaul — apply V4 wellness design to all screens
-- [ ] Questionnaire implementation (copy from Anjan received)
 - [ ] Ground feature (center tab, guided grounding experience)
 
 ## Not Started — Needed for Launch
 
-- [ ] Multi-program paywall UI
-- [ ] RevenueCat 6 products (currently only 2 configured)
 - [ ] Tab bar redesign (5 tabs with Ground center button)
 - [ ] Interactive breathing exercise card (animated circle)
 - [ ] Audio card playback (wire expo-av)
@@ -71,7 +75,7 @@
 ## Blocked On Anjan
 
 - [ ] App icon + splash screen assets
-- [ ] Pricing for all 6 programs
+- [ ] Final INR/public pricing for all 6 programs
 - [ ] Sleep program new content (21 days)
 - [ ] Energy program new content (14 days)
 - [ ] Men's Health new content (30 days)
@@ -80,10 +84,13 @@
 
 ```
 Launch → Splash (Expo default) → Sign In / Sign Up
-→ V1 Personalization (smoking-specific) → V1 Paywall (2 products)
+→ Adaptive multi-program questionnaire
+  Quick profile → self-select or guided path → branched questions
+→ Recommendation screen (guided path only)
+→ Program-targeted paywall (recommended program(s), 6-product catalog configured)
 → 4-tab layout: Home | Program | Journal | Profile
   Home: Dashboard with stats + today's focus card
-  Program: Timeline with locked/unlocked days → V1 day-detail (scroll)
+  Program: Timeline with locked/unlocked days → V2 day-detail (PagerView)
   Journal: Mood + cravings + reflection form
   Profile: Stats, access status, restore, sign out
 ```
@@ -104,11 +111,5 @@ Launch → V4 Splash → Onboarding Carousel → Sign Up / Sign In
 
 ## Known Bugs
 
-- [ ] V1 personalization is smoking-specific (needs replacement)
-- [ ] V1 paywall only shows 2 products (needs replacement)
-- [ ] Program tab routes to V1 day-detail (needs V2 swap)
-- [ ] Dashboard shows "Recovery Warrior" (smoking-specific language)
-- [ ] Dashboard shows ₹0 projection (smoking-specific)
-- [ ] Profile shows "Not set" for all questionnaire fields
 - [ ] program_access read path uses .maybeSingle() (breaks with multiple programs)
 - [ ] 90-Day Quit missing 2 days in Supabase (days 88-90 gap)
