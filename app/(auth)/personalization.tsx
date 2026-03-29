@@ -1,9 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Href, router } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
+import Animated, { FadeIn, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -19,8 +20,13 @@ function SegmentedProgress({ currentStep, totalSteps }: { currentStep: number; t
   return (
     <View className="flex-row gap-1.5">
       {Array.from({ length: totalSteps }).map((_, index) => (
-        <View key={`questionnaire-progress-${index}`} className="h-[3px] flex-1 rounded-full bg-forest/10">
-          <View className={`h-[3px] rounded-full ${index <= currentStep ? 'bg-forest' : 'bg-transparent'}`} />
+        <View key={`questionnaire-progress-${index}`} className="h-[4px] flex-1 rounded-full bg-forest/10 overflow-hidden">
+          {index <= currentStep && (
+            <Animated.View 
+              entering={FadeIn.duration(400)} 
+              className="h-full w-full rounded-full bg-forest" 
+            />
+          )}
         </View>
       ))}
     </View>
@@ -40,38 +46,58 @@ function SelectionCard({
   selected: boolean;
   title: string;
 }) {
+  const scale = useSharedValue(1);
+
+  const handlePressIn = () => {
+    scale.value = withTiming(0.98, { duration: 100 });
+  };
+  const handlePressOut = () => {
+    scale.value = withTiming(1, { duration: 100 });
+  };
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
   return (
     <Pressable
-      style={({ pressed }) => [
-        styles.selectionCardBase,
-        compact ? styles.selectionCardCompact : styles.selectionCardRegular,
-        selected ? styles.selectionCardSelected : styles.selectionCardIdle,
-        pressed ? styles.selectionCardPressed : null,
-      ]}
       onPress={onPress}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
     >
-      <View className="flex-row items-center justify-between">
-        <Text
-          style={[
-            styles.selectionCardTitle,
-            compact ? styles.selectionCardTitleCompact : styles.selectionCardTitleRegular,
-            selected ? styles.selectionCardTitleSelected : styles.selectionCardTitleIdle,
-          ]}
-        >
-          {title}
-        </Text>
-        {selected ? <View style={styles.selectionCardIndicator} /> : null}
-      </View>
-      {description ? (
-        <Text
-          style={[
-            styles.selectionCardDescription,
-            selected ? styles.selectionCardDescriptionSelected : styles.selectionCardDescriptionIdle,
-          ]}
-        >
-          {description}
-        </Text>
-      ) : null}
+      <Animated.View
+        style={animatedStyle}
+        className={`mb-3 w-full rounded-[24px] border ${compact ? 'px-5 py-4' : 'px-6 py-5'} ${
+          selected
+            ? 'border-forest bg-forest shadow-lg shadow-forest/20'
+            : 'border-forest/5 bg-white shadow-sm shadow-forest/5'
+        }`}
+      >
+        <View className="flex-row items-center justify-between">
+          <Text
+            className={`font-satoshi-bold ${compact ? 'text-[15px]' : 'text-base'} ${
+              selected ? 'text-white' : 'text-forest'
+            }`}
+          >
+            {title}
+          </Text>
+          {selected && (
+            <Animated.View
+              entering={FadeIn.duration(200)}
+              className="ml-3 h-2.5 w-2.5 rounded-full bg-white"
+            />
+          )}
+        </View>
+        {description ? (
+          <Text
+            className={`mt-2 font-satoshi text-sm leading-[22px] ${
+              selected ? 'text-white/80' : 'text-forest/60'
+            }`}
+          >
+            {description}
+          </Text>
+        ) : null}
+      </Animated.View>
     </Pressable>
   );
 }
@@ -86,83 +112,17 @@ function RecommendationCard({
   body: string;
 }) {
   return (
-    <View className="mb-4 rounded-[28px] border border-forest/10 bg-white/90 px-5 py-5">
+    <View className="mb-4 rounded-[28px] border border-forest/5 bg-white px-6 py-6 shadow-sm shadow-forest/5">
       {eyebrow ? (
-        <Text className="font-satoshi-bold text-[11px] uppercase tracking-[1.8px] text-forest/55">
+        <Text className="font-satoshi-bold text-[11px] uppercase tracking-[1.8px] text-forest/50">
           {eyebrow}
         </Text>
       ) : null}
-      <Text className="mt-3 font-erode-semibold text-[30px] leading-[36px] text-forest">{title}</Text>
-      <Text className="mt-3 font-satoshi text-base leading-7 text-forest/75">{body}</Text>
+      <Text className="mt-3 font-erode-semibold text-[28px] leading-[34px] text-forest">{title}</Text>
+      <Text className="mt-2 font-satoshi text-[15px] leading-relaxed text-forest/70">{body}</Text>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  selectionCardBase: {
-    borderRadius: 28,
-    borderWidth: 1,
-    marginBottom: 12,
-    paddingHorizontal: 20,
-    width: '100%',
-  },
-  selectionCardCompact: {
-    paddingVertical: 16,
-  },
-  selectionCardRegular: {
-    paddingVertical: 20,
-  },
-  selectionCardIdle: {
-    backgroundColor: '#F5FAF6',
-    borderColor: '#D4E1D6',
-  },
-  selectionCardSelected: {
-    backgroundColor: '#05290C',
-    borderColor: '#05290C',
-    shadowColor: '#05290C',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.12,
-    shadowRadius: 12,
-    elevation: 3,
-  },
-  selectionCardPressed: {
-    opacity: 0.92,
-  },
-  selectionCardTitle: {
-    fontFamily: 'Satoshi-Bold',
-  },
-  selectionCardTitleCompact: {
-    fontSize: 15,
-  },
-  selectionCardTitleRegular: {
-    fontSize: 16,
-  },
-  selectionCardTitleIdle: {
-    color: '#05290C',
-  },
-  selectionCardTitleSelected: {
-    color: '#FFFFFF',
-  },
-  selectionCardDescription: {
-    fontFamily: 'Satoshi-Regular',
-    fontSize: 14,
-    lineHeight: 24,
-    marginTop: 8,
-  },
-  selectionCardDescriptionIdle: {
-    color: 'rgba(5, 41, 12, 0.72)',
-  },
-  selectionCardDescriptionSelected: {
-    color: 'rgba(255, 255, 255, 0.82)',
-  },
-  selectionCardIndicator: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 999,
-    height: 10,
-    marginLeft: 12,
-    width: 10,
-  },
-});
 
 function isPositiveInteger(value: string) {
   return Number.isInteger(Number(value)) && Number(value) > 0;
@@ -178,6 +138,7 @@ export default function Personalization() {
   const steps = useMemo(() => buildOnboardingSteps(answers), [answers]);
   const currentStep = steps[Math.min(stepIndex, steps.length - 1)];
   const resolution = useMemo(() => getOnboardingResolution(answers), [answers]);
+  const insets = useSafeAreaInsets();
   const progressLabel = answers.path
     ? `Step ${stepIndex + 1} of ${steps.length}`
     : stepIndex === 0
@@ -380,7 +341,7 @@ export default function Personalization() {
           value={typeof currentValue === 'string' ? currentValue : ''}
           onChangeText={(value) => updateQuestionValue(question.id, value)}
           keyboardType={question.keyboardType}
-          className="rounded-[28px] border-forest/10 bg-sage/60 py-4 text-forest"
+          className="rounded-[24px] border-forest/5 bg-white px-6 py-4 font-satoshi text-base text-forest shadow-sm shadow-forest/5"
         />
       );
     }
@@ -433,14 +394,14 @@ export default function Personalization() {
 
     return (
       <View>
-        <View className="mb-5 rounded-[32px] bg-forest px-6 py-6">
-          <Text className="font-satoshi-bold text-[11px] uppercase tracking-[1.8px] text-white/65">
+        <View className="mb-5 rounded-[32px] bg-forest px-6 py-6 shadow-xl shadow-forest/20">
+          <Text className="font-satoshi-bold text-[11px] uppercase tracking-[1.8px] text-white/50">
             Recommended Path
           </Text>
           <Text className="mt-3 font-erode-bold text-4xl leading-10 text-white">
             {currentStep.recommendation.title}
           </Text>
-          <Text className="mt-3 font-satoshi text-base leading-7 text-white/82">
+          <Text className="mt-3 font-satoshi text-base leading-7 text-white/80">
             {currentStep.recommendation.subtitle}
           </Text>
         </View>
@@ -451,15 +412,16 @@ export default function Personalization() {
           body={`${primaryConcernCopy} ${currentStep.recommendation.whyFits}`}
         />
 
-        <Text className="mb-3 font-satoshi-bold text-[11px] uppercase tracking-[1.8px] text-forest/55">
+        <Text className="mb-3 mt-4 font-satoshi-bold text-[11px] uppercase tracking-[1.8px] text-forest/50">
           {currentStep.recommendation.focusLabel}
         </Text>
         {currentStep.recommendation.focusPoints.map((point, index) => (
           <View
             key={`${currentStep.journey}-focus-${index}`}
-            className="mb-3 rounded-[28px] border border-forest/10 bg-white/90 px-5 py-5"
+            className="mb-3 flex-row items-center rounded-[24px] bg-white px-5 py-4 shadow-sm shadow-forest/5"
           >
-            <Text className="font-satoshi text-base leading-7 text-forest/75">{point}</Text>
+            <View className="mr-3 h-1.5 w-1.5 rounded-full bg-forest/30" />
+            <Text className="flex-1 font-satoshi text-[15px] leading-relaxed text-forest/80">{point}</Text>
           </View>
         ))}
       </View>
@@ -477,7 +439,7 @@ export default function Personalization() {
               value={answers.name}
               onChangeText={(value) => updateQuickProfile('name', value)}
               containerClassName="mb-5"
-              className="rounded-[28px] border-forest/10 bg-sage/60 py-4 text-forest"
+              className="rounded-[24px] border-forest/5 bg-white px-6 py-4 font-satoshi text-base text-forest shadow-sm shadow-forest/5"
             />
             <Input
               label="Age"
@@ -486,20 +448,19 @@ export default function Personalization() {
               onChangeText={(value) => updateQuickProfile('age', value)}
               keyboardType="number-pad"
               containerClassName="mb-5"
-              className="rounded-[28px] border-forest/10 bg-sage/60 py-4 text-forest"
+              className="rounded-[24px] border-forest/5 bg-white px-6 py-4 font-satoshi text-base text-forest shadow-sm shadow-forest/5"
             />
 
             <Text className="mb-3 ml-1 font-satoshi text-sm text-forest/65">Gender</Text>
-            <View className="flex-row flex-wrap gap-3">
+            <View className="flex-col gap-3">
               {GENDER_OPTIONS.map((option) => (
-                <View key={option} className="min-w-[31%] flex-1">
-                  <SelectionCard
-                    compact
-                    title={option}
-                    selected={answers.gender === option}
-                    onPress={() => updateGender(option)}
-                  />
-                </View>
+                <SelectionCard
+                  key={option}
+                  compact
+                  title={option}
+                  selected={answers.gender === option}
+                  onPress={() => updateGender(option)}
+                />
               ))}
             </View>
           </View>
@@ -558,48 +519,62 @@ export default function Personalization() {
   const primaryButtonLabel = stepIndex === steps.length - 1 ? 'See plans' : 'Continue';
 
   return (
-    <SafeAreaView className="flex-1 bg-surface">
+    <View className="flex-1 bg-sage">
       <StatusBar style="dark" />
 
-      <View className="absolute -right-8 top-8 h-44 w-44 rounded-full bg-sage/50" />
-      <View className="absolute -left-10 bottom-16 h-56 w-56 rounded-full bg-white/60" />
+      <View className="absolute -right-32 top-[-5%] h-[400px] w-[400px] rounded-full bg-white/40" />
+      <View className="absolute -left-32 bottom-[-5%] h-[400px] w-[400px] rounded-full bg-[#FAFAF7]/60" />
 
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         className="flex-1"
         keyboardVerticalOffset={Platform.OS === 'ios' ? 8 : 0}
       >
-        <View className="flex-1 px-6 pt-5">
+        <View 
+          className="flex-1 px-6" 
+          style={{ paddingTop: Math.max(insets.top + 16, 20), paddingBottom: insets.bottom }}
+        >
           <SegmentedProgress currentStep={stepIndex} totalSteps={steps.length} />
 
-          <View className="mb-6 mt-5">
+          <View className="mb-4 mt-6">
             <Text className="font-satoshi-bold text-[11px] uppercase tracking-[1.8px] text-forest/50">
               {progressLabel}
             </Text>
-            <Text className="mt-3 font-erode-bold text-[34px] leading-[42px] text-forest">
-              {currentStep.title}
-            </Text>
-            <Text className="mt-3 font-satoshi text-base leading-7 text-forest/68">
-              {currentStep.description}
-            </Text>
           </View>
 
-          <ScrollView
+          <Animated.View 
+            key={`step-${stepIndex}`}
+            entering={FadeIn.duration(500)}
             className="flex-1"
-            contentContainerClassName="pb-6"
-            keyboardShouldPersistTaps="handled"
-            showsVerticalScrollIndicator={false}
           >
-            {renderCurrentStep()}
-          </ScrollView>
+            <View className="mb-6">
+              <Text className="font-erode-bold text-[34px] leading-[40px] text-forest">
+                {currentStep.title}
+              </Text>
+              {currentStep.description && (
+                <Text className="mt-2 font-satoshi text-base leading-7 text-forest/70">
+                  {currentStep.description}
+                </Text>
+              )}
+            </View>
 
-          <View className="pb-8 pt-4">
+            <ScrollView
+              className="flex-1"
+              contentContainerClassName="pb-6"
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
+            >
+              {renderCurrentStep()}
+            </ScrollView>
+          </Animated.View>
+
+          <View className="pb-4 pt-4">
             <Button
               label={primaryButtonLabel}
               onPress={() => void handleNext()}
               loading={isSaving}
               size="lg"
-              className="rounded-full py-4"
+              className="rounded-full py-4 shadow-xl shadow-forest/10"
             />
             {stepIndex > 0 ? (
               <Button
@@ -613,6 +588,6 @@ export default function Personalization() {
           </View>
         </View>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </View>
   );
 }
