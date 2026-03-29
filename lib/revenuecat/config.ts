@@ -14,8 +14,16 @@ import {
 const env = validatePublicEnv();
 
 export const REVENUECAT_CATALOG = createRevenueCatCatalog({
+  ageReversalEntitlementId: env.revenueCatAgeReversalEntitlementId,
+  ageReversalProductIds: env.revenueCatAgeReversalProductIds,
+  energyVitalityEntitlementId: env.revenueCatEnergyVitalityEntitlementId,
+  energyVitalityProductIds: env.revenueCatEnergyVitalityProductIds,
+  maleVitalityEntitlementId: env.revenueCatMaleVitalityEntitlementId,
+  maleVitalityProductIds: env.revenueCatMaleVitalityProductIds,
   sixDayEntitlementId: env.revenueCatSixDayEntitlementId,
   ninetyDayEntitlementId: env.revenueCatNinetyDayEntitlementId,
+  sleepResetEntitlementId: env.revenueCatSleepResetEntitlementId,
+  sleepResetProductIds: env.revenueCatSleepResetProductIds,
   sixDayProductIds: env.revenueCatSixDayProductIds,
   ninetyDayProductIds: env.revenueCatNinetyDayProductIds,
 });

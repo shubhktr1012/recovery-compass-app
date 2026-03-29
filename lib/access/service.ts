@@ -1,9 +1,9 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Purchases, { CustomerInfo } from 'react-native-purchases';
 
+import { PROGRAM_METADATA } from '@/content/programs/metadata';
 import { getOwnedProgramFromCustomerInfo, getRevenueCatProgram } from '@/lib/revenuecat/config';
 import { supabase } from '@/lib/supabase';
-import { ProgramRepository } from '@/lib/programs/repository';
 import {
   CompletionState,
   ProgramAccessSnapshot,
@@ -35,6 +35,10 @@ function createDefaultSnapshot(
   };
 }
 
+function getProgramLength(programSlug: ProgramSlug) {
+  return PROGRAM_METADATA[programSlug].totalDays;
+}
+
 function getStateForProgress(
   programSlug: ProgramSlug | null,
   progress: ProgramProgressRecord | null
@@ -49,7 +53,7 @@ function getStateForProgress(
     };
   }
 
-  const totalDays = ProgramRepository.getProgramLength(programSlug);
+  const totalDays = getProgramLength(programSlug);
   const isProgramComplete = progress.completedDays.includes(totalDays) || Boolean(progress.completedAt);
   const isArchived = Boolean(progress.archivedAt);
 
@@ -74,10 +78,6 @@ function getStateForProgress(
 }
 
 function deriveEligibleProducts(snapshot: ProgramAccessSnapshot): ProgramSlug[] {
-  if (snapshot.ownedProgram === 'ninety_day_transform') {
-    return ['ninety_day_transform'];
-  }
-
   if (
     snapshot.ownedProgram === 'six_day_reset' &&
     (snapshot.purchaseState === 'owned_completed' || snapshot.purchaseState === 'owned_archived')
@@ -85,19 +85,19 @@ function deriveEligibleProducts(snapshot: ProgramAccessSnapshot): ProgramSlug[] 
     return ['ninety_day_transform'];
   }
 
-  if (snapshot.ownedProgram === 'six_day_reset') {
-    return ['six_day_reset'];
+  if (snapshot.ownedProgram) {
+    return [];
   }
 
   return ['six_day_reset', 'ninety_day_transform'];
 }
 
 function normalizeProgramSlug(value: string | null | undefined): ProgramSlug | null {
-  if (value === 'six_day_reset' || value === 'ninety_day_transform') {
-    return value;
+  if (!value) {
+    return null;
   }
 
-  return null;
+  return value in PROGRAM_METADATA ? (value as ProgramSlug) : null;
 }
 
 export class AccessService {
@@ -194,7 +194,7 @@ export class AccessService {
       if (error) throw error;
 
       const completedDays = (data ?? []).map((row) => row.day_id);
-      const totalDays = ProgramRepository.getProgramLength(programSlug);
+      const totalDays = getProgramLength(programSlug);
       const highestCompletedDay = completedDays.at(-1) ?? 0;
       const isComplete = Boolean(snapshot?.completedAt) || highestCompletedDay >= totalDays;
       const fallbackCurrentDay = isComplete

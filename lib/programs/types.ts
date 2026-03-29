@@ -1,4 +1,6 @@
-export type ProgramSlug = 'six_day_reset' | 'ninety_day_transform';
+import type { ProgramSlug as ContentProgramSlug } from '@/types/content';
+
+export type ProgramSlug = ContentProgramSlug;
 
 export type PurchaseState =
   | 'not_owned'

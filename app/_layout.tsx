@@ -1,12 +1,12 @@
 import "../global.css";
 import { useEffect, useRef, useState } from 'react';
 import { useFonts } from 'expo-font';
-import { Stack, useRouter, useSegments, Href, useRootNavigationState } from 'expo-router';
+import { Stack, useSegments, Href, useRootNavigationState, router } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import 'react-native-reanimated';
 import { StatusBar } from 'expo-status-bar';
 import { AuthProvider, useAuth } from '../providers/auth';
-import { ProfileProvider, useProfile } from '../providers/profile';
+import { ProfileProvider, UserProfile, useProfile } from '../providers/profile';
 import { AppQueryProvider } from '../providers/query';
 import { AppStorage } from '../lib/storage';
 import Purchases, { LOG_LEVEL } from 'react-native-purchases';
@@ -14,6 +14,7 @@ import { LogBox, Platform } from 'react-native';
 import { AppErrorBoundary } from '@/components/AppErrorBoundary';
 import { validatePublicEnv } from '@/lib/env';
 import { installGlobalErrorHandler } from '@/lib/monitoring';
+import { Session } from '@supabase/supabase-js';
 import ErodeRegular from '@/assets/fonts/Erode-Regular.otf';
 import ErodeItalic from '@/assets/fonts/Erode-Italic.otf';
 import ErodeLight from '@/assets/fonts/Erode-Light.otf';
@@ -37,11 +38,76 @@ LogBox.ignoreLogs(['SafeAreaView has been deprecated']);
 const publicEnv = validatePublicEnv();
 const uninstallGlobalErrorHandler = installGlobalErrorHandler();
 
+function NavigationGate({
+  isNavigationReady,
+  isSubscribed,
+  profile,
+  session,
+}: {
+  isNavigationReady: boolean;
+  isSubscribed: boolean;
+  profile: UserProfile | null;
+  session: Session | null;
+}) {
+  const segments = useSegments();
+  const rootNavigationState = useRootNavigationState();
+  const pendingRedirectRef = useRef<Href | null>(null);
+
+  useEffect(() => {
+    if (!isNavigationReady || !rootNavigationState?.key) return;
+
+    const inAuthGroup = segments[0] === '(auth)';
+    const inTabsGroup = segments[0] === '(tabs)';
+    const inPaywall = (segments[0] as string) === 'paywall';
+    const inDayDetail = (segments[0] as string) === 'day-detail';
+
+    const checkRouting = async () => {
+      try {
+        if (!isNavigationReady || !rootNavigationState?.key) return;
+
+        let target: Href | null = null;
+
+        if (!session) {
+          const hasSeenIntro = await AppStorage.getItem('hasSeenOnboarding');
+
+          if (!inAuthGroup) {
+            target = (!hasSeenIntro ? '/onboarding' : '/sign-in') as Href;
+          }
+        } else if (!profile || !profile.onboarding_complete) {
+          if ((segments[1] as string) !== 'personalization') {
+            target = '/(auth)/personalization' as Href;
+          }
+        } else if (!isSubscribed) {
+          if (!inPaywall) {
+            target = '/paywall' as Href;
+          }
+        } else if (!inTabsGroup && !inDayDetail) {
+          target = '/(tabs)' as Href;
+        }
+
+        if (!target) {
+          pendingRedirectRef.current = null;
+          return;
+        }
+
+        if (pendingRedirectRef.current === target) return;
+        pendingRedirectRef.current = target;
+        router.replace(target);
+      } catch (routingError) {
+        pendingRedirectRef.current = null;
+        console.warn('Route guard skipped due to navigation not being ready yet.', routingError);
+      }
+    };
+
+    void checkRouting();
+  }, [isNavigationReady, rootNavigationState?.key, session, profile, isSubscribed, segments]);
+
+  return null;
+}
+
 function RootLayoutContent() {
   const { session, isLoading: isAuthLoading } = useAuth();
   const { profile, isSubscribed, isLoading: isProfileLoading } = useProfile();
-  const segments = useSegments();
-  const router = useRouter();
   const [fontsLoaded] = useFonts({
     'Erode-Regular': ErodeRegular,
     'Erode-Italic': ErodeItalic,
@@ -60,80 +126,14 @@ function RootLayoutContent() {
 
   const isLoading = isAuthLoading || (session ? isProfileLoading : false);
   const isNavigationReady = fontsLoaded && !isLoading;
-  const rootNavigationState = useRootNavigationState();
-  const pendingRedirectRef = useRef<Href | null>(null);
   const hasConfiguredPurchasesRef = useRef(false);
   const revenueCatLoginInFlightRef = useRef<string | null>(null);
   const lastRevenueCatUserIdRef = useRef<string | null>(null);
 
   useEffect(() => {
-    if (!isNavigationReady || !rootNavigationState?.key) return;
-
-    const inAuthGroup = segments[0] === '(auth)';
-    const inTabsGroup = segments[0] === '(tabs)';
-    const inPaywall = (segments[0] as string) === 'paywall';
-    const inDayDetail = (segments[0] as string) === 'day-detail';
-
-    const checkRouting = async () => {
-      try {
-        if (!isNavigationReady || !rootNavigationState?.key) return;
-
-        let target: Href | null = null;
-
-        // 1. If NOT logged in
-        if (!session) {
-          // If not in auth group, force redirect to Sign In or Intro
-          // But wait, Intro is in Auth group too? 
-          // Let's assume:
-          // /onboarding -> Intro
-          // /sign-in -> Login
-          // /sign-up -> Signup
-
-          // If user hasn't seen onboarding, show that first.
-          const hasSeenIntro = await AppStorage.getItem('hasSeenOnboarding');
-
-          if (!inAuthGroup) {
-            target = (!hasSeenIntro ? '/onboarding' : '/sign-in') as Href;
-          }
-        } else if (!profile || !profile.onboarding_complete) {
-          // 2. If Logged In, checking Profile
-          // Redirect to Personalization if not there
-          if ((segments[1] as string) !== 'personalization') {
-            target = '/(auth)/personalization' as Href;
-          }
-        } else if (!isSubscribed) {
-          // 3. User is Logged In + Profile Complete -> Check Subscription
-          if (!inPaywall) {
-            target = '/paywall' as Href;
-          }
-        } else if (!inTabsGroup && !inDayDetail) {
-          // 4. Everything Good -> Go to Home
-          target = '/(tabs)' as Href;
-        }
-
-        if (!target) {
-          pendingRedirectRef.current = null;
-          return;
-        }
-
-        // Avoid queuing repeated identical redirects while navigation state updates.
-        if (pendingRedirectRef.current === target) return;
-        pendingRedirectRef.current = target;
-
-        // Guard redirects should replace the current route instead of dispatching nested
-        // navigate actions, which can target the wrong navigator during app launch.
-        router.replace(target);
-      } catch (routingError) {
-        pendingRedirectRef.current = null;
-        console.warn('Route guard skipped due to navigation not being ready yet.', routingError);
-      }
-    };
-
-    void checkRouting();
-
-    // Hide Splash Screen once we start processing logic
+    if (!isNavigationReady) return;
     void SplashScreen.hideAsync();
-  }, [isNavigationReady, rootNavigationState?.key, session, profile, isSubscribed, segments, router]);
+  }, [isNavigationReady]);
 
   // Initialize RevenueCat once.
   useEffect(() => {
@@ -185,18 +185,22 @@ function RootLayoutContent() {
     void loginToRevenueCat();
   }, [session?.user?.id]);
 
-  if (!fontsLoaded || isLoading) {
-    return null; // Keep Splash Screen visible
-  }
-
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="(tabs)" />
-      <Stack.Screen name="(auth)" />
-      <Stack.Screen name="day-detail" />
-      <Stack.Screen name="paywall" options={{ presentation: 'fullScreenModal', gestureEnabled: false }} />
-      <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-    </Stack>
+    <>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="(auth)" />
+        <Stack.Screen name="day-detail" />
+        <Stack.Screen name="paywall" options={{ presentation: 'fullScreenModal', gestureEnabled: false }} />
+        <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+      </Stack>
+      <NavigationGate
+        isNavigationReady={isNavigationReady}
+        isSubscribed={isSubscribed}
+        profile={profile}
+        session={session}
+      />
+    </>
   );
 }
 

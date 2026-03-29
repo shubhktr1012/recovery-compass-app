@@ -1,658 +1,618 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
+import { Href, router } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
-import * as Haptics from 'expo-haptics';
 
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { ONBOARDING_RESPONSE_QUERY_KEY } from '@/hooks/useOnboardingResponse';
-import { formatInr } from '@/lib/onboarding-metrics';
-import { AppStorage } from '@/lib/storage';
-import { supabase } from '@/lib/supabase';
+import { buildOnboardingSteps, createInitialOnboardingAnswers, getOnboardingResolution } from '@/lib/onboarding.flow';
+import { saveOnboardingQuestionnaire } from '@/lib/onboarding.persistence';
+import { GENDER_OPTIONS } from '@/lib/onboarding.types';
+import type { GenderOption, GuidedIssueId, JourneyKey, OnboardingPath, OnboardingStep, QuestionDefinition } from '@/lib/onboarding.types';
 import { useAuth } from '@/providers/auth';
-import { PROFILE_QUERY_KEY, useProfile } from '@/providers/profile';
+import { PROFILE_QUERY_KEY } from '@/providers/profile';
 
-const TOTAL_STEPS = 16;
-const PROJECTION_DAYS = 90;
-const CALCULATING_STEP_INDEX = 14;
-const FINAL_STEP_INDEX = 15;
-
-const TARGET_OPTIONS = ['Quit Smoking', 'Quit Alcohol', 'Conquer Both'] as const;
-const LANGUAGE_OPTIONS = ['English', 'Hindi'] as const;
-const PAST_ATTEMPTS_OPTIONS = ['First time', 'Tried once', 'Tried multiple times'] as const;
-const TRIGGER_OPTIONS = ['Waking up', 'Socializing', 'Work stress', 'Late at night', 'Boredom'] as const;
-const ROOT_CAUSE_OPTIONS = ['To relax', 'To escape stress', 'Anger / frustration', 'Habit / autopilot'] as const;
-const PHYSICAL_TOLL_OPTIONS = ['Always', 'Often', 'Rarely'] as const;
-const PRIMARY_GOAL_OPTIONS = [
-  'Regain my health',
-  'Save my money',
-  'Be stronger for my family',
-  'Prove to myself I can',
-] as const;
-const CALCULATING_MESSAGES = [
-  'Analyzing your triggers...',
-  'Calculating your financial upside...',
-  'Building your 90-day protocol...',
-] as const;
-
-type WizardData = {
-  age: string;
-  dailyConsumptionAmount: string;
-  dailyConsumptionCost: string;
-  fullName: string;
-  languageSelection: string;
-  mentalToll: boolean | null;
-  pastAttempts: string;
-  physicalToll: string;
-  primaryGoal: string;
-  rootCause: string;
-  targetSelection: string;
-  triggers: string[];
-};
-
-type StepMeta = {
-  title: string;
-  description: string;
-};
-
-const STEP_META: StepMeta[] = [
-  { title: 'What brings you here today?', description: 'Pick the outcome you want us to build your plan around.' },
-  { title: 'Choose your language', description: 'We will tailor the tone and examples to your comfort zone.' },
-  { title: 'Let’s personalize your journey', description: 'Your name and age help us shape the experience around you.' },
-  { title: 'Tell us about the past', description: 'Your quitting history helps us understand your pressure points.' },
-  { title: 'When do cravings hit the hardest?', description: 'Choose the moments that pull you back most often.' },
-  { title: 'What usually drives the habit?', description: 'We want the trigger behind the trigger.' },
-  { title: 'How is this hitting your body?', description: 'A quick reality check makes the next step more personal.' },
-  { title: 'And what about the mental toll?', description: 'This helps us calibrate the emotional side of the plan.' },
-  { title: 'Let’s look at the numbers', description: 'Daily consumption and daily spend unlock your financial projection.' },
-  { title: 'This is not a willpower problem', description: 'It is a loop, and loops can be redesigned.' },
-  { title: 'What is your number one reason?', description: 'Your strongest reason becomes the emotional anchor for the plan.' },
-  { title: 'Your body wants to recover', description: 'Healing starts earlier than most people think.' },
-  { title: 'You are not doing this alone', description: 'The system works better when it feels like a brotherhood, not a lecture.' },
-  { title: 'The proof is in the pattern change', description: 'Small daily wins compound fast when the plan fits your triggers.' },
-  { title: 'Calculating your custom plan...', description: 'Give us a second to assemble your 90-day projection.' },
-  { title: 'Here is what the next 90 days can look like', description: 'This is the version of your life we want to hand back to you.' },
-];
-
-function OptionCard({
-  description,
-  onPress,
-  selected = false,
-  title,
-}: {
-  description?: string;
-  onPress: () => void;
-  selected?: boolean;
-  title: string;
-}) {
+function SegmentedProgress({ currentStep, totalSteps }: { currentStep: number; totalSteps: number }) {
   return (
-    <TouchableOpacity
-      activeOpacity={0.9}
-      className={`rounded-3xl border px-5 py-4 mb-3 ${
-        selected ? 'bg-forest border-forest' : 'bg-white border-gray-200'
-      }`}
-      onPress={onPress}
-    >
-      <Text className={`font-satoshi-bold text-base ${selected ? 'text-white' : 'text-forest'}`}>{title}</Text>
-      {description ? (
-        <Text className={`font-satoshi mt-1 leading-6 ${selected ? 'text-white/80' : 'text-gray-500'}`}>
-          {description}
-        </Text>
-      ) : null}
-    </TouchableOpacity>
-  );
-}
-
-function InfoCard({
-  body,
-  eyebrow,
-  title,
-}: {
-  body: string;
-  eyebrow?: string;
-  title: string;
-}) {
-  return (
-    <View className="rounded-3xl bg-white border border-gray-200 p-5 mb-4">
-      {eyebrow ? <Text className="font-satoshi-bold text-xs uppercase text-gray-400 mb-2">{eyebrow}</Text> : null}
-      <Text className="font-erode-semibold text-2xl text-forest mb-2">{title}</Text>
-      <Text className="font-satoshi text-base leading-7 text-gray-600">{body}</Text>
+    <View className="flex-row gap-1.5">
+      {Array.from({ length: totalSteps }).map((_, index) => (
+        <View key={`questionnaire-progress-${index}`} className="h-[3px] flex-1 rounded-full bg-forest/10">
+          <View className={`h-[3px] rounded-full ${index <= currentStep ? 'bg-forest' : 'bg-transparent'}`} />
+        </View>
+      ))}
     </View>
   );
 }
 
-function getUnitsLabel(targetSelection: string) {
-  if (targetSelection === 'Quit Alcohol') return 'drinks avoided';
-  if (targetSelection === 'Quit Smoking') return 'cigarettes avoided';
-  return 'vices sidestepped';
+function SelectionCard({
+  compact = false,
+  description,
+  onPress,
+  selected,
+  title,
+}: {
+  compact?: boolean;
+  description?: string;
+  onPress: () => void;
+  selected: boolean;
+  title: string;
+}) {
+  return (
+    <Pressable
+      style={({ pressed }) => [
+        styles.selectionCardBase,
+        compact ? styles.selectionCardCompact : styles.selectionCardRegular,
+        selected ? styles.selectionCardSelected : styles.selectionCardIdle,
+        pressed ? styles.selectionCardPressed : null,
+      ]}
+      onPress={onPress}
+    >
+      <View className="flex-row items-center justify-between">
+        <Text
+          style={[
+            styles.selectionCardTitle,
+            compact ? styles.selectionCardTitleCompact : styles.selectionCardTitleRegular,
+            selected ? styles.selectionCardTitleSelected : styles.selectionCardTitleIdle,
+          ]}
+        >
+          {title}
+        </Text>
+        {selected ? <View style={styles.selectionCardIndicator} /> : null}
+      </View>
+      {description ? (
+        <Text
+          style={[
+            styles.selectionCardDescription,
+            selected ? styles.selectionCardDescriptionSelected : styles.selectionCardDescriptionIdle,
+          ]}
+        >
+          {description}
+        </Text>
+      ) : null}
+    </Pressable>
+  );
+}
+
+function RecommendationCard({
+  eyebrow,
+  title,
+  body,
+}: {
+  eyebrow?: string;
+  title: string;
+  body: string;
+}) {
+  return (
+    <View className="mb-4 rounded-[28px] border border-forest/10 bg-white/90 px-5 py-5">
+      {eyebrow ? (
+        <Text className="font-satoshi-bold text-[11px] uppercase tracking-[1.8px] text-forest/55">
+          {eyebrow}
+        </Text>
+      ) : null}
+      <Text className="mt-3 font-erode-semibold text-[30px] leading-[36px] text-forest">{title}</Text>
+      <Text className="mt-3 font-satoshi text-base leading-7 text-forest/75">{body}</Text>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  selectionCardBase: {
+    borderRadius: 28,
+    borderWidth: 1,
+    marginBottom: 12,
+    paddingHorizontal: 20,
+    width: '100%',
+  },
+  selectionCardCompact: {
+    paddingVertical: 16,
+  },
+  selectionCardRegular: {
+    paddingVertical: 20,
+  },
+  selectionCardIdle: {
+    backgroundColor: '#F5FAF6',
+    borderColor: '#D4E1D6',
+  },
+  selectionCardSelected: {
+    backgroundColor: '#05290C',
+    borderColor: '#05290C',
+    shadowColor: '#05290C',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+    elevation: 3,
+  },
+  selectionCardPressed: {
+    opacity: 0.92,
+  },
+  selectionCardTitle: {
+    fontFamily: 'Satoshi-Bold',
+  },
+  selectionCardTitleCompact: {
+    fontSize: 15,
+  },
+  selectionCardTitleRegular: {
+    fontSize: 16,
+  },
+  selectionCardTitleIdle: {
+    color: '#05290C',
+  },
+  selectionCardTitleSelected: {
+    color: '#FFFFFF',
+  },
+  selectionCardDescription: {
+    fontFamily: 'Satoshi-Regular',
+    fontSize: 14,
+    lineHeight: 24,
+    marginTop: 8,
+  },
+  selectionCardDescriptionIdle: {
+    color: 'rgba(5, 41, 12, 0.72)',
+  },
+  selectionCardDescriptionSelected: {
+    color: 'rgba(255, 255, 255, 0.82)',
+  },
+  selectionCardIndicator: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 999,
+    height: 10,
+    marginLeft: 12,
+    width: 10,
+  },
+});
+
+function isPositiveInteger(value: string) {
+  return Number.isInteger(Number(value)) && Number(value) > 0;
 }
 
 export default function Personalization() {
   const queryClient = useQueryClient();
-  const { refreshProfile } = useProfile();
   const { user } = useAuth();
-  const [step, setStep] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const [calculationMessageIndex, setCalculationMessageIndex] = useState(0);
-  const [data, setData] = useState<WizardData>({
-    age: '',
-    dailyConsumptionAmount: '',
-    dailyConsumptionCost: '',
-    fullName: '',
-    languageSelection: '',
-    mentalToll: null,
-    pastAttempts: '',
-    physicalToll: '',
-    primaryGoal: '',
-    rootCause: '',
-    targetSelection: '',
-    triggers: [],
-  });
+  const [stepIndex, setStepIndex] = useState(0);
+  const [isSaving, setIsSaving] = useState(false);
+  const [answers, setAnswers] = useState(createInitialOnboardingAnswers);
 
-  const projection = useMemo(() => {
-    const dailyAmount = Number(data.dailyConsumptionAmount) || 0;
-    const dailyCost = Number(data.dailyConsumptionCost) || 0;
-    const monthlySpend = Math.round(dailyCost * 30);
-    const yearlySpend = Math.round(dailyCost * 365);
-    const projectedSavings90Days = Math.round(dailyCost * PROJECTION_DAYS);
-    const avoidedUnits90Days = dailyAmount * PROJECTION_DAYS;
-
-    return {
-      avoidedUnits90Days,
-      dailyAmount,
-      monthlySpend,
-      projectedSavings90Days,
-      yearlySpend,
-    };
-  }, [data.dailyConsumptionAmount, data.dailyConsumptionCost]);
+  const steps = useMemo(() => buildOnboardingSteps(answers), [answers]);
+  const currentStep = steps[Math.min(stepIndex, steps.length - 1)];
+  const resolution = useMemo(() => getOnboardingResolution(answers), [answers]);
+  const progressLabel = answers.path
+    ? `Step ${stepIndex + 1} of ${steps.length}`
+    : stepIndex === 0
+      ? 'Getting started'
+      : 'Choose your path';
 
   useEffect(() => {
-    if (step !== CALCULATING_STEP_INDEX) return;
+    if (stepIndex > steps.length - 1) {
+      setStepIndex(Math.max(0, steps.length - 1));
+    }
+  }, [stepIndex, steps.length]);
 
-    setCalculationMessageIndex(0);
-
-    const messageInterval = setInterval(() => {
-      setCalculationMessageIndex((index) => (index + 1) % CALCULATING_MESSAGES.length);
-    }, 900);
-
-    const advanceTimer = setTimeout(() => {
-      setStep(FINAL_STEP_INDEX);
-    }, 2600);
-
-    return () => {
-      clearInterval(messageInterval);
-      clearTimeout(advanceTimer);
-    };
-  }, [step]);
-
-  const currentStep = STEP_META[step];
-
-  const handleUpdate = <K extends keyof WizardData>(key: K, value: WizardData[K]) => {
-    setData((previous) => ({ ...previous, [key]: value }));
+  const updateQuickProfile = <K extends 'name' | 'age'>(key: K, value: string) => {
+    setAnswers((current) => ({ ...current, [key]: value }));
   };
 
-  const toggleTrigger = (trigger: string) => {
-    void Haptics.selectionAsync();
+  const updateGender = (gender: GenderOption) => {
+    setAnswers((current) => {
+      let nextSelfSelectJourney = current.selfSelectJourney;
+      let nextGuidedIssue = current.guidedMainIssue;
 
-    setData((previous) => {
-      const exists = previous.triggers.includes(trigger);
-      if (exists) {
-        return { ...previous, triggers: previous.triggers.filter((item) => item !== trigger) };
+      if (gender !== 'Male' && nextSelfSelectJourney === 'male_sexual_health') {
+        nextSelfSelectJourney = null;
       }
 
-      if (previous.triggers.length >= 3) {
-        Alert.alert('Top 3 only', 'Choose the three moments that hit you hardest for now.');
-        return previous;
+      if (gender !== 'Male' && nextGuidedIssue === 'low_libido_poor_performance') {
+        nextGuidedIssue = null;
       }
 
-      return { ...previous, triggers: [...previous.triggers, trigger] };
+      return {
+        ...current,
+        gender,
+        selfSelectJourney: nextSelfSelectJourney,
+        guidedMainIssue: nextGuidedIssue,
+      };
     });
   };
 
-  const validateStep = () => {
-    switch (step) {
-      case 0:
-        return Boolean(data.targetSelection) || 'Choose what you want to take control of.';
-      case 1:
-        return Boolean(data.languageSelection) || 'Choose a language to continue.';
-      case 2:
+  const updatePath = (path: OnboardingPath) => {
+    setAnswers((current) => ({
+      ...current,
+      path,
+      selfSelectJourney: path === 'self_select' ? current.selfSelectJourney : null,
+      guidedMainIssue: path === 'guided_recommendation' ? current.guidedMainIssue : null,
+      questionValues: path === current.path ? current.questionValues : {},
+    }));
+  };
+
+  const updateSelfSelectJourney = (journey: JourneyKey) => {
+    setAnswers((current) => ({
+      ...current,
+      selfSelectJourney: journey,
+      questionValues: journey === current.selfSelectJourney ? current.questionValues : {},
+    }));
+  };
+
+  const updateGuidedIssue = (issue: GuidedIssueId) => {
+    setAnswers((current) => ({
+      ...current,
+      guidedMainIssue: issue,
+      questionValues: issue === current.guidedMainIssue ? current.questionValues : {},
+    }));
+  };
+
+  const updateQuestionValue = (questionId: string, value: string) => {
+    setAnswers((current) => ({
+      ...current,
+      questionValues: {
+        ...current.questionValues,
+        [questionId]: value,
+      },
+    }));
+  };
+
+  const toggleQuestionValue = (questionId: string, value: string) => {
+    setAnswers((current) => {
+      const existingValue = current.questionValues[questionId];
+      const existingValues = Array.isArray(existingValue) ? existingValue : [];
+      const nextValues = existingValues.includes(value)
+        ? existingValues.filter((item) => item !== value)
+        : [...existingValues, value];
+
+      return {
+        ...current,
+        questionValues: {
+          ...current.questionValues,
+          [questionId]: nextValues,
+        },
+      };
+    });
+  };
+
+  const validateQuestion = (question: QuestionDefinition) => {
+    const rawValue = answers.questionValues[question.id];
+
+    if (!question.required && question.allowEmpty) {
+      return true;
+    }
+
+    switch (question.type) {
+      case 'number_input':
         return (
-          (Boolean(data.fullName.trim()) &&
-            Boolean(data.age.trim()) &&
-            Number.isInteger(Number(data.age)) &&
-            Number(data.age) > 0) ||
-          'Enter your name and a valid age.'
+          (typeof rawValue === 'string' && isPositiveInteger(rawValue)) ||
+          'Enter a valid number before continuing.'
         );
-      case 3:
-        return Boolean(data.pastAttempts) || 'Tell us whether you have tried before.';
-      case 4:
-        return data.triggers.length > 0 || 'Pick at least one trigger.';
-      case 5:
-        return Boolean(data.rootCause) || 'Choose the main driver.';
-      case 6:
-        return Boolean(data.physicalToll) || 'Choose the option that feels true.';
-      case 7:
-        return data.mentalToll !== null || 'Choose yes or no.';
-      case 8:
+      case 'single_select':
         return (
-          (Number(data.dailyConsumptionAmount) > 0 && Number(data.dailyConsumptionCost) > 0) ||
-          'Enter your daily amount and daily spend.'
+          (typeof rawValue === 'string' && Boolean(rawValue)) ||
+          'Choose the option that feels most true before continuing.'
         );
-      case 10:
-        return Boolean(data.primaryGoal) || 'Choose the goal that matters most.';
+      case 'multi_select':
+        if (question.allowEmpty) {
+          return true;
+        }
+
+        return (
+          (Array.isArray(rawValue) && rawValue.length > 0) ||
+          'Choose at least one option before continuing.'
+        );
       default:
         return true;
     }
   };
 
-  const saveOnboarding = async () => {
-    setLoading(true);
+  const validateCurrentStep = (step: OnboardingStep) => {
+    switch (step.type) {
+      case 'quick_profile':
+        return (
+          (Boolean(answers.name.trim()) && isPositiveInteger(answers.age) && Boolean(answers.gender)) ||
+          'Enter your name, a valid age, and your gender to continue.'
+        );
+      case 'path_choice':
+        return Boolean(answers.path) || 'Choose how you want to move forward.';
+      case 'program_choice':
+        return Boolean(answers.selfSelectJourney) || 'Choose the program you want before continuing.';
+      case 'guided_issue':
+        return Boolean(answers.guidedMainIssue) || 'Choose your main issue before continuing.';
+      case 'question':
+        return validateQuestion(step.question);
+      case 'recommendation':
+        return true;
+      default:
+        return true;
+    }
+  };
+
+  const saveAndContinue = async () => {
+    if (!user) {
+      Alert.alert('No account found', 'Please sign in again and retry.');
+      return;
+    }
+
+    setIsSaving(true);
 
     try {
-      if (!user) {
-        throw new Error('No user found');
-      }
-
-      const updatedAt = new Date().toISOString();
-      const onboardingPayload = {
-        user_id: user.id,
-        age: Number(data.age),
-        daily_consumption_amount: Number(data.dailyConsumptionAmount),
-        daily_consumption_cost: Number(data.dailyConsumptionCost),
-        full_name: data.fullName.trim(),
-        language_selection: data.languageSelection,
-        mental_toll: data.mentalToll,
-        past_attempts: data.pastAttempts,
-        physical_toll: data.physicalToll,
-        primary_goal: data.primaryGoal,
-        root_cause: data.rootCause,
-        target_selection: data.targetSelection,
-        triggers: data.triggers,
-        updated_at: updatedAt,
-      };
-
-      const { data: persistedOnboarding, error: onboardingError } = await supabase
-        .from('onboarding_responses')
-        .upsert(onboardingPayload, { onConflict: 'user_id' })
-        .select(
-          'id, user_id, target_selection, language_selection, full_name, age, past_attempts, triggers, root_cause, physical_toll, mental_toll, daily_consumption_amount, daily_consumption_cost, primary_goal, created_at, updated_at'
-        )
-        .single();
-
-      if (onboardingError) throw onboardingError;
-
-      const profilePayload = {
-        id: user.id,
-        email: user.email ?? null,
-        onboarding_complete: true,
-        updated_at: updatedAt,
-      };
-
-      const { data: persistedProfile, error: profileError } = await supabase
-        .from('profiles')
-        .upsert(profilePayload, { onConflict: 'id' })
-        .select('id, email, onboarding_complete, created_at, updated_at, active_program, expo_push_token, push_opt_in')
-        .single();
-
-      if (profileError) throw profileError;
-      if (!persistedProfile?.onboarding_complete) {
-        throw new Error('Profile setup did not persist. Please try again.');
-      }
-
-      await AppStorage.setItem('hasSeenOnboarding', 'true');
+      const { persistedOnboarding, persistedProfile } = await saveOnboardingQuestionnaire({
+        answers,
+        email: user.email,
+        userId: user.id,
+      });
 
       queryClient.setQueryData(ONBOARDING_RESPONSE_QUERY_KEY(user.id), persistedOnboarding);
       queryClient.setQueryData(PROFILE_QUERY_KEY(user.id), persistedProfile);
 
-      await refreshProfile();
+      router.replace('/paywall' as Href);
     } catch (error: any) {
-      Alert.alert('Could not save your plan', error?.message ?? 'Please try again.');
+      Alert.alert('Could not save your onboarding', error?.message ?? 'Please try again.');
     } finally {
-      setLoading(false);
+      setIsSaving(false);
     }
   };
 
   const handleNext = async () => {
-    if (step === FINAL_STEP_INDEX) {
-      await saveOnboarding();
-      return;
-    }
-
-    if (step === CALCULATING_STEP_INDEX) {
-      return;
-    }
-
-    const validation = validateStep();
+    const validation = validateCurrentStep(currentStep);
     if (validation !== true) {
       Alert.alert('Required', validation);
       return;
     }
 
-    void Haptics.selectionAsync();
-    setStep((previous) => previous + 1);
+    if (stepIndex === steps.length - 1) {
+      await saveAndContinue();
+      return;
+    }
+
+    setStepIndex((current) => current + 1);
   };
 
-  const renderStepContent = () => {
-    switch (step) {
-      case 0:
+  const handleBack = () => {
+    setStepIndex((current) => Math.max(0, current - 1));
+  };
+
+  const renderQuestion = (question: QuestionDefinition) => {
+    if (question.type === 'number_input') {
+      const currentValue = answers.questionValues[question.id];
+
+      return (
+        <Input
+          label="Answer"
+          placeholder={question.placeholder}
+          value={typeof currentValue === 'string' ? currentValue : ''}
+          onChangeText={(value) => updateQuestionValue(question.id, value)}
+          keyboardType={question.keyboardType}
+          className="rounded-[28px] border-forest/10 bg-sage/60 py-4 text-forest"
+        />
+      );
+    }
+
+    if (question.type === 'multi_select') {
+      const currentValue = answers.questionValues[question.id];
+      const selectedValues = Array.isArray(currentValue) ? currentValue : [];
+
+      return (
+        <View>
+          <Text className="mb-4 font-satoshi text-sm text-forest/60">Choose any that apply.</Text>
+          {question.options?.map((option) => (
+            <SelectionCard
+              key={option.id}
+              title={option.label}
+              description={option.description}
+              selected={selectedValues.includes(option.id)}
+              onPress={() => toggleQuestionValue(question.id, option.id)}
+            />
+          ))}
+        </View>
+      );
+    }
+
+    const currentValue = answers.questionValues[question.id];
+
+    return (
+      <View>
+        {question.options?.map((option) => (
+          <SelectionCard
+            key={option.id}
+            title={option.label}
+            description={option.description}
+            selected={currentValue === option.id}
+            onPress={() => updateQuestionValue(question.id, option.id)}
+          />
+        ))}
+      </View>
+    );
+  };
+
+  const renderRecommendation = () => {
+    if (currentStep.type !== 'recommendation') {
+      return null;
+    }
+
+    const primaryConcernCopy = resolution.primaryConcernLabel
+      ? `You told us the main issue is ${resolution.primaryConcernLabel.toLowerCase()}.`
+      : 'You gave us enough context to narrow this down clearly.';
+
+    return (
+      <View>
+        <View className="mb-5 rounded-[32px] bg-forest px-6 py-6">
+          <Text className="font-satoshi-bold text-[11px] uppercase tracking-[1.8px] text-white/65">
+            Recommended Path
+          </Text>
+          <Text className="mt-3 font-erode-bold text-4xl leading-10 text-white">
+            {currentStep.recommendation.title}
+          </Text>
+          <Text className="mt-3 font-satoshi text-base leading-7 text-white/82">
+            {currentStep.recommendation.subtitle}
+          </Text>
+        </View>
+
+        <RecommendationCard
+          eyebrow="Why this fits"
+          title="Why we matched you here"
+          body={`${primaryConcernCopy} ${currentStep.recommendation.whyFits}`}
+        />
+
+        <Text className="mb-3 font-satoshi-bold text-[11px] uppercase tracking-[1.8px] text-forest/55">
+          {currentStep.recommendation.focusLabel}
+        </Text>
+        {currentStep.recommendation.focusPoints.map((point, index) => (
+          <View
+            key={`${currentStep.journey}-focus-${index}`}
+            className="mb-3 rounded-[28px] border border-forest/10 bg-white/90 px-5 py-5"
+          >
+            <Text className="font-satoshi text-base leading-7 text-forest/75">{point}</Text>
+          </View>
+        ))}
+      </View>
+    );
+  };
+
+  const renderCurrentStep = () => {
+    switch (currentStep.type) {
+      case 'quick_profile':
         return (
           <View>
-            {TARGET_OPTIONS.map((option) => (
-              <OptionCard
-                key={option}
-                title={option}
-                description="We will tailor the journey, messaging, and projection around this goal."
-                selected={data.targetSelection === option}
-                onPress={() => handleUpdate('targetSelection', option)}
-              />
-            ))}
-          </View>
-        );
-      case 1:
-        return (
-          <View>
-            {LANGUAGE_OPTIONS.map((option) => (
-              <OptionCard
-                key={option}
-                title={option}
-                description="This changes the tone of the journey, not the science behind it."
-                selected={data.languageSelection === option}
-                onPress={() => handleUpdate('languageSelection', option)}
-              />
-            ))}
-          </View>
-        );
-      case 2:
-        return (
-          <View className="space-y-5">
             <Input
-              label="Full name"
+              label="Name"
               placeholder="What should we call you?"
-              value={data.fullName}
-              onChangeText={(value) => handleUpdate('fullName', value)}
+              value={answers.name}
+              onChangeText={(value) => updateQuickProfile('name', value)}
+              containerClassName="mb-5"
+              className="rounded-[28px] border-forest/10 bg-sage/60 py-4 text-forest"
             />
             <Input
               label="Age"
               placeholder="Your age"
-              value={data.age}
+              value={answers.age}
+              onChangeText={(value) => updateQuickProfile('age', value)}
               keyboardType="number-pad"
-              onChangeText={(value) => handleUpdate('age', value)}
+              containerClassName="mb-5"
+              className="rounded-[28px] border-forest/10 bg-sage/60 py-4 text-forest"
             />
-          </View>
-        );
-      case 3:
-        return (
-          <View>
-            {PAST_ATTEMPTS_OPTIONS.map((option) => (
-              <OptionCard
-                key={option}
-                title={option}
-                selected={data.pastAttempts === option}
-                onPress={() => handleUpdate('pastAttempts', option)}
-              />
-            ))}
-          </View>
-        );
-      case 4:
-        return (
-          <View>
-            <Text className="font-satoshi text-sm text-gray-400 mb-4">Choose up to 3 triggers.</Text>
-            {TRIGGER_OPTIONS.map((option) => (
-              <OptionCard
-                key={option}
-                title={option}
-                selected={data.triggers.includes(option)}
-                onPress={() => toggleTrigger(option)}
-              />
-            ))}
-          </View>
-        );
-      case 5:
-        return (
-          <View>
-            {ROOT_CAUSE_OPTIONS.map((option) => (
-              <OptionCard
-                key={option}
-                title={option}
-                selected={data.rootCause === option}
-                onPress={() => handleUpdate('rootCause', option)}
-              />
-            ))}
-          </View>
-        );
-      case 6:
-        return (
-          <View>
-            {PHYSICAL_TOLL_OPTIONS.map((option) => (
-              <OptionCard
-                key={option}
-                title={option}
-                selected={data.physicalToll === option}
-                onPress={() => handleUpdate('physicalToll', option)}
-              />
-            ))}
-          </View>
-        );
-      case 7:
-        return (
-          <View>
-            <OptionCard
-              title="Yes, I feel guilt or regret after giving in."
-              selected={data.mentalToll === true}
-              onPress={() => handleUpdate('mentalToll', true)}
-            />
-            <OptionCard
-              title="No, not really."
-              selected={data.mentalToll === false}
-              onPress={() => handleUpdate('mentalToll', false)}
-            />
-          </View>
-        );
-      case 8:
-        return (
-          <View className="space-y-5">
-            <Input
-              label="How much do you consume daily?"
-              placeholder="e.g. 12"
-              value={data.dailyConsumptionAmount}
-              keyboardType="number-pad"
-              onChangeText={(value) => handleUpdate('dailyConsumptionAmount', value)}
-            />
-            <Input
-              label="How much does that cost you each day?"
-              placeholder="e.g. 250"
-              value={data.dailyConsumptionCost}
-              keyboardType="decimal-pad"
-              onChangeText={(value) => handleUpdate('dailyConsumptionCost', value)}
-            />
-            <View className="rounded-3xl bg-forest p-5">
-              <Text className="font-satoshi-bold text-white/70 text-xs uppercase mb-3">The cost of autopilot</Text>
-              <Text className="font-erode-bold text-white text-4xl mb-3">{formatInr(projection.monthlySpend)}</Text>
-              <Text className="font-satoshi text-white/80 mb-4">That is your projected monthly spend at the current pace.</Text>
-              <View className="flex-row justify-between">
-                <View>
-                  <Text className="font-satoshi text-white/60 text-xs mb-1">Monthly</Text>
-                  <Text className="font-satoshi-bold text-white text-lg">{formatInr(projection.monthlySpend)}</Text>
+
+            <Text className="mb-3 ml-1 font-satoshi text-sm text-forest/65">Gender</Text>
+            <View className="flex-row flex-wrap gap-3">
+              {GENDER_OPTIONS.map((option) => (
+                <View key={option} className="min-w-[31%] flex-1">
+                  <SelectionCard
+                    compact
+                    title={option}
+                    selected={answers.gender === option}
+                    onPress={() => updateGender(option)}
+                  />
                 </View>
-                <View>
-                  <Text className="font-satoshi text-white/60 text-xs mb-1">Yearly</Text>
-                  <Text className="font-satoshi-bold text-white text-lg">{formatInr(projection.yearlySpend)}</Text>
-                </View>
-              </View>
+              ))}
             </View>
           </View>
         );
-      case 9:
+      case 'path_choice':
         return (
           <View>
-            <InfoCard
-              eyebrow="Neuroscience"
-              title="It is not a lack of discipline"
-              body="The loop is chemical, emotional, and environmental. Recovery Compass attacks all three with trigger mastery, craving redirection, and daily reinforcement that compounds."
-            />
-            <InfoCard
-              eyebrow="90-Day Freedom System"
-              title="One system, three levers"
-              body="Trigger mastery stops the pattern early. Craving redirection gives you a better move in the moment. Neuroscience-backed repetition helps the new identity stick."
-            />
-          </View>
-        );
-      case 10:
-        return (
-          <View>
-            {PRIMARY_GOAL_OPTIONS.map((option) => (
-              <OptionCard
-                key={option}
-                title={option}
-                selected={data.primaryGoal === option}
-                onPress={() => handleUpdate('primaryGoal', option)}
+            {currentStep.options.map((option) => (
+              <SelectionCard
+                key={option.id}
+                title={option.label}
+                description={option.description}
+                selected={answers.path === option.id}
+                onPress={() => updatePath(option.id)}
               />
             ))}
           </View>
         );
-      case 11:
+      case 'program_choice':
         return (
           <View>
-            <InfoCard
-              eyebrow="24 Hours"
-              title="Your body starts responding immediately"
-              body="Blood pressure begins settling, inflammation starts cooling off, and the first signs of recovery show up faster than most people expect."
-            />
-            <InfoCard
-              eyebrow="2 Weeks to 1 Month"
-              title="Energy starts coming back online"
-              body="Breathing, sleep quality, mental sharpness, and daily energy begin to improve when the cycle stops winning every day."
-            />
+            {currentStep.options.map((option) => (
+              <SelectionCard
+                key={option.id}
+                title={option.label}
+                description={option.description}
+                selected={answers.selfSelectJourney === option.id}
+                onPress={() => updateSelfSelectJourney(option.id)}
+              />
+            ))}
           </View>
         );
-      case 12:
+      case 'guided_issue':
         return (
           <View>
-            <InfoCard
-              eyebrow="Private Network"
-              title="A brotherhood beats isolation"
-              body="The app is designed so you never feel like you are white-knuckling this alone. Private accountability, anonymous support, and visible wins make the hard days easier to survive."
-            />
+            {currentStep.options.map((option) => (
+              <SelectionCard
+                key={option.id}
+                title={option.label}
+                description={option.description}
+                selected={answers.guidedMainIssue === option.id}
+                onPress={() => updateGuidedIssue(option.id)}
+              />
+            ))}
           </View>
         );
-      case 13:
-        return (
-          <View>
-            <InfoCard
-              eyebrow="Proof"
-              title="“I finally stopped negotiating with myself.”"
-              body="A strong system changes the daily script. The goal is not just fewer cravings. It is fewer arguments in your own head, more control, more money, and more respect for the man in the mirror."
-            />
-            <View className="rounded-3xl bg-white border border-gray-200 p-5">
-              <Text className="font-satoshi-bold text-yellow-500 text-sm mb-2">★★★★★</Text>
-              <Text className="font-satoshi text-gray-600 leading-7">
-                “The projection hit me hard. For the first time, I could actually see what staying the same was costing me.”
-              </Text>
-            </View>
-          </View>
-        );
-      case 14:
-        return (
-          <View className="flex-1 items-center justify-center pt-16">
-            <View className="w-24 h-24 rounded-full bg-forest items-center justify-center mb-6">
-              <ActivityIndicator color="white" size="large" />
-            </View>
-            <Text className="font-erode-bold text-3xl text-forest text-center mb-3">Building your plan...</Text>
-            <Text className="font-satoshi text-gray-500 text-center text-base">
-              {CALCULATING_MESSAGES[calculationMessageIndex]}
-            </Text>
-          </View>
-        );
-      case 15:
-        return (
-          <View>
-            <View className="rounded-3xl bg-forest p-6 mb-5">
-              <Text className="font-satoshi-bold text-white/70 text-xs uppercase mb-3">Money saved in 90 days</Text>
-              <Text className="font-erode-bold text-white text-5xl mb-2">{formatInr(projection.projectedSavings90Days)}</Text>
-              <Text className="font-satoshi text-white/80">This is the cost of the old pattern if nothing changes.</Text>
-            </View>
-
-            <View className="rounded-3xl bg-white border border-gray-200 p-5 mb-4">
-              <Text className="font-erode-semibold text-2xl text-forest mb-2">{projection.avoidedUnits90Days.toLocaleString()} {getUnitsLabel(data.targetSelection)}</Text>
-              <Text className="font-satoshi text-gray-600 leading-7">
-                That is your projected upside across the next {PROJECTION_DAYS} days if you follow through.
-              </Text>
-            </View>
-
-            <View className="rounded-3xl bg-white border border-gray-200 p-5 mb-4">
-              <Text className="font-erode-semibold text-2xl text-forest mb-2">Health gained</Text>
-              <Text className="font-satoshi text-gray-600 leading-7">
-                Expect stronger energy, deeper sleep, reduced anxiety, and a clearer sense that you are back in command of your own behavior.
-              </Text>
-            </View>
-
-            <View className="rounded-3xl bg-sage border border-gray-200 p-5">
-              <Text className="font-satoshi-bold text-forest/70 text-xs uppercase mb-2">Your why</Text>
-              <Text className="font-erode-semibold text-2xl text-forest mb-2">{data.primaryGoal}</Text>
-              <Text className="font-satoshi text-gray-600 leading-7">
-                We will keep this in front of you when motivation dips and cravings try to negotiate.
-              </Text>
-            </View>
-          </View>
-        );
+      case 'question':
+        return renderQuestion(currentStep.question);
+      case 'recommendation':
+        return renderRecommendation();
       default:
         return null;
     }
   };
 
-  const primaryButtonLabel =
-    step === FINAL_STEP_INDEX ? 'VIEW MY PLAN' : step === 13 ? 'Build My Plan' : 'Continue';
+  const primaryButtonLabel = stepIndex === steps.length - 1 ? 'See plans' : 'Continue';
 
   return (
     <SafeAreaView className="flex-1 bg-surface">
       <StatusBar style="dark" />
-      <View className="flex-1 px-6 pt-6">
-        <View className="mb-6">
-          <Text className="text-sm font-satoshi-bold text-gray-400 mb-2">
-            Step {step + 1} of {TOTAL_STEPS}
-          </Text>
-          <View className="h-1 bg-gray-200 rounded-full mb-6 overflow-hidden">
-            <View
-              className="h-full bg-forest"
-              style={{ width: `${((step + 1) / TOTAL_STEPS) * 100}%` }}
-            />
+
+      <View className="absolute -right-8 top-8 h-44 w-44 rounded-full bg-sage/50" />
+      <View className="absolute -left-10 bottom-16 h-56 w-56 rounded-full bg-white/60" />
+
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        className="flex-1"
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 8 : 0}
+      >
+        <View className="flex-1 px-6 pt-5">
+          <SegmentedProgress currentStep={stepIndex} totalSteps={steps.length} />
+
+          <View className="mb-6 mt-5">
+            <Text className="font-satoshi-bold text-[11px] uppercase tracking-[1.8px] text-forest/50">
+              {progressLabel}
+            </Text>
+            <Text className="mt-3 font-erode-bold text-[34px] leading-[42px] text-forest">
+              {currentStep.title}
+            </Text>
+            <Text className="mt-3 font-satoshi text-base leading-7 text-forest/68">
+              {currentStep.description}
+            </Text>
           </View>
-          <Text className="font-erode-bold text-3xl text-forest mb-2">{currentStep.title}</Text>
-          <Text className="font-satoshi text-gray-500 text-lg">{currentStep.description}</Text>
-        </View>
 
-        <ScrollView
-          className="flex-1"
-          contentContainerClassName="pb-6"
-          showsVerticalScrollIndicator={false}
-        >
-          {renderStepContent()}
-        </ScrollView>
+          <ScrollView
+            className="flex-1"
+            contentContainerClassName="pb-6"
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          >
+            {renderCurrentStep()}
+          </ScrollView>
 
-        {step !== CALCULATING_STEP_INDEX ? (
           <View className="pb-8 pt-4">
             <Button
               label={primaryButtonLabel}
               onPress={() => void handleNext()}
-              loading={loading}
+              loading={isSaving}
               size="lg"
+              className="rounded-full py-4"
             />
-            {step > 0 ? (
+            {stepIndex > 0 ? (
               <Button
                 label="Back"
                 variant="ghost"
-                onPress={() => setStep((previous) => Math.max(0, previous - 1))}
-                className="mt-2"
-                disabled={loading}
+                onPress={handleBack}
+                disabled={isSaving}
+                className="mt-2 rounded-full"
               />
             ) : null}
           </View>
-        ) : (
-          <View className="pb-8 pt-4" />
-        )}
-      </View>
+        </View>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

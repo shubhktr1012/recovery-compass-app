@@ -2,18 +2,22 @@ import { View, Text, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Href } from 'expo-router';
+import { useDay } from '@/content';
+import { PROGRAM_METADATA } from '@/content/programs/metadata';
 import { Greeting } from '@/components/dashboard/Greeting';
 import { ProgressHero } from '@/components/dashboard/ProgressHero';
 import { DailyActionCard } from '@/components/dashboard/DailyActionCard';
 import { PanicButton } from '@/components/dashboard/PanicButton';
 import { useProfile } from '@/providers/profile';
-import { ProgramRepository } from '@/lib/programs/repository';
+import type { ProgramSlug } from '@/types/content';
 
 export default function HomeScreen() {
   const { access } = useProfile();
-  const activeProgram = access.ownedProgram ?? 'six_day_reset';
+  const activeProgram = (access.ownedProgram ?? 'six_day_reset') as ProgramSlug;
   const currentDayNumber = access.currentDay ?? 1;
-  const currentDay = ProgramRepository.getDay(activeProgram, currentDayNumber);
+  const { day: currentDay } = useDay(activeProgram, currentDayNumber);
+  const program = PROGRAM_METADATA[activeProgram];
+  const resolvedDayNumber = currentDay?.dayNumber ?? currentDayNumber;
 
   return (
     <SafeAreaView className="flex-1 bg-surface">
@@ -24,12 +28,12 @@ export default function HomeScreen() {
           <ProgressHero />
           <Text className="font-erode-bold text-2xl text-forest mb-4 mt-2">Today&apos;s Focus</Text>
           <DailyActionCard
-            dayNumber={currentDay?.dayNumber ?? 1}
-            title={currentDay?.title ?? 'Your next recovery step'}
-            description={currentDay?.summary ?? 'Open today’s guidance and keep the momentum moving.'}
+            dayNumber={resolvedDayNumber}
+            title={currentDay?.dayTitle ?? 'Your next recovery step'}
+            description={program.description}
             duration={`${currentDay?.estimatedMinutes ?? 5} min session`}
-            ctaLabel={currentDay?.audio ? 'Listen & Continue' : 'Open Today'}
-            route={`/program/${activeProgram}/${currentDay?.dayNumber ?? 1}` as Href}
+            ctaLabel="Open Today"
+            route={`/day-detail?programSlug=${activeProgram}&dayNumber=${resolvedDayNumber}` as Href}
           />
         </ScrollView>
         <PanicButton />

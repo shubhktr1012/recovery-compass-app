@@ -4,15 +4,23 @@ export interface RevenueCatProgramDefinition {
   aliases: string[];
   displayName: string;
   entitlementId: string;
-  legacyTier: '6-day' | '90-day';
+  legacyTier: 'short' | 'full';
   productIds: string[];
   programSlug: ProgramSlug;
   searchTokens: string[];
 }
 
 export interface RevenueCatCatalogInput {
+  ageReversalEntitlementId?: string | null;
+  ageReversalProductIds?: string[] | null;
+  energyVitalityEntitlementId?: string | null;
+  energyVitalityProductIds?: string[] | null;
+  maleVitalityEntitlementId?: string | null;
+  maleVitalityProductIds?: string[] | null;
   ninetyDayEntitlementId?: string | null;
   ninetyDayProductIds?: string[] | null;
+  sleepResetEntitlementId?: string | null;
+  sleepResetProductIds?: string[] | null;
   sixDayEntitlementId?: string | null;
   sixDayProductIds?: string[] | null;
 }
@@ -32,25 +40,68 @@ export function createRevenueCatCatalog(input: RevenueCatCatalogInput = {}): Rev
     {
       programSlug: 'ninety_day_transform',
       displayName: '90-Day Quit',
-      entitlementId: input.ninetyDayEntitlementId?.trim() || '90_day_transform',
-      productIds: normalizeList(input.ninetyDayProductIds ?? ['90_day_transform']),
-      aliases: normalizeList(['90_day_transform', '90-day-transform', '90daytransform']),
-      searchTokens: normalizeList(['90_day', '90-day', '90day', 'ninety_day', 'ninety-day', 'ninetyday']),
-      legacyTier: '90-day',
+      entitlementId: input.ninetyDayEntitlementId?.trim() || 'ninety_day_quit',
+      productIds: normalizeList(input.ninetyDayProductIds ?? ['ninety_day_quit']),
+      aliases: normalizeList([
+        '90_day_transform',
+        '90-day-transform',
+        '90daytransform',
+        'ninety_day_transform',
+        'ninety_day_quit',
+        '90_day_quit',
+      ]),
+      searchTokens: normalizeList(['90_day', '90-day', '90day', 'ninety_day', 'ninety-day', 'ninetyday', 'quit']),
+      legacyTier: 'full',
     },
     {
       programSlug: 'six_day_reset',
       displayName: '6-Day Control',
-      entitlementId: input.sixDayEntitlementId?.trim() || '6_day_reset',
-      productIds: normalizeList(input.sixDayProductIds ?? ['6_day_reset']),
-      aliases: normalizeList(['6_day_reset', '6-day-reset', '6dayreset']),
-      searchTokens: normalizeList(['6_day', '6-day', '6day', 'six_day', 'six-day', 'sixday']),
-      legacyTier: '6-day',
+      entitlementId: input.sixDayEntitlementId?.trim() || 'six_day_control',
+      productIds: normalizeList(input.sixDayProductIds ?? ['six_day_control']),
+      aliases: normalizeList(['6_day_reset', '6-day-reset', '6dayreset', 'six_day_reset', 'six_day_control']),
+      searchTokens: normalizeList(['6_day', '6-day', '6day', 'six_day', 'six-day', 'sixday', 'control']),
+      legacyTier: 'short',
+    },
+    {
+      programSlug: 'age_reversal',
+      displayName: '90-Day Reversal',
+      entitlementId: input.ageReversalEntitlementId?.trim() || 'age_reversal',
+      productIds: normalizeList(input.ageReversalProductIds ?? ['age_reversal']),
+      aliases: normalizeList(['age_reversal', 'age-reversal', 'agereversal', '90_day_reversal']),
+      searchTokens: normalizeList(['age', 'reversal', '90_day_reversal', '90-day reversal']),
+      legacyTier: 'full',
+    },
+    {
+      programSlug: 'sleep_disorder_reset',
+      displayName: '21-Day Sleep Reset',
+      entitlementId: input.sleepResetEntitlementId?.trim() || 'sleep_disorder_reset',
+      productIds: normalizeList(input.sleepResetProductIds ?? ['sleep_disorder_reset']),
+      aliases: normalizeList(['sleep_disorder_reset', 'sleep-reset', 'sleep_reset', 'sleepdisorderreset']),
+      searchTokens: normalizeList(['sleep', 'sleep reset', 'sleep_reset', 'sleep-disorder']),
+      legacyTier: 'short',
+    },
+    {
+      programSlug: 'energy_vitality',
+      displayName: '42-Day Energy Reset',
+      entitlementId: input.energyVitalityEntitlementId?.trim() || 'energy_vitality',
+      productIds: normalizeList(input.energyVitalityProductIds ?? ['energy_vitality']),
+      aliases: normalizeList(['energy_vitality', 'energy-reset', 'energy_reset', 'energyvitality']),
+      searchTokens: normalizeList(['energy', 'vitality', 'energy reset', '42-day']),
+      legacyTier: 'full',
+    },
+    {
+      programSlug: 'male_sexual_health',
+      displayName: '45-Day Vitality',
+      entitlementId: input.maleVitalityEntitlementId?.trim() || 'male_sexual_health',
+      productIds: normalizeList(input.maleVitalityProductIds ?? ['male_sexual_health']),
+      aliases: normalizeList(['male_sexual_health', 'male-vitality', 'male_vitality', 'malesexualhealth']),
+      searchTokens: normalizeList(['male', 'vitality', 'sexual health', '45-day']),
+      legacyTier: 'full',
     },
   ];
 }
 
-function matchesDefinition(definition: RevenueCatProgramDefinition, candidate: string | null | undefined) {
+function exactMatchesDefinition(definition: RevenueCatProgramDefinition, candidate: string | null | undefined) {
   const normalizedCandidate = normalize(candidate);
   if (!normalizedCandidate) {
     return false;
@@ -62,6 +113,15 @@ function matchesDefinition(definition: RevenueCatProgramDefinition, candidate: s
 
   if (definition.aliases.includes(normalizedCandidate)) {
     return true;
+  }
+
+  return normalize(definition.entitlementId) === normalizedCandidate;
+}
+
+function fuzzyMatchesDefinition(definition: RevenueCatProgramDefinition, candidate: string | null | undefined) {
+  const normalizedCandidate = normalize(candidate);
+  if (!normalizedCandidate) {
+    return false;
   }
 
   return definition.searchTokens.some((token) => normalizedCandidate.includes(token));
@@ -86,22 +146,40 @@ export function getProgramForProductId(
   catalog: RevenueCatProgramDefinition[],
   productId: string | null | undefined
 ) {
-  return catalog.find((definition) => matchesDefinition(definition, productId)) ?? null;
+  return catalog.find((definition) => exactMatchesDefinition(definition, productId)) ?? null;
 }
 
 export function getProgramForCandidate(
   catalog: RevenueCatProgramDefinition[],
   candidate: string | null | undefined
 ) {
-  return catalog.find((definition) => matchesDefinition(definition, candidate)) ?? null;
+  return (
+    catalog.find((definition) => exactMatchesDefinition(definition, candidate)) ??
+    catalog.find((definition) => fuzzyMatchesDefinition(definition, candidate)) ??
+    null
+  );
 }
 
 export function getProgramForCandidates(
   catalog: RevenueCatProgramDefinition[],
   candidates: (string | null | undefined)[]
 ) {
+  for (const candidate of candidates) {
+    const exactMatch = catalog.find((definition) => exactMatchesDefinition(definition, candidate));
+    if (exactMatch) {
+      return exactMatch;
+    }
+  }
+
+  for (const candidate of candidates) {
+    const fuzzyMatch = catalog.find((definition) => fuzzyMatchesDefinition(definition, candidate));
+    if (fuzzyMatch) {
+      return fuzzyMatch;
+    }
+  }
+
   for (const definition of catalog) {
-    if (candidates.some((candidate) => matchesDefinition(definition, candidate))) {
+    if (candidates.some((candidate) => normalize(definition.entitlementId) === normalize(candidate))) {
       return definition;
     }
   }

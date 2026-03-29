@@ -1,5 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { PROGRAM_METADATA } from '@/content/programs/metadata';
 import { supabase } from '@/lib/supabase';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { useAuth } from '@/providers/auth';
@@ -16,6 +17,7 @@ export interface UserProfile {
   id: string;
   email: string | null;
   onboarding_complete: boolean;
+  recommended_program?: ProgramSlug | null;
   created_at: string;
   updated_at: string;
   expo_push_token?: string | null;
@@ -35,7 +37,8 @@ interface ProfileContextType {
   completeProgramDay: (program: ProgramSlug, dayNumber: number) => Promise<void>;
 }
 
-const PROFILE_COLUMNS = 'id, email, onboarding_complete, created_at, updated_at, active_program, expo_push_token, push_opt_in';
+const PROFILE_COLUMNS =
+  'id, email, onboarding_complete, recommended_program, created_at, updated_at, active_program, expo_push_token, push_opt_in';
 export const PROFILE_QUERY_KEY = (userId: string | null) => ['profile', userId];
 
 const ProfileContext = createContext<ProfileContextType>({
@@ -270,7 +273,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         currentDay: 1,
         completedAt: null,
         archivedAt: null,
-        eligibleProducts: [program],
+        eligibleProducts: [],
         source: 'local',
       } satisfies ProgramAccessSnapshot;
 
@@ -298,7 +301,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         userId,
         program,
         (current) => {
-          const totalDays = program === 'six_day_reset' ? 6 : 90;
+          const totalDays = PROGRAM_METADATA[program].totalDays;
           const completedDays = current.completedDays.includes(dayNumber)
             ? current.completedDays
             : [...current.completedDays, dayNumber].sort((a, b) => a - b);

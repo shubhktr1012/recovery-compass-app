@@ -63,13 +63,13 @@ export function AppQueryProvider({ children }: { children: React.ReactNode }) {
         persister: asyncStoragePersister,
         // Only persist exactly what we need (the profile data limits the size)
         maxAge: 24 * 60 * 60 * 1000, // 24 hours explicit max age
-        buster: 'v1.0.0', // change on breaking cache changes
+        buster: 'v1.0.1', // change on breaking cache changes
         dehydrateOptions: {
           shouldDehydrateQuery: (query) => {
             // Explicitly whitelist queries to save to plaintext AsyncStorage
             // E.g., Profile is safe. Avoid caching raw journal entries if highly sensitive.
             const safeKeys = ['profile', 'onboarding-response', 'programs', 'program', 'program-day'];
-            return safeKeys.some((key) => query.queryKey[0] === key);
+            return query.state.status === 'success' && safeKeys.some((key) => query.queryKey[0] === key);
           },
         },
       }}

@@ -3,13 +3,14 @@ import { Alert, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
+import { PROGRAM_METADATA } from '@/content/programs/metadata';
 import { useAuth } from '@/providers/auth';
 import { useOnboardingResponse } from '@/hooks/useOnboardingResponse';
 import { formatInr, getOnboardingProjection } from '@/lib/onboarding-metrics';
 import { useProfile } from '@/providers/profile';
 import { Button } from '@/components/ui/Button';
 import Purchases from 'react-native-purchases';
-import { ProgramRepository } from '@/lib/programs/repository';
+import type { ProgramSlug } from '@/types/content';
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -110,7 +111,7 @@ export default function ProfileScreen() {
     );
   };
 
-  const activeProgram = access.ownedProgram ? ProgramRepository.getProgram(access.ownedProgram) : null;
+  const activeProgram = access.ownedProgram ? PROGRAM_METADATA[access.ownedProgram as ProgramSlug] : null;
 
   return (
     <SafeAreaView className="flex-1 bg-surface">
@@ -181,7 +182,7 @@ export default function ProfileScreen() {
           <Text className="font-erode-semibold text-2xl text-forest mb-2">Access Status</Text>
           <Text className="font-satoshi text-gray-600 mb-4">
             {activeProgram
-              ? `Current program: ${activeProgram.title}`
+              ? `Current program: ${activeProgram.name}`
               : 'No program is currently unlocked on this account.'}
           </Text>
           <Text className="font-satoshi text-gray-600 mb-1">
@@ -199,7 +200,8 @@ export default function ProfileScreen() {
             onPress={() => void handleRestorePurchases()}
             loading={isRestoring}
           />
-          {access.eligibleProducts.includes('ninety_day_transform') && access.ownedProgram !== 'ninety_day_transform' ? (
+          {access.ownedProgram === 'six_day_reset' &&
+          (access.purchaseState === 'owned_completed' || access.purchaseState === 'owned_archived') ? (
             <Button
               label="View Upgrade Options"
               variant="ghost"

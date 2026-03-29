@@ -40,19 +40,31 @@ export function ProgressHero() {
         : metrics.targetSelection === 'Quit Smoking'
             ? 'Cigarettes avoided'
             : 'Vices sidestepped';
+    const hasMoneyProjection = metrics.projectedSavings90Days > 0;
+    const heroTitle = hasMoneyProjection ? 'Your 90-Day Projection' : 'Your plan is in motion';
+    const heroValue = hasMoneyProjection
+        ? formatInr(metrics.projectedSavings90Days)
+        : metrics.targetSelection ?? 'Recovery Compass';
+    const heroBody = hasMoneyProjection
+        ? 'Potential money back over the next 90 days if you stick to the plan.'
+        : 'Your onboarding is complete. We will keep adapting the experience around the path you selected.';
+    const secondaryLabel = hasMoneyProjection ? unitsLabel : 'Current focus';
+    const secondaryValue = hasMoneyProjection
+        ? metrics.avoidedUnits90Days.toLocaleString()
+        : metrics.targetSelection ?? 'Recovery plan';
 
     return (
         <View className="mb-6 overflow-hidden rounded-[32px] bg-forest p-6 shadow-md">
             <View className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10" />
             <View className="absolute -bottom-12 right-12 h-28 w-28 rounded-full bg-white/5" />
             <Text className="mb-1 font-satoshi text-sm uppercase tracking-[2px] text-white/70">
-                Your 90-Day Projection
+                {heroTitle}
             </Text>
             <Text className="mb-2 font-erode-bold text-5xl text-white">
-                {formatInr(metrics.projectedSavings90Days)}
+                {heroValue}
             </Text>
             <Text className="mb-6 max-w-[280px] font-satoshi text-base text-white/85">
-                Potential money back over the next 90 days if you stick to the plan.
+                {heroBody}
             </Text>
 
             <View className="mb-4 h-px w-full bg-white/10" />
@@ -68,10 +80,10 @@ export function ProgressHero() {
                 </View>
                 <View className="items-end">
                     <Text className="mb-1 font-satoshi text-xs text-white/60">
-                        {unitsLabel}
+                        {secondaryLabel}
                     </Text>
                     <Text className="font-satoshi-bold text-xl text-white">
-                        {metrics.avoidedUnits90Days.toLocaleString()}
+                        {secondaryValue}
                     </Text>
                 </View>
             </View>
