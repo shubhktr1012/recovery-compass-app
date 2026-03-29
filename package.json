@@ -11,7 +11,9 @@
     "lint": "expo lint",
     "lint:strict": "./node_modules/.bin/eslint app components providers hooks lib constants --no-cache",
     "typecheck": "./node_modules/.bin/tsc --noEmit",
-    "generate:program-content": "node ./scripts/generate-program-content.mjs"
+    "generate:program-content": "node ./scripts/generate-program-content.mjs",
+    "supabase:functions:list": "supabase functions list --workdir .",
+    "supabase:functions:deploy:delete-account": "supabase functions deploy delete-account --no-verify-jwt --use-api --workdir ."
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
