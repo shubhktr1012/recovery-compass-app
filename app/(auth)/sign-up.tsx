@@ -36,6 +36,9 @@ export default function SignUp() {
             const { error, data: sessionData } = await supabase.auth.signUp({
                 email: data.email,
                 password: data.password,
+                options: {
+                    emailRedirectTo: 'recoverycompassapp://sign-in',
+                },
             });
 
             if (error) throw error;

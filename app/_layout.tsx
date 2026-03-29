@@ -39,15 +39,17 @@ const publicEnv = validatePublicEnv();
 const uninstallGlobalErrorHandler = installGlobalErrorHandler();
 
 function NavigationGate({
-  isNavigationReady,
-  isSubscribed,
-  profile,
-  session,
+    isNavigationReady,
+    isRecoveringPassword,
+    isSubscribed,
+    profile,
+    session,
 }: {
-  isNavigationReady: boolean;
-  isSubscribed: boolean;
-  profile: UserProfile | null;
-  session: Session | null;
+    isNavigationReady: boolean;
+    isRecoveringPassword: boolean;
+    isSubscribed: boolean;
+    profile: UserProfile | null;
+    session: Session | null;
 }) {
   const segments = useSegments();
   const rootNavigationState = useRootNavigationState();
@@ -56,23 +58,28 @@ function NavigationGate({
   useEffect(() => {
     if (!isNavigationReady || !rootNavigationState?.key) return;
 
-    const inAuthGroup = segments[0] === '(auth)';
-    const inTabsGroup = segments[0] === '(tabs)';
-    const inPaywall = (segments[0] as string) === 'paywall';
-    const inDayDetail = (segments[0] as string) === 'day-detail';
+        const inAuthGroup = segments[0] === '(auth)';
+        const inTabsGroup = segments[0] === '(tabs)';
+        const inPaywall = (segments[0] as string) === 'paywall';
+        const inDayDetail = (segments[0] as string) === 'day-detail';
+        const inResetPassword = inAuthGroup && (segments[1] as string) === 'reset-password';
 
-    const checkRouting = async () => {
-      try {
-        if (!isNavigationReady || !rootNavigationState?.key) return;
+        const checkRouting = async () => {
+            try {
+                if (!isNavigationReady || !rootNavigationState?.key) return;
 
-        let target: Href | null = null;
+                let target: Href | null = null;
 
-        if (!session) {
-          const hasSeenIntro = await AppStorage.getItem('hasSeenOnboarding');
+                if (isRecoveringPassword) {
+                    if (!inResetPassword) {
+                        target = '/(auth)/reset-password' as Href;
+                    }
+                } else if (!session) {
+                    const hasSeenIntro = await AppStorage.getItem('hasSeenOnboarding');
 
-          if (!inAuthGroup) {
-            target = (!hasSeenIntro ? '/onboarding' : '/sign-in') as Href;
-          }
+                    if (!inAuthGroup) {
+                        target = (!hasSeenIntro ? '/onboarding' : '/sign-in') as Href;
+                    }
         } else if (!profile || !profile.onboarding_complete) {
           if ((segments[1] as string) !== 'personalization') {
             target = '/(auth)/personalization' as Href;
@@ -100,13 +107,13 @@ function NavigationGate({
     };
 
     void checkRouting();
-  }, [isNavigationReady, rootNavigationState?.key, session, profile, isSubscribed, segments]);
+    }, [isNavigationReady, rootNavigationState?.key, session, profile, isSubscribed, isRecoveringPassword, segments]);
 
   return null;
 }
 
 function RootLayoutContent() {
-  const { session, isLoading: isAuthLoading } = useAuth();
+  const { session, isLoading: isAuthLoading, isRecoveringPassword } = useAuth();
   const { profile, isSubscribed, isLoading: isProfileLoading } = useProfile();
   const [fontsLoaded] = useFonts({
     'Erode-Regular': ErodeRegular,
@@ -196,6 +203,7 @@ function RootLayoutContent() {
       </Stack>
       <NavigationGate
         isNavigationReady={isNavigationReady}
+        isRecoveringPassword={isRecoveringPassword}
         isSubscribed={isSubscribed}
         profile={profile}
         session={session}

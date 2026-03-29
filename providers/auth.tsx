@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import Purchases from 'react-native-purchases';
+import * as Linking from 'expo-linking';
 import { supabase } from '../lib/supabase';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { queryClient, QUERY_PERSIST_STORAGE_KEY } from './query';
@@ -10,7 +11,9 @@ import { validatePublicEnv } from '@/lib/env';
 interface AuthContextType {
   session: Session | null;
   user: User | null;
+  isRecoveringPassword: boolean;
   isLoading: boolean;
+  clearPasswordRecoveryState: () => void;
   deleteAccount: () => Promise<void>;
   signInWithOTP: (email: string) => Promise<{ error: unknown }>;
   signOut: () => Promise<void>;
@@ -19,7 +22,9 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType>({
   session: null,
   user: null,
+  isRecoveringPassword: false,
   isLoading: true,
+  clearPasswordRecoveryState: () => {},
   deleteAccount: async () => {},
   signInWithOTP: async () => ({ error: null }),
   signOut: async () => {},
@@ -32,35 +37,89 @@ const { supabaseAnonKey, supabaseUrl } = validatePublicEnv();
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
+  const [isRecoveringPassword, setIsRecoveringPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    let isMounted = true;
+
+    const handleAuthDeepLink = async (url: string) => {
+      try {
+        const [baseUrl, hash = ''] = url.split('#');
+        const parsedUrl = new URL(baseUrl);
+        const searchParams = new URLSearchParams(parsedUrl.search);
+        const hashParams = new URLSearchParams(hash);
+
+        const accessToken = hashParams.get('access_token') ?? searchParams.get('access_token');
+        const refreshToken = hashParams.get('refresh_token') ?? searchParams.get('refresh_token');
+        const flowType = hashParams.get('type') ?? searchParams.get('type');
+
+        if (flowType === 'recovery' && isMounted) {
+          setIsRecoveringPassword(true);
+        }
+
+        if (!accessToken || !refreshToken) return;
+
+        const { error } = await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken,
+        });
+
+        if (error) {
+          throw error;
+        }
+      } catch (error) {
+        console.error('Error handling auth deep link:', error);
+      }
+    };
+
     const initializeAuth = async () => {
       try {
+        const initialUrl = await Linking.getInitialURL();
+        if (initialUrl) {
+          await handleAuthDeepLink(initialUrl);
+        }
+
         const {
           data: { session: initialSession },
         } = await supabase.auth.getSession();
+
+        if (!isMounted) return;
+
         setSession(initialSession);
         setUser(initialSession?.user ?? null);
       } catch (error) {
         console.error('Error loading initial session:', error);
       } finally {
-        setIsLoading(false);
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
     };
 
     void initializeAuth();
 
+    const linkingSubscription = Linking.addEventListener('url', ({ url }) => {
+      void handleAuthDeepLink(url);
+    });
+
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, nextSession) => {
       console.log('Auth Event:', event);
+      if (event === 'PASSWORD_RECOVERY') {
+        setIsRecoveringPassword(true);
+      } else if (event === 'SIGNED_OUT') {
+        setIsRecoveringPassword(false);
+      }
       setSession(nextSession);
       setUser(nextSession?.user ?? null);
       setIsLoading(false);
     });
 
     return () => {
+      isMounted = false;
+      linkingSubscription.remove();
       subscription.unsubscribe();
     };
   }, []);
@@ -98,7 +157,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     setSession(null);
     setUser(null);
+    setIsRecoveringPassword(false);
     setIsLoading(false);
+  };
+
+  const clearPasswordRecoveryState = () => {
+    setIsRecoveringPassword(false);
   };
 
   const signOut = async () => {
@@ -172,7 +236,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   return (
     <AuthContext.Provider
       value={{
+        clearPasswordRecoveryState,
         deleteAccount,
+        isRecoveringPassword,
         session,
         user,
         isLoading,

@@ -21,6 +21,7 @@ type SignInFormData = z.infer<typeof signInSchema>;
 export default function SignIn() {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
+    const [canResendVerification, setCanResendVerification] = useState(false);
 
     const { control, handleSubmit, formState: { errors } } = useForm<SignInFormData>({
         resolver: zodResolver(signInSchema),
@@ -39,6 +40,7 @@ export default function SignIn() {
             });
 
             if (error) throw error;
+            setCanResendVerification(false);
 
             if (sessionData.user) {
                 // Root layout guard handles post-login routing (tabs/paywall/personalization).
@@ -46,6 +48,8 @@ export default function SignIn() {
             }
 
         } catch (error: any) {
+            const message = error?.message ?? 'Please try again.';
+            setCanResendVerification(/email.*not confirmed|email.*not verified|confirm your email/i.test(message));
             Alert.alert('Sign In Error', error.message);
         } finally {
             setLoading(false);
@@ -62,7 +66,7 @@ export default function SignIn() {
 
         try {
             const { error } = await supabase.auth.resetPasswordForEmail(email, {
-                redirectTo: 'recoverycompassapp://sign-in',
+                redirectTo: 'recoverycompassapp://reset-password',
             });
 
             if (error) throw error;
@@ -70,6 +74,31 @@ export default function SignIn() {
             Alert.alert('Check your email', 'We sent a password reset link to your inbox.');
         } catch (error: any) {
             Alert.alert('Reset failed', error?.message ?? 'Please try again.');
+        }
+    };
+
+    const handleResendVerification = async () => {
+        const email = control._formValues.email?.trim();
+
+        if (!email) {
+            Alert.alert('Email required', 'Enter your email first so we know where to send the verification link.');
+            return;
+        }
+
+        try {
+            const { error } = await supabase.auth.resend({
+                type: 'signup',
+                email,
+                options: {
+                    emailRedirectTo: 'recoverycompassapp://sign-in',
+                },
+            });
+
+            if (error) throw error;
+
+            Alert.alert('Verification sent', 'Check your inbox and tap the verification link to continue.');
+        } catch (error: any) {
+            Alert.alert('Resend failed', error?.message ?? 'Please try again.');
         }
     };
 
@@ -134,6 +163,15 @@ export default function SignIn() {
                         >
                             Forgot Password?
                         </Text>
+
+                        {canResendVerification && (
+                            <Text
+                                className="text-right text-forest font-satoshi-medium text-sm"
+                                onPress={() => void handleResendVerification()}
+                            >
+                                Resend verification email
+                            </Text>
+                        )}
 
                         <Button
                             label="Sign In"
