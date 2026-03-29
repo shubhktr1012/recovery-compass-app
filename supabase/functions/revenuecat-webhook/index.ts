@@ -10,19 +10,55 @@ const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") as string;
 const expectedAuthHeader = Deno.env.get("REVENUECAT_WEBHOOK_AUTH");
 const APP_SIX_DAY_PROGRAM = "six_day_reset";
 const APP_NINETY_DAY_PROGRAM = "ninety_day_transform";
-const sixDayEntitlementId = Deno.env.get("RC_6_DAY_ENTITLEMENT_ID") ?? "six_day_control";
-const ninetyDayEntitlementId = Deno.env.get("RC_90_DAY_ENTITLEMENT_ID") ?? "ninety_day_quit";
-const sixDayProductIds = (Deno.env.get("RC_6_DAY_PRODUCT_IDS") ?? "six_day_control")
-    .split(",")
-    .map((value) => value.trim().toLowerCase())
-    .filter(Boolean);
-const ninetyDayProductIds = (Deno.env.get("RC_90_DAY_PRODUCT_IDS") ?? "ninety_day_quit")
-    .split(",")
-    .map((value) => value.trim().toLowerCase())
-    .filter(Boolean);
+const DEFAULT_SIX_DAY_REVENUECAT_ID = "six_day_control";
+const DEFAULT_NINETY_DAY_REVENUECAT_ID = "ninety_day_quit";
+const SIX_DAY_REVENUECAT_ALIASES = [
+    DEFAULT_SIX_DAY_REVENUECAT_ID,
+    "6_day_reset",
+    "6-day-reset",
+    "6dayreset",
+    "six_day_reset",
+];
+const NINETY_DAY_REVENUECAT_ALIASES = [
+    DEFAULT_NINETY_DAY_REVENUECAT_ID,
+    "90_day_transform",
+    "90-day-transform",
+    "90daytransform",
+    "ninety_day_transform",
+    "90_day_quit",
+];
+
+const normalize = (value: string | null | undefined) => value?.trim().toLowerCase() ?? "";
+
+const parseCandidates = (value: string | null | undefined, fallbacks: string[]) =>
+    Array.from(
+        new Set(
+            [value ?? "", ...fallbacks]
+                .flatMap((entry) => entry.split(","))
+                .map((entry) => normalize(entry))
+                .filter(Boolean),
+        ),
+    );
+
+const sixDayEntitlementIds = parseCandidates(
+    Deno.env.get("RC_6_DAY_ENTITLEMENT_ID"),
+    SIX_DAY_REVENUECAT_ALIASES,
+);
+const ninetyDayEntitlementIds = parseCandidates(
+    Deno.env.get("RC_90_DAY_ENTITLEMENT_ID"),
+    NINETY_DAY_REVENUECAT_ALIASES,
+);
+const sixDayProductIds = parseCandidates(
+    Deno.env.get("RC_6_DAY_PRODUCT_IDS"),
+    SIX_DAY_REVENUECAT_ALIASES,
+);
+const ninetyDayProductIds = parseCandidates(
+    Deno.env.get("RC_90_DAY_PRODUCT_IDS"),
+    NINETY_DAY_REVENUECAT_ALIASES,
+);
 
 const isMatchingProduct = (productId: string | null | undefined, candidates: string[]) => {
-    const normalizedProductId = productId?.trim().toLowerCase();
+    const normalizedProductId = normalize(productId);
     if (!normalizedProductId) return false;
 
     if (candidates.includes(normalizedProductId)) {
@@ -38,15 +74,17 @@ const getProgramSlug = (event: Record<string, unknown>) => {
         : [];
 
     const hasNinetyDayEntitlement = entitlements.some((entry) => {
-        const entitlementId = typeof entry.id === "string" ? entry.id : null;
+        const entitlementId = typeof entry.id === "string" ? normalize(entry.id) : null;
         const productIdentifier = typeof entry.product_identifier === "string" ? entry.product_identifier : null;
-        return entitlementId === ninetyDayEntitlementId || isMatchingProduct(productIdentifier, ninetyDayProductIds);
+        return (entitlementId ? ninetyDayEntitlementIds.includes(entitlementId) : false) ||
+            isMatchingProduct(productIdentifier, ninetyDayProductIds);
     });
 
     const hasSixDayEntitlement = entitlements.some((entry) => {
-        const entitlementId = typeof entry.id === "string" ? entry.id : null;
+        const entitlementId = typeof entry.id === "string" ? normalize(entry.id) : null;
         const productIdentifier = typeof entry.product_identifier === "string" ? entry.product_identifier : null;
-        return entitlementId === sixDayEntitlementId || isMatchingProduct(productIdentifier, sixDayProductIds);
+        return (entitlementId ? sixDayEntitlementIds.includes(entitlementId) : false) ||
+            isMatchingProduct(productIdentifier, sixDayProductIds);
     });
 
     if (hasNinetyDayEntitlement) {
@@ -142,7 +180,7 @@ serve(async (req: Request) => {
                 .update(profileUpdate)
                 .eq(column, appUserId);
 
-        let { error } = await applyProfileUpdate('id');
+        const { error } = await applyProfileUpdate('id');
 
         if (error) {
             console.error("Database Update Error:", error);

@@ -1,4 +1,10 @@
 import { ProgramSlug } from '../programs/types';
+import {
+  DEFAULT_NINETY_DAY_REVENUECAT_ID,
+  DEFAULT_SIX_DAY_REVENUECAT_ID,
+  NINETY_DAY_REVENUECAT_ALIASES,
+  SIX_DAY_REVENUECAT_ALIASES,
+} from './identifiers';
 
 export interface RevenueCatProgramDefinition {
   aliases: string[];
@@ -40,25 +46,18 @@ export function createRevenueCatCatalog(input: RevenueCatCatalogInput = {}): Rev
     {
       programSlug: 'ninety_day_transform',
       displayName: '90-Day Quit',
-      entitlementId: input.ninetyDayEntitlementId?.trim() || 'ninety_day_quit',
-      productIds: normalizeList(input.ninetyDayProductIds ?? ['ninety_day_quit']),
-      aliases: normalizeList([
-        '90_day_transform',
-        '90-day-transform',
-        '90daytransform',
-        'ninety_day_transform',
-        'ninety_day_quit',
-        '90_day_quit',
-      ]),
+      entitlementId: input.ninetyDayEntitlementId?.trim() || DEFAULT_NINETY_DAY_REVENUECAT_ID,
+      productIds: normalizeList(input.ninetyDayProductIds ?? [DEFAULT_NINETY_DAY_REVENUECAT_ID]),
+      aliases: normalizeList([...NINETY_DAY_REVENUECAT_ALIASES]),
       searchTokens: normalizeList(['90_day', '90-day', '90day', 'ninety_day', 'ninety-day', 'ninetyday', 'quit']),
       legacyTier: 'full',
     },
     {
       programSlug: 'six_day_reset',
       displayName: '6-Day Control',
-      entitlementId: input.sixDayEntitlementId?.trim() || 'six_day_control',
-      productIds: normalizeList(input.sixDayProductIds ?? ['six_day_control']),
-      aliases: normalizeList(['6_day_reset', '6-day-reset', '6dayreset', 'six_day_reset', 'six_day_control']),
+      entitlementId: input.sixDayEntitlementId?.trim() || DEFAULT_SIX_DAY_REVENUECAT_ID,
+      productIds: normalizeList(input.sixDayProductIds ?? [DEFAULT_SIX_DAY_REVENUECAT_ID]),
+      aliases: normalizeList([...SIX_DAY_REVENUECAT_ALIASES]),
       searchTokens: normalizeList(['6_day', '6-day', '6day', 'six_day', 'six-day', 'sixday', 'control']),
       legacyTier: 'short',
     },
