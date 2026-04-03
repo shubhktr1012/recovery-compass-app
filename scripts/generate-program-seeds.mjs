@@ -8,6 +8,19 @@ const outputDir = path.join(repoRoot, 'app', 'supabase', 'seeds');
 
 const PROGRAMS = [
   {
+    slug: 'six_day_reset',
+    totalDays: 6,
+    sourcePath: path.join(
+      repoRoot,
+      'documents',
+      'Sent By Anjan',
+      'program_content',
+      '6 days program text on screen.md'
+    ),
+    parser: 'six_day',
+    outputFile: 'six_day_reset_program_days.sql',
+  },
+  {
     slug: 'ninety_day_transform',
     programId: 'b6955e65-bc79-4e9d-94b6-7d927c299216',
     totalDays: 90,
@@ -358,13 +371,16 @@ function contiguousMissing(dayNumbers) {
 }
 
 function makeSeedSql(program, days, notes = []) {
+  const programIdSql = program.programId
+    ? sqlQuote(program.programId)
+    : `(SELECT id FROM public.programs WHERE slug = ${sqlQuote(program.slug)} LIMIT 1)`;
   const statements = days
     .map((day) => {
       const title = `Day ${day.dayNumber} - ${day.dayTitle}`;
-      return `INSERT INTO public.program_days (program_id, program_slug, day_number, day_title, title, content_text, estimated_minutes, cards)
+      return `INSERT INTO public.program_days (program_id, program_slug, day_number, day_title, title, estimated_minutes, cards)
 VALUES (
-  ${sqlQuote(program.programId)}, ${sqlQuote(program.slug)}, ${day.dayNumber},
-  ${sqlQuote(day.dayTitle)}, ${sqlQuote(title)}, '', ${day.estimatedMinutes},
+  ${programIdSql}, ${sqlQuote(program.slug)}, ${day.dayNumber},
+  ${sqlQuote(day.dayTitle)}, ${sqlQuote(title)}, ${day.estimatedMinutes},
   ${cardsJsonSql(day.cards)}
 )
 ON CONFLICT (program_slug, day_number) DO UPDATE SET
@@ -490,7 +506,7 @@ function extractGoalBeforeSteps(body, stepHeadingRegex) {
 
 function parseStepSections(body) {
   const stepHeadingRegex =
-    /^(?:##\s*)?(?:[^\p{L}\p{N}\n]*\s*)?\**Step\s+(\d+)(?:\s*[—–-]\s*([^\n*\\]+))?\**\\?\s*$/gimu;
+    /^(?:##\s*)?(?:[^\p{L}\p{N}\n]*\s*)?\**Step\s+(\d+)(?:\s*[:—–-]\s*([^\n*\\]+))?\**\\?\s*$/gimu;
   const matches = [...body.matchAll(stepHeadingRegex)];
   const sections = [];
 
@@ -503,6 +519,44 @@ function parseStepSections(body) {
       stepNumber: Number(current[1]),
       title: cleanText(stripMarkdown(current[2] ?? '')),
       body: cleanText(body.slice(blockStart, blockEnd)),
+    });
+  }
+
+  return sections;
+}
+
+function parseMarkdownSections(body) {
+  const headingRegex = /^##\s*([^\n]+)$/gim;
+  const matches = [...body.matchAll(headingRegex)];
+  const sections = [];
+
+  for (let index = 0; index < matches.length; index += 1) {
+    const current = matches[index];
+    const next = matches[index + 1];
+    const sectionStart = current.index + current[0].length;
+    const sectionEnd = next ? next.index : body.length;
+    sections.push({
+      heading: cleanText(stripMarkdown(current[1])),
+      body: cleanText(body.slice(sectionStart, sectionEnd)),
+    });
+  }
+
+  return sections;
+}
+
+function parseBoldSections(body) {
+  const headingRegex = /^\*\*([^*\n]+)\*\*\s*$/gim;
+  const matches = [...body.matchAll(headingRegex)];
+  const sections = [];
+
+  for (let index = 0; index < matches.length; index += 1) {
+    const current = matches[index];
+    const next = matches[index + 1];
+    const sectionStart = current.index + current[0].length;
+    const sectionEnd = next ? next.index : body.length;
+    sections.push({
+      heading: cleanText(stripMarkdown(current[1])),
+      body: cleanText(body.slice(sectionStart, sectionEnd)),
     });
   }
 
@@ -653,6 +707,121 @@ function buildEnergyDay(block) {
   }
 
   cards.push(defaultClose(block.dayNumber, block.dayTitle, goal));
+  return {
+    dayNumber: block.dayNumber,
+    dayTitle: block.dayTitle,
+    estimatedMinutes,
+    cards: cards.filter(Boolean),
+  };
+}
+
+function buildSixDayDay(block) {
+  const normalizedBody = normalizeSourceText(block.body).replace(/\\\*/g, '*');
+  const plainBody = stripMarkdown(normalizedBody);
+  const goal = cleanText((plainBody.match(/^Goal:\s*(.+)$/im)?.[1] ?? '').replace(/\\+/g, ''));
+  const sections = parseBoldSections(normalizedBody).filter((section) => !/^Goal:/i.test(section.heading));
+  const estimatedMinutes = clamp(10 + Math.floor((block.dayNumber - 1) / 2), 10, 15);
+  const cards = [
+    makeIntro(
+      block.dayNumber,
+      block.dayTitle,
+      goal || 'Interrupt autopilot and build a steadier response to urges.',
+      estimatedMinutes
+    ),
+  ];
+  const goalLesson = makeGoalLesson(goal || 'Focus on one day, one decision, and one steady action.');
+  if (goalLesson) cards.push(goalLesson);
+
+  let stepNumber = 1;
+  let reflectionBody = '';
+
+  for (const section of sections) {
+    const title = titleCase(section.heading);
+    const body = stripMarkdown(section.body);
+    if (!body) continue;
+
+    if (/end of day|realization|reflection/i.test(title)) {
+      reflectionBody = body;
+      continue;
+    }
+
+    const instructions = toInstructionLines(body);
+    const breathingPattern = parseBreathingPattern(body);
+
+    if (breathingPattern) {
+      cards.push(
+        makeBreathingExercise(
+          title,
+          breathingPattern.inhaleSeconds,
+          breathingPattern.holdSeconds,
+          breathingPattern.exhaleSeconds,
+          breathingPattern.cycles,
+          'Let the exhale be a little longer so the body can settle before acting.'
+        )
+      );
+      continue;
+    }
+
+    if (/urge|pause|delay|timer|observe|grounding|calm|thought|feeling|breathe/i.test(`${title} ${body}`)) {
+      cards.push(
+        makeMindfulnessExercise(
+          title,
+          instructions,
+          parseDurationLabel(body),
+          (() => {
+            const minutes = parseMinutes(body);
+            return minutes ? Math.round(minutes * 60) : undefined;
+          })(),
+          'Notice the wave, stay steady, and let the urge pass without rushing a response.'
+        )
+      );
+      continue;
+    }
+
+    if (/walk|movement|stretch|squat|pushup|plank/i.test(`${title} ${body}`)) {
+      const routine = makeExerciseRoutine(
+        title,
+        parseMovementExercises(body, 'six_day_reset'),
+        parseDurationLabel(body) ?? inferRoutineDuration(parseMovementExercises(body, 'six_day_reset'))
+      );
+      if (routine) {
+        cards.push(routine);
+        continue;
+      }
+    }
+
+    cards.push(
+      makeActionStep(
+        stepNumber,
+        title,
+        instructions,
+        'Small interruptions in routine weaken automatic behavior and strengthen conscious choice.',
+        undefined,
+        parseDurationLabel(body)
+      )
+    );
+    stepNumber += 1;
+  }
+
+  const journalPrompt = reflectionBody
+    ? `What from Day ${block.dayNumber} felt most true for you?`
+    : `What helped you stay steady on Day ${block.dayNumber}?`;
+  cards.push(
+    makeJournal(
+      journalPrompt,
+      'A short note is enough. We are looking for patterns, not perfect writing.',
+      'Where did you notice the urge easing once you slowed down?'
+    )
+  );
+
+  const closeParagraphs = toParagraphs(reflectionBody || sections[sections.length - 1]?.body || '');
+  cards.push(
+    makeClose(
+      closeParagraphs[0] ?? `Day ${block.dayNumber} is complete.`,
+      closeParagraphs[1] ?? goal ?? `You reinforced ${block.dayTitle.toLowerCase()} today.`
+    )
+  );
+
   return {
     dayNumber: block.dayNumber,
     dayTitle: block.dayTitle,
@@ -1419,14 +1588,6 @@ function validateProgram(program, days, notes, sourceDayNumbers) {
           .join(', ')})`
       );
     }
-    if (day.cards.length < 7 || day.cards.length > 15) {
-      throw new Error(
-        `${program.slug} day ${day.dayNumber}: card count ${day.cards.length} is outside 7-15 (${day.cards
-          .map((card) => card.type)
-          .join(', ')})`
-      );
-    }
-
     let consecutiveLessons = 0;
     for (const card of day.cards) {
       if (card.type === 'lesson') {
@@ -1476,6 +1637,20 @@ function summarizeSample(program, sample) {
 }
 
 function parseProgram(program, content) {
+  if (program.parser === 'six_day') {
+    const source = normalizeSourceText(content);
+    const boldBlocks = parseDayBlocks(source, /^\*\*Day\s+(\d+)\s*[—–-]\s*(.+?)\*\*$/gim);
+    const blocks =
+      boldBlocks.length > 0
+        ? boldBlocks
+        : parseDayBlocks(source, /^(?:##\s*)?DAY\s+(\d+)\s*[—–-]\s*(.+)$/gim);
+    return {
+      days: blocks.map(buildSixDayDay),
+      notes: [],
+      sourceDayNumbers: blocks.map((block) => block.dayNumber),
+    };
+  }
+
   if (program.parser === 'energy') {
     const source = normalizeSourceText(content);
     const blocks = parseDayBlocks(source, /\*\*Day\s+(\d+)\s*[—–-]\s*(.+?)\*\*/gim);
@@ -1537,10 +1712,71 @@ function parseProgram(program, content) {
   throw new Error(`Unknown parser: ${program.parser}`);
 }
 
+function parseArgs(argv) {
+  const options = {
+    listOnly: false,
+    programSlug: null,
+  };
+
+  for (let index = 0; index < argv.length; index += 1) {
+    const token = argv[index];
+    if (token === '--list') {
+      options.listOnly = true;
+      continue;
+    }
+    if (token === '--program') {
+      const nextToken = argv[index + 1];
+      if (!nextToken) {
+        throw new Error('Missing value for --program. Example: --program six_day_reset');
+      }
+      options.programSlug = nextToken;
+      index += 1;
+      continue;
+    }
+    throw new Error(`Unknown argument: ${token}`);
+  }
+
+  return options;
+}
+
+function sortSmallestToBiggest(programs) {
+  return [...programs].sort((left, right) => {
+    if (left.totalDays !== right.totalDays) {
+      return left.totalDays - right.totalDays;
+    }
+    return left.slug.localeCompare(right.slug);
+  });
+}
+
 async function main() {
+  const options = parseArgs(process.argv.slice(2));
+  const programsBySlug = new Map(PROGRAMS.map((program) => [program.slug, program]));
+  if (options.listOnly) {
+    for (const program of sortSmallestToBiggest(PROGRAMS)) {
+      console.log(`${program.slug} (${program.totalDays} days)`);
+    }
+    return;
+  }
+
+  const selectedPrograms = options.programSlug
+    ? (() => {
+        const selected = programsBySlug.get(options.programSlug);
+        if (!selected) {
+          throw new Error(
+            `Unknown program slug "${options.programSlug}". Use --list to see available options.`
+          );
+        }
+        return [selected];
+      })()
+    : sortSmallestToBiggest(PROGRAMS);
+
   await mkdir(outputDir, { recursive: true });
 
-  for (const program of PROGRAMS) {
+  console.log(
+    `[seed-order] ${selectedPrograms.map((program) => `${program.slug}(${program.totalDays})`).join(' -> ')}`
+  );
+
+  for (const program of selectedPrograms) {
     const raw = await readFile(program.sourcePath, 'utf8');
     const { days, notes, sourceDayNumbers } = parseProgram(program, raw);
     const validation = validateProgram(program, days, notes, sourceDayNumbers);

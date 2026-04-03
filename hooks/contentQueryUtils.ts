@@ -53,7 +53,6 @@ export type ProgramDayRow = {
   day_number: number;
   title: string;
   day_title: string | null;
-  content_text: string;
   audio_url: string | null;
   duration_minutes: number | null;
   estimated_minutes: number | null;

@@ -12,6 +12,11 @@
     "lint:strict": "./node_modules/.bin/eslint app components providers hooks lib constants --no-cache",
     "typecheck": "./node_modules/.bin/tsc --noEmit",
     "generate:program-content": "node ./scripts/generate-program-content.mjs",
+    "canonical:normalize": "node ./scripts/normalize-program-content.mjs",
+    "canonical:validate": "node ./scripts/validate-canonical-content.mjs",
+    "canonical:qa": "node ./scripts/canonical-quality-check.mjs --exclude ninety_day_transform",
+    "canonical:qa:all": "node ./scripts/canonical-quality-check.mjs",
+    "canonical:seed": "node ./scripts/generate-program-seeds-from-canonical.mjs",
     "supabase:functions:list": "supabase functions list --workdir .",
     "supabase:functions:deploy:delete-account": "supabase functions deploy delete-account --no-verify-jwt --use-api --workdir ."
   },

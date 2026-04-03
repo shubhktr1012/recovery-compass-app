@@ -277,7 +277,6 @@ export type Database = {
       program_days: {
         Row: {
           audio_url: string | null
-          content_text: string
           created_at: string | null
           day_number: number
           duration_minutes: number | null
@@ -288,7 +287,6 @@ export type Database = {
         }
         Insert: {
           audio_url?: string | null
-          content_text: string
           created_at?: string | null
           day_number: number
           duration_minutes?: number | null
@@ -299,7 +297,6 @@ export type Database = {
         }
         Update: {
           audio_url?: string | null
-          content_text?: string
           created_at?: string | null
           day_number?: number
           duration_minutes?: number | null

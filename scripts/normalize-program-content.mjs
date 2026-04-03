@@ -100,6 +100,61 @@ function titleCase(value = '') {
     .join(' ');
 }
 
+const LOWERCASE_TITLE_WORDS = new Set([
+  'a',
+  'an',
+  'and',
+  'as',
+  'at',
+  'but',
+  'by',
+  'for',
+  'in',
+  'of',
+  'on',
+  'or',
+  'the',
+  'to',
+  'up',
+  'with',
+]);
+
+function smartTitleCase(value = '') {
+  const words = cleanText(value).toLowerCase().split(/\s+/).filter(Boolean);
+  return words
+    .map((word, index) => {
+      const plainWord = word.replace(/[^a-z0-9']/gi, '');
+      if (
+        index > 0 &&
+        index < words.length - 1 &&
+        LOWERCASE_TITLE_WORDS.has(plainWord)
+      ) {
+        return word;
+      }
+
+      return word ? word[0].toUpperCase() + word.slice(1) : word;
+    })
+    .join(' ');
+}
+
+function normalizeDayTitle(rawTitle = '', dayNumber = 1) {
+  let dayTitle = cleanText(stripMarkdown(rawTitle))
+    .replace(/\s+/g, ' ')
+    .replace(/\s+goal(?:\s+of\s+today)?\s*$/i, '')
+    .replace(/^day\s+\d+\s*[—–:-]\s*/i, '')
+    .trim();
+
+  if (!dayTitle) return `Day ${dayNumber}`;
+
+  const lettersOnly = dayTitle.replace(/[^A-Za-z]/g, '');
+  const isAllCaps = lettersOnly.length > 0 && dayTitle === dayTitle.toUpperCase();
+  if (isAllCaps) {
+    dayTitle = smartTitleCase(dayTitle);
+  }
+
+  return dayTitle;
+}
+
 function normalizeContentLine(value = '') {
   const normalized = cleanText(stripMarkdown(value))
     .replace(/([^\s(])\(/g, '$1 (')
@@ -138,7 +193,7 @@ function parseDayBlocksFromBoldHeadings(sourceText) {
     const current = matches[index];
     const next = matches[index + 1];
     const dayNumber = Number(current[1]);
-    const dayTitle = cleanText(stripMarkdown(current[2]));
+    const dayTitle = normalizeDayTitle(current[2], dayNumber);
     const bodyStart = current.index + current[0].length;
     const bodyEnd = next ? next.index : sourceText.length;
     blocks.push({
@@ -171,7 +226,7 @@ function parseDayBlocksGeneric(rawText) {
     const current = uniqueMatches[index];
     const next = uniqueMatches[index + 1];
     const dayNumber = Number(current[1]);
-    const dayTitle = cleanText(stripMarkdown(current[2]));
+    const dayTitle = normalizeDayTitle(current[2], dayNumber);
     const bodyStart = current.index + current[0].length;
     const bodyEnd = next ? next.index : sourceText.length;
     blocks.push({
@@ -197,7 +252,10 @@ function parseMeditationDayScripts(rawText) {
     if (!Number.isInteger(dayNumber) || dayNumber <= 0) continue;
 
     const rawTitle = cleanText(stripMarkdown(current[2]));
-    const dayTitle = cleanText(rawTitle.replace(/\(\s*\d+\s*[-–—]\s*minute[^)]*\)/i, '')).replace(/\s*\n\s*/g, ' ').trim();
+    const dayTitle = normalizeDayTitle(
+      cleanText(rawTitle.replace(/\(\s*\d+\s*[-–—]\s*minute[^)]*\)/i, '')).replace(/\s*\n\s*/g, ' '),
+      dayNumber
+    );
     const bodyStart = current.index + current[0].length;
     const bodyEnd = next ? next.index : sourceText.length;
     const scriptText = cleanText(stripMarkdown(sourceText.slice(bodyStart, bodyEnd)));
@@ -296,13 +354,13 @@ function inferMinutesFromStepCount(stepCount, dayNumber) {
   return Math.min(22, Math.max(8, baseline + Math.floor(stepCount / 2)));
 }
 
-function parseGoal(dayTitleRaw, dayBody) {
-  let dayTitle = cleanText(dayTitleRaw);
+function parseGoal(dayTitleRaw, dayBody, dayNumber) {
+  let dayTitle = normalizeDayTitle(dayTitleRaw, dayNumber);
   let goal = '';
 
   const inlineGoalMatch = dayTitle.match(/^(.*?)\s+goal(?:\s+of\s+today)?\s*:?\s*(.+)$/i);
   if (inlineGoalMatch) {
-    dayTitle = cleanText(inlineGoalMatch[1]);
+    dayTitle = normalizeDayTitle(inlineGoalMatch[1], dayNumber);
     goal = cleanText(inlineGoalMatch[2]);
   }
 
@@ -332,7 +390,7 @@ function parseGoal(dayTitleRaw, dayBody) {
 
   const bodyGoal = cleanText(goalLines.join(' '));
   return {
-    dayTitle: dayTitle || 'Daily Practice',
+    dayTitle: dayTitle || `Day ${dayNumber}`,
     goal: goal || bodyGoal,
   };
 }
@@ -416,7 +474,7 @@ function shouldBeExerciseRoutine(title, lines) {
 }
 
 function buildGenericDay(dayBlock) {
-  const { dayTitle, goal } = parseGoal(dayBlock.dayTitle, dayBlock.body);
+  const { dayTitle, goal } = parseGoal(dayBlock.dayTitle, dayBlock.body, dayBlock.dayNumber);
   const stepSections = parseStepSections(dayBlock.body);
   const cards = [];
 
@@ -497,6 +555,7 @@ function buildGenericDay(dayBlock) {
 }
 
 function buildSixDayDay(dayBlock) {
+  const dayTitle = normalizeDayTitle(dayBlock.dayTitle, dayBlock.dayNumber);
   const sections = parseBoldSections(dayBlock.body);
   const goalSection = sections.find((section) => /^Goal:/i.test(section.heading));
   const goal = cleanText(
@@ -509,7 +568,7 @@ function buildSixDayDay(dayBlock) {
     {
       type: 'intro',
       dayNumber: dayBlock.dayNumber,
-      dayTitle: dayBlock.dayTitle,
+      dayTitle,
       goal: goal || 'Build steady awareness and interrupt automatic behavior for today.',
       estimatedMinutes: inferEstimatedMinutes(dayBlock.dayNumber),
     },
@@ -559,12 +618,12 @@ function buildSixDayDay(dayBlock) {
     type: 'close',
     message: reflectionLines[0] ?? `Day ${dayBlock.dayNumber} is complete.`,
     secondaryMessage:
-      reflectionLines[1] ?? goal ?? `You reinforced ${dayBlock.dayTitle.toLowerCase()} today.`,
+      reflectionLines[1] ?? goal ?? `You reinforced ${dayTitle.toLowerCase()} today.`,
   });
 
   return {
     dayNumber: dayBlock.dayNumber,
-    dayTitle: dayBlock.dayTitle,
+    dayTitle,
     estimatedMinutes: inferEstimatedMinutes(dayBlock.dayNumber),
     cards,
   };
