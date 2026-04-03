@@ -1,8 +1,5 @@
--- ninety_day_transform seed (generated from canonical content)
--- Source: documents/Sent By Anjan/program_content/🧭 RECOVERY COMPASS 90-days Program.md
--- Generated at: 2026-04-03T14:15:29.310Z
-
-BEGIN;
+-- Refresh ninety_day_transform canonical seed (title normalization)
+-- Generated on 2026-04-03T14:15:36Z
 
 DELETE FROM public.program_days
 WHERE program_slug = 'ninety_day_transform'
@@ -1538,4 +1535,3 @@ ON CONFLICT (program_slug, day_number) DO UPDATE SET
   estimated_minutes = EXCLUDED.estimated_minutes,
   updated_at = NOW();
 
-COMMIT;
