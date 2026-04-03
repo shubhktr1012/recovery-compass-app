@@ -1,0 +1,68 @@
+name: Canonical Program Seed
+
+on:
+  workflow_dispatch:
+    inputs:
+      program_slug:
+        description: Program slug to process
+        required: true
+        default: six_day_reset
+        type: string
+      apply_to_db:
+        description: Apply generated SQL to Supabase Postgres
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+jobs:
+  canonical-seed:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Normalize canonical
+        run: node ./scripts/normalize-program-content.mjs --program "${{ inputs.program_slug }}"
+
+      - name: Validate canonical
+        run: node ./scripts/validate-canonical-content.mjs --program "${{ inputs.program_slug }}"
+
+      - name: Generate seed SQL
+        run: node ./scripts/generate-program-seeds-from-canonical.mjs --program "${{ inputs.program_slug }}"
+
+      - name: Upload generated files
+        uses: actions/upload-artifact@v4
+        with:
+          name: canonical-seed-${{ inputs.program_slug }}
+          path: |
+            content/canonical/${{ inputs.program_slug }}.json
+            supabase/seeds/${{ inputs.program_slug }}_program_days.sql
+          if-no-files-found: error
+
+      - name: Ensure psql exists
+        if: ${{ inputs.apply_to_db }}
+        run: |
+          if ! command -v psql >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y postgresql-client
+          fi
+
+      - name: Apply SQL to Supabase
+        if: ${{ inputs.apply_to_db }}
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          if [ -z "$SUPABASE_DB_URL" ]; then
+            echo "SUPABASE_DB_URL secret is missing" >&2
+            exit 1
+          fi
+          psql "$SUPABASE_DB_URL" -f "./supabase/seeds/${{ inputs.program_slug }}_program_days.sql"
