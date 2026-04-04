@@ -63,7 +63,7 @@ export function AppQueryProvider({ children }: { children: React.ReactNode }) {
         persister: asyncStoragePersister,
         // Only persist exactly what we need (the profile data limits the size)
         maxAge: 24 * 60 * 60 * 1000, // 24 hours explicit max age
-        buster: 'v1.0.1', // change on breaking cache changes
+        buster: 'v1.0.3', // bumped to invalidate persisted content cache after six_day_reset lesson refresh
         dehydrateOptions: {
           shouldDehydrateQuery: (query) => {
             // Explicitly whitelist queries to save to plaintext AsyncStorage

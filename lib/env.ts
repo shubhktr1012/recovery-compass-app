@@ -55,6 +55,9 @@ export function validatePublicEnv() {
     revenueCatMaleVitalityProductIds: parseCsvEnv(
       process.env.EXPO_PUBLIC_RC_MALE_VITALITY_PRODUCT_IDS ?? 'male_sexual_health'
     ),
+    googleWebClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ?? null,
+    googleIosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID ?? null,
+    googleAndroidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID ?? null,
     easProjectId: process.env.EXPO_PUBLIC_EAS_PROJECT_ID ?? null,
     programAudioBucket: process.env.EXPO_PUBLIC_SUPABASE_PROGRAM_AUDIO_BUCKET ?? 'program-audio',
   };

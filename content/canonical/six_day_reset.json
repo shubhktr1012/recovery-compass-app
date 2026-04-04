@@ -1,88 +1,229 @@
 {
   "slug": "six_day_reset",
   "totalDays": 6,
-  "sourcePath": "documents/Sent By Anjan/program_content/6 days program text on screen.md",
-  "generatedAt": "2026-04-03T14:36:04.357Z",
+  "sourcePath": "documents/Sent By Anjan/program_content/🧭 RECOVERY COMPASS 6 DAYS PROGRAM.md",
+  "generatedAt": "2026-04-03T17:40:12.545Z",
   "days": [
     {
       "dayNumber": 1,
-      "dayTitle": "Decision & Reset",
+      "dayTitle": "Decision & Environment Reset",
       "estimatedMinutes": 10,
       "cards": [
         {
           "type": "intro",
           "dayNumber": 1,
-          "dayTitle": "Decision & Reset",
-          "goal": "Break autopilot and take control for today.",
+          "dayTitle": "Decision & Environment Reset",
+          "goal": "Break autopilot. Make smoking inconvenient and conscious",
           "estimatedMinutes": 10
         },
         {
           "type": "lesson",
           "title": "Today's Focus",
           "paragraphs": [
-            "Break autopilot and take control for today."
+            "Most people believe quitting fails because of weak willpower.",
+            "That’s false.",
+            "Smoking continues because it happens:",
+            "Automatically",
+            "Without thinking",
+            "Without friction"
           ],
-          "highlight": "Break autopilot and take control for today."
+          "highlight": "If smoking requires effort and awareness, its power drops immediately."
         },
         {
           "type": "action_step",
           "stepNumber": 1,
-          "title": "Decide For Today Only",
+          "title": "Today’s Core Rule (non-negotiable)",
           "instructions": [
-            "Say: “Today, I choose not to smoke / drink.”",
-            "No lifetime promise. Just today."
+            "You do not decide whether to smoke today.",
+            "You only decide to delay every urge by 10 minutes.",
+            "No debate. No negotiation. No “just this once” logic."
           ],
           "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
         },
         {
           "type": "action_step",
           "stepNumber": 2,
-          "title": "Remove Easy Access",
+          "title": "Step 1: Decision (5 Minutes)",
           "instructions": [
-            "Throw away cigarettes / alcohol.",
-            "Clear lighters, bottles, ashtrays.",
-            "Make it harder to act automatically."
+            "Make the decision once — not repeatedly",
+            "Say this out loud or internally :",
+            "“I am stopping smoking. I don’t need to feel confident. I don’t need to feel",
+            "ready.”",
+            "This is not motivation. This is closure of debate.",
+            "You are not deciding forever. You are deciding today."
           ],
           "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
         },
         {
           "type": "action_step",
           "stepNumber": 3,
-          "title": "Change Your Space",
+          "title": "Step 2: Environment Reset (critical)",
           "instructions": [
-            "Clean or rearrange something.",
-            "Signal a fresh start to your brain."
+            "Remove access completely",
+            "Do this once today:",
+            "Throw away cigarettes",
+            "Throw away lighters",
+            "Throw away ashtrays",
+            "Remove any “emergency” stash",
+            "Keeping one cigarette keeps the habit alive.",
+            "This step alone reduces smoking by over 50% for most people because:",
+            "Access creates action."
           ],
           "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
         },
         {
           "type": "action_step",
           "stepNumber": 4,
-          "title": "Take Care Of Your Body",
+          "title": "Step 3: Change One Trigger Routine",
           "instructions": [
-            "Drink more water.",
-            "Eat properly.",
-            "Rest when needed."
+            "Smoking is attached to routines, not desire.",
+            "Pick ONE trigger and break it:",
+            "Examples:",
+            "After meals → stand up immediately",
+            "Morning tea/coffee → delay by 10 minutes",
+            "Work break → walk instead of sitting",
+            "Evening → change seat or room",
+            "Do not change everything. One change is enough to disrupt the loop."
           ],
           "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
         },
         {
           "type": "mindfulness_exercise",
-          "title": "When An Urge Comes",
+          "title": "Step 4: The Day 1 Urge Protocol (very Important)",
           "steps": [
-            "Pause.",
-            "Take slow breaths.",
-            "Wait 10 minutes.",
-            "Remind yourself: “This will pass.”"
+            "You will feel urges today. That is expected.",
+            "When an urge hits, do this EXACTLY:"
           ],
           "completionMessage": "Stay with the practice until your body and mind feel steadier."
         },
         {
           "type": "action_step",
           "stepNumber": 5,
-          "title": "Avoid High-risk Situations",
+          "title": "Start The 10-minute Timer",
           "instructions": [
-            "Stay away from strong triggers today. (friends/ favourite tea/coffee spot/your terrace)"
+            "Say:",
+            "“I’m not deciding now.”",
+            "Start the timer. Do nothing else yet."
+          ],
+          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+        },
+        {
+          "type": "action_step",
+          "stepNumber": 6,
+          "title": "Grounding (2–3 Minutes)",
+          "instructions": [
+            "While the timer runs:",
+            "Name 5 things you can see",
+            "Name 3 things you can hear",
+            "Press your feet into the ground",
+            "This pulls your brain out of habit memory and into the present moment."
+          ],
+          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+        },
+        {
+          "type": "action_step",
+          "stepNumber": 7,
+          "title": "Light Movement",
+          "instructions": [
+            "Choose one:",
+            "Walk slowly",
+            "Wash your face",
+            "Stretch your arms and shoulders",
+            "Movement breaks urge momentum."
+          ],
+          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+        },
+        {
+          "type": "action_step",
+          "stepNumber": 8,
+          "title": "Important Truth",
+          "instructions": [
+            "Most urges peak and fall within 7–10 minutes even if you do nothing.",
+            "Smoking does not remove urges — waiting does."
+          ],
+          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+        },
+        {
+          "type": "action_step",
+          "stepNumber": 9,
+          "title": "Day 1 Mental Frame (do Not Skip)",
+          "instructions": [
+            "Today you are not trying to succeed.",
+            "You are doing ONE thing:",
+            "Interrupting the habit loop.",
+            "That alone weakens smoking."
+          ],
+          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+        },
+        {
+          "type": "action_step",
+          "stepNumber": 10,
+          "title": "If You Slip On Day 1 (read This Carefully)",
+          "instructions": [
+            "A slip does not mean the day failed.",
+            "If you smoke:",
+            "1. Stop immediately",
+            "2. No shame",
+            "3. Resume the 10-minute delay on the next urge",
+            "Never say:",
+            "“I ruined it”",
+            "“I’ll restart tomorrow”",
+            "Say:",
+            "“I interrupted the loop today.”"
+          ],
+          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+        },
+        {
+          "type": "action_step",
+          "stepNumber": 11,
+          "title": "What Not To Do Today",
+          "instructions": [
+            "Don’t fight urges",
+            "Don’t analyze feelings",
+            "Don’t test control",
+            "Don’t seek motivation",
+            "This is a mechanical day , not an emotional one."
+          ],
+          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+        },
+        {
+          "type": "action_step",
+          "stepNumber": 12,
+          "title": "End-of-day Close (very Important)",
+          "instructions": [
+            "At night, read this:",
+            "“Today, I made smoking conscious instead of automatic.",
+            "I interrupted the habit loop.",
+            "That alone weakens smoking.”",
+            "That is enough for Day 1."
+          ],
+          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+        },
+        {
+          "type": "action_step",
+          "stepNumber": 13,
+          "title": "Why Day 1 Works (logic Check)",
+          "instructions": [
+            "Day 1 works because it:",
+            "Removes unconscious access",
+            "Adds delay",
+            "Breaks routine attachment",
+            "Reduces panic",
+            "Avoids willpower",
+            "You are not quitting smoking today.",
+            "You are breaking autopilot."
+          ],
+          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+        },
+        {
+          "type": "action_step",
+          "stepNumber": 14,
+          "title": "Day 1 Complete When:",
+          "instructions": [
+            "Access is removed",
+            "At least one urge is delayed",
+            "One routine is changed",
+            "That’s it."
           ],
           "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
         },
@@ -94,90 +235,185 @@
         },
         {
           "type": "close",
-          "message": "You made a choice.",
-          "secondaryMessage": "You interrupted autopilot."
+          "message": "Day 1 is complete.",
+          "secondaryMessage": "Break autopilot. Make smoking inconvenient and conscious"
         }
       ]
     },
     {
       "dayNumber": 2,
-      "dayTitle": "Understanding Urges",
+      "dayTitle": "Understanding Urges (not Obeying Them)",
       "estimatedMinutes": 10,
       "cards": [
         {
           "type": "intro",
           "dayNumber": 2,
-          "dayTitle": "Understanding Urges",
-          "goal": "Learn that urges are temporary, not commands.",
+          "dayTitle": "Understanding Urges (not Obeying Them)",
+          "goal": "Remove fear of urges. Learn to stay present while urges pass",
           "estimatedMinutes": 10
         },
         {
           "type": "lesson",
           "title": "Today's Focus",
           "paragraphs": [
-            "Learn that urges are temporary, not commands."
+            "Most people don’t smoke because they enjoy it. They smoke because urges feel",
+            "urgent and scary.",
+            "Day 2 teaches one critical truth:",
+            "Urges are not commands. They are sensations that rise and fall."
           ],
-          "highlight": "Learn that urges are temporary, not commands."
+          "highlight": "When fear drops, urges lose power."
         },
         {
           "type": "action_step",
           "stepNumber": 1,
-          "title": "Notice The First Hint",
+          "title": "Today’s Core Rule (non-negotiable)",
           "instructions": [
-            "As soon as you feel like smoking or drinking, pause.",
-            "Catch it early."
+            "You do not try to remove urges.",
+            "You allow them to exist while you delay action.",
+            "Trying to “get rid of” urges increases panic. Letting them be reduces urgency."
           ],
           "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
         },
         {
           "type": "mindfulness_exercise",
-          "title": "Observe, Don’t React",
+          "title": "Step 1: What An Urge Actually Is",
           "steps": [
-            "Pay attention to the sensation.",
-            "Where do you feel it — chest, hands, throat, mind?",
-            "Just observe."
+            "An urge is not nicotine demand.",
+            "It is a combination of:",
+            "Habit memory",
+            "Stress response",
+            "Emotional discomfort",
+            "Routine expectation",
+            "Urges feel strong because they activate urgency — not because they are",
+            "dangerous."
           ],
           "completionMessage": "Stay with the practice until your body and mind feel steadier."
         },
         {
           "type": "mindfulness_exercise",
-          "title": "Breathe Slowly",
+          "title": "Step 2: Breathing To Calm The System",
           "steps": [
-            "Take slow, steady breaths.",
-            "Longer exhale than inhale.",
-            "Let your body calm first."
-          ],
-          "completionMessage": "Stay with the practice until your body and mind feel steadier."
-        },
-        {
-          "type": "mindfulness_exercise",
-          "title": "Wait 10 Minutes",
-          "steps": [
-            "Do nothing.",
-            "Let the urge rise and fall on its own.",
-            "Most urges fade if you don’t act."
-          ],
-          "completionMessage": "Stay with the practice until your body and mind feel steadier."
-        },
-        {
-          "type": "mindfulness_exercise",
-          "title": "Notice The Thoughts",
-          "steps": [
-            "If your mind says, “Just one,”",
-            "recognize it as the habit voice.",
-            "You don’t need to argue — just notice."
+            "When an urge appears, begin 4 – 6 breathing.",
+            "Inhale through the nose for 4 seconds",
+            "Exhale slowly through the mouth for 6 seconds",
+            "Repeat 8 – 12 times",
+            "Why this works:",
+            "Longer exhale signals safety to the nervous system. This reduces the “do",
+            "something now” impulse.",
+            "Say internally:",
+            "“I’m calming my body, not fixing the urge.”"
           ],
           "completionMessage": "Stay with the practice until your body and mind feel steadier."
         },
         {
           "type": "action_step",
           "stepNumber": 2,
-          "title": "Track Your Triggers",
+          "title": "Step 3: Mindful Observation (critical Skill)",
           "instructions": [
-            "Ask yourself:",
-            "When did it happen?",
-            "What was I feeling?",
-            "You are gathering awareness, not judging."
+            "Instead of fighting the urge, observe it.",
+            "Ask silently:",
+            "Where do I feel it?",
+            "Is it tight? warm? restless?",
+            "Does it move or stay still?",
+            "Do not judge. Do not analyze. Just notice.",
+            "Observed urges lose authority."
+          ],
+          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+        },
+        {
+          "type": "action_step",
+          "stepNumber": 3,
+          "title": "Step 4: The 10-minute Delay (still Mandatory)",
+          "instructions": [
+            "Every urge is delayed by 10 minutes.",
+            "Never ask:",
+            "“Should I smoke?”",
+            "Always say:",
+            "“I’ll decide later.”",
+            "This keeps your nervous system calm."
+          ],
+          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+        },
+        {
+          "type": "mindfulness_exercise",
+          "title": "Day 2 Urge Flow (put This Together)",
+          "steps": [
+            "When an urge hits:",
+            "Breathe (4–6 breathing)",
+            "Observe sensations",
+            "Start 10-minute timer",
+            "Let the urge move on its own",
+            "Most urges will fade before the timer ends."
+          ],
+          "completionMessage": "Stay with the practice until your body and mind feel steadier."
+        },
+        {
+          "type": "action_step",
+          "stepNumber": 4,
+          "title": "Common Day 2 Fears (normal)",
+          "instructions": [
+            "You may think:",
+            "“What if this urge doesn’t go?”",
+            "“What if they keep coming?”",
+            "“What if I can’t handle this?”",
+            "These thoughts are habit fear , not reality.",
+            "Urges always change — even strong ones."
+          ],
+          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+        },
+        {
+          "type": "action_step",
+          "stepNumber": 5,
+          "title": "What Not To Do Today",
+          "instructions": [
+            "Don’t suppress urges",
+            "Don’t distract aggressively",
+            "Don’t seek relief",
+            "Don’t test willpower",
+            "Today is about learning , not winning."
+          ],
+          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+        },
+        {
+          "type": "action_step",
+          "stepNumber": 6,
+          "title": "If You Slip On Day 2",
+          "instructions": [
+            "If you smoke:",
+            "1. Stop immediately",
+            "2. No shame",
+            "3. Resume breathing + delay on next urge",
+            "Say:",
+            "“I learned something about my urges.”",
+            "That keeps the program intact."
+          ],
+          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+        },
+        {
+          "type": "action_step",
+          "stepNumber": 7,
+          "title": "End-of-day Close",
+          "instructions": [
+            "Read this slowly:",
+            "“Urges appeared today.",
+            "I didn’t need to obey them.",
+            "They moved on their own.",
+            "I stayed.”",
+            "That is success for Day 2."
+          ],
+          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+        },
+        {
+          "type": "action_step",
+          "stepNumber": 8,
+          "title": "Why Day 2 Works (logic Check)",
+          "instructions": [
+            "Day 2 works because it:",
+            "Removes fear from urges",
+            "Calms the nervous system",
+            "Breaks the urgency illusion",
+            "Builds confidence without force",
+            "When fear drops, smoking becomes unnecessary."
           ],
           "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
         },
@@ -189,8 +425,8 @@
         },
         {
           "type": "close",
-          "message": "Urges are waves.",
-          "secondaryMessage": "They peak."
+          "message": "Day 2 is complete.",
+          "secondaryMessage": "Remove fear of urges. Learn to stay present while urges pass"
         }
       ]
     },
@@ -203,102 +439,192 @@
           "type": "intro",
           "dayNumber": 3,
           "dayTitle": "Handling Withdrawal & Emotions",
-          "goal": "Stay steady while your body and emotions adjust.",
+          "goal": "Stay steady through discomfort. Stop mistaking discomfort for danger",
           "estimatedMinutes": 11
         },
         {
           "type": "lesson",
           "title": "Today's Focus",
           "paragraphs": [
-            "Stay steady while your body and emotions adjust."
+            "By Day 3, your body and mind are adjusting.",
+            "This can show up as:",
+            "Irritability",
+            "Restlessness",
+            "Emotional sensitivity",
+            "A heavy or unsettled feeling"
           ],
-          "highlight": "Stay steady while your body and emotions adjust."
+          "highlight": "Discomfort is a sign of adjustment, not failure."
         },
         {
           "type": "action_step",
           "stepNumber": 1,
-          "title": "Support Your Body",
+          "title": "Today’s Core Rule (non-negotiable)",
           "instructions": [
-            "Drink more water.",
-            "Eat regular meals.",
-            "Rest when possible.",
-            "Your body is recalibrating."
+            "You do not escape discomfort today.",
+            "You let it pass without using smoking as relief.",
+            "Escaping discomfort reinforces the habit. Allowing it weakens it."
           ],
           "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
         },
         {
           "type": "action_step",
           "stepNumber": 2,
-          "title": "Expect Mood Changes",
+          "title": "Step 1: Understanding Withdrawal (important)",
           "instructions": [
-            "You may feel irritated, tired, anxious, or low.",
-            "This is temporary adjustment — not failure."
+            "Withdrawal is not punishment. It is not danger. It is recalibration.",
+            "Your system is learning:",
+            "How to regulate stress without smoking",
+            "How to settle without stimulation",
+            "How to respond without habit shortcuts",
+            "This phase is temporary."
           ],
           "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
-        },
-        {
-          "type": "mindfulness_exercise",
-          "title": "Calm Before Reacting",
-          "steps": [
-            "If emotions rise, slow your breathing.",
-            "Long exhale.",
-            "Let your nervous system settle first."
-          ],
-          "completionMessage": "Stay with the practice until your body and mind feel steadier."
-        },
-        {
-          "type": "mindfulness_exercise",
-          "title": "Allow Feelings To Pass",
-          "steps": [
-            "Don’t suppress emotions.",
-            "Notice them in your body.",
-            "They move if you don’t fight them."
-          ],
-          "completionMessage": "Stay with the practice until your body and mind feel steadier."
         },
         {
           "type": "action_step",
           "stepNumber": 3,
-          "title": "Reduce Extra Stress",
+          "title": "Step 2: Breathing To Reduce Intensity",
           "instructions": [
-            "Keep today lighter.",
-            "Avoid arguments or high-pressure situations if possible."
+            "Use 4 – 6 breathing whenever discomfort rises.",
+            "How:",
+            "Inhale through nose for 4 seconds",
+            "Exhale through mouth for 6 seconds",
+            "Continue for 2 – 3 minutes",
+            "Longer exhales calm the urgency signal.",
+            "Say internally:",
+            "“This is uncomfortable, not unsafe.”"
           ],
           "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
         },
         {
-          "type": "exercise_routine",
-          "title": "Move Gently",
-          "exercises": [
-            {
-              "name": "Take A Short Walk.",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Stretch.",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Release Physical Tension.",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            }
-          ]
+          "type": "action_step",
+          "stepNumber": 4,
+          "title": "Step 3: Progressive Muscle Relaxation (key Tool)",
+          "instructions": [
+            "This is today’s primary stabilizer.",
+            "1. Tense your hands for 5 seconds → release",
+            "2. Tense shoulders → release",
+            "3. Tense jaw → release",
+            "4. Tense legs → release",
+            "Repeat once or twice.",
+            "This tells your nervous system:",
+            "“I don’t need to react.”"
+          ],
+          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+        },
+        {
+          "type": "mindfulness_exercise",
+          "title": "Step 4: The Emergency Urge Protocol (very Important)",
+          "steps": [
+            "If discomfort or urge feels overwhelming:",
+            "Sit down",
+            "Exhale longer than you inhale",
+            "Say slowly:",
+            "“I will not decide anything for 15 minutes.”",
+            "Do nothing else.",
+            "Urgency always fades when not acted upon."
+          ],
+          "completionMessage": "Stay with the practice until your body and mind feel steadier."
         },
         {
           "type": "action_step",
-          "stepNumber": 4,
-          "title": "Remind Yourself",
+          "stepNumber": 5,
+          "title": "Step 5: Protect Your Energy Today",
           "instructions": [
-            "Discomfort = healing.",
-            "Withdrawal is temporary.",
-            "You are stabilizing.",
-            "Day 3 is about staying calm while your system resets."
+            "Today is not a performance day.",
+            "Rules:",
+            "Eat regularly",
+            "Drink water",
+            "Reduce caffeine",
+            "Rest if tired",
+            "Don’t demand productivity",
+            "Prioritize steadiness"
+          ],
+          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+        },
+        {
+          "type": "mindfulness_exercise",
+          "title": "Common Day 3 Thoughts (normal)",
+          "steps": [
+            "You may think:",
+            "“I feel off”",
+            "“I’m more irritated”",
+            "“I just want relief”",
+            "These thoughts do not mean:",
+            "You’re failing",
+            "You need to smoke",
+            "This won’t work",
+            "They mean:",
+            "Your system is adjusting."
+          ],
+          "completionMessage": "Stay with the practice until your body and mind feel steadier."
+        },
+        {
+          "type": "action_step",
+          "stepNumber": 6,
+          "title": "What Not To Do Today",
+          "instructions": [
+            "Don’t label feelings as bad",
+            "Don’t suppress emotions",
+            "Don’t look for instant comfort",
+            "Don’t test control",
+            "Today is about staying , not escaping."
+          ],
+          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+        },
+        {
+          "type": "action_step",
+          "stepNumber": 7,
+          "title": "If You Slip On Day 3",
+          "instructions": [
+            "If you smoke:",
+            "1. Stop immediately",
+            "2. No self-judgment",
+            "3. Resume breathing + delay",
+            "Say:",
+            "“I responded out of habit. I can respond differently next time.”",
+            "Do not restart the program."
+          ],
+          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+        },
+        {
+          "type": "action_step",
+          "stepNumber": 8,
+          "title": "End-of-day Close (very Important)",
+          "instructions": [
+            "Read this slowly:",
+            "“I felt discomfort today.",
+            "I didn’t escape it.",
+            "It passed on its own.",
+            "That builds real strength.”",
+            "That completes Day 3."
+          ],
+          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+        },
+        {
+          "type": "action_step",
+          "stepNumber": 9,
+          "title": "Why Day 3 Works (logic Check)",
+          "instructions": [
+            "Day 3 works because it:",
+            "Separates discomfort from danger",
+            "Prevents relief-seeking behavior",
+            "Builds nervous system tolerance",
+            "Reduces emotional reactivity",
+            "Keeps the habit from reinforcing itself",
+            "When discomfort is tolerated, smoking loses its job."
+          ],
+          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+        },
+        {
+          "type": "action_step",
+          "stepNumber": 10,
+          "title": "Day 3 Complete When:",
+          "instructions": [
+            "You allowed discomfort",
+            "You used breathing or muscle relaxation",
+            "You didn’t seek relief through smoking",
+            "Nothing else is required."
           ],
           "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
         },
@@ -311,101 +637,207 @@
         {
           "type": "close",
           "message": "Day 3 is complete.",
-          "secondaryMessage": "Stay steady while your body and emotions adjust."
+          "secondaryMessage": "Stay steady through discomfort. Stop mistaking discomfort for danger"
         }
       ]
     },
     {
       "dayNumber": 4,
-      "dayTitle": "Break the Routine",
+      "dayTitle": "Breaking Routine & Identity Shift",
       "estimatedMinutes": 11,
       "cards": [
         {
           "type": "intro",
           "dayNumber": 4,
-          "dayTitle": "Break the Routine",
-          "goal": "Interrupt old patterns and build new responses.",
+          "dayTitle": "Breaking Routine & Identity Shift",
+          "goal": "Detach smoking from daily routines. Shift identity from “quitting” to “not smoking”",
           "estimatedMinutes": 11
         },
         {
           "type": "lesson",
           "title": "Today's Focus",
           "paragraphs": [
-            "Interrupt old patterns and build new responses."
+            "By Day 4, many urges no longer come from discomfort. They come from routine",
+            "memory.",
+            "Examples:",
+            "After meals",
+            "During breaks",
+            "While driving"
           ],
-          "highlight": "Interrupt old patterns and build new responses."
+          "highlight": "Day 4 breaks that link."
         },
         {
           "type": "action_step",
           "stepNumber": 1,
-          "title": "Notice Old Habit Times",
+          "title": "Today’s Core Rule (non-negotiable)",
           "instructions": [
-            "When did you usually smoke or drink?",
-            "After meals? Evening? Stress?",
-            "Be aware of those moments."
+            "You do not negotiate with routine-based urges.",
+            "You interrupt them and move on.",
+            "No analysis. No debate. No “why is this happening?”"
           ],
           "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
         },
         {
           "type": "action_step",
           "stepNumber": 2,
-          "title": "Change The Pattern",
+          "title": "Step 1: Identity Shift (most Important Part)",
           "instructions": [
-            "Do something different at that time.",
-            "Stay seated. Walk. Drink water. Stretch.",
-            "Break the automatic link."
+            "Stop saying:",
+            "“I’m quitting smoking”",
+            "“I’m trying to stop”",
+            "Start saying:",
+            "“I don’t smoke today.”",
+            "This matters because:",
+            "“Quitting” implies struggle",
+            "“Not smoking” implies normal behavior",
+            "You are not giving something up. You are living differently today."
           ],
           "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
         },
         {
           "type": "action_step",
           "stepNumber": 3,
-          "title": "Change Your Environment",
+          "title": "Step 2: Routine Disruption (practical Action)",
           "instructions": [
-            "Sit in a different place.",
-            "Take a new route.",
-            "Shift your surroundings slightly."
+            "Choose at least ONE routine and change it deliberately.",
+            "Examples:",
+            "After meals → stand up immediately",
+            "Coffee/tea → change timing or location",
+            "Work breaks → walk instead of sitting",
+            "Evening → change seating or activity",
+            "You don’t need many changes. One consistent change weakens the habit loop."
           ],
           "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
         },
         {
+          "type": "mindfulness_exercise",
+          "title": "Step 3: Urge Response Script (use This Verbatim)",
+          "steps": [
+            "When a routine-based urge appears, say internally:",
+            "“This doesn’t belong to my day anymore.”",
+            "That’s it.",
+            "Do not explain. Do not justify. Do not argue.",
+            "Then move your body:",
+            "Walk",
+            "Stretch",
+            "Change rooms"
+          ],
+          "completionMessage": "Stay with the practice until your body and mind feel steadier."
+        },
+        {
           "type": "action_step",
           "stepNumber": 4,
-          "title": "Replace, Don’t Remove",
+          "title": "Step 4: Replacement Routine (lock One In)",
           "instructions": [
-            "When the old urge time comes,",
-            "insert a small healthy action instead."
+            "Pick ONE simple replacement and use it every time.",
+            "Good options:",
+            "Tea or water",
+            "Light stretching",
+            "Music",
+            "Breathing (1–2 minutes)",
+            "Rules:",
+            "Keep it boring",
+            "Keep it consistent",
+            "Don’t keep switching",
+            "Consistency trains the brain faster than novelty."
           ],
           "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
         },
         {
           "type": "action_step",
           "stepNumber": 5,
-          "title": "Strengthen Identity",
+          "title": "Step 5: Use Tools Only If Needed",
           "instructions": [
-            "Tell yourself:",
-            "“I’m becoming someone who doesn’t rely on this.”"
+            "By Day 4:",
+            "Some urges may pass without tools",
+            "That’s normal",
+            "Do not force breathing or grounding unless needed. Let confidence build",
+            "naturally."
           ],
           "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
         },
         {
           "type": "action_step",
           "stepNumber": 6,
-          "title": "Notice Improvement",
+          "title": "Common Day 4 Confusion (normal)",
           "instructions": [
-            "Are urges shorter? Weaker?",
-            "Even small changes matter."
+            "You may notice:",
+            "Fewer urges, but sudden ones",
+            "Urges without discomfort",
+            "Thoughts like “this feels strange”",
+            "This does not mean:",
+            "Something is missing",
+            "You need to smoke",
+            "The habit is stronger",
+            "It means:",
+            "The routine loop is dissolving."
           ],
           "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
         },
         {
           "type": "action_step",
           "stepNumber": 7,
-          "title": "Stay Steady",
+          "title": "What Not To Do Today",
           "instructions": [
-            "Don’t test yourself unnecessarily.",
-            "You’re building stability, not proving willpower.",
-            "Day 4 is about choosing differently instead of reacting automatically."
+            "Don’t romanticize smoking",
+            "Don’t “test” being around smokers",
+            "Don’t overthink identity",
+            "Don’t keep checking progress",
+            "Live normally."
+          ],
+          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+        },
+        {
+          "type": "action_step",
+          "stepNumber": 8,
+          "title": "If You Slip On Day 4",
+          "instructions": [
+            "If you smoke:",
+            "1. Stop immediately",
+            "2. Do not label it a failure",
+            "3. Resume identity statement:",
+            "“I don’t smoke today.”",
+            "Do not restart the program."
+          ],
+          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+        },
+        {
+          "type": "action_step",
+          "stepNumber": 9,
+          "title": "End-of-day Close",
+          "instructions": [
+            "Read this slowly:",
+            "“Today, smoking no longer fit into my routines.",
+            "I lived my day differently.",
+            "That’s real change.”",
+            "That completes Day 4."
+          ],
+          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+        },
+        {
+          "type": "action_step",
+          "stepNumber": 10,
+          "title": "Why Day 4 Works (logic Check)",
+          "instructions": [
+            "Day 4 works because it:",
+            "Breaks habit-context pairing",
+            "Shifts identity language",
+            "Removes emotional drama",
+            "Normalizes non-smoking behavior",
+            "Reduces urge frequency automatically",
+            "When routines change, habits lose their anchor."
+          ],
+          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+        },
+        {
+          "type": "action_step",
+          "stepNumber": 11,
+          "title": "Day 4 Complete When:",
+          "instructions": [
+            "You used the identity statement",
+            "You changed at least one routine",
+            "You moved on from routine-based urges",
+            "Nothing else is required."
           ],
           "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
         },
@@ -418,7 +850,7 @@
         {
           "type": "close",
           "message": "Day 4 is complete.",
-          "secondaryMessage": "Interrupt old patterns and build new responses."
+          "secondaryMessage": "Detach smoking from daily routines. Shift identity from “quitting” to “not smoking”"
         }
       ]
     },
@@ -431,76 +863,168 @@
           "type": "intro",
           "dayNumber": 5,
           "dayTitle": "Confidence & Slip Protection",
-          "goal": "Strengthen confidence and prepare for real-life triggers.",
+          "goal": "Protect momentum. Neutralize “just one” thinking",
           "estimatedMinutes": 12
         },
         {
           "type": "lesson",
           "title": "Today's Focus",
           "paragraphs": [
-            "Strengthen confidence and prepare for real-life triggers."
+            "By Day 5, many people feel:",
+            "Calmer",
+            "More stable",
+            "More confident",
+            "This often leads to a false conclusion :",
+            "“I’m fine now. I can handle one.”"
           ],
-          "highlight": "Strengthen confidence and prepare for real-life triggers."
+          "highlight": "Day 5 exists to close that door calmly."
         },
         {
           "type": "action_step",
           "stepNumber": 1,
-          "title": "Notice Your Progress",
+          "title": "Today’s Core Rule (non-negotiable)",
           "instructions": [
-            "You’ve gone several days without giving in.",
-            "That proves you can handle urges."
+            "You do not experiment today.",
+            "You do not test control.",
+            "You do not prove anything.",
+            "Smoking “to check” restarts the loop."
           ],
           "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
         },
         {
           "type": "action_step",
           "stepNumber": 2,
-          "title": "Stay Consistent",
+          "title": "Step 1: Understand The “just One” Trap",
           "instructions": [
-            "When an urge appears,",
-            "pause, breathe, wait — just like before."
+            "Common Day 5 thoughts:",
+            "“I deserve it”",
+            "“I’ve handled this well”",
+            "“One won’t reset anything”",
+            "“I want to see how it feels”",
+            "These thoughts are:",
+            "Habit echoes",
+            "Not rational decisions",
+            "Not proof of readiness",
+            "Smoking is not about quantity. It’s about reopening the loop."
           ],
           "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
         },
         {
           "type": "action_step",
           "stepNumber": 3,
-          "title": "Prepare For Triggers",
+          "title": "Step 2: Clarity Statement (use Verbatim)",
           "instructions": [
-            "Imagine someone offering you a cigarette or drink.",
-            "Mentally rehearse saying no calmly."
+            "When any of the above thoughts appear, say internally:",
+            "“This is how the habit tries to return.”",
+            "No argument. No negotiation.",
+            "Then move on."
           ],
           "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
         },
         {
           "type": "action_step",
           "stepNumber": 4,
-          "title": "Don’t Test Yourself",
+          "title": "Step 3: Maintain The Delay Rule",
           "instructions": [
-            "Avoid high-risk situations today.",
-            "Stability is more important than proving willpower."
+            "Even on Day 5:",
+            "Every urge is delayed by 10 minutes",
+            "No exceptions",
+            "This keeps the loop broken.",
+            "Delay is still protection."
           ],
           "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
         },
         {
           "type": "action_step",
           "stepNumber": 5,
-          "title": "Watch For Overconfidence",
+          "title": "Step 4: Light Structure (important)",
           "instructions": [
-            "Thoughts like “One won’t hurt” may appear.",
-            "Recognize them as habit thoughts."
+            "Today is not a “free” day.",
+            "Provide light structure:",
+            "Stay moderately busy",
+            "Avoid long idle gaps",
+            "Keep meals regular",
+            "Idle time + confidence = vulnerability."
           ],
           "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
         },
         {
           "type": "action_step",
           "stepNumber": 6,
-          "title": "If A Slip Ever Happens",
+          "title": "Step 5: Slip Protection Protocol (critical)",
           "instructions": [
-            "Don’t panic.",
-            "Return to awareness immediately.",
-            "Continue — don’t quit the programme.",
-            "Day 5 is about steady confidence, not pressure."
+            "If a slip happens today:",
+            "1. Stop immediately",
+            "2. No shame, no self-talk spiral",
+            "3. Resume the delay rule on the next urge",
+            "Say:",
+            "“I don’t need to punish myself. I return to the plan.”",
+            "A slip does not erase progress unless it becomes permission."
+          ],
+          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+        },
+        {
+          "type": "action_step",
+          "stepNumber": 7,
+          "title": "What Not To Do Today",
+          "instructions": [
+            "Don’t celebrate with smoking",
+            "Don’t test yourself socially",
+            "Don’t romanticize “old habits”",
+            "Don’t relax rules prematurely",
+            "This is maintenance day , not victory day."
+          ],
+          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+        },
+        {
+          "type": "action_step",
+          "stepNumber": 8,
+          "title": "Day 5 Mental Frame",
+          "instructions": [
+            "You are not proving strength.",
+            "You are:",
+            "Protecting what you’ve already built.",
+            "Stability comes from consistency, not risk."
+          ],
+          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+        },
+        {
+          "type": "action_step",
+          "stepNumber": 9,
+          "title": "End-of-day Close",
+          "instructions": [
+            "Read this slowly:",
+            "“Today, I didn’t need to prove control.",
+            "I protected my progress.",
+            "That keeps the habit closed.”",
+            "That completes Day 5."
+          ],
+          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+        },
+        {
+          "type": "action_step",
+          "stepNumber": 10,
+          "title": "Why Day 5 Works (logic Check)",
+          "instructions": [
+            "Day 5 works because it:",
+            "Neutralizes overconfidence",
+            "Prevents habit re-entry",
+            "Keeps delay active",
+            "Protects momentum without pressure",
+            "Most failures happen here — not because of weakness, but because of misplaced",
+            "confidence."
+          ],
+          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+        },
+        {
+          "type": "action_step",
+          "stepNumber": 11,
+          "title": "Day 5 Complete When:",
+          "instructions": [
+            "You didn’t experiment",
+            "You used clarity instead of confidence",
+            "You protected the delay rule",
+            "Nothing else is required."
           ],
           "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
         },
@@ -513,88 +1037,187 @@
         {
           "type": "close",
           "message": "Day 5 is complete.",
-          "secondaryMessage": "Strengthen confidence and prepare for real-life triggers."
+          "secondaryMessage": "Protect momentum. Neutralize “just one” thinking"
         }
       ]
     },
     {
       "dayNumber": 6,
-      "dayTitle": "Stability & Moving Forward",
+      "dayTitle": "Stability & Next-phase Mindset",
       "estimatedMinutes": 12,
       "cards": [
         {
           "type": "intro",
           "dayNumber": 6,
-          "dayTitle": "Stability & Moving Forward",
-          "goal": "Shift from quitting to living normally without the habit.",
+          "dayTitle": "Stability & Next-phase Mindset",
+          "goal": "Shift from effort → normal living. Reduce monitoring and over-control",
           "estimatedMinutes": 12
         },
         {
           "type": "lesson",
           "title": "Today's Focus",
           "paragraphs": [
-            "Shift from quitting to living normally without the habit."
+            "By Day 6, many people expect:",
+            "A big feeling",
+            "A sense of victory",
+            "A dramatic “I’ve quit” moment",
+            "That expectation can actually keep the habit alive.",
+            "Day 6 teaches a quieter truth:"
           ],
-          "highlight": "Shift from quitting to living normally without the habit."
+          "highlight": "your day."
         },
         {
           "type": "action_step",
           "stepNumber": 1,
-          "title": "Acknowledge Your Progress",
+          "title": "Today’s Core Rule (non-negotiable)",
           "instructions": [
-            "You’ve completed six days.",
-            "That proves you can interrupt the pattern."
+            "You stop managing smoking today.",
+            "You live your day and respond only if needed.",
+            "No constant checking. No monitoring how you feel. No counting hours."
           ],
           "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
         },
         {
-          "type": "mindfulness_exercise",
-          "title": "Treat Urges As Background Noise",
-          "steps": [
-            "If a thought appears,",
-            "pause briefly and move on.",
-            "Don’t give it importance."
-          ],
-          "completionMessage": "Stay with the practice until your body and mind feel steadier."
-        },
-        {
           "type": "action_step",
           "stepNumber": 2,
-          "title": "Live Normally Today",
+          "title": "Step 1: Recognize The Shift (important)",
           "instructions": [
-            "Focus on work, meals, conversations, rest.",
-            "Let quitting move into the background."
+            "You may notice:",
+            "Longer gaps between urges",
+            "Weaker urges",
+            "Urges that appear and disappear quickly",
+            "Moments where smoking doesn’t come to mind",
+            "This does not mean:",
+            "You are “done”",
+            "You should test yourself",
+            "It means:",
+            "The habit loop is losing relevance."
           ],
           "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
         },
         {
           "type": "action_step",
           "stepNumber": 3,
-          "title": "Avoid Testing Yourself",
+          "title": "Step 2: Reduce Tool Use (intentional)",
           "instructions": [
-            "No need to “prove” anything.",
-            "Stability grows quietly."
+            "Tools still exist — but you don’t use them automatically.",
+            "New rule:",
+            "Use breathing only if needed",
+            "Use delay only if an urge appears",
+            "Do not force grounding or relaxation",
+            "Confidence grows when tools become optional."
           ],
           "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
         },
         {
           "type": "action_step",
           "stepNumber": 4,
-          "title": "Prepare For The Future",
+          "title": "Step 3: Return To Normal Life",
           "instructions": [
-            "Occasional thoughts may appear later.",
-            "That’s normal. Your response has changed."
+            "Today, your job is simple:",
+            "Do your usual activities",
+            "Focus on work, family, routines",
+            "Let smoking be peripheral",
+            "You are not “in recovery mode” today. You are living."
+          ],
+          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+        },
+        {
+          "type": "mindfulness_exercise",
+          "title": "Step 4: Handle Surprise Urges Calmly",
+          "steps": [
+            "If an urge appears unexpectedly:",
+            "1. Pause",
+            "2. Breathe once or twice",
+            "3. Say:",
+            "“This doesn’t need attention.”",
+            "If needed, delay for 10 minutes.",
+            "That’s it.",
+            "No drama. No escalation."
+          ],
+          "completionMessage": "Stay with the practice until your body and mind feel steadier."
+        },
+        {
+          "type": "action_step",
+          "stepNumber": 5,
+          "title": "Step 5: Stop Counting & Comparing",
+          "instructions": [
+            "Do not:",
+            "Count days",
+            "Compare yourself to others",
+            "Measure “how strong” you feel",
+            "These keep the habit mentally active.",
+            "Stability grows in quiet continuity."
           ],
           "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
         },
         {
           "type": "action_step",
-          "stepNumber": 5,
-          "title": "Commit To Ongoing Awareness",
+          "stepNumber": 6,
+          "title": "Common Day 6 Confusion (normal)",
           "instructions": [
-            "Continue using pause, breathing, and calm response.",
-            "Consistency builds long-term strength.",
-            "Day 6 is about steady confidence and long-term mindset."
+            "You may think:",
+            "“Shouldn’t this feel bigger?”",
+            "“Am I missing something?”",
+            "“What if an urge comes later?”",
+            "These thoughts are normal — and harmless.",
+            "Day 6 is not an ending. It’s a handoff to normal life."
+          ],
+          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+        },
+        {
+          "type": "action_step",
+          "stepNumber": 7,
+          "title": "If You Slip After Day 6",
+          "instructions": [
+            "If smoking happens:",
+            "Stop immediately",
+            "No shame",
+            "Resume the delay rule",
+            "Continue living",
+            "You don’t restart the program. You don’t label yourself.",
+            "You simply return to steadiness."
+          ],
+          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+        },
+        {
+          "type": "action_step",
+          "stepNumber": 8,
+          "title": "End-of-program Close (very Important)",
+          "instructions": [
+            "Read this slowly:",
+            "“I don’t fight smoking.",
+            "I don’t manage it.",
+            "I live my life — and smoking no longer belongs in it.”",
+            "That completes the 6-day program."
+          ],
+          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+        },
+        {
+          "type": "action_step",
+          "stepNumber": 9,
+          "title": "Why Day 6 Works (logic Check)",
+          "instructions": [
+            "Day 6 works because it:",
+            "Prevents over-control",
+            "Reduces mental fixation",
+            "Normalizes non-smoking",
+            "Encourages independence",
+            "Allows the habit to fade naturally",
+            "Long-term success depends more on not thinking about smoking than on",
+            "resisting it."
+          ],
+          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+        },
+        {
+          "type": "action_step",
+          "stepNumber": 10,
+          "title": "Day 6 Complete When:",
+          "instructions": [
+            "You lived normally",
+            "You used tools only if needed",
+            "Smoking felt less central",
+            "Nothing else is required."
           ],
           "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
         },
@@ -607,7 +1230,7 @@
         {
           "type": "close",
           "message": "Day 6 is complete.",
-          "secondaryMessage": "Shift from quitting to living normally without the habit."
+          "secondaryMessage": "Shift from effort → normal living. Reduce monitoring and over-control"
         }
       ]
     }

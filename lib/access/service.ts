@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Purchases, { CustomerInfo } from 'react-native-purchases';
 
 import { PROGRAM_METADATA } from '@/content/programs/metadata';
-import { getOwnedProgramFromCustomerInfo, getRevenueCatProgram } from '@/lib/revenuecat/config';
+import { getOwnedProgramsFromCustomerInfo, getRevenueCatProgram } from '@/lib/revenuecat/config';
 import { supabase } from '@/lib/supabase';
 import {
   CompletionState,
@@ -100,6 +100,83 @@ function normalizeProgramSlug(value: string | null | undefined): ProgramSlug | n
   return value in PROGRAM_METADATA ? (value as ProgramSlug) : null;
 }
 
+type ProgramAccessRow = {
+  archived_at: string | null;
+  completed_at: string | null;
+  completion_state: string | null;
+  current_day: number | null;
+  owned_program: string | null;
+  purchase_state: string | null;
+  updated_at?: string | null;
+};
+
+function getPurchaseStateRank(purchaseState: string | null | undefined) {
+  switch (purchaseState) {
+    case 'owned_active':
+      return 3;
+    case 'owned_completed':
+      return 2;
+    case 'owned_archived':
+      return 1;
+    default:
+      return 0;
+  }
+}
+
+function selectPreferredProgramSlug(
+  candidates: ProgramSlug[],
+  preferences: (ProgramSlug | null | undefined)[]
+): ProgramSlug | null {
+  for (const preference of preferences) {
+    if (preference && candidates.includes(preference)) {
+      return preference;
+    }
+  }
+
+  return candidates[0] ?? null;
+}
+
+function selectPreferredAccessRow(
+  rows: ProgramAccessRow[],
+  preferredProgram: ProgramSlug | null
+): ProgramAccessRow | null {
+  if (!rows.length) {
+    return null;
+  }
+
+  const rankedRows = [...rows].sort((left, right) => {
+    const leftProgram = normalizeProgramSlug(left.owned_program);
+    const rightProgram = normalizeProgramSlug(right.owned_program);
+
+    if (preferredProgram) {
+      const leftPreferred = leftProgram === preferredProgram ? 1 : 0;
+      const rightPreferred = rightProgram === preferredProgram ? 1 : 0;
+
+      if (leftPreferred !== rightPreferred) {
+        return rightPreferred - leftPreferred;
+      }
+    }
+
+    const purchaseStateDelta =
+      getPurchaseStateRank(right.purchase_state) - getPurchaseStateRank(left.purchase_state);
+
+    if (purchaseStateDelta !== 0) {
+      return purchaseStateDelta;
+    }
+
+    const leftUpdatedAt = left.updated_at ? Date.parse(left.updated_at) : 0;
+    const rightUpdatedAt = right.updated_at ? Date.parse(right.updated_at) : 0;
+
+    if (leftUpdatedAt !== rightUpdatedAt) {
+      return rightUpdatedAt - leftUpdatedAt;
+    }
+
+    return (right.current_day ?? 0) - (left.current_day ?? 0);
+  });
+
+  return rankedRows[0] ?? null;
+}
+
 export class AccessService {
   static async getAccessSnapshot() {
     try {
@@ -147,24 +224,44 @@ export class AccessService {
     };
   }
 
-  static async getServerAccessSnapshot(userId: string) {
+  static async getProfileActiveProgram(userId: string) {
     try {
       const { data, error } = await supabase
-        .from('program_access')
-        .select('owned_program, purchase_state, completion_state, current_day, completed_at, archived_at')
-        .eq('user_id', userId)
+        .from('profiles')
+        .select('active_program')
+        .eq('id', userId)
         .maybeSingle();
 
+      if (error) {
+        throw error;
+      }
+
+      return normalizeProgramSlug(data?.active_program);
+    } catch (error) {
+      console.error('Failed to fetch active program from Supabase', error);
+      return null;
+    }
+  }
+
+  static async getServerAccessSnapshot(userId: string, preferredProgram?: ProgramSlug | null) {
+    try {
+      const activeProgram = preferredProgram ?? (await this.getProfileActiveProgram(userId));
+      const { data, error } = await supabase
+        .from('program_access')
+        .select('owned_program, purchase_state, completion_state, current_day, completed_at, archived_at, updated_at')
+        .eq('user_id', userId);
+
       if (error) throw error;
-      if (!data) return null;
+      const selectedRow = selectPreferredAccessRow((data ?? []) as ProgramAccessRow[], activeProgram);
+      if (!selectedRow) return null;
 
       const snapshot: ProgramAccessSnapshot = {
-        ownedProgram: normalizeProgramSlug(data.owned_program),
-        purchaseState: (data.purchase_state as PurchaseState) ?? 'not_owned',
-        completionState: (data.completion_state as CompletionState) ?? 'not_started',
-        currentDay: data.current_day,
-        completedAt: data.completed_at,
-        archivedAt: data.archived_at,
+        ownedProgram: normalizeProgramSlug(selectedRow.owned_program),
+        purchaseState: (selectedRow.purchase_state as PurchaseState) ?? 'not_owned',
+        completionState: (selectedRow.completion_state as CompletionState) ?? 'not_started',
+        currentDay: selectedRow.current_day,
+        completedAt: selectedRow.completed_at,
+        archivedAt: selectedRow.archived_at,
         eligibleProducts: ['six_day_reset', 'ninety_day_transform'],
         source: 'supabase',
       };
@@ -315,9 +412,23 @@ export class AccessService {
   }
 
   static async syncFromRevenueCat(customerInfo: CustomerInfo, userId: string) {
-    const ownedProgram: ProgramSlug | null = getOwnedProgramFromCustomerInfo(customerInfo);
+    const [activeProgram, localSnapshot, existingProgress] = await Promise.all([
+      this.getProfileActiveProgram(userId),
+      this.getAccessSnapshot(),
+      this.getProgressRecord(),
+    ]);
+    const ownedPrograms = getOwnedProgramsFromCustomerInfo(customerInfo);
+    let ownedProgram = selectPreferredProgramSlug(ownedPrograms, [
+      activeProgram,
+      localSnapshot.ownedProgram,
+      existingProgress?.programSlug,
+    ]);
+    const serverSnapshot =
+      ownedPrograms.length > 0
+        ? await this.getServerAccessSnapshot(userId, ownedProgram ?? activeProgram)
+        : null;
 
-    const serverSnapshot = ownedProgram ? await this.getServerAccessSnapshot(userId) : null;
+    ownedProgram = ownedProgram ?? serverSnapshot?.ownedProgram ?? null;
     const serverProgress =
       ownedProgram
         ? await this.getServerProgressRecord(
@@ -326,7 +437,6 @@ export class AccessService {
             serverSnapshot?.ownedProgram === ownedProgram ? serverSnapshot : null
           )
         : null;
-    const existingProgress = await this.getProgressRecord();
     const nextProgress =
       ownedProgram && serverProgress
         ? serverProgress

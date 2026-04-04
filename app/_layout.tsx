@@ -75,10 +75,8 @@ function NavigationGate({
                         target = '/(auth)/reset-password' as Href;
                     }
                 } else if (!session) {
-                    const hasSeenIntro = await AppStorage.getItem('hasSeenOnboarding');
-
                     if (!inAuthGroup) {
-                        target = (!hasSeenIntro ? '/onboarding' : '/sign-in') as Href;
+                        target = '/(auth)/welcome' as Href;
                     }
         } else if (!profile || !profile.onboarding_complete) {
           if ((segments[1] as string) !== 'personalization') {

@@ -43,6 +43,29 @@ export default function SignUp() {
 
             if (error) throw error;
 
+            // Supabase can return an obfuscated "success" payload for already-registered emails.
+            // In that case identities is commonly an empty array and no session is issued.
+            const maybeExistingUser =
+                !!sessionData?.user &&
+                !sessionData?.session &&
+                Array.isArray((sessionData.user as any).identities) &&
+                (sessionData.user as any).identities.length === 0;
+
+            if (maybeExistingUser) {
+                Alert.alert(
+                    'Account already exists',
+                    'This email is already linked to an account. Use Sign In, or continue with Apple/Google if you used those before.',
+                    [
+                        {
+                            text: 'Continue',
+                            onPress: () => router.replace('/welcome' as Href),
+                        },
+                        { text: 'Cancel', style: 'cancel' },
+                    ]
+                );
+                return;
+            }
+
             if (sessionData.user && sessionData.session) {
                 const { error: profileError } = await supabase
                     .from('profiles')
@@ -62,12 +85,41 @@ export default function SignUp() {
                 router.replace('/personalization' as Href);
             } else {
                 // Email confirmation mode: do not enter personalization until authenticated.
-                Alert.alert('Check your email', 'Verify your account, then sign in to continue setup.');
-                router.replace('/sign-in' as Href);
+                Alert.alert(
+                    'Check your email',
+                    'Verify your account, then sign in to continue setup. If this email was already used with Apple/Google, use Sign In instead.'
+                );
+                router.replace('/welcome' as Href);
             }
 
         } catch (error: any) {
-            Alert.alert('Sign Up Error', error.message);
+            const rawMessage = error?.message ?? 'Please try again.';
+            const normalized = rawMessage.toLowerCase();
+            const isExistingAccount =
+                normalized.includes('already registered') ||
+                normalized.includes('already exists') ||
+                normalized.includes('user already registered');
+
+            if (isExistingAccount) {
+                Alert.alert(
+                    'Account already exists',
+                    'This email is already linked to an account. Sign in with Apple/Google if you used those before, or reset your password.',
+                    [
+                        {
+                            text: 'Reset Password',
+                            onPress: () => router.replace('/sign-in' as Href),
+                        },
+                        {
+                            text: 'Sign In',
+                            onPress: () => router.replace('/sign-in' as Href),
+                        },
+                        { text: 'Cancel', style: 'cancel' },
+                    ]
+                );
+                return;
+            }
+
+            Alert.alert('Sign Up Error', rawMessage);
         } finally {
             setLoading(false);
         }
@@ -141,7 +193,7 @@ export default function SignUp() {
                         <Text className="text-gray-500 font-satoshi">Already have an account? </Text>
                         <Text
                             className="text-forest font-satoshi-bold font-medium"
-                            onPress={() => router.replace('/sign-in' as Href)}
+                            onPress={() => router.replace('/welcome' as Href)}
                         >
                             Sign In
                         </Text>

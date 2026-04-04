@@ -16,6 +16,8 @@ interface AuthContextType {
   clearPasswordRecoveryState: () => void;
   deleteAccount: () => Promise<void>;
   signInWithOTP: (email: string) => Promise<{ error: unknown }>;
+  signInWithGoogleIdToken: (idToken: string) => Promise<{ error: unknown; user: User | null }>;
+  signInWithAppleIdToken: (idToken: string, nonce?: string) => Promise<{ error: unknown; user: User | null }>;
   signOut: () => Promise<void>;
 }
 
@@ -27,6 +29,8 @@ const AuthContext = createContext<AuthContextType>({
   clearPasswordRecoveryState: () => {},
   deleteAccount: async () => {},
   signInWithOTP: async () => ({ error: null }),
+  signInWithGoogleIdToken: async () => ({ error: null, user: null }),
+  signInWithAppleIdToken: async () => ({ error: null, user: null }),
   signOut: async () => {},
 });
 
@@ -132,6 +136,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       },
     });
     return { error };
+  };
+
+  const signInWithGoogleIdToken = async (idToken: string) => {
+    const { data, error } = await supabase.auth.signInWithIdToken({
+      provider: 'google',
+      token: idToken,
+    });
+
+    return { error, user: data.user };
+  };
+
+  const signInWithAppleIdToken = async (idToken: string, nonce?: string) => {
+    const { data, error } = await supabase.auth.signInWithIdToken({
+      provider: 'apple',
+      token: idToken,
+      nonce,
+    });
+
+    return { error, user: data.user };
   };
 
   const clearLocalSessionState = async () => {
@@ -243,6 +266,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         user,
         isLoading,
         signInWithOTP,
+        signInWithGoogleIdToken,
+        signInWithAppleIdToken,
         signOut,
       }}
     >

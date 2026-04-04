@@ -1,10 +1,18 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
+import { BlurView } from 'expo-blur';
 import { Href, useLocalSearchParams, useRouter } from 'expo-router';
-import * as Haptics from 'expo-haptics';
 import PagerView from 'react-native-pager-view';
-import Animated, { FadeIn } from 'react-native-reanimated';
+import Animated, {
+  Extrapolation,
+  FadeIn,
+  FadeInDown,
+  interpolate,
+  useAnimatedStyle,
+  useSharedValue,
+} from 'react-native-reanimated';
+import type { SharedValue } from 'react-native-reanimated';
 import { Pressable, Text, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -44,7 +52,7 @@ function ErrorState({ message }: { message: string }) {
   const router = useRouter();
 
   return (
-    <SafeAreaView className="flex-1 bg-surface">
+    <SafeAreaView className="flex-1 bg-sage">
       <StatusBar style="dark" />
       <View className="flex-1 items-center justify-center px-6">
         <Text className="mb-3 font-erode-bold text-3xl text-forest">Day not found</Text>
@@ -60,7 +68,7 @@ function ErrorState({ message }: { message: string }) {
 
 function LoadingState() {
   return (
-    <SafeAreaView className="flex-1 bg-surface">
+    <SafeAreaView className="flex-1 bg-sage">
       <StatusBar style="dark" />
       <View className="flex-1 items-center justify-center px-6">
         <Text className="font-satoshi text-base text-gray-600">Loading day progress...</Text>
@@ -69,34 +77,71 @@ function LoadingState() {
   );
 }
 
-function ProgressBar({
-  currentIndex,
-  totalCards,
-}: {
-  currentIndex: number;
-  totalCards: number;
-}) {
-  return (
-    <View className="flex-row gap-1.5">
-      {Array.from({ length: totalCards }).map((_, index) => (
-        <View key={`progress-${index}`} className="flex-1 rounded-full bg-gray-200">
-          <View
-            className={`h-[3px] rounded-full ${index <= currentIndex ? 'bg-forest' : 'bg-transparent'}`}
-          />
-        </View>
-      ))}
-    </View>
-  );
-}
-
 function ResumeToast() {
   return (
     <Animated.View
-      entering={FadeIn.duration(220)}
-      className="absolute left-6 right-6 top-24 z-20 rounded-2xl border border-forest/10 bg-white px-4 py-3"
+      entering={FadeInDown.springify().damping(18).stiffness(150)}
+      className="absolute bottom-12 left-0 right-0 items-center z-50"
+      pointerEvents="none"
+      style={{
+        shadowColor: '#000',
+        shadowOpacity: 0.1,
+        shadowRadius: 12,
+        shadowOffset: { width: 0, height: 6 },
+        elevation: 4,
+      }}
     >
-      <Text className="text-center font-satoshi text-sm text-forest">Continuing where you left off</Text>
+      <BlurView 
+        intensity={80} 
+        tint="light" 
+        className="rounded-[20px] border border-forest/10 px-5 py-2.5 overflow-hidden bg-white/50"
+      >
+        <Text className="text-center font-satoshi text-[13px] text-forest/90 font-medium tracking-wide">
+          Continuing where you left off
+        </Text>
+      </BlurView>
     </Animated.View>
+  );
+}
+
+function SwipeDeckCard({
+  card,
+  index,
+  totalCards,
+  progress,
+  programName,
+  cardHeight,
+}: {
+  card: DayContent['cards'][number];
+  index: number;
+  totalCards: number;
+  progress: SharedValue<number>;
+  programName?: string;
+  cardHeight: number;
+}) {
+  const animatedStyle = useAnimatedStyle(() => {
+    const distance = Math.abs(progress.value - index);
+    const scale = interpolate(distance, [0, 1], [1, 0.95], Extrapolation.CLAMP);
+    const opacity = interpolate(distance, [0, 1], [1, 0.75], Extrapolation.CLAMP);
+    const translateY = interpolate(distance, [0, 1], [0, 8], Extrapolation.CLAMP);
+
+    return {
+      opacity,
+      transform: [{ scale }, { translateY }],
+    };
+  }, [index]);
+
+  return (
+    <SafeAreaView edges={['bottom']} className="flex-1 px-6 pb-6">
+      <View className="flex-1 items-center pt-2">
+        <Animated.View
+          entering={FadeInDown.springify().damping(18).stiffness(140)}
+          style={[{ maxHeight: cardHeight, width: '100%' }, animatedStyle]}
+        >
+          <CardRenderer card={card} programName={programName} cardIndex={index} totalCards={totalCards} />
+        </Animated.View>
+      </View>
+    </SafeAreaView>
   );
 }
 
@@ -104,10 +149,12 @@ export default function DayDetailScreen() {
   const router = useRouter();
   const pagerRef = useRef<PagerView>(null);
   const params = useLocalSearchParams<{ dayNumber?: string | string[]; programSlug?: string | string[] }>();
-  const { width } = useWindowDimensions();
+  const { height: viewportHeight } = useWindowDimensions();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isRestored, setIsRestored] = useState(false);
   const [showResumeToast, setShowResumeToast] = useState(false);
+  const swipeProgress = useSharedValue(0);
+  const cardHeight = Math.round(viewportHeight * 0.55);
 
   const rawProgramSlug = normalizeRouteParam(params.programSlug);
   const rawDayNumber = normalizeRouteParam(params.dayNumber);
@@ -182,7 +229,6 @@ export default function DayDetailScreen() {
 
   const handlePageSelected = async (nextIndex: number) => {
     setCurrentIndex(nextIndex);
-    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
     if (!storageKey) return;
 
@@ -191,17 +237,6 @@ export default function DayDetailScreen() {
     } catch (error) {
       console.error('Failed to save day card progress', error);
     }
-  };
-
-  const goToNextPage = () => {
-    if (!dayContent) return;
-    if (currentIndex >= dayContent.cards.length - 1) return;
-    pagerRef.current?.setPage(currentIndex + 1);
-  };
-
-  const goToPreviousPage = () => {
-    if (currentIndex <= 0) return;
-    pagerRef.current?.setPage(currentIndex - 1);
   };
 
   if (!programSlug || !Number.isInteger(dayNumber) || dayNumber < 1) {
@@ -221,17 +256,17 @@ export default function DayDetailScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-surface">
+    <SafeAreaView className="flex-1 bg-sage">
       <StatusBar style="dark" />
 
-      <View className="px-6 pb-4 pt-3">
-        <View className="mb-4 flex-row items-center justify-between">
+      <View className="px-6 pb-1 pt-3">
+        <View className="flex-row items-center justify-between">
           <Pressable
             accessibilityLabel="Back to program"
-            className="h-11 w-11 items-center justify-center rounded-full bg-white"
+            className="h-11 w-11 items-center justify-center rounded-full bg-forest"
             onPress={() => router.replace('/(tabs)/program' as Href)}
           >
-            <Ionicons name="chevron-back" size={22} color="#05290C" />
+            <Ionicons name="chevron-back" size={22} color="#FFFFFF" />
           </Pressable>
 
           <View className="flex-1 px-4">
@@ -245,39 +280,39 @@ export default function DayDetailScreen() {
 
           <View className="h-11 w-11" />
         </View>
-
-        <ProgressBar currentIndex={currentIndex} totalCards={dayContent.cards.length} />
       </View>
 
       {showResumeToast ? <ResumeToast /> : null}
 
       <PagerView
         ref={pagerRef}
-        className="flex-1"
+        style={{ flex: 1 }}
+        overdrag
+        offscreenPageLimit={2}
         initialPage={currentIndex}
+        onPageScroll={(event) => {
+          const { position, offset } = event.nativeEvent;
+          swipeProgress.value = position + offset;
+        }}
         onPageSelected={(event) => {
           void handlePageSelected(event.nativeEvent.position);
         }}
       >
         {dayContent.cards.map((card, index) => (
-          <Pressable
+          <View
             key={`${dayContent.programSlug}-${dayContent.dayNumber}-${card.type}-${index}`}
-            className="flex-1"
-            onPress={({ nativeEvent }) => {
-              if (nativeEvent.locationX >= width / 2) {
-                goToNextPage();
-                return;
-              }
-
-              goToPreviousPage();
-            }}
+            style={{ flex: 1 }}
+            collapsable={false}
           >
-            <SafeAreaView edges={['bottom']} className="flex-1 bg-surface p-6">
-              <Animated.View entering={FadeIn.duration(220)} className="flex-1">
-                <CardRenderer card={card} />
-              </Animated.View>
-            </SafeAreaView>
-          </Pressable>
+            <SwipeDeckCard
+              card={card}
+              index={index}
+              totalCards={dayContent.cards.length}
+              progress={swipeProgress}
+              programName={program.name}
+              cardHeight={cardHeight}
+            />
+          </View>
         ))}
       </PagerView>
     </SafeAreaView>

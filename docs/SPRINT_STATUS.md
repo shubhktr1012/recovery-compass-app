@@ -1,6 +1,6 @@
 # Sprint Status — Recovery Compass
 
-> Last updated: March 29, 2026
+> Last updated: April 5, 2026
 > Branch: `rebuild/multi-program`
 > Questionnaire foundation: ready
 > Sellable catalog: 6 products configured in RevenueCat with placeholder pricing
@@ -8,7 +8,7 @@
 
 ## Launch Blockers (must fix before ANY submission)
 
-- [ ] App icon from Anjan (1024x1024 PNG)
+- [x] App icon from Anjan (1024x1024 PNG)
 - [ ] Final public pricing for all 6 programs
 - [ ] Updated Sleep / Energy / Men's Health content + duration refresh from Anjan
 - [ ] Final QA sweep on questionnaire → paywall → purchase → program access
@@ -25,6 +25,10 @@
 - [x] Program tab routes unlocked days to V2 top-level day-detail
 - [x] Skeleton, ErrorState, OfflineBanner components
 - [x] Auth flow (sign up, sign in, forgot password)
+- [x] Apple Sign-In configured end-to-end (Identifiers + Supabase provider + nonce handling)
+- [x] Google Sign-In stabilized in Expo/Supabase (code exchange handled by provider hook, id_token sign-in flow fixed)
+- [x] Existing-account auth UX hardened (manual vs OAuth conflict path routed safely)
+- [x] One-time linked-account notice when adding Google/Apple to an existing account
 - [x] Delete Account flow (Supabase Edge Function live, auth deletion + cascade cleanup verified)
 - [x] Multi-program questionnaire foundation (quick profile, self-select vs guided path, persistence, recommendation routing)
 - [x] Questionnaire UI first draft (premium mobile layout, clear progress, polished selection states)
@@ -74,7 +78,7 @@
 
 ## Blocked On Anjan
 
-- [ ] App icon + splash screen assets
+- [ ] Splash screen assets
 - [ ] Final INR/public pricing for all 6 programs
 - [ ] Sleep program new content (21 days)
 - [ ] Energy program new content (14 days)

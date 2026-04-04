@@ -6,8 +6,8 @@
 import { Platform } from 'react-native';
 
 export const AppColors = {
-  forest: '#05290C',
-  sage: '#E6F2EF',
+  forest: '#06290C',
+  sage: '#E3F3E5',
   surface: '#F5F5F7',
   success: '#056936',
   danger: '#EF4444',

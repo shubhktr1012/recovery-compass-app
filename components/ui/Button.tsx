@@ -25,7 +25,7 @@ export function Button({
     disabled,
     ...props
 }: ButtonProps) {
-    const baseStyles = 'flex-row items-center justify-center rounded-2xl active:opacity-90 transition-opacity';
+    const baseStyles = 'flex-row items-center justify-center rounded-full active:opacity-90 transition-opacity';
 
     const variants = {
         primary: 'bg-forest border border-transparent',
@@ -73,6 +73,7 @@ export function Button({
             onPress={handlePress}
             disabled={disabled || loading}
             activeOpacity={0.8}
+            style={[{ borderCurve: 'continuous' as const }, props.style]}
             {...props}
         >
             {loading ? (

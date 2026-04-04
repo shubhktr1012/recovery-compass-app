@@ -76,7 +76,50 @@ function parseCards(value: unknown): ContentCard[] {
     return [];
   }
 
-  return value as ContentCard[];
+  const typeAliases: Record<string, ContentCard['type']> = {
+    action: 'action_step',
+    action_step: 'action_step',
+    audio: 'audio',
+    breathing: 'breathing_exercise',
+    breathing_exercise: 'breathing_exercise',
+    calm: 'calm_trigger',
+    calm_trigger: 'calm_trigger',
+    close: 'close',
+    exercise: 'exercise_routine',
+    exercise_routine: 'exercise_routine',
+    intro: 'intro',
+    journal: 'journal',
+    lesson: 'lesson',
+    mindfulness: 'mindfulness_exercise',
+    mindfulness_exercise: 'mindfulness_exercise',
+  };
+
+  return value
+    .map((entry) => {
+      if (typeof entry === 'string') {
+        try {
+          return JSON.parse(entry);
+        } catch {
+          return null;
+        }
+      }
+      return entry;
+    })
+    .map((entry) => {
+      if (!entry || typeof entry !== 'object') return null;
+      const typeValue = (entry as { type?: unknown }).type;
+      if (typeof typeValue !== 'string') return null;
+
+      const normalizedType = typeAliases[typeValue.trim().toLowerCase()];
+      if (!normalizedType) return null;
+
+      return { ...(entry as Record<string, unknown>), type: normalizedType } as ContentCard;
+    })
+    .filter((entry): entry is ContentCard => {
+      if (!entry || typeof entry !== 'object') return false;
+      const typeValue = (entry as { type?: unknown }).type;
+      return typeof typeValue === 'string' && typeValue.trim().length > 0;
+    });
 }
 
 function resolveContentStatus(programSlug: ProgramSlug, days: DayContent[]): ProgramContentStatus {

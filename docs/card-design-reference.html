@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recovery Compass — Premium Card Reference</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,300;1,9..40,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --forest: #06290C;
+    --forest-90: rgba(5,41,12,0.9);
+    --forest-70: rgba(5,41,12,0.7);
+    --forest-50: rgba(5,41,12,0.5);
+    --forest-30: rgba(5,41,12,0.3);
+    --forest-15: rgba(5,41,12,0.15);
+    --forest-08: rgba(5,41,12,0.08);
+    --forest-04: rgba(5,41,12,0.04);
+    --sage: #E3F3E5;
+    --sage-deep: #CADCD6;
+    --sage-mist: #F0F7F5;
+    --warm-cream: #FAFAF7;
+    --warm-glow: #F5F0E8;
+    --white: #FFFFFF;
+    --gray-100: #F4F5F4;
+    --gray-200: #E5E7E5;
+    --gray-300: #D1D4D1;
+    --gray-500: #8A8F8B;
+    --gray-600: #636863;
+    --gray-700: #3D433E;
+    --amber-warm: #FEF9F0;
+    --amber-border: #F0DFC0;
+    --amber-text: #7A5C2E;
+    --serif: 'Playfair Display', 'Erode', Georgia, serif;
+    --sans: 'DM Sans', 'Satoshi', -apple-system, sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--sage);
+    font-family: var(--sans);
+    padding: 40px 16px 80px;
+    max-width: 400px;
+    margin: 0 auto;
+    -webkit-font-smoothing: antialiased;
+  }
+  .page-header { margin-bottom: 48px; }
+  .page-header h1 {
+    font-family: var(--serif);
+    font-size: 24px;
+    font-weight: 400;
+    color: var(--forest);
+    margin-bottom: 6px;
+  }
+  .page-header p {
+    font-size: 13px;
+    color: var(--gray-500);
+    line-height: 1.5;
+  }
+  .label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--gray-500);
+    margin-bottom: 12px;
+    margin-top: 52px;
+  }
+
+  /* ─── Shared card shell with grain texture ─── */
+  .grain {
+    position: relative;
+    overflow: hidden;
+  }
+  .grain::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0.03;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 150px;
+    pointer-events: none;
+    border-radius: inherit;
+  }
+
+  /* ═══════════════════════════════════════════════════
+     1. INTRO CARD
+     ═══════════════════════════════════════════════════ */
+  .intro-card {
+    background: var(--white);
+    border-radius: 28px;
+    padding: 36px 28px 32px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(5,41,12,0.04), 0 8px 24px rgba(5,41,12,0.03);
+    display: flex;
+    flex-direction: column;
+    min-height: 420px;
+  }
+  .intro-card .day-label {
+    font-family: var(--sans);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--forest-30);
+    margin-bottom: auto;
+  }
+  .intro-card .title {
+    font-family: var(--serif);
+    font-size: 44px;
+    font-weight: 400;
+    color: var(--forest);
+    line-height: 1.08;
+    margin-bottom: 20px;
+    letter-spacing: -0.5px;
+  }
+  .intro-card .goal {
+    font-family: var(--sans);
+    font-size: 17px;
+    font-weight: 300;
+    line-height: 1.7;
+    color: var(--gray-600);
+    margin-bottom: 24px;
+  }
+  .intro-card .meta-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .intro-card .time-pill {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--forest-50);
+    background: var(--forest-04);
+    padding: 6px 14px;
+    border-radius: 100px;
+    letter-spacing: 0.3px;
+  }
+  .intro-card .divider-dot {
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: var(--forest-15);
+  }
+  .intro-card .program-name {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--forest-30);
+    letter-spacing: 0.3px;
+  }
+
+  /* ═══════════════════════════════════════════════════
+     2. LESSON CARD
+     ═══════════════════════════════════════════════════ */
+  .lesson-card {
+    background: var(--white);
+    border-radius: 28px;
+    padding: 36px 28px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(5,41,12,0.04), 0 8px 24px rgba(5,41,12,0.03);
+  }
+  .lesson-card .section-tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--forest-50);
+    border: 1px solid var(--forest-08);
+    padding: 5px 12px;
+    border-radius: 6px;
+    margin-bottom: 24px;
+  }
+  .lesson-card .subtitle {
+    font-family: var(--serif);
+    font-size: 26px;
+    font-weight: 400;
+    color: var(--forest);
+    line-height: 1.2;
+    margin-bottom: 24px;
+    letter-spacing: -0.3px;
+  }
+  .lesson-card p {
+    font-family: var(--sans);
+    font-size: 16px;
+    font-weight: 300;
+    line-height: 1.85;
+    color: var(--gray-600);
+    margin-bottom: 20px;
+  }
+  .lesson-card p:last-of-type { margin-bottom: 0; }
+  .lesson-card .pullquote {
+    margin: 28px 0;
+    padding: 24px 0 24px 24px;
+    border-left: 2px solid var(--forest);
+    font-family: var(--serif);
+    font-size: 22px;
+    font-weight: 400;
+    font-style: italic;
+    line-height: 1.45;
+    color: var(--forest-90);
+    letter-spacing: -0.2px;
+  }
+
+  /* ═══════════════════════════════════════════════════
+     3. ACTION STEP CARD
+     ═══════════════════════════════════════════════════ */
+  .step-card {
+    background: var(--white);
+    border-radius: 28px;
+    padding: 32px 28px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(5,41,12,0.04), 0 8px 24px rgba(5,41,12,0.03);
+  }
+  .step-card .step-indicator {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .step-card .step-num {
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
+    background: var(--forest);
+    color: var(--white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .step-card .step-info h3 {
+    font-family: var(--sans);
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--forest);
+    line-height: 1.25;
+    margin-bottom: 4px;
+  }
+  .step-card .step-info .duration {
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--forest-30);
+  }
+  .step-card .instructions {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 0 52px;
+  }
+  .step-card .instructions li {
+    font-size: 15px;
+    font-weight: 300;
+    line-height: 1.7;
+    color: var(--gray-700);
+    padding: 6px 0 6px 20px;
+    position: relative;
+    border-bottom: 1px solid var(--forest-04);
+  }
+  .step-card .instructions li:last-child { border-bottom: none; }
+  .step-card .instructions li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 15px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--sage-deep);
+  }
+  .step-card .why-box {
+    margin: 20px 0 0 52px;
+    background: var(--sage-mist);
+    border-radius: 16px;
+    padding: 18px 20px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .step-card .why-box:hover { background: var(--sage); }
+  .step-card .why-box .why-label {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--forest-50);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .step-card .why-box .why-label::after {
+    content: '▾';
+    font-size: 10px;
+  }
+  .step-card .why-box p {
+    font-size: 14px;
+    font-weight: 300;
+    line-height: 1.65;
+    color: var(--gray-600);
+  }
+  .step-card .tip-box {
+    margin: 14px 0 0 52px;
+    background: var(--amber-warm);
+    border: 1px solid var(--amber-border);
+    border-radius: 14px;
+    padding: 14px 18px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .step-card .tip-box .tip-icon {
+    font-size: 16px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .step-card .tip-box p {
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.55;
+    color: var(--amber-text);
+  }
+
+  /* ═══════════════════════════════════════════════════
+     4. BREATHING EXERCISE CARD
+     ═══════════════════════════════════════════════════ */
+  .breathing-card {
+    background: radial-gradient(ellipse at 50% 0%, var(--sage-mist) 0%, var(--sage) 70%);
+    border-radius: 28px;
+    padding: 36px 28px 32px;
+    margin-bottom: 20px;
+    text-align: center;
+    border: 1px solid var(--forest-08);
+    min-height: 480px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .breathing-card .tag {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--forest-30);
+    margin-bottom: 8px;
+  }
+  .breathing-card .title {
+    font-family: var(--serif);
+    font-size: 26px;
+    font-weight: 400;
+    color: var(--forest);
+    margin-bottom: 36px;
+  }
+  .breath-ring-outer {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    border: 1px solid var(--forest-08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    margin-bottom: 32px;
+  }
+  .breath-ring-middle {
+    width: 170px;
+    height: 170px;
+    border-radius: 50%;
+    border: 1px dashed var(--forest-08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: breatheRing 8s ease-in-out infinite;
+  }
+  .breath-core {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 40% 35%, var(--white) 0%, var(--sage) 60%, var(--sage-deep) 100%);
+    box-shadow: 0 4px 20px rgba(5,41,12,0.08), inset 0 -2px 8px rgba(5,41,12,0.04);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: breatheCore 8s ease-in-out infinite;
+  }
+  @keyframes breatheCore {
+    0%, 100% { transform: scale(1); box-shadow: 0 4px 20px rgba(5,41,12,0.08); }
+    30% { transform: scale(1.25); box-shadow: 0 8px 40px rgba(5,41,12,0.12); }
+    50% { transform: scale(1.25); }
+    80% { transform: scale(1); box-shadow: 0 4px 20px rgba(5,41,12,0.08); }
+  }
+  @keyframes breatheRing {
+    0%, 100% { transform: scale(1); opacity: 0.4; }
+    30% { transform: scale(1.1); opacity: 0.7; }
+    50% { transform: scale(1.1); opacity: 0.7; }
+    80% { transform: scale(1); opacity: 0.4; }
+  }
+  .breath-phase-text {
+    font-family: var(--serif);
+    font-size: 16px;
+    font-style: italic;
+    color: var(--forest-70);
+  }
+  .breath-counter {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--forest-30);
+    margin-bottom: 20px;
+  }
+  .breath-params {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+  }
+  .breath-param {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--forest-50);
+    background: var(--white);
+    padding: 6px 14px;
+    border-radius: 100px;
+    box-shadow: 0 1px 4px rgba(5,41,12,0.04);
+  }
+  .breath-param-sep {
+    font-size: 10px;
+    color: var(--forest-15);
+    padding: 0 2px;
+  }
+
+  /* ═══════════════════════════════════════════════════
+     5. MINDFULNESS CARD
+     ═══════════════════════════════════════════════════ */
+  .mindfulness-card {
+    background: var(--warm-cream);
+    border-radius: 28px;
+    padding: 40px 28px;
+    margin-bottom: 20px;
+    text-align: center;
+    border: 1px solid rgba(5,41,12,0.04);
+    min-height: 480px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .mindfulness-card .tag {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--forest-30);
+    margin-bottom: 8px;
+  }
+  .mindfulness-card .title {
+    font-family: var(--serif);
+    font-size: 28px;
+    font-weight: 400;
+    color: var(--forest);
+    margin-bottom: 40px;
+    letter-spacing: -0.3px;
+  }
+  .mindful-step {
+    font-family: var(--sans);
+    font-size: 20px;
+    font-weight: 300;
+    color: var(--forest);
+    line-height: 1.5;
+    padding: 20px 0;
+    border-top: 1px solid var(--forest-04);
+    opacity: 0.3;
+    transition: opacity 0.6s;
+  }
+  .mindful-step.active {
+    opacity: 1;
+  }
+  .mindful-step:first-child { border-top: none; }
+  .mindful-step strong {
+    font-weight: 600;
+    color: var(--forest);
+  }
+  .mindful-timer {
+    font-family: var(--sans);
+    font-size: 56px;
+    font-weight: 300;
+    color: var(--forest);
+    letter-spacing: 4px;
+    margin: 32px 0 16px;
+    font-variant-numeric: tabular-nums;
+  }
+  .mindful-note {
+    font-size: 14px;
+    font-weight: 300;
+    color: var(--forest-30);
+    font-style: italic;
+  }
+
+  /* ═══════════════════════════════════════════════════
+     6. EXERCISE ROUTINE CARD
+     ═══════════════════════════════════════════════════ */
+  .routine-card {
+    background: var(--white);
+    border-radius: 28px;
+    padding: 32px 28px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(5,41,12,0.04), 0 8px 24px rgba(5,41,12,0.03);
+  }
+  .routine-card .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+  }
+  .routine-card .header h3 {
+    font-family: var(--sans);
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--forest);
+  }
+  .routine-card .header .dur-pill {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--forest-50);
+    background: var(--forest-04);
+    padding: 5px 12px;
+    border-radius: 100px;
+  }
+  .exercise-block {
+    border-radius: 20px;
+    background: var(--sage-mist);
+    padding: 20px;
+    margin-bottom: 10px;
+    border: 1px solid var(--forest-04);
+  }
+  .exercise-block:last-child { margin-bottom: 0; }
+  .exercise-block .ex-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--forest);
+    margin-bottom: 6px;
+  }
+  .exercise-block .ex-desc {
+    font-size: 14px;
+    font-weight: 300;
+    line-height: 1.6;
+    color: var(--gray-600);
+    margin-bottom: 10px;
+  }
+  .exercise-block .ex-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .exercise-block .ex-meta span {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--forest-50);
+    background: var(--white);
+    padding: 4px 10px;
+    border-radius: 8px;
+  }
+
+  /* ═══════════════════════════════════════════════════
+     7. AUDIO CARD
+     ═══════════════════════════════════════════════════ */
+  .audio-card {
+    background: var(--white);
+    border-radius: 28px;
+    padding: 36px 28px 28px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(5,41,12,0.04), 0 8px 24px rgba(5,41,12,0.03);
+  }
+  .audio-card .tag {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--forest-30);
+    margin-bottom: 12px;
+  }
+  .audio-card .title {
+    font-family: var(--serif);
+    font-size: 26px;
+    font-weight: 400;
+    color: var(--forest);
+    margin-bottom: 8px;
+  }
+  .audio-card .desc {
+    font-size: 15px;
+    font-weight: 300;
+    line-height: 1.65;
+    color: var(--gray-500);
+    margin-bottom: 28px;
+  }
+  .audio-player-v2 {
+    background: var(--sage-mist);
+    border-radius: 20px;
+    padding: 24px 20px;
+    border: 1px solid var(--forest-04);
+  }
+  .wave-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 2.5px;
+    height: 48px;
+    margin-bottom: 16px;
+    padding: 0 4px;
+  }
+  .wave-bar {
+    flex: 1;
+    border-radius: 100px;
+    min-width: 3px;
+    transition: background 0.2s;
+  }
+  .wave-bar.played { background: var(--forest); }
+  .wave-bar.unplayed { background: var(--forest-15); }
+  .audio-track {
+    height: 3px;
+    background: var(--forest-08);
+    border-radius: 100px;
+    margin-bottom: 16px;
+    position: relative;
+  }
+  .audio-track-fill {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 38%;
+    background: var(--forest);
+    border-radius: 100px;
+  }
+  .audio-track-dot {
+    position: absolute;
+    top: 50%;
+    left: 38%;
+    transform: translate(-50%, -50%);
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--forest);
+    box-shadow: 0 1px 4px rgba(5,41,12,0.2);
+  }
+  .audio-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .audio-time {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--forest-30);
+    font-variant-numeric: tabular-nums;
+    min-width: 40px;
+  }
+  .play-btn-v2 {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--forest);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(5,41,12,0.2);
+    transition: transform 0.12s, box-shadow 0.12s;
+  }
+  .play-btn-v2:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 24px rgba(5,41,12,0.25);
+  }
+  .play-btn-v2:active { transform: scale(0.97); }
+  .play-btn-v2 svg { fill: var(--white); margin-left: 3px; }
+
+  /* ═══════════════════════════════════════════════════
+     8. CALM TRIGGER CARD
+     ═══════════════════════════════════════════════════ */
+  .calm-card {
+    background: radial-gradient(ellipse at 30% 20%, var(--sage-mist) 0%, var(--sage) 50%, var(--sage-deep) 100%);
+    border-radius: 28px;
+    padding: 36px 28px 32px;
+    margin-bottom: 20px;
+    border: 1px solid var(--forest-08);
+    text-align: center;
+    min-height: 380px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .calm-card .calm-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: var(--white);
+    box-shadow: 0 2px 12px rgba(5,41,12,0.06);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 24px;
+  }
+  .calm-card .calm-icon svg {
+    width: 28px;
+    height: 28px;
+  }
+  .calm-card .title {
+    font-family: var(--serif);
+    font-size: 28px;
+    font-weight: 400;
+    color: var(--forest);
+    margin-bottom: 12px;
+  }
+  .calm-card .desc {
+    font-size: 15px;
+    font-weight: 300;
+    line-height: 1.65;
+    color: var(--gray-600);
+    margin-bottom: 32px;
+    max-width: 300px;
+  }
+  .calm-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 32px;
+    background: var(--forest);
+    color: var(--white);
+    font-family: var(--sans);
+    font-size: 16px;
+    font-weight: 500;
+    border: none;
+    border-radius: 100px;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(5,41,12,0.2);
+    transition: transform 0.12s, box-shadow 0.12s;
+    letter-spacing: 0.2px;
+  }
+  .calm-cta:hover { transform: translateY(-1px); box-shadow: 0 6px 28px rgba(5,41,12,0.25); }
+  .calm-cta:active { transform: scale(0.98); }
+
+  /* ═══════════════════════════════════════════════════
+     9. JOURNAL CARD
+     ═══════════════════════════════════════════════════ */
+  .journal-card {
+    background: var(--white);
+    border-radius: 28px;
+    padding: 36px 28px 28px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(5,41,12,0.04), 0 8px 24px rgba(5,41,12,0.03);
+  }
+  .journal-card .tag {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--forest-30);
+    margin-bottom: 20px;
+  }
+  .journal-card .prompt {
+    font-family: var(--serif);
+    font-size: 28px;
+    font-weight: 400;
+    color: var(--forest);
+    line-height: 1.25;
+    margin-bottom: 12px;
+    letter-spacing: -0.3px;
+  }
+  .journal-card .helper {
+    font-size: 14px;
+    font-weight: 300;
+    color: var(--gray-500);
+    line-height: 1.5;
+    margin-bottom: 20px;
+  }
+  .journal-textarea {
+    width: 100%;
+    min-height: 140px;
+    border: 1.5px solid var(--forest-08);
+    border-radius: 20px;
+    padding: 20px;
+    font-family: var(--sans);
+    font-size: 16px;
+    font-weight: 300;
+    line-height: 1.7;
+    color: var(--forest);
+    resize: none;
+    background: var(--sage-mist);
+    transition: border-color 0.2s;
+  }
+  .journal-textarea:focus {
+    outline: none;
+    border-color: var(--forest-30);
+    background: var(--white);
+  }
+  .journal-textarea::placeholder { color: var(--gray-300); }
+  .journal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+  }
+  .btn-solid {
+    flex: 1;
+    padding: 15px;
+    background: var(--forest);
+    color: var(--white);
+    font-family: var(--sans);
+    font-size: 15px;
+    font-weight: 500;
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+    text-align: center;
+    transition: transform 0.1s;
+  }
+  .btn-solid:active { transform: scale(0.98); }
+  .btn-outline {
+    padding: 15px 20px;
+    background: transparent;
+    color: var(--forest-50);
+    font-family: var(--sans);
+    font-size: 15px;
+    font-weight: 500;
+    border: 1.5px solid var(--forest-08);
+    border-radius: 14px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .btn-outline:hover { background: var(--forest-04); }
+
+  /* ═══════════════════════════════════════════════════
+     10. CLOSE CARD
+     ═══════════════════════════════════════════════════ */
+  .close-card {
+    background: var(--forest);
+    border-radius: 28px;
+    padding: 40px 28px 32px;
+    margin-bottom: 20px;
+    min-height: 420px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    position: relative;
+    overflow: hidden;
+  }
+  .close-card::before {
+    content: '';
+    position: absolute;
+    top: -60px;
+    right: -60px;
+    width: 250px;
+    height: 250px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(230,242,239,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .close-card .tag {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.3);
+    margin-bottom: 16px;
+  }
+  .close-card .title {
+    font-family: var(--serif);
+    font-size: 36px;
+    font-weight: 400;
+    color: var(--white);
+    line-height: 1.15;
+    margin-bottom: 16px;
+    letter-spacing: -0.3px;
+  }
+  .close-card .message {
+    font-size: 16px;
+    font-weight: 300;
+    line-height: 1.75;
+    color: rgba(255,255,255,0.7);
+    margin-bottom: 12px;
+  }
+  .close-card .sub-message {
+    font-size: 14px;
+    font-weight: 300;
+    color: rgba(255,255,255,0.35);
+    line-height: 1.6;
+    margin-bottom: 32px;
+  }
+  .complete-btn {
+    width: 100%;
+    padding: 18px;
+    background: var(--white);
+    color: var(--forest);
+    font-family: var(--sans);
+    font-size: 16px;
+    font-weight: 600;
+    border: none;
+    border-radius: 16px;
+    cursor: pointer;
+    text-align: center;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    transition: transform 0.1s;
+    letter-spacing: 0.2px;
+  }
+  .complete-btn:active { transform: scale(0.98); }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>Recovery Compass</h1>
+  <p>Premium card reference · Warm Luxury design system<br>Each card = one full-screen swipe page</p>
+</div>
+
+<!-- ═══ 1. INTRO ═══ -->
+<p class="label">1 — Intro</p>
+<div class="intro-card grain">
+  <div class="day-label">Day 3</div>
+  <div class="title">Time<br>Patterns</div>
+  <p class="goal">Today is about noticing <em>when</em> urges tend to appear. You're not changing anything — just observing.</p>
+  <div class="meta-row">
+    <span class="time-pill">~6 min</span>
+    <span class="divider-dot"></span>
+    <span class="program-name">90-Day Quit</span>
+  </div>
+</div>
+
+<!-- ═══ 2. LESSON ═══ -->
+<p class="label">2 — Lesson</p>
+<div class="lesson-card grain">
+  <div class="section-tag">Context</div>
+  <div class="subtitle">Why timing matters</div>
+  <p>Urges often show up at familiar times. Morning. Evening. After work. Before sleep.</p>
+  <p>These patterns don't mean you <em>want</em> to smoke or drink. They usually mean your body expects a routine.</p>
+  <div class="pullquote">Today, you're learning to recognize those moments — not fight them.</div>
+  <p>Once you notice the pattern, its power begins to dissolve.</p>
+</div>
+
+<!-- ═══ 3. ACTION STEP ═══ -->
+<p class="label">3 — Action step</p>
+<div class="step-card grain">
+  <div class="step-indicator">
+    <div class="step-num">1</div>
+    <div class="step-info">
+      <h3>Morning Sunlight Exposure</h3>
+      <span class="duration">10–20 minutes</span>
+    </div>
+  </div>
+  <ul class="instructions">
+    <li>Within 30 minutes of waking, go outside</li>
+    <li>Do not wear sunglasses</li>
+    <li>Face the direction of the sky</li>
+    <li>Stay outside for 10–20 minutes</li>
+  </ul>
+  <div class="why-box">
+    <div class="why-label">Why this works</div>
+    <p>Morning sunlight resets the brain's circadian clock, helping the body release melatonin naturally at night.</p>
+  </div>
+  <div class="tip-box">
+    <span class="tip-icon">✦</span>
+    <p>If sunlight is weak, increase exposure to 20–30 minutes.</p>
+  </div>
+</div>
+
+<!-- ═══ 4. BREATHING ═══ -->
+<p class="label">4 — Breathing exercise</p>
+<div class="breathing-card grain">
+  <div class="tag">Breathing exercise</div>
+  <div class="title">Physiological Sigh</div>
+  <div class="breath-ring-outer">
+    <div class="breath-ring-middle">
+      <div class="breath-core">
+        <span class="breath-phase-text">Breathe in</span>
+      </div>
+    </div>
+  </div>
+  <div class="breath-counter">Cycle 3 of 10</div>
+  <div class="breath-params">
+    <span class="breath-param">In · 4s</span>
+    <span class="breath-param-sep">—</span>
+    <span class="breath-param">Hold · 2s</span>
+    <span class="breath-param-sep">—</span>
+    <span class="breath-param">Out · 6s</span>
+  </div>
+</div>
+
+<!-- ═══ 5. MINDFULNESS ═══ -->
+<p class="label">5 — Mindfulness exercise</p>
+<div class="mindfulness-card grain">
+  <div class="tag">Grounding · 2–3 min</div>
+  <div class="title">5-3 Grounding</div>
+  <div class="mindful-step active">Name <strong>5 things</strong> you can see</div>
+  <div class="mindful-step">Name <strong>3 things</strong> you can hear</div>
+  <div class="mindful-step">Press your feet into the ground</div>
+  <div class="mindful-timer">07:42</div>
+  <div class="mindful-note">Take your time. There's no rush.</div>
+</div>
+
+<!-- ═══ 6. EXERCISE ROUTINE ═══ -->
+<p class="label">6 — Exercise routine</p>
+<div class="routine-card grain">
+  <div class="header">
+    <h3>Vitality Exercises</h3>
+    <span class="dur-pill">15 min</span>
+  </div>
+  <div class="exercise-block">
+    <div class="ex-name">Kegels</div>
+    <div class="ex-desc">Tighten the pelvic floor muscle. Hold for 5 seconds, relax for 5 seconds.</div>
+    <div class="ex-meta">
+      <span>10 reps × 3 sets</span>
+      <span>Rest 10-15s</span>
+    </div>
+  </div>
+  <div class="exercise-block">
+    <div class="ex-name">Glute Bridges</div>
+    <div class="ex-desc">Lie on your back, knees bent. Push through heels, lift hips, squeeze glutes.</div>
+    <div class="ex-meta">
+      <span>12 reps × 3 sets</span>
+      <span>Rest 20s</span>
+    </div>
+  </div>
+  <div class="exercise-block">
+    <div class="ex-name">Brisk Walk</div>
+    <div class="ex-desc">Walk at a comfortable but brisk pace outdoors.</div>
+    <div class="ex-meta">
+      <span>20 minutes</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ 7. AUDIO ═══ -->
+<p class="label">7 — Audio</p>
+<div class="audio-card grain">
+  <div class="tag">Guided meditation</div>
+  <div class="title">One Minute of Arriving</div>
+  <div class="desc">A short pause to help you settle in. There's nothing you need to do perfectly.</div>
+  <div class="audio-player-v2">
+    <div class="wave-row">
+      <div class="wave-bar played" style="height:30%"></div>
+      <div class="wave-bar played" style="height:50%"></div>
+      <div class="wave-bar played" style="height:80%"></div>
+      <div class="wave-bar played" style="height:60%"></div>
+      <div class="wave-bar played" style="height:95%"></div>
+      <div class="wave-bar played" style="height:70%"></div>
+      <div class="wave-bar played" style="height:40%"></div>
+      <div class="wave-bar played" style="height:75%"></div>
+      <div class="wave-bar played" style="height:55%"></div>
+      <div class="wave-bar played" style="height:85%"></div>
+      <div class="wave-bar played" style="height:45%"></div>
+      <div class="wave-bar played" style="height:65%"></div>
+      <div class="wave-bar unplayed" style="height:50%"></div>
+      <div class="wave-bar unplayed" style="height:70%"></div>
+      <div class="wave-bar unplayed" style="height:35%"></div>
+      <div class="wave-bar unplayed" style="height:80%"></div>
+      <div class="wave-bar unplayed" style="height:45%"></div>
+      <div class="wave-bar unplayed" style="height:60%"></div>
+      <div class="wave-bar unplayed" style="height:30%"></div>
+      <div class="wave-bar unplayed" style="height:55%"></div>
+      <div class="wave-bar unplayed" style="height:75%"></div>
+      <div class="wave-bar unplayed" style="height:40%"></div>
+      <div class="wave-bar unplayed" style="height:65%"></div>
+      <div class="wave-bar unplayed" style="height:50%"></div>
+      <div class="wave-bar unplayed" style="height:85%"></div>
+    </div>
+    <div class="audio-track">
+      <div class="audio-track-fill"></div>
+      <div class="audio-track-dot"></div>
+    </div>
+    <div class="audio-bottom">
+      <span class="audio-time">2:41</span>
+      <button class="play-btn-v2">
+        <svg width="18" height="22" viewBox="0 0 18 22"><path d="M0 0L18 11L0 22Z"/></svg>
+      </button>
+      <span class="audio-time">7:00</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ 8. CALM ═══ -->
+<p class="label">8 — Calm trigger</p>
+<div class="calm-card grain">
+  <div class="calm-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#06290C" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M12 6v6l4 2"/></svg>
+  </div>
+  <div class="title">Need a moment?</div>
+  <div class="desc">If an urge appears or you feel overwhelmed, a guided calm session is ready for you.</div>
+  <button class="calm-cta">Start 10-Min Calm Session</button>
+</div>
+
+<!-- ═══ 9. JOURNAL ═══ -->
+<p class="label">9 — Journal</p>
+<div class="journal-card grain">
+  <div class="tag">Reflection · Optional</div>
+  <div class="prompt">What made you start today?</div>
+  <div class="helper">There's no right answer. Write as little or as much as you want.</div>
+  <textarea class="journal-textarea" placeholder="Start writing..."></textarea>
+  <div class="journal-actions">
+    <button class="btn-solid">Save & Continue</button>
+    <button class="btn-outline">Skip</button>
+  </div>
+</div>
+
+<!-- ═══ 10. CLOSE ═══ -->
+<p class="label">10 — Close</p>
+<div class="close-card grain">
+  <div class="tag">Today's close</div>
+  <div class="title">You showed<br>up today.</div>
+  <div class="message">That matters more than how today went. You don't need to do anything else right now.</div>
+  <div class="sub-message">Come back when it feels right — whether that's later today or tomorrow.</div>
+  <button class="complete-btn">Complete Day</button>
+</div>
+
+</body>
+</html>

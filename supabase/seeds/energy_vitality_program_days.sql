@@ -1,6 +1,6 @@
 -- energy_vitality seed (generated from canonical content)
 -- Source: documents/Sent By Anjan/program_content/Energy reset program 14 days.md
--- Generated at: 2026-04-03T14:45:22.019Z
+-- Generated at: 2026-04-03T17:40:12.857Z
 
 BEGIN;
 

@@ -9,7 +9,7 @@ const SOURCE_FILES = {
     'documents',
     'Sent By Anjan',
     'program_content',
-    '6 days program text on screen.md'
+    '🧭 RECOVERY COMPASS 6 DAYS PROGRAM.md'
   ),
   energy_vitality: path.join(
     repoRoot,
@@ -184,6 +184,12 @@ function splitParagraphLines(value = '') {
     .filter(Boolean);
 }
 
+function stripCrossDayNarration(value = '') {
+  return cleanText(
+    String(value).replace(/\n?\s*Absolutely\.\s+Below\s+is\s+(?:\*\*)?DAY\s+\d+[\s\S]*$/i, '')
+  );
+}
+
 function parseDayBlocksFromBoldHeadings(sourceText) {
   const dayHeadingRegex = /^\*\*Day\s+(\d+)\s*[—–-]\s*(.+?)\*\*\s*$/gim;
   const matches = [...sourceText.matchAll(dayHeadingRegex)];
@@ -199,7 +205,7 @@ function parseDayBlocksFromBoldHeadings(sourceText) {
     blocks.push({
       dayNumber,
       dayTitle,
-      body: cleanText(sourceText.slice(bodyStart, bodyEnd)),
+      body: stripCrossDayNarration(sourceText.slice(bodyStart, bodyEnd)),
     });
   }
 
@@ -232,7 +238,7 @@ function parseDayBlocksGeneric(rawText) {
     blocks.push({
       dayNumber,
       dayTitle,
-      body: cleanText(sourceText.slice(bodyStart, bodyEnd)),
+      body: stripCrossDayNarration(sourceText.slice(bodyStart, bodyEnd)),
     });
   }
 
@@ -281,10 +287,50 @@ function buildSupplementMeditationDayBlock(entry) {
 
 function parseBoldSections(dayBody) {
   const lines = dayBody.split('\n');
+  const hasMarkdownHeadings = lines.some((rawLine) => /^#{1,6}\s+/.test(rawLine.trim()));
+
+  if (hasMarkdownHeadings) {
+    const sections = [];
+    let currentSection = null;
+
+    for (const rawLine of lines) {
+      const line = rawLine.trim();
+      const markdownHeadingMatch = line.match(/^#{1,6}\s+(.+)$/);
+      if (markdownHeadingMatch) {
+        if (currentSection) {
+          sections.push({
+            heading: cleanText(currentSection.heading),
+            body: cleanText(currentSection.body.join('\n')),
+          });
+        }
+
+        currentSection = {
+          heading: cleanText(stripMarkdown(markdownHeadingMatch[1])),
+          body: [],
+        };
+        continue;
+      }
+
+      if (currentSection) {
+        currentSection.body.push(rawLine);
+      }
+    }
+
+    if (currentSection) {
+      sections.push({
+        heading: cleanText(currentSection.heading),
+        body: cleanText(currentSection.body.join('\n')),
+      });
+    }
+
+    return sections;
+  }
+
+  const legacyLines = dayBody.split('\n');
   const sections = [];
   let currentSection = null;
 
-  for (const rawLine of lines) {
+  for (const rawLine of legacyLines) {
     const line = rawLine.trim();
     const headingMatch = line.match(/^\*\*([^*]+)\*\*(.*)$/);
     if (headingMatch) {
@@ -357,6 +403,7 @@ function inferMinutesFromStepCount(stepCount, dayNumber) {
 function parseGoal(dayTitleRaw, dayBody, dayNumber) {
   let dayTitle = normalizeDayTitle(dayTitleRaw, dayNumber);
   let goal = '';
+  const normalizedBody = normalizeSourceText(dayBody);
 
   const inlineGoalMatch = dayTitle.match(/^(.*?)\s+goal(?:\s+of\s+today)?\s*:?\s*(.+)$/i);
   if (inlineGoalMatch) {
@@ -364,7 +411,26 @@ function parseGoal(dayTitleRaw, dayBody, dayNumber) {
     goal = cleanText(inlineGoalMatch[2]);
   }
 
-  const lines = normalizeSourceText(dayBody).split('\n');
+  if (!goal) {
+    const primaryGoalMatch = normalizedBody.match(
+      /primary goal\s*:\s*([\s\S]*?)(?:\bsecondary goal\b\s*:|(?:\n\s*##)|$)/i
+    );
+    if (primaryGoalMatch) {
+      const secondaryGoalMatch = normalizedBody.match(
+        /secondary goal\s*:\s*([\s\S]*?)(?:\bwhat matters today\b\s*:|(?:\n\s*##)|$)/i
+      );
+      const parts = [
+        cleanText(stripMarkdown(primaryGoalMatch[1])),
+        cleanText(stripMarkdown(secondaryGoalMatch?.[1] ?? '')),
+      ].filter(Boolean);
+      goal = parts
+        .join('. ')
+        .replace(/\s+/g, ' ')
+        .trim();
+    }
+  }
+
+  const lines = normalizedBody.split('\n');
   let captureGoal = false;
   const goalLines = [];
 
@@ -373,10 +439,34 @@ function parseGoal(dayTitleRaw, dayBody, dayNumber) {
     if (!normalizedLine) continue;
 
     if (!captureGoal) {
-      const goalMatch = normalizedLine.match(/^goal(?:\s+of\s+today)?\s*:?\s*(.*)$/i);
+      const goalMatch = normalizedLine.match(/^(?:goal|primary goal)(?:\s+of\s+today)?\s*:?\s*(.*)$/i);
       if (goalMatch) {
+        const isPrimaryGoal = /^primary goal/i.test(normalizedLine);
+
+        if (goalMatch[1]) {
+          const primaryOnly = goalMatch[1]
+            .split(/\bsecondary goal\b\s*:?/i)[0]
+            .split(/\bwhat matters today\b\s*:?/i)[0];
+
+          if (isPrimaryGoal) {
+            const secondaryMatch = normalizedLine.match(
+              /\bsecondary goal\b\s*:?\s*(.*?)(?:\bwhat matters today\b\s*:|$)/i
+            );
+            const parts = [
+              cleanText(primaryOnly),
+              cleanText(secondaryMatch?.[1] ?? ''),
+            ].filter(Boolean);
+            goalLines.push(parts.join('. '));
+          } else {
+            goalLines.push(cleanText(primaryOnly));
+          }
+        }
+
+        if (isPrimaryGoal) {
+          break;
+        }
+
         captureGoal = true;
-        if (goalMatch[1]) goalLines.push(cleanText(goalMatch[1]));
       }
       continue;
     }
@@ -555,34 +645,45 @@ function buildGenericDay(dayBlock) {
 }
 
 function buildSixDayDay(dayBlock) {
-  const dayTitle = normalizeDayTitle(dayBlock.dayTitle, dayBlock.dayNumber);
+  const { dayTitle, goal } = parseGoal(dayBlock.dayTitle, dayBlock.body, dayBlock.dayNumber);
   const sections = parseBoldSections(dayBlock.body);
-  const goalSection = sections.find((section) => /^Goal:/i.test(section.heading));
-  const goal = cleanText(
-    stripMarkdown(
-      `${(goalSection?.heading ?? '').replace(/^Goal:\s*/i, '')}\n${goalSection?.body ?? ''}`
-    )
+  const lessonSectionIndex = sections.findIndex((section) =>
+    /\bwhat\s+day\b.*\bis\s+really\s+about\b/i.test(section.heading)
   );
+
+  let lessonParagraphs = [goal || 'Build steady awareness and interrupt automatic behavior for today.'];
+  let lessonHighlight = goal || 'One steady decision is enough for today.';
+
+  if (lessonSectionIndex >= 0) {
+    const lessonLines = splitParagraphLines(sections[lessonSectionIndex].body);
+    if (lessonLines.length > 0) {
+      const paragraphCount = Math.max(1, Math.min(lessonLines.length - 1, 6));
+      lessonParagraphs = lessonLines.slice(0, paragraphCount);
+      lessonHighlight =
+        lessonLines.length > 1 ? lessonLines[lessonLines.length - 1] : lessonLines[0];
+    }
+  }
 
   const cards = [
     {
       type: 'intro',
       dayNumber: dayBlock.dayNumber,
-      dayTitle,
+      dayTitle: dayTitle || `Day ${dayBlock.dayNumber}`,
       goal: goal || 'Build steady awareness and interrupt automatic behavior for today.',
       estimatedMinutes: inferEstimatedMinutes(dayBlock.dayNumber),
     },
     {
       type: 'lesson',
       title: "Today's Focus",
-      paragraphs: [goal || 'Build steady awareness and interrupt automatic behavior for today.'],
-      highlight: goal || 'One steady decision is enough for today.',
+      paragraphs: lessonParagraphs,
+      highlight: lessonHighlight,
     },
   ];
 
   let reflectionLines = [];
   let stepNumber = 1;
-  for (const section of sections) {
+  for (const [sectionIndex, section] of sections.entries()) {
+    if (sectionIndex === lessonSectionIndex) continue;
     if (/^Goal:/i.test(section.heading)) continue;
     const heading = titleCase(section.heading);
     const lines = splitParagraphLines(section.body);
@@ -630,7 +731,7 @@ function buildSixDayDay(dayBlock) {
 }
 
 async function normalizeSixDayProgram(rawText) {
-  const dayBlocks = parseDayBlocksFromBoldHeadings(rawText);
+  const dayBlocks = parseDayBlocksGeneric(rawText);
   return dayBlocks.map(buildSixDayDay);
 }
 

@@ -86,7 +86,11 @@ export default function TestCardsScreen() {
         {previewDay ? (
           <View className="gap-4">
             {previewDay.cards.map((card, index) => (
-              <CardRenderer key={`${previewDay.programSlug}-${previewDay.dayNumber}-${card.type}-${index}`} card={card} />
+              <CardRenderer
+                key={`${previewDay.programSlug}-${previewDay.dayNumber}-${card.type}-${index}`}
+                card={card}
+                programName={previewProgram?.name}
+              />
             ))}
           </View>
         ) : (

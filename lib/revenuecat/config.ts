@@ -56,22 +56,24 @@ export function getProgramSlugForProductId(productId: string | null | undefined)
   return getProgramForProductId(REVENUECAT_CATALOG, productId)?.programSlug ?? null;
 }
 
-export function getOwnedProgramFromCustomerInfo(customerInfo: CustomerInfo): ProgramSlug | null {
-  const activeEntitlementIds = Object.keys(customerInfo.entitlements.active);
-  const fromEntitlements = activeEntitlementIds
+export function getOwnedProgramsFromCustomerInfo(customerInfo: CustomerInfo): ProgramSlug[] {
+  const ownedPrograms = new Set<ProgramSlug>();
+
+  Object.keys(customerInfo.entitlements.active)
     .map((entitlementId) => getProgramSlugForEntitlementId(entitlementId))
-    .find(Boolean);
+    .filter((programSlug): programSlug is ProgramSlug => Boolean(programSlug))
+    .forEach((programSlug) => ownedPrograms.add(programSlug));
 
-  if (fromEntitlements) {
-    return fromEntitlements;
-  }
+  [...customerInfo.activeSubscriptions, ...customerInfo.allPurchasedProductIdentifiers]
+    .map((productId) => getProgramSlugForProductId(productId))
+    .filter((programSlug): programSlug is ProgramSlug => Boolean(programSlug))
+    .forEach((programSlug) => ownedPrograms.add(programSlug));
 
-  const fromActiveProducts = getProgramForCandidates(REVENUECAT_CATALOG, [
-    ...customerInfo.activeSubscriptions,
-    ...customerInfo.allPurchasedProductIdentifiers,
-  ]);
+  return [...ownedPrograms];
+}
 
-  return fromActiveProducts?.programSlug ?? null;
+export function getOwnedProgramFromCustomerInfo(customerInfo: CustomerInfo): ProgramSlug | null {
+  return getOwnedProgramsFromCustomerInfo(customerInfo)[0] ?? null;
 }
 
 export function getDisplayNameForProgram(programSlug: ProgramSlug | null) {
