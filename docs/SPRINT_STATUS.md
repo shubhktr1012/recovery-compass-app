@@ -3,13 +3,13 @@
 > Last updated: April 5, 2026
 > Branch: `rebuild/multi-program`
 > Questionnaire foundation: ready
-> Sellable catalog: 6 products configured in RevenueCat, final INR pricing locked, App Store hookup in progress
+> Sellable catalog: 6 products configured in RevenueCat, final INR pricing entered in App Store Connect
 > Final content pending from Anjan: Sleep (21d), Energy (14d), Men's Health (30d) — durations refreshed in app
 
 ## Launch Blockers (must fix before ANY submission)
 
 - [x] App icon from Anjan (1024x1024 PNG)
-- [ ] App Store Connect / Play Console product setup + final pricing entry
+- [x] App Store Connect iOS IAP setup + final INR pricing entry
 - [ ] Updated Sleep / Energy / Men's Health content signoff from Anjan
 - [ ] Final QA sweep on questionnaire → paywall → purchase → program access
 
@@ -65,7 +65,7 @@
 - [ ] Store review prompt (after Day 3+)
 - [ ] EAS production build (iOS)
 - [ ] App Store Connect metadata + screenshots
-- [ ] App Store Connect IAP review metadata for all 6 products
+- [ ] App Store Connect IAP review screenshots + notes for all 6 products
 
 ## Not Started — Can Ship After Launch
 
