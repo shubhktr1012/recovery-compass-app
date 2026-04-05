@@ -9,7 +9,11 @@ import { PROGRAM_METADATA } from '@/content/programs/metadata';
 import { Button } from '@/components/ui/Button';
 import { captureError } from '@/lib/monitoring';
 import { ProgramSlug } from '@/lib/programs/types';
-import { getDisplayNameForProgram, getProgramSlugForPackage } from '@/lib/revenuecat/config';
+import {
+  getDisplayNameForProgram,
+  getOwnedProgramsFromCustomerInfo,
+  getProgramSlugForPackage,
+} from '@/lib/revenuecat/config';
 import { useProfile } from '@/providers/profile';
 
 function getRecommendedPrograms(programSlug: ProgramSlug | null | undefined): ProgramSlug[] {
@@ -111,12 +115,25 @@ export default function Paywall() {
     setLoading(true);
     const programSlug = getProgramSlugForPackage(pack);
     try {
-      await Purchases.purchasePackage(pack);
+      const result = await Purchases.purchasePackage(pack);
+      const ownedPrograms = getOwnedProgramsFromCustomerInfo(result.customerInfo);
+      let confirmedProgram = programSlug && ownedPrograms.includes(programSlug) ? programSlug : null;
 
-      if (programSlug) {
-        await setProgramAccess(programSlug);
+      if (!confirmedProgram) {
+        const refreshedAccess = await refreshAccess();
+        confirmedProgram =
+          programSlug && refreshedAccess.ownedProgram === programSlug ? programSlug : refreshedAccess.ownedProgram;
       }
 
+      if (!confirmedProgram) {
+        Alert.alert(
+          'Purchase Pending',
+          'Your purchase appears to have started, but access has not been confirmed yet. Please tap Restore Purchases or reopen the app in a moment.'
+        );
+        return;
+      }
+
+      await setProgramAccess(confirmedProgram);
       await refreshAccess();
 
       Alert.alert('Success', `Your ${getPackageDisplayName(pack)} is now unlocked.`);
