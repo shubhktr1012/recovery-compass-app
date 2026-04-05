@@ -96,7 +96,7 @@ export default function Paywall() {
         ? `${getDisplayNameForProgram(recommendedProgram)} Is Ready`
         : 'Commit to Your Freedom';
   const headerBody = isUpgradeFlow
-    ? 'Unlock the 90-Day Quit to continue with daily guided recovery work.'
+    ? 'Unlock the 90-Day Smoking Reset to continue with daily guided recovery work.'
     : recommendedProgram === 'six_day_reset'
       ? 'Both smoking plans are available. Pick the level of support you want right now.'
       : recommendedProgram

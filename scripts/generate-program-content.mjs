@@ -275,7 +275,7 @@ function buildNinetyDay(content, transcriptContent) {
 
   return {
     slug: 'ninety_day_transform',
-    title: '90-Day Quit',
+    title: '90-Day Smoking Reset',
     description: 'A long-form guided path with daily reflection and audio support for lasting change.',
     accentLabel: 'Guided Stability',
     totalDays: 90,

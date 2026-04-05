@@ -71,7 +71,7 @@ export default function ProgramDayScreen() {
         <View className="flex-1 items-center justify-center px-6">
           <Text className="font-erode-bold text-3xl text-forest text-center mb-3">Reset archived</Text>
           <Text className="font-satoshi text-gray-500 text-center mb-6">
-            The 6-Day Control is no longer replayable after completion. Continue your journey with the 90-Day Quit.
+            The 6-Day Control is no longer replayable after completion. Continue your journey with the 90-Day Smoking Reset.
           </Text>
           <Button label="See Upgrade Options" onPress={() => router.navigate('/paywall' as Href)} />
         </View>
@@ -85,7 +85,7 @@ export default function ProgramDayScreen() {
       <ScrollView contentContainerClassName="px-6 py-6 pb-28">
         <View className="mb-8">
           <Text className="font-satoshi-bold text-forest/70 text-xs uppercase mb-2">
-            {programSlug === 'six_day_reset' ? '6-Day Control' : '90-Day Quit'}
+            {programSlug === 'six_day_reset' ? '6-Day Control' : '90-Day Smoking Reset'}
           </Text>
           <Text className="font-erode-bold text-4xl text-forest mb-3">
             Day {day.dayNumber} · {day.title}

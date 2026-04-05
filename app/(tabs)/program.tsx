@@ -53,7 +53,7 @@ export default function ProgramScreen() {
           <Text className="font-satoshi text-sm text-gray-500 mt-2">{program.description}</Text>
           {isArchivedReset ? (
             <Text className="font-satoshi text-sm text-forest/70 mt-3">
-              Your 6-Day Control has been archived. The next step is upgrading into the 90-Day Quit.
+              Your 6-Day Control has been archived. The next step is upgrading into the 90-Day Smoking Reset.
             </Text>
           ) : null}
         </View>

@@ -12,7 +12,7 @@ export const PROGRAM_METADATA: Record<ProgramSlug, ProgramCatalogEntry> = {
   },
   ninety_day_transform: {
     slug: 'ninety_day_transform',
-    name: '90-Day Quit Smoking',
+    name: '90-Day Smoking Reset',
     description: 'A long-form smoking recovery path with daily reflection and guided audio.',
     totalDays: 90,
     category: 'smoking',
@@ -21,7 +21,7 @@ export const PROGRAM_METADATA: Record<ProgramSlug, ProgramCatalogEntry> = {
   },
   sleep_disorder_reset: {
     slug: 'sleep_disorder_reset',
-    name: 'Sleep Disorder Reset',
+    name: '21-Day Deep Sleep Reset',
     description: 'A structured sleep-support program with daily text and future audio sessions.',
     totalDays: 21,
     category: 'sleep',
@@ -30,7 +30,7 @@ export const PROGRAM_METADATA: Record<ProgramSlug, ProgramCatalogEntry> = {
   },
   energy_vitality: {
     slug: 'energy_vitality',
-    name: 'Energy & Vitality',
+    name: '14-Day Energy Restore',
     description: 'A program focused on restoring energy, rhythm, and daily momentum.',
     totalDays: 14,
     category: 'energy',
@@ -39,7 +39,7 @@ export const PROGRAM_METADATA: Record<ProgramSlug, ProgramCatalogEntry> = {
   },
   age_reversal: {
     slug: 'age_reversal',
-    name: 'Age Reversal',
+    name: '90-Day Biohacking Reset',
     description: 'A longevity-focused program with daily guidance and shared CALM support.',
     totalDays: 90,
     category: 'aging',
@@ -48,7 +48,7 @@ export const PROGRAM_METADATA: Record<ProgramSlug, ProgramCatalogEntry> = {
   },
   male_sexual_health: {
     slug: 'male_sexual_health',
-    name: 'Male Sexual Health',
+    name: "30-Day Men's Vitality Reset",
     description: 'A confidence and regulation program with shared CALM support.',
     totalDays: 30,
     category: 'sexual_health',
