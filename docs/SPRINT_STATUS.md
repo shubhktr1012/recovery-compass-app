@@ -1,9 +1,9 @@
 # Sprint Status — Recovery Compass
 
-> Last updated: April 5, 2026
+> Last updated: April 6, 2026
 > Branch: `rebuild/multi-program`
 > Questionnaire foundation: ready
-> Sellable catalog: 6 products configured in RevenueCat, final INR pricing entered in App Store Connect, Play one-time products created
+> Sellable catalog: 6 products configured in RevenueCat, final INR pricing entered in App Store Connect and Google Play, unified `main_production` offering live
 > Final content pending from Anjan: Sleep (21d), Energy (14d), Men's Health (30d) — durations refreshed in app
 
 ## Launch Blockers (must fix before ANY submission)
@@ -35,9 +35,13 @@
 - [x] Questionnaire UI first draft (premium mobile layout, clear progress, polished selection states)
 - [x] Multi-program paywall foundation (program-targeted paywall handoff, duplicate-package fix, purchase/restore path verified)
 - [x] RevenueCat 6-product catalog configured
+- [x] RevenueCat production offering unified across iOS + Android (`main_production` current)
+- [x] RevenueCat iOS SDK/app credentials configured (App Store Connect API + In-App Purchase key)
 - [x] Google Play merchant profile + internal testing release bootstrapped
 - [x] Final program naming aligned across onboarding, paywall, and program screens
 - [x] Duration refresh shipped for Energy (14d) and Men's Health (30d)
+- [x] iOS StoreKit simulator purchase flow verified end-to-end (offering fetch, purchase, receipt post, unlock path)
+- [x] Biohacking price updated to INR 6,999 in App Store Connect and Google Play
 - [x] Profile with access status + restore purchases
 - [x] SOS modal (basic breathing)
 - [x] Content seed generator script
@@ -56,8 +60,7 @@
 - [ ] Paywall visual polish / merchandising refinement
 - [ ] Visual overhaul — apply V4 wellness design to all screens
 - [ ] Ground feature (center tab, guided grounding experience)
-- [ ] Store pricing sync: update 90-Day Biohacking Reset to INR 6,999 across all stores
-- [ ] RevenueCat production offering cleanup / cross-platform offering strategy
+- [ ] Device QA on real iPhone / Android test tracks
 
 ## Not Started — Needed for Launch
 
@@ -98,7 +101,7 @@ Launch → Splash (Expo default) → Sign In / Sign Up
 → Adaptive multi-program questionnaire
   Quick profile → self-select or guided path → branched questions
 → Recommendation screen (guided path only)
-→ Program-targeted paywall (recommended program(s), 6-product catalog configured)
+→ Program-targeted paywall (recommended program(s), unified cross-platform catalog configured)
 → 4-tab layout: Home | Program | Journal | Profile
   Home: Dashboard with stats + today's focus card
   Program: Timeline with locked/unlocked days → V2 day-detail (PagerView)
@@ -124,3 +127,10 @@ Launch → V4 Splash → Onboarding Carousel → Sign Up / Sign In
 
 - [ ] program_access read path uses .maybeSingle() (breaks with multiple programs)
 - [ ] 90-Day Smoking Reset missing 2 days in Supabase (days 88-90 gap)
+
+## Latest Verification
+
+- [x] iOS simulator fetches `main_production` correctly when launched from Xcode with local `.storekit`
+- [x] StoreKit local purchase for `ninety_day_quit` posts receipt to RevenueCat successfully
+- [x] Paywall purchase flow now waits for confirmed unlock before routing to Program tab
+- [ ] Real-device iPhone sandbox purchase verification still pending (borrowed device / TestFlight)
