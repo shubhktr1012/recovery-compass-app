@@ -1,10 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { BlurView } from 'expo-blur';
-import { Pressable, Text, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import Animated, {
   Easing,
-  FadeIn,
   FadeInDown,
   FadeOut,
   LinearTransition,
@@ -28,9 +27,6 @@ import type {
   LessonCard,
   MindfulnessExerciseCard,
 } from '@/types/content';
-
-import { ScrollView } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 
 function ProgressBar({
   currentIndex,
@@ -70,7 +66,6 @@ function ProgressBar({
 }
 
 function FadingScrollView({ children, contentContainerStyle }: { children: React.ReactNode; contentContainerStyle?: any }) {
-  const [hasScrolled, setHasScrolled] = useState(false);
   const [scrollViewHeight, setScrollViewHeight] = useState(0);
   const [contentHeight, setContentHeight] = useState(0);
   const [isAtBottom, setIsAtBottom] = useState(false);
@@ -104,7 +99,6 @@ function FadingScrollView({ children, contentContainerStyle }: { children: React
         showsVerticalScrollIndicator={true}
         persistentScrollbar={true}
         onScroll={(e) => {
-          setHasScrolled(true);
           const { contentOffset, layoutMeasurement, contentSize } = e.nativeEvent;
           const distanceToBottom = contentSize.height - layoutMeasurement.height - contentOffset.y;
           if (distanceToBottom <= 20) {
@@ -280,24 +274,6 @@ function DarkCardShell({
         <Text className="mb-3 font-erode-semibold text-[28px] leading-[34px] text-white">{title}</Text>
       ) : null}
       {children}
-    </View>
-  );
-}
-
-function DurationBadge({ label, inverted = false }: { label: string; inverted?: boolean }) {
-  return (
-    <View
-      className={`self-start rounded-full px-3 py-1.5 ${
-        inverted ? 'bg-white/12' : 'bg-forest/5'
-      }`}
-    >
-      <Text
-        className={`font-satoshi-bold text-xs ${
-          inverted ? 'text-white/70' : 'text-forest/60'
-        }`}
-      >
-        {label}
-      </Text>
     </View>
   );
 }

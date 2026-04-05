@@ -3,14 +3,14 @@
 > Last updated: April 5, 2026
 > Branch: `rebuild/multi-program`
 > Questionnaire foundation: ready
-> Sellable catalog: 6 products configured in RevenueCat with placeholder pricing
-> Final content pending from Anjan: Sleep (21d), Energy (14d), Men's Health (30d)
+> Sellable catalog: 6 products configured in RevenueCat, final INR pricing locked, App Store hookup in progress
+> Final content pending from Anjan: Sleep (21d), Energy (14d), Men's Health (30d) — durations refreshed in app
 
 ## Launch Blockers (must fix before ANY submission)
 
 - [x] App icon from Anjan (1024x1024 PNG)
-- [ ] Final public pricing for all 6 programs
-- [ ] Updated Sleep / Energy / Men's Health content + duration refresh from Anjan
+- [ ] App Store Connect / Play Console product setup + final pricing entry
+- [ ] Updated Sleep / Energy / Men's Health content signoff from Anjan
 - [ ] Final QA sweep on questionnaire → paywall → purchase → program access
 
 ## Completed
@@ -33,7 +33,9 @@
 - [x] Multi-program questionnaire foundation (quick profile, self-select vs guided path, persistence, recommendation routing)
 - [x] Questionnaire UI first draft (premium mobile layout, clear progress, polished selection states)
 - [x] Multi-program paywall foundation (program-targeted paywall handoff, duplicate-package fix, purchase/restore path verified)
-- [x] RevenueCat 6-product catalog configured with placeholder pricing
+- [x] RevenueCat 6-product catalog configured
+- [x] Final program naming aligned across onboarding, paywall, and program screens
+- [x] Duration refresh shipped for Energy (14d) and Men's Health (30d)
 - [x] Profile with access status + restore purchases
 - [x] SOS modal (basic breathing)
 - [x] Content seed generator script
@@ -44,6 +46,7 @@
 - [x] Premium card design reference HTML (V2)
 - [x] Splash screen design direction established (V4 wellness)
 - [x] Tab bar design with Ground center button (notched)
+- [x] Privacy Policy / Terms links available in-app on auth welcome screen
 
 ## In Progress
 
@@ -62,7 +65,7 @@
 - [ ] Store review prompt (after Day 3+)
 - [ ] EAS production build (iOS)
 - [ ] App Store Connect metadata + screenshots
-- [ ] Privacy Policy link in-app (URL exists, needs in-app link)
+- [ ] App Store Connect IAP review metadata for all 6 products
 
 ## Not Started — Can Ship After Launch
 
@@ -79,7 +82,7 @@
 ## Blocked On Anjan
 
 - [ ] Splash screen assets
-- [ ] Final INR/public pricing for all 6 programs
+- [ ] Final store listing copy / screenshots signoff
 - [ ] Sleep program new content (21 days)
 - [ ] Energy program new content (14 days)
 - [ ] Men's Health new content (30 days)
@@ -116,4 +119,4 @@ Launch → V4 Splash → Onboarding Carousel → Sign Up / Sign In
 ## Known Bugs
 
 - [ ] program_access read path uses .maybeSingle() (breaks with multiple programs)
-- [ ] 90-Day Quit missing 2 days in Supabase (days 88-90 gap)
+- [ ] 90-Day Smoking Reset missing 2 days in Supabase (days 88-90 gap)

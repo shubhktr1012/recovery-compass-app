@@ -8,7 +8,6 @@ import { StatusBar } from 'expo-status-bar';
 import { AuthProvider, useAuth } from '../providers/auth';
 import { ProfileProvider, UserProfile, useProfile } from '../providers/profile';
 import { AppQueryProvider } from '../providers/query';
-import { AppStorage } from '../lib/storage';
 import Purchases, { LOG_LEVEL } from 'react-native-purchases';
 import { LogBox, Platform } from 'react-native';
 import { AppErrorBoundary } from '@/components/AppErrorBoundary';

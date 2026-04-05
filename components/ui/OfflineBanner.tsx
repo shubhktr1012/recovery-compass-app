@@ -49,7 +49,7 @@ export default function OfflineBanner() {
           className="mx-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3"
         >
           <Text className="font-satoshi text-sm text-amber-800">
-            You're offline — showing cached content
+            You&apos;re offline — showing cached content
           </Text>
         </Animated.View>
       ) : null}

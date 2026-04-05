@@ -6,7 +6,6 @@ import { Href, useLocalSearchParams, useRouter } from 'expo-router';
 import PagerView from 'react-native-pager-view';
 import Animated, {
   Extrapolation,
-  FadeIn,
   FadeInDown,
   interpolate,
   useAnimatedStyle,

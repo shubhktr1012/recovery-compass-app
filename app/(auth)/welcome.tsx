@@ -72,7 +72,7 @@ export default function WelcomeScreen() {
     const handledGoogleResponseRef = useRef<string | null>(null);
 
     const maybeShowLinkedProviderInfo = async (
-        authUser: { id?: string; identities?: Array<{ provider?: string }> } | null,
+        authUser: { id?: string; identities?: { provider?: string }[] } | null,
         currentProvider: OAuthProvider
     ) => {
         if (!authUser?.id || !Array.isArray(authUser.identities)) {
