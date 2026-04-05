@@ -13,6 +13,9 @@
     },
     "android": {
       "package": "com.recoverycompass.app",
+      "permissions": [
+        "com.android.vending.BILLING"
+      ],
       "adaptiveIcon": {
         "backgroundColor": "#ffffff",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
