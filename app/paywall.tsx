@@ -35,8 +35,12 @@ export default function Paywall() {
     const getOfferings = async () => {
       try {
         const offerings = await Purchases.getOfferings();
-        if (offerings.current !== null && offerings.current.availablePackages.length !== 0) {
-          setPackages(offerings.current.availablePackages);
+        const currentOffering = offerings.current ?? null;
+
+        if (currentOffering && currentOffering.availablePackages.length > 0) {
+          setPackages(currentOffering.availablePackages);
+        } else {
+          setPackages([]);
         }
       } catch (e) {
         console.error('Error fetching offerings', e);
