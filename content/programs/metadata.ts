@@ -22,11 +22,11 @@ export const PROGRAM_METADATA: Record<ProgramSlug, ProgramCatalogEntry> = {
   sleep_disorder_reset: {
     slug: 'sleep_disorder_reset',
     name: '21-Day Deep Sleep Reset',
-    description: 'A structured sleep-support program with daily text and future audio sessions.',
+    description: 'A structured sleep-support program with daily text and guided sleep audio.',
     totalDays: 21,
     category: 'sleep',
     hasAudio: true,
-    contentStatus: 'placeholder',
+    contentStatus: 'ready',
   },
   energy_vitality: {
     slug: 'energy_vitality',

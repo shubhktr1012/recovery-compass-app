@@ -14,6 +14,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
+import { ProgramAudioPlayer } from '@/components/program/ProgramAudioPlayer';
 import type {
   ActionStepCard,
   AudioCard,
@@ -652,46 +653,23 @@ function ExerciseRoutineCardView({ card, cardIndex, totalCards }: { card: Exerci
 }
 
 function AudioCardView({ card, cardIndex, totalCards }: { card: AudioCard; cardIndex?: number; totalCards?: number; }) {
-  const totalTime = formatAudioTime(card.durationSeconds);
-  const elapsedSeconds = Math.max(1, Math.floor(card.durationSeconds * 0.35));
-  const elapsedTime = formatAudioTime(elapsedSeconds);
-  const waveformHeights = [12, 20, 32, 24, 38, 28, 16, 30, 22, 35, 18, 25, 15, 28, 20, 32, 14, 26, 18, 22];
-
   return (
     <CardShell eyebrow="Guided meditation" title={card.title} cardIndex={cardIndex} totalCards={totalCards}>
       {card.description ? (
         <Text className="mb-5 font-satoshi text-sm leading-6 text-gray-600">{card.description}</Text>
       ) : null}
+      <ProgramAudioPlayer
+        audio={{
+          storagePath: card.audioStoragePath,
+          durationSeconds: card.durationSeconds,
+        }}
+      />
 
-      <View className="rounded-2xl bg-forest/5 p-5">
-        <View className="mb-3 flex-row items-end gap-[3px]">
-          {waveformHeights.map((height, index) => (
-            <View
-              key={`waveform-${index}`}
-              className={`w-1 rounded-full ${index < 10 ? 'bg-forest' : 'bg-forest/20'}`}
-              style={{ height }}
-            />
-          ))}
-        </View>
-
-        <View className="mb-3 h-[3px] rounded-full bg-gray-200">
-          <View className="h-[3px] w-[35%] rounded-full bg-forest" />
-        </View>
-
-        <View className="flex-row items-center justify-between">
-          <Text className="font-satoshi text-[13px] text-gray-600">{elapsedTime}</Text>
-          <View className="h-12 w-12 items-center justify-center rounded-full bg-forest">
-            <Ionicons name="play" size={18} color="#FFFFFF" />
-          </View>
-          <Text className="font-satoshi text-[13px] text-gray-600">{totalTime}</Text>
-        </View>
-
-        {card.autoAdvance ? (
-          <Text className="mt-3 text-center font-satoshi text-[13px] text-forest/60">
-            Auto-advance enabled
-          </Text>
-        ) : null}
-      </View>
+      {card.autoAdvance ? (
+        <Text className="mt-3 text-center font-satoshi text-[13px] text-forest/60">
+          Auto-advance enabled
+        </Text>
+      ) : null}
     </CardShell>
   );
 }

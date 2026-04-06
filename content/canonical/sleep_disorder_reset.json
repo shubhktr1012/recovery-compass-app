@@ -7,14 +7,14 @@
     {
       "dayNumber": 1,
       "dayTitle": "Reset the Body Clock",
-      "estimatedMinutes": 13,
+      "estimatedMinutes": 24,
       "cards": [
         {
           "type": "intro",
           "dayNumber": 1,
           "dayTitle": "Reset the Body Clock",
           "goal": "Complete Day 1 with steady, consistent action.",
-          "estimatedMinutes": 13
+          "estimatedMinutes": 24
         },
         {
           "type": "lesson",
@@ -124,6 +124,13 @@
           "completionMessage": "Stay with the practice until your body and mind feel steadier."
         },
         {
+          "type": "audio",
+          "title": "Tonight's Guided Sleep Audio",
+          "description": "Press play during your evening wind-down or once you are in bed.",
+          "audioStoragePath": "sleep_disorder_reset/day-01.mp3",
+          "durationSeconds": 610
+        },
+        {
           "type": "mindfulness_exercise",
           "title": "Body Temperature Sleep Trick",
           "steps": [
@@ -179,14 +186,14 @@
     {
       "dayNumber": 2,
       "dayTitle": "Reducing Mental Stimulation",
-      "estimatedMinutes": 13,
+      "estimatedMinutes": 24,
       "cards": [
         {
           "type": "intro",
           "dayNumber": 2,
           "dayTitle": "Reducing Mental Stimulation",
           "goal": "Complete Day 2 with steady, consistent action.",
-          "estimatedMinutes": 13
+          "estimatedMinutes": 24
         },
         {
           "type": "lesson",
@@ -296,6 +303,13 @@
           "completionMessage": "Stay with the practice until your body and mind feel steadier."
         },
         {
+          "type": "audio",
+          "title": "Tonight's Guided Sleep Audio",
+          "description": "Press play during your evening wind-down or once you are in bed.",
+          "audioStoragePath": "sleep_disorder_reset/day-02.mp3",
+          "durationSeconds": 624
+        },
+        {
           "type": "mindfulness_exercise",
           "title": "Body Temperature Sleep Trick",
           "steps": [
@@ -400,14 +414,14 @@
     {
       "dayNumber": 3,
       "dayTitle": "Stabilizing Night Sleep",
-      "estimatedMinutes": 14,
+      "estimatedMinutes": 25,
       "cards": [
         {
           "type": "intro",
           "dayNumber": 3,
           "dayTitle": "Stabilizing Night Sleep",
           "goal": "Complete Day 3 with steady, consistent action.",
-          "estimatedMinutes": 14
+          "estimatedMinutes": 25
         },
         {
           "type": "lesson",
@@ -565,6 +579,13 @@
           "completionMessage": "Stay with the practice until your body and mind feel steadier."
         },
         {
+          "type": "audio",
+          "title": "Tonight's Guided Sleep Audio",
+          "description": "Press play during your evening wind-down or once you are in bed.",
+          "audioStoragePath": "sleep_disorder_reset/day-03.mp3",
+          "durationSeconds": 644
+        },
+        {
           "type": "mindfulness_exercise",
           "title": "Body Temperature Sleep Trick",
           "steps": [
@@ -624,14 +645,14 @@
     {
       "dayNumber": 4,
       "dayTitle": "Reducing Night Awakenings",
-      "estimatedMinutes": 14,
+      "estimatedMinutes": 25,
       "cards": [
         {
           "type": "intro",
           "dayNumber": 4,
           "dayTitle": "Reducing Night Awakenings",
           "goal": "Complete Day 4 with steady, consistent action.",
-          "estimatedMinutes": 14
+          "estimatedMinutes": 25
         },
         {
           "type": "lesson",
@@ -741,6 +762,13 @@
           "completionMessage": "Stay with the practice until your body and mind feel steadier."
         },
         {
+          "type": "audio",
+          "title": "Tonight's Guided Sleep Audio",
+          "description": "Press play during your evening wind-down or once you are in bed.",
+          "audioStoragePath": "sleep_disorder_reset/day-04.mp3",
+          "durationSeconds": 647
+        },
+        {
           "type": "mindfulness_exercise",
           "title": "Body Temperature Sleep Trick",
           "steps": [
@@ -800,14 +828,14 @@
     {
       "dayNumber": 5,
       "dayTitle": "Improving Deep Sleep Quality",
-      "estimatedMinutes": 15,
+      "estimatedMinutes": 26,
       "cards": [
         {
           "type": "intro",
           "dayNumber": 5,
           "dayTitle": "Improving Deep Sleep Quality",
           "goal": "Complete Day 5 with steady, consistent action.",
-          "estimatedMinutes": 15
+          "estimatedMinutes": 26
         },
         {
           "type": "lesson",
@@ -959,6 +987,13 @@
           "completionMessage": "Stay with the practice until your body and mind feel steadier."
         },
         {
+          "type": "audio",
+          "title": "Tonight's Guided Sleep Audio",
+          "description": "Press play during your evening wind-down or once you are in bed.",
+          "audioStoragePath": "sleep_disorder_reset/day-05.mp3",
+          "durationSeconds": 658
+        },
+        {
           "type": "mindfulness_exercise",
           "title": "Body Temperature Sleep Trick",
           "steps": [
@@ -1019,14 +1054,14 @@
     {
       "dayNumber": 6,
       "dayTitle": "Quieting the Racing Mind",
-      "estimatedMinutes": 15,
+      "estimatedMinutes": 26,
       "cards": [
         {
           "type": "intro",
           "dayNumber": 6,
           "dayTitle": "Quieting the Racing Mind",
           "goal": "Complete Day 6 with steady, consistent action.",
-          "estimatedMinutes": 15
+          "estimatedMinutes": 26
         },
         {
           "type": "lesson",
@@ -1135,6 +1170,13 @@
           "completionMessage": "Stay with the practice until your body and mind feel steadier."
         },
         {
+          "type": "audio",
+          "title": "Tonight's Guided Sleep Audio",
+          "description": "Press play during your evening wind-down or once you are in bed.",
+          "audioStoragePath": "sleep_disorder_reset/day-06.mp3",
+          "durationSeconds": 642
+        },
+        {
           "type": "mindfulness_exercise",
           "title": "Body Temperature Sleep Trick",
           "steps": [
@@ -1198,14 +1240,14 @@
     {
       "dayNumber": 7,
       "dayTitle": "Strengthening Natural Melatonin",
-      "estimatedMinutes": 16,
+      "estimatedMinutes": 27,
       "cards": [
         {
           "type": "intro",
           "dayNumber": 7,
           "dayTitle": "Strengthening Natural Melatonin",
           "goal": "Complete Day 7 with steady, consistent action.",
-          "estimatedMinutes": 16
+          "estimatedMinutes": 27
         },
         {
           "type": "lesson",
@@ -1315,6 +1357,13 @@
           "completionMessage": "Stay with the practice until your body and mind feel steadier."
         },
         {
+          "type": "audio",
+          "title": "Tonight's Guided Sleep Audio",
+          "description": "Press play during your evening wind-down or once you are in bed.",
+          "audioStoragePath": "sleep_disorder_reset/day-07.mp3",
+          "durationSeconds": 640
+        },
+        {
           "type": "mindfulness_exercise",
           "title": "Body Temperature Sleep Trick",
           "steps": [
@@ -1419,14 +1468,14 @@
     {
       "dayNumber": 8,
       "dayTitle": "Strengthening Sleep Pressure",
-      "estimatedMinutes": 16,
+      "estimatedMinutes": 27,
       "cards": [
         {
           "type": "intro",
           "dayNumber": 8,
           "dayTitle": "Strengthening Sleep Pressure",
           "goal": "Complete Day 8 with steady, consistent action.",
-          "estimatedMinutes": 16
+          "estimatedMinutes": 27
         },
         {
           "type": "lesson",
@@ -1571,6 +1620,13 @@
           "completionMessage": "Stay with the practice until your body and mind feel steadier."
         },
         {
+          "type": "audio",
+          "title": "Tonight's Guided Sleep Audio",
+          "description": "Press play during your evening wind-down or once you are in bed.",
+          "audioStoragePath": "sleep_disorder_reset/day-08.mp3",
+          "durationSeconds": 640
+        },
+        {
           "type": "mindfulness_exercise",
           "title": "Body Temperature Sleep Trick",
           "steps": [
@@ -1608,14 +1664,14 @@
     {
       "dayNumber": 9,
       "dayTitle": "Deepening Sleep Pressure",
-      "estimatedMinutes": 17,
+      "estimatedMinutes": 28,
       "cards": [
         {
           "type": "intro",
           "dayNumber": 9,
           "dayTitle": "Deepening Sleep Pressure",
           "goal": "Complete Day 9 with steady, consistent action.",
-          "estimatedMinutes": 17
+          "estimatedMinutes": 28
         },
         {
           "type": "lesson",
@@ -1760,6 +1816,13 @@
           "completionMessage": "Stay with the practice until your body and mind feel steadier."
         },
         {
+          "type": "audio",
+          "title": "Tonight's Guided Sleep Audio",
+          "description": "Press play during your evening wind-down or once you are in bed.",
+          "audioStoragePath": "sleep_disorder_reset/day-09.mp3",
+          "durationSeconds": 604
+        },
+        {
           "type": "mindfulness_exercise",
           "title": "Body Temperature Sleep Trick",
           "steps": [
@@ -1824,14 +1887,14 @@
     {
       "dayNumber": 10,
       "dayTitle": "Strengthening the Sleep Routine",
-      "estimatedMinutes": 17,
+      "estimatedMinutes": 28,
       "cards": [
         {
           "type": "intro",
           "dayNumber": 10,
           "dayTitle": "Strengthening the Sleep Routine",
           "goal": "Complete Day 10 with steady, consistent action.",
-          "estimatedMinutes": 17
+          "estimatedMinutes": 28
         },
         {
           "type": "lesson",
@@ -1976,6 +2039,13 @@
           "completionMessage": "Stay with the practice until your body and mind feel steadier."
         },
         {
+          "type": "audio",
+          "title": "Tonight's Guided Sleep Audio",
+          "description": "Press play during your evening wind-down or once you are in bed.",
+          "audioStoragePath": "sleep_disorder_reset/day-10.mp3",
+          "durationSeconds": 652
+        },
+        {
           "type": "mindfulness_exercise",
           "title": "Body Temperature Sleep Trick",
           "steps": [
@@ -2080,14 +2150,14 @@
     {
       "dayNumber": 11,
       "dayTitle": "Stabilizing Deep Sleep",
-      "estimatedMinutes": 18,
+      "estimatedMinutes": 28,
       "cards": [
         {
           "type": "intro",
           "dayNumber": 11,
           "dayTitle": "Stabilizing Deep Sleep",
           "goal": "Complete Day 11 with steady, consistent action.",
-          "estimatedMinutes": 18
+          "estimatedMinutes": 28
         },
         {
           "type": "lesson",
@@ -2232,6 +2302,13 @@
           "completionMessage": "Stay with the practice until your body and mind feel steadier."
         },
         {
+          "type": "audio",
+          "title": "Tonight's Guided Sleep Audio",
+          "description": "Press play during your evening wind-down or once you are in bed.",
+          "audioStoragePath": "sleep_disorder_reset/day-11.mp3",
+          "durationSeconds": 576
+        },
+        {
           "type": "mindfulness_exercise",
           "title": "Body Temperature Sleep Trick",
           "steps": [
@@ -2291,14 +2368,14 @@
     {
       "dayNumber": 12,
       "dayTitle": "Releasing Hidden Stress",
-      "estimatedMinutes": 18,
+      "estimatedMinutes": 29,
       "cards": [
         {
           "type": "intro",
           "dayNumber": 12,
           "dayTitle": "Releasing Hidden Stress",
           "goal": "Complete Day 12 with steady, consistent action.",
-          "estimatedMinutes": 18
+          "estimatedMinutes": 29
         },
         {
           "type": "lesson",
@@ -2442,6 +2519,13 @@
           "completionMessage": "Stay with the practice until your body and mind feel steadier."
         },
         {
+          "type": "audio",
+          "title": "Tonight's Guided Sleep Audio",
+          "description": "Press play during your evening wind-down or once you are in bed.",
+          "audioStoragePath": "sleep_disorder_reset/day-12.mp3",
+          "durationSeconds": 640
+        },
+        {
           "type": "mindfulness_exercise",
           "title": "Body Temperature Sleep Trick",
           "steps": [
@@ -2501,14 +2585,14 @@
     {
       "dayNumber": 13,
       "dayTitle": "Deep Body Relaxation",
-      "estimatedMinutes": 19,
+      "estimatedMinutes": 30,
       "cards": [
         {
           "type": "intro",
           "dayNumber": 13,
           "dayTitle": "Deep Body Relaxation",
           "goal": "Complete Day 13 with steady, consistent action.",
-          "estimatedMinutes": 19
+          "estimatedMinutes": 30
         },
         {
           "type": "lesson",
@@ -2652,6 +2736,13 @@
           "completionMessage": "Stay with the practice until your body and mind feel steadier."
         },
         {
+          "type": "audio",
+          "title": "Tonight's Guided Sleep Audio",
+          "description": "Press play during your evening wind-down or once you are in bed.",
+          "audioStoragePath": "sleep_disorder_reset/day-13.mp3",
+          "durationSeconds": 640
+        },
+        {
           "type": "mindfulness_exercise",
           "title": "Body Temperature Sleep Trick",
           "steps": [
@@ -2712,14 +2803,14 @@
     {
       "dayNumber": 14,
       "dayTitle": "Locking in the Sleep Rhythm",
-      "estimatedMinutes": 22,
+      "estimatedMinutes": 34,
       "cards": [
         {
           "type": "intro",
           "dayNumber": 14,
           "dayTitle": "Locking in the Sleep Rhythm",
           "goal": "Complete Day 14 with steady, consistent action.",
-          "estimatedMinutes": 22
+          "estimatedMinutes": 34
         },
         {
           "type": "lesson",
@@ -2861,6 +2952,13 @@
             "Recommended length: 10–20 minutes."
           ],
           "completionMessage": "Stay with the practice until your body and mind feel steadier."
+        },
+        {
+          "type": "audio",
+          "title": "Tonight's Guided Sleep Audio",
+          "description": "Press play during your evening wind-down or once you are in bed.",
+          "audioStoragePath": "sleep_disorder_reset/day-14.mp3",
+          "durationSeconds": 708
         },
         {
           "type": "mindfulness_exercise",
@@ -3188,14 +3286,14 @@
     {
       "dayNumber": 15,
       "dayTitle": "Boosting Deep Sleep Recovery",
-      "estimatedMinutes": 20,
+      "estimatedMinutes": 31,
       "cards": [
         {
           "type": "intro",
           "dayNumber": 15,
           "dayTitle": "Boosting Deep Sleep Recovery",
           "goal": "Complete Day 15 with steady, consistent action.",
-          "estimatedMinutes": 20
+          "estimatedMinutes": 31
         },
         {
           "type": "lesson",
@@ -3339,6 +3437,13 @@
           "completionMessage": "Stay with the practice until your body and mind feel steadier."
         },
         {
+          "type": "audio",
+          "title": "Tonight's Guided Sleep Audio",
+          "description": "Press play during your evening wind-down or once you are in bed.",
+          "audioStoragePath": "sleep_disorder_reset/day-15.mp3",
+          "durationSeconds": 612
+        },
+        {
           "type": "mindfulness_exercise",
           "title": "Body Temperature Sleep Trick",
           "steps": [
@@ -3402,14 +3507,14 @@
     {
       "dayNumber": 16,
       "dayTitle": "Deep Sleep Conditioning",
-      "estimatedMinutes": 20,
+      "estimatedMinutes": 30,
       "cards": [
         {
           "type": "intro",
           "dayNumber": 16,
           "dayTitle": "Deep Sleep Conditioning",
           "goal": "Complete Day 16 with steady, consistent action.",
-          "estimatedMinutes": 20
+          "estimatedMinutes": 30
         },
         {
           "type": "lesson",
@@ -3554,6 +3659,13 @@
           "completionMessage": "Stay with the practice until your body and mind feel steadier."
         },
         {
+          "type": "audio",
+          "title": "Tonight's Guided Sleep Audio",
+          "description": "Press play during your evening wind-down or once you are in bed.",
+          "audioStoragePath": "sleep_disorder_reset/day-16.mp3",
+          "durationSeconds": 576
+        },
+        {
           "type": "mindfulness_exercise",
           "title": "Body Temperature Sleep Trick",
           "steps": [
@@ -3612,14 +3724,14 @@
     {
       "dayNumber": 17,
       "dayTitle": "Deep Nervous System Recovery",
-      "estimatedMinutes": 21,
+      "estimatedMinutes": 32,
       "cards": [
         {
           "type": "intro",
           "dayNumber": 17,
           "dayTitle": "Deep Nervous System Recovery",
           "goal": "Complete Day 17 with steady, consistent action.",
-          "estimatedMinutes": 21
+          "estimatedMinutes": 32
         },
         {
           "type": "lesson",
@@ -3763,6 +3875,13 @@
           "completionMessage": "Stay with the practice until your body and mind feel steadier."
         },
         {
+          "type": "audio",
+          "title": "Tonight's Guided Sleep Audio",
+          "description": "Press play during your evening wind-down or once you are in bed.",
+          "audioStoragePath": "sleep_disorder_reset/day-17.mp3",
+          "durationSeconds": 640
+        },
+        {
           "type": "mindfulness_exercise",
           "title": "Body Temperature Sleep Trick",
           "steps": [
@@ -3823,14 +3942,14 @@
     {
       "dayNumber": 18,
       "dayTitle": "Deep Sleep Optimization",
-      "estimatedMinutes": 21,
+      "estimatedMinutes": 33,
       "cards": [
         {
           "type": "intro",
           "dayNumber": 18,
           "dayTitle": "Deep Sleep Optimization",
           "goal": "Complete Day 18 with steady, consistent action.",
-          "estimatedMinutes": 21
+          "estimatedMinutes": 33
         },
         {
           "type": "lesson",
@@ -3974,6 +4093,13 @@
           "completionMessage": "Stay with the practice until your body and mind feel steadier."
         },
         {
+          "type": "audio",
+          "title": "Tonight's Guided Sleep Audio",
+          "description": "Press play during your evening wind-down or once you are in bed.",
+          "audioStoragePath": "sleep_disorder_reset/day-18.mp3",
+          "durationSeconds": 666
+        },
+        {
           "type": "mindfulness_exercise",
           "title": "Body Temperature Sleep Trick",
           "steps": [
@@ -4031,14 +4157,14 @@
     {
       "dayNumber": 19,
       "dayTitle": "Releasing Hidden Body Tension",
-      "estimatedMinutes": 21,
+      "estimatedMinutes": 32,
       "cards": [
         {
           "type": "intro",
           "dayNumber": 19,
           "dayTitle": "Releasing Hidden Body Tension",
           "goal": "Complete Day 19 with steady, consistent action.",
-          "estimatedMinutes": 21
+          "estimatedMinutes": 32
         },
         {
           "type": "lesson",
@@ -4182,6 +4308,13 @@
           "completionMessage": "Stay with the practice until your body and mind feel steadier."
         },
         {
+          "type": "audio",
+          "title": "Tonight's Guided Sleep Audio",
+          "description": "Press play during your evening wind-down or once you are in bed.",
+          "audioStoragePath": "sleep_disorder_reset/day-19.mp3",
+          "durationSeconds": 640
+        },
+        {
           "type": "mindfulness_exercise",
           "title": "Body Temperature Sleep Trick",
           "steps": [
@@ -4239,14 +4372,14 @@
     {
       "dayNumber": 20,
       "dayTitle": "Automatic Sleep Transition",
-      "estimatedMinutes": 21,
+      "estimatedMinutes": 32,
       "cards": [
         {
           "type": "intro",
           "dayNumber": 20,
           "dayTitle": "Automatic Sleep Transition",
           "goal": "Complete Day 20 with steady, consistent action.",
-          "estimatedMinutes": 21
+          "estimatedMinutes": 32
         },
         {
           "type": "lesson",
@@ -4391,6 +4524,13 @@
           "completionMessage": "Stay with the practice until your body and mind feel steadier."
         },
         {
+          "type": "audio",
+          "title": "Tonight's Guided Sleep Audio",
+          "description": "Press play during your evening wind-down or once you are in bed.",
+          "audioStoragePath": "sleep_disorder_reset/day-20.mp3",
+          "durationSeconds": 652
+        },
+        {
           "type": "mindfulness_exercise",
           "title": "Body Temperature Sleep Trick",
           "steps": [
@@ -4455,14 +4595,14 @@
     {
       "dayNumber": 21,
       "dayTitle": "Long-Term Sleep Stability",
-      "estimatedMinutes": 21,
+      "estimatedMinutes": 32,
       "cards": [
         {
           "type": "intro",
           "dayNumber": 21,
           "dayTitle": "Long-Term Sleep Stability",
           "goal": "Complete Day 21 with steady, consistent action.",
-          "estimatedMinutes": 21
+          "estimatedMinutes": 32
         },
         {
           "type": "lesson",
@@ -4605,6 +4745,13 @@
             "Recommended length: 10–20 minutes."
           ],
           "completionMessage": "Stay with the practice until your body and mind feel steadier."
+        },
+        {
+          "type": "audio",
+          "title": "Tonight's Guided Sleep Audio",
+          "description": "Press play during your evening wind-down or once you are in bed.",
+          "audioStoragePath": "sleep_disorder_reset/day-21.mp3",
+          "durationSeconds": 658
         },
         {
           "type": "mindfulness_exercise",
