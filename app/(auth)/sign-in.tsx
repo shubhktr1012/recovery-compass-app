@@ -71,7 +71,10 @@ export default function SignIn() {
 
             if (error) throw error;
 
-            Alert.alert('Check your email', 'We sent a password reset link to your inbox.');
+            Alert.alert(
+                'Check your email',
+                'If an account exists for this email, we sent a password reset link to the inbox.'
+            );
         } catch (error: any) {
             Alert.alert('Reset failed', error?.message ?? 'Please try again.');
         }
