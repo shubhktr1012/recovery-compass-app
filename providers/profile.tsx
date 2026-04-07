@@ -89,7 +89,7 @@ const fetchProfileFromApi = async (userId: string) => {
 export const useProfile = () => useContext(ProfileContext);
 
 export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const queryClient = useQueryClient();
   const [isAccessLoading, setIsAccessLoading] = useState(false);
   const [access, setAccess] = useState<ProgramAccessSnapshot>({
@@ -423,6 +423,22 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     let isCancelled = false;
 
     const ensureProfileRow = async () => {
+      const {
+        data: { user: activeUser },
+        error: activeUserError,
+      } = await supabase.auth.getUser();
+
+      if (activeUserError || !activeUser || activeUser.id !== userId) {
+        console.warn('Cached session no longer maps to an active auth user. Clearing local session.', activeUserError);
+
+        if (!isCancelled) {
+          await signOut().catch((signOutError) => {
+            console.error('Failed to sign out after detecting deleted auth user', signOutError);
+          });
+        }
+        return;
+      }
+
       const { error } = await supabase
         .from('profiles')
         .upsert(
@@ -450,7 +466,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     return () => {
       isCancelled = true;
     };
-  }, [profileQuery.data, profileQuery.error, profileQuery.isPending, refreshProfile, user?.email, userId]);
+  }, [profileQuery.data, profileQuery.error, profileQuery.isPending, refreshProfile, signOut, user?.email, userId]);
 
   useEffect(() => {
     if (pushError) {

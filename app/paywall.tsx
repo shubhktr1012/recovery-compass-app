@@ -16,6 +16,13 @@ import {
 } from '@/lib/revenuecat/config';
 import { useProfile } from '@/providers/profile';
 
+const ACCESS_CONFIRMATION_RETRY_DELAY_MS = 1500;
+const ACCESS_CONFIRMATION_RETRY_COUNT = 4;
+
+function wait(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 function getRecommendedPrograms(programSlug: ProgramSlug | null | undefined): ProgramSlug[] {
   if (!programSlug) {
     return [];
@@ -34,6 +41,36 @@ export default function Paywall() {
   const [loading, setLoading] = useState(false);
   const [packages, setPackages] = useState<PurchasesPackage[]>([]);
   const [fetchingOfferings, setFetchingOfferings] = useState(true);
+
+  const confirmUnlockedProgram = async (expectedProgram: ProgramSlug | null) => {
+    for (let attempt = 0; attempt < ACCESS_CONFIRMATION_RETRY_COUNT; attempt += 1) {
+      const snapshot = await refreshAccess();
+      const confirmedProgram =
+        expectedProgram && snapshot.ownedProgram === expectedProgram
+          ? expectedProgram
+          : snapshot.ownedProgram;
+
+      if (confirmedProgram) {
+        return confirmedProgram;
+      }
+
+      if (attempt < ACCESS_CONFIRMATION_RETRY_COUNT - 1) {
+        await wait(ACCESS_CONFIRMATION_RETRY_DELAY_MS);
+      }
+    }
+
+    return null;
+  };
+
+  const restoreOwnedPurchase = async (expectedProgram: ProgramSlug | null) => {
+    try {
+      await Purchases.restorePurchases();
+    } catch (error) {
+      console.warn('Restore attempt after purchase issue failed', error);
+    }
+
+    return await confirmUnlockedProgram(expectedProgram);
+  };
 
   useEffect(() => {
     const getOfferings = async () => {
@@ -120,9 +157,7 @@ export default function Paywall() {
       let confirmedProgram = programSlug && ownedPrograms.includes(programSlug) ? programSlug : null;
 
       if (!confirmedProgram) {
-        const refreshedAccess = await refreshAccess();
-        confirmedProgram =
-          programSlug && refreshedAccess.ownedProgram === programSlug ? programSlug : refreshedAccess.ownedProgram;
+        confirmedProgram = await confirmUnlockedProgram(programSlug);
       }
 
       if (!confirmedProgram) {
@@ -139,16 +174,63 @@ export default function Paywall() {
       Alert.alert('Success', `Your ${getPackageDisplayName(pack)} is now unlocked.`);
       router.replace('/(tabs)/program');
     } catch (e: any) {
+      const combinedErrorMessage = [e?.message, e?.underlyingErrorMessage]
+        .filter((value): value is string => typeof value === 'string' && value.length > 0)
+        .join(' ')
+        .toLowerCase();
+      const isAlreadyOwnedError =
+        combinedErrorMessage.includes('already own') ||
+        combinedErrorMessage.includes('already purchased') ||
+        combinedErrorMessage.includes('item already owned');
+      const isCredentialError =
+        combinedErrorMessage.includes('credentials issue') ||
+        combinedErrorMessage.includes('invalid credentials');
+
+      if (isAlreadyOwnedError) {
+        const restoredProgram = await restoreOwnedPurchase(programSlug);
+
+        if (restoredProgram) {
+          await setProgramAccess(restoredProgram);
+          Alert.alert('Success', `Your ${getDisplayNameForProgram(restoredProgram)} is now unlocked.`);
+          router.replace('/(tabs)/program');
+          return;
+        }
+
+        Alert.alert(
+          'Purchase Already Owned',
+          'Google Play says this item is already owned. We tried restoring access, but it is not confirmed yet. Please use Restore Purchases again after the billing credentials issue is resolved.'
+        );
+        return;
+      }
+
+      if (isCredentialError) {
+        const restoredProgram = await confirmUnlockedProgram(programSlug);
+
+        if (restoredProgram) {
+          await setProgramAccess(restoredProgram);
+          Alert.alert('Success', `Your ${getDisplayNameForProgram(restoredProgram)} is now unlocked.`);
+          router.replace('/(tabs)/program');
+          return;
+        }
+      }
+
       if (!e.userCancelled) {
         void captureError(e, {
           source: 'paywall',
           metadata: {
+            code: e?.code ?? 'unknown',
+            underlyingErrorMessage: e?.underlyingErrorMessage ?? null,
             packageIdentifier: pack.identifier,
             programSlug: programSlug ?? 'unknown',
             stage: 'purchase',
           },
         });
-        Alert.alert('Purchase Failed', e.message);
+        Alert.alert(
+          'Purchase Failed',
+          isCredentialError
+            ? 'Google Play completed the purchase, but Recovery Compass could not validate it yet because of a billing credentials issue. Please use Restore Purchases after the RevenueCat Google Play credentials are fixed.'
+            : e.message
+        );
       }
     } finally {
       setLoading(false);
@@ -165,6 +247,7 @@ export default function Paywall() {
         return;
       }
       Alert.alert('Success', 'Purchases restored successfully!');
+      router.replace('/(tabs)/program');
     } catch (e: any) {
       void captureError(e, { source: 'paywall', metadata: { stage: 'restore' } });
       Alert.alert('Restore Failed', e.message);

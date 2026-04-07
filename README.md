@@ -85,6 +85,10 @@ EXPO_PUBLIC_SUPABASE_ANON_KEY=
 EXPO_PUBLIC_REVENUECAT_APPLE_KEY=
 EXPO_PUBLIC_REVENUECAT_GOOGLE_KEY=
 
+EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID=
+EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID=
+EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID=
+
 EXPO_PUBLIC_RC_6_DAY_ENTITLEMENT_ID=six_day_control
 EXPO_PUBLIC_RC_90_DAY_ENTITLEMENT_ID=ninety_day_quit
 EXPO_PUBLIC_RC_AGE_REVERSAL_ENTITLEMENT_ID=age_reversal
@@ -109,6 +113,7 @@ Notes:
 - `app/.env.example` now includes the full public multi-program key set.
 - Use `six_day_control` and `ninety_day_quit` as the canonical smoking RevenueCat identifiers across app and webhook config.
 - `EXPO_PUBLIC_EAS_PROJECT_ID` is optional locally, but required if you want EAS config to resolve cleanly from environment.
+- Android Google sign-in setup notes live in [`docs/android-google-signin.md`](docs/android-google-signin.md).
 
 ### Run the app
 
@@ -164,6 +169,11 @@ npm run generate:program-content
 npm run supabase:functions:list
 npm run supabase:functions:deploy:delete-account
 ```
+
+## Android release notes
+
+- Production EAS builds now retain Android `mapping.txt` through `buildArtifactPaths` in [eas.json](/Users/shubh/Development/recovery-compass/app/eas.json).
+- Upload that mapping file to Play Console if you want deobfuscated Android crash and ANR reports for release builds.
 
 ## Current architecture notes
 

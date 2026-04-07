@@ -6,7 +6,7 @@ import { supabase } from '../lib/supabase';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { queryClient, QUERY_PERSIST_STORAGE_KEY } from './query';
 import { AccessService } from '@/lib/access/service';
-import { validatePublicEnv } from '@/lib/env';
+import { getPublicEnv, getPublicEnvState } from '@/lib/env';
 
 interface AuthContextType {
   session: Session | null;
@@ -36,7 +36,8 @@ const AuthContext = createContext<AuthContextType>({
 
 export const useAuth = () => useContext(AuthContext);
 
-const { supabaseAnonKey, supabaseUrl } = validatePublicEnv();
+const publicEnvState = getPublicEnvState();
+const { supabaseAnonKey, supabaseUrl } = getPublicEnv();
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [session, setSession] = useState<Session | null>(null);
@@ -198,6 +199,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const deleteAccount = async () => {
+    if (!publicEnvState.isValid) {
+      throw new Error(publicEnvState.errorMessage ?? 'App configuration is incomplete.');
+    }
+
     const {
       data: { session: refreshedSession },
       error: refreshError,

@@ -1,9 +1,9 @@
 import * as FileSystem from 'expo-file-system/legacy';
 
-import { validatePublicEnv } from '@/lib/env';
+import { getPublicEnv } from '@/lib/env';
 import { supabase } from '@/lib/supabase';
 
-const { programAudioBucket } = validatePublicEnv();
+const { programAudioBucket } = getPublicEnv();
 
 function getCachePath(storagePath: string) {
   const safeFileName = storagePath.replace(/[^\w.-]+/g, '_');

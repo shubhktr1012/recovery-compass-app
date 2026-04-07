@@ -16,8 +16,9 @@ import Animated, {
     withTiming,
 } from 'react-native-reanimated';
 import { useAuth } from '@/providers/auth';
-import { validatePublicEnv } from '@/lib/env';
+import { getPublicEnv } from '@/lib/env';
 import * as Google from 'expo-auth-session/providers/google';
+import * as AuthSession from 'expo-auth-session';
 import * as WebBrowser from 'expo-web-browser';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import * as Crypto from 'expo-crypto';
@@ -59,12 +60,16 @@ export default function WelcomeScreen() {
         googleWebClientId,
         googleIosClientId,
         googleAndroidClientId,
-    } = validatePublicEnv();
+    } = getPublicEnv();
+    const googleRedirectUri = AuthSession.makeRedirectUri({
+        native: 'recoverycompassapp:/oauthredirect',
+    });
     const hasGoogleConfig = Boolean(googleWebClientId || googleIosClientId || googleAndroidClientId);
     const [googleRequest, googleAuthResponse, promptGoogleSignIn] = Google.useAuthRequest({
         webClientId: googleWebClientId ?? undefined,
         iosClientId: googleIosClientId ?? undefined,
         androidClientId: googleAndroidClientId ?? undefined,
+        redirectUri: googleRedirectUri,
         selectAccount: true,
         scopes: ['openid', 'profile', 'email'],
         shouldAutoExchangeCode: true,

@@ -9,9 +9,9 @@ import { AuthProvider, useAuth } from '../providers/auth';
 import { ProfileProvider, UserProfile, useProfile } from '../providers/profile';
 import { AppQueryProvider } from '../providers/query';
 import Purchases, { LOG_LEVEL } from 'react-native-purchases';
-import { LogBox, Platform } from 'react-native';
+import { LogBox, Platform, Text, View } from 'react-native';
 import { AppErrorBoundary } from '@/components/AppErrorBoundary';
-import { validatePublicEnv } from '@/lib/env';
+import { getPublicEnvState } from '@/lib/env';
 import { installGlobalErrorHandler } from '@/lib/monitoring';
 import { Session } from '@supabase/supabase-js';
 import ErodeRegular from '@/assets/fonts/Erode-Regular.otf';
@@ -34,7 +34,8 @@ SplashScreen.preventAutoHideAsync();
 // Ignore the SafeAreaView deprecation warning as it comes from dependencies
 LogBox.ignoreLogs(['SafeAreaView has been deprecated']);
 
-const publicEnv = validatePublicEnv();
+const publicEnvState = getPublicEnvState();
+const publicEnv = publicEnvState.env;
 const uninstallGlobalErrorHandler = installGlobalErrorHandler();
 
 function NavigationGate({
@@ -215,6 +216,20 @@ export default function RootLayout() {
   useEffect(() => () => {
     uninstallGlobalErrorHandler();
   }, []);
+
+  if (!publicEnvState.isValid) {
+    return (
+      <View className="flex-1 bg-white px-6 py-16 items-center justify-center">
+        <Text className="font-erode-bold text-3xl text-center text-forest mb-4">App Configuration Missing</Text>
+        <Text className="font-satoshi text-base leading-6 text-center text-gray-600 max-w-sm">
+          This build is missing required public runtime environment variables and cannot start correctly.
+        </Text>
+        <Text className="font-satoshi-medium text-sm leading-6 text-center text-gray-800 mt-6 max-w-sm">
+          {publicEnvState.errorMessage}
+        </Text>
+      </View>
+    );
+  }
 
   return (
     <AppQueryProvider>

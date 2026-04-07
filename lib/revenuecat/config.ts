@@ -1,6 +1,6 @@
 import type { CustomerInfo, PurchasesPackage } from 'react-native-purchases';
 
-import { validatePublicEnv } from '@/lib/env';
+import { getPublicEnv } from '@/lib/env';
 import { ProgramSlug } from '@/lib/programs/types';
 import {
   createRevenueCatCatalog,
@@ -11,7 +11,7 @@ import {
   RevenueCatProgramDefinition,
 } from '@/lib/revenuecat/catalog';
 
-const env = validatePublicEnv();
+const env = getPublicEnv();
 
 export const REVENUECAT_CATALOG = createRevenueCatCatalog({
   ageReversalEntitlementId: env.revenueCatAgeReversalEntitlementId,

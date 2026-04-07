@@ -1,17 +1,17 @@
 # Sprint Status — Recovery Compass
 
-> Last updated: April 6, 2026
+> Last updated: April 8, 2026
 > Branch: `rebuild/multi-program`
 > Questionnaire foundation: ready
 > Sellable catalog: 6 products configured in RevenueCat, final INR pricing entered in App Store Connect and Google Play, unified `main_production` offering live
-> Final content pending from Anjan: Sleep (21d), Energy (14d), Men's Health (30d) — durations refreshed in app
+> Final content files received for Sleep, Energy, and Men's Health — integration and QA pending
 
 ## Launch Blockers (must fix before ANY submission)
 
 - [x] App icon from Anjan (1024x1024 PNG)
 - [x] App Store Connect iOS IAP setup + final INR pricing entry
 - [x] Google Play internal build uploaded + one-time products created
-- [ ] Updated Sleep / Energy / Men's Health content signoff from Anjan
+- [ ] Integrate final Sleep / Energy / Men's Health content into app
 - [ ] Final QA sweep on questionnaire → paywall → purchase → program access
 
 ## Completed
@@ -60,7 +60,7 @@
 - [ ] Paywall visual polish / merchandising refinement
 - [ ] Visual overhaul — apply V4 wellness design to all screens
 - [ ] Ground feature (center tab, guided grounding experience)
-- [ ] Device QA on real iPhone / Android test tracks
+- [ ] Device QA on real iPhone test track
 
 ## Not Started — Needed for Launch
 
@@ -72,6 +72,7 @@
 - [ ] Store review prompt (after Day 3+)
 - [ ] EAS production build (iOS)
 - [ ] App Store Connect metadata + screenshots
+- [ ] Generate final store listing copy and screenshots
 - [ ] App Store Connect IAP review screenshots + notes for all 6 products
 
 ## Not Started — Can Ship After Launch
@@ -88,11 +89,7 @@
 
 ## Blocked On Anjan
 
-- [ ] Splash screen assets
-- [ ] Final store listing copy / screenshots signoff
-- [ ] Sleep program new content (21 days)
-- [ ] Energy program new content (14 days)
-- [ ] Men's Health new content (30 days)
+- [ ] No current blockers from Anjan
 
 ## Current App Flow (what the user sees today)
 
@@ -134,3 +131,4 @@ Launch → V4 Splash → Onboarding Carousel → Sign Up / Sign In
 - [x] StoreKit local purchase for `ninety_day_quit` posts receipt to RevenueCat successfully
 - [x] Paywall purchase flow now waits for confirmed unlock before routing to Program tab
 - [ ] Real-device iPhone sandbox purchase verification still pending (borrowed device / TestFlight)
+- [x] Android internal-track Google Play purchase verification complete (Play install, tester account, Google Play purchase success, unlock path, restore path)
