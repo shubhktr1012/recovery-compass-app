@@ -419,9 +419,9 @@ export class AccessService {
     ]);
     const ownedPrograms = getOwnedProgramsFromCustomerInfo(customerInfo);
     let ownedProgram = selectPreferredProgramSlug(ownedPrograms, [
-      activeProgram,
       localSnapshot.ownedProgram,
       existingProgress?.programSlug,
+      activeProgram,
     ]);
     const serverSnapshot =
       ownedPrograms.length > 0

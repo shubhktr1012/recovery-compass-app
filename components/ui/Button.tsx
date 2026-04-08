@@ -55,8 +55,26 @@ export function Button({
         lg: 'text-lg',
     };
 
+    const isInactive = disabled || loading;
+
+    const disabledVariantStyles = {
+        primary: 'bg-forest/35 border border-transparent',
+        secondary: 'bg-sage/55 border border-transparent',
+        outline: 'bg-transparent border border-forest/25',
+        ghost: 'bg-transparent border-transparent',
+        destructive: 'bg-red-600/40 border-transparent',
+    };
+
+    const disabledTextVariants = {
+        primary: 'text-white/80 font-medium',
+        secondary: 'text-forest/65 font-medium',
+        outline: 'text-forest/45 font-medium',
+        ghost: 'text-forest/45 font-medium',
+        destructive: 'text-white/80 font-medium',
+    };
+
     const handlePress = (e: any) => {
-        if (disabled || loading) return;
+        if (isInactive) return;
         Haptics.selectionAsync();
         onPress?.(e);
     };
@@ -65,13 +83,13 @@ export function Button({
         <TouchableOpacity
             className={twMerge(
                 baseStyles,
-                variants[variant],
+                isInactive ? disabledVariantStyles[variant] : variants[variant],
                 sizes[size],
-                (disabled || loading) && 'opacity-50',
+                isInactive && 'opacity-100',
                 className
             )}
             onPress={handlePress}
-            disabled={disabled || loading}
+            disabled={isInactive}
             activeOpacity={0.8}
             style={[{ borderCurve: 'continuous' as const }, props.style]}
             {...props}
@@ -84,7 +102,7 @@ export function Button({
                     <Text
                         className={twMerge(
                             'font-satoshi',
-                            textVariants[variant],
+                            isInactive ? disabledTextVariants[variant] : textVariants[variant],
                             textSizes[size],
                             textClassName
                         )}

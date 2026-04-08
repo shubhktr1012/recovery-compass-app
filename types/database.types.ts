@@ -184,7 +184,9 @@ export type Database = {
       profiles: {
         Row: {
           active_program: string | null
+          avatar_url: string | null
           created_at: string | null
+          display_name: string | null
           email: string | null
           expo_push_token: string | null
           id: string
@@ -201,7 +203,9 @@ export type Database = {
         }
         Insert: {
           active_program?: string | null
+          avatar_url?: string | null
           created_at?: string | null
+          display_name?: string | null
           email?: string | null
           expo_push_token?: string | null
           id: string
@@ -218,7 +222,9 @@ export type Database = {
         }
         Update: {
           active_program?: string | null
+          avatar_url?: string | null
           created_at?: string | null
+          display_name?: string | null
           email?: string | null
           expo_push_token?: string | null
           id?: string

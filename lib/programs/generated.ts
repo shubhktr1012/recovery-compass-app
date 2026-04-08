@@ -417,29 +417,21 @@ export const GENERATED_PROGRAMS = {
       {
         "programSlug": "ninety_day_transform",
         "dayNumber": 1,
-        "title": "Day 1",
+        "title": "Arriving",
         "subtitle": null,
-        "summary": "(Audio + Text + Journal Screens)",
-        "prompt": null,
-        "close": null,
+        "summary": "Starting without pressure",
+        "prompt": "What made me start today?",
+        "close": "Showing\nup once is enough.",
         "estimatedMinutes": 7,
-        "focus": null,
+        "focus": "Starting without pressure",
         "sections": [
           {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 1 · Arriving\n\nMain copy (exact):\n\nYou’re not here to fix everything today.\n\nYou’re here to arrive — calmly, honestly, without pressure.\n\nNothing needs to change right now. Simply noticing where you are is enough.\n\nCTA button:\n\n_Continue_\n\nUX notes:\n\nNo progress bar\nNo “Day 1 of 90” pressure\nSoft spacing, minimal UI"
+            "title": "Today’s Focus",
+            "body": "Starting without pressure"
           },
           {
-            "title": "GUIDED AUDIO (PRIMARY)",
-            "body": "Screen title: One Minute of Arriving\n\nInstruction text (above audio player):\n\nThis is a short pause to help you settle in. There’s nothing you need to do\nperfectly.\n\nAudio controls:\n\nPlay / Pause\nOptional mute\nSubtle water-wave background (very soft)\nDuration: ~1 minute\n\nAUDIO SCRIPT (Word-for-Word)\n\nDay 1 – Arriving (7-Minute Guided Meditation) Take a moment to sit\ncomfortably. There is nothing special you need to do. No posture to perfect. No\nbreathing pattern to follow. Just sit... as you are. Let your hands rest\nwherever they feel natural. If it feels okay, gently close your eyes. If not,\nsimply soften your gaze. Take a slow breath in... And let it out naturally.\nThere’s no need to control your breathing. Just notice it. The air coming in...\nThe air going out... You are not here to fix anything today. You are not here to\nchange everything at once. You are here to arrive. Notice the surface beneath\nyou. The support under your body. The simple fact that you are sitting here.\nThat’s enough. Your mind may already be thinking. That’s normal. If thoughts\nappear, you don’t need to push them away. Just notice them... And gently return\nyour attention to your breath. Breathing in... Breathing out... You might notice\nsensations in your body. Tension somewhere.\n\nRestlessness. Heaviness. Or maybe nothing at all. Whatever you notice is okay.\nNothing needs to be adjusted. For these few minutes, there is no goal. No\nexpectation. No measurement. Just noticing. If you think about smoking... Or\ndrinking... Or habits you want to change... Just notice that thought too. You\ndon’t need to solve it right now. Today is not about stopping. It’s about\nunderstanding where you are. Take another slow breath in... And a steady breath\nout. Notice how the breath feels in your chest. Or your stomach. Or at the tip\nof your nose. There is no “right” place to focus. Just choose one gently. Stay\nthere for a few breaths. If your attention drifts, that’s completely normal.\nEach time you notice drifting... And return... That is awareness. Nothing more\nis required. You might notice subtle emotions. Maybe uncertainty.\n\nMaybe hope. Maybe doubt. Maybe calm. All of it belongs. You don’t need to\nimprove how this feels. You are not being evaluated. You are simply here. Let\nyour shoulders soften slightly. Let your jaw relax if it feels tight. Allow your\nbreath to continue at its natural pace. Right now, nothing needs to change.\nThere is space between you and your habits. Just enough space to notice. And\nthat space is where awareness begins. Take one slow breath in... And gently let\nit go. Notice the room around you. The sounds in the distance. The feeling of\nbeing present. You showed up today. Not perfectly. Not forcefully. Just\nhonestly. And that matters. There is nothing else you need to do in this moment.\nWhen you feel ready... Gently open your eyes. Take your time. You have arrived.\nAnd for today... That is enough.\n\nCTA after audio finishes:\n\n_Continue_\n\nUX notes:\n\nAudio auto-stops (no loop)\nNo “completed” badge\nSilence is intentional — do not trim"
-          },
-          {
-            "title": "JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrompt (exact):\n\nWhat made you start today?\n\nHelper text (small, below prompt):\n\nThere’s no right answer. Write as little or as much as you want — or skip this\nentirely.\n\nInput options:\n\nText (primary)\nVoice note (optional)\n“Skip” always visible\n\nCTA buttons:\n\n_Save & Continue_\n_Skip for Today_\n\nUX notes:\n\nNo minimum characters\nNo AI suggestions\nPrivate by default"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough for today\n\nMain copy (exact):\n\nYou showed up today.\n\nThat matters more than how today went.\n\nYou don’t need to do anything else right now.\n\nSecondary text (smaller):\n\nCome back when it feels right — whether that’s later today or tomorrow.\n\nCTA button:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE TO USER)\n\nDay 1 marked as “visited”, not “completed”\nNo streak increment\nNo reminders triggered\nJournal saved locally + backend (if logged in)\n\nSAFETY & COMPLIANCE CHECK\n\nDay 1 content:\n\nNo medical language\nNo quitting pressure\nNo habit metrics\nNo emotional probing\nApp Store safe\nEmotionally supportive\n\nDESIGN PRINCIPLE FOR DAY 1\n\nIf the user closes the app feeling lighter , Day 1 succeeded.\n\nNot motivated. Not inspired. Just lighter.\n\nDay 2 – Noticing Urges\n\nFocus: Urges as signals Exercise: When an urge appears, pause for 10\nseconds. Journal: “When did urges appear today?” Close: “Awareness comes\nbefore change.”"
+            "title": "Today’s Practice",
+            "body": "Sit quietly for 1 minute.\nNotice your breath."
           }
         ],
         "audio": {
@@ -451,133 +443,21 @@ export const GENERATED_PROGRAMS = {
       {
         "programSlug": "ninety_day_transform",
         "dayNumber": 2,
-        "title": "Day 2",
+        "title": "Noticing Urges",
         "subtitle": null,
-        "summary": "(Audio + Text + Reflection Screens)",
-        "prompt": null,
-        "close": null,
+        "summary": "Urges as signals",
+        "prompt": "When did urges appear today?",
+        "close": "Awareness comes\nbefore change.",
         "estimatedMinutes": 7,
-        "focus": null,
+        "focus": "Urges as signals",
         "sections": [
           {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 2 · Noticing Urges\n\nMain copy (exact):\n\nToday isn’t about stopping urges.\n\nIt’s about noticing them — calmly, without reacting or judging.\n\nAn urge is just a signal. You don’t have to respond to it right away.\n\nCTA button:\n\n_Continue_\n\nUX notes:\n\nNo progress bar\nNo numbers or goals\nCalm spacing, readable line length"
+            "title": "Today’s Focus",
+            "body": "Urges as signals"
           },
           {
-            "title": "CONTEXT SETTING (VERY IMPORTANT)",
-            "body": "Screen title: Before We Begin\n\nMain copy (exact):\n\nMany people think urges mean something is wrong.\n\nThey don’t.\n\nUrges are temporary signals that rise and fall.\n\nToday, you’re just learning to notice them — not to fight them.\n\nCTA button:\n\n_Continue_\n\nWhy this screen matters This removes:\n\nFear\nShame\n“I’m weak” thinking\n\nIt prepares the nervous system."
-          },
-          {
-            "title": "GUIDED AUDIO (PRIMARY)",
-            "body": "Screen title: Noticing an Urge\n\nInstruction text (above audio player):\n\nThis short exercise helps you observe an urge without acting on it.\n\nAudio controls:\n\nPlay / Pause\nMute\nDuration: ~2 minutes\nOptional soft background (very subtle, no rhythm)\n\nAUDIO SCRIPT (Word-for-Word)\n\nDay 2 – Noticing Urges (7-Minute Guided Meditation) Find a comfortable place\nto sit. There is nothing you need to prepare. Nothing to achieve. Just a few\nquiet minutes to notice. If it feels okay, gently close your eyes. Or soften\nyour gaze. Take one slow breath in... And let it go naturally. No need to change\nthe rhythm. Just notice the air moving in... And moving out. Today is not about\nstopping urges. It’s about noticing them. Calmly. Without reacting. Without\njudging. As you sit here, ask yourself gently: Is there any urge present right\nnow? There might be. There might not be. Either answer is completely fine. If\nthere is no urge, simply imagine one that has appeared recently. A moment when\nyou felt the pull to smoke... or drink. Bring that memory to mind gently. Now,\ninstead of thinking about what you did... Shift your attention to how the urge\nfelt. Where did it show up first? In your chest? Your throat?\n\nYour hands? Your stomach? Or maybe as a thought. There’s no need to analyze it.\nJust observe it. Like watching a small wave in the ocean. Notice its shape. Its\nintensity. Does it feel sharp? Heavy? Restless? Subtle? Stay with it for a few\nbreaths. You don’t need to act. You don’t need to push it away. You don’t need\nto make it smaller. Just let it be there. Breathing naturally... As you observe.\nUrges often rise... Pause... And fall. Even if you don’t always notice the\nfalling part. Right now, imagine staying with the sensation. Without reacting.\nJust breathing. Notice what happens. Does it stay the same? Shift slightly? Move\nsomewhere else in your body? Even small changes count.\n\nTake a slow breath in... And a steady breath out. If your mind says something\nlike, “I need this.” Or “Just one.” Simply notice that thought too. You don’t\nneed to argue with it. You don’t need to believe it. Just recognize: That’s a\nthought. And let it pass like a cloud moving across the sky. Return to your\nbreath. In... And out. You are learning something important today. An urge is\nnot a command. It is a signal. Signals can be observed. They don’t require\nimmediate action. Stay here for a few more breaths. If the sensation fades,\nnotice that. If it stays, notice that too. Both are information. Nothing more.\nTake another slow breath in... And let it go gently. Now allow your awareness to\nwiden. Notice the room around you. The surface you’re sitting on. The sounds in\nthe distance. Whether an urge was present or not...\n\nYou practiced noticing. And noticing comes before change. There is nothing else\nyou need to do today. Even noticing once is meaningful. When you feel ready...\nGently open your eyes. And return to your day. Awareness grows quietly. And\ntoday, you strengthened it.\n\nCTA after audio finishes:\n\n_Continue_\n\nUX notes:\n\nNo countdown timer shown\nSilence is intentional\nDo not add success tones"
-          },
-          {
-            "title": "MICRO PRACTICE (TEXT-ONLY)",
-            "body": "Screen title: Today’s Practice\n\nMain copy (exact):\n\nAt least once today, when an urge appears, pause for a few seconds before\nresponding.\n\nYou don’t need to stop the urge. Just notice it.\n\nSecondary text (smaller):\n\nEven noticing late is still noticing.\n\nCTA button:\n\n_Continue_\n\nUX notes:\n\nNo reminder forced\nNo “task completion”\nThis is a suggestion, not an assignment"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrompt (exact):\n\nWhen did you notice an urge today?\n\nHelper text (small):\n\nYou can describe the time, situation, feeling — or skip this.\n\nOptional follow-up (collapsed by default):\n\nWhat was happening just before it appeared?\n\nInput options:\n\nText\nVoice\nSkip\n\nCTA buttons:\n\n_Save & Continue_\n_Skip for Today_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough for today\n\nMain copy (exact):\n\nNoticing an urge — even once — is a meaningful step.\n\nYou don’t need to handle it perfectly.\n\nSecondary text:\n\nAwareness grows quietly over time.\n\nCTA button:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE TO USER)\n\nDay 2 marked as “visited”\nNo streak pressure\nJournal saved privately\nNo alerts triggered\nNo evaluation of success/failure\n\nSAFETY & COMPLIANCE CHECK\n\nDay 2 avoids:\n\nMedical advice\nTherapy language\nQuitting pressure\n\nFear-based messaging\n\nDay 2 supports:\n\nEmotional safety\nSelf-awareness\nApp Store compliance\n\nCORE MESSAGE DAY 2 DELIVERS\n\nYou don’t need to fight urges to weaken them.\n\nYou need to understand them.\n\nThis belief prevents early drop-off.\n\nUI / UX DESIGN PRINCIPLES FOR DAY 2\n\nNeutral colors\nNo red/orange urgency cues\nSoft transitions\nClear “Done for today” end\nAlways allow exit\n\nCOACH INTERNAL NOTE (NOT USER-FACING)\n\nIf a user says:\n\n“I noticed urges but still acted.”\n\nCoach response:\n\n“That’s completely expected. Noticing always comes before change.”\n\nNever correct. Never pressure.\n\nDay 3 – Time Patterns\n\nFocus: When urges show up Exercise: Mentally note the time of each urge.\n\nJournal: “Which time of day feels hardest?” Close: “Patterns are\ninformation.”\n\nDAY 3 – TIME PATTERNS\n\n(Text + Guided Awareness + Reflection)\n\nTotal time: 5 – 7 minutes Tone: Curious, practical, non-judgmental\nGoal: Help users notice _when_ urges appear — not to control them yet"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 3 · Time Patterns\n\nMain copy (exact):\n\nToday is about noticing _when_ urges tend to appear.\n\nMany urges follow time patterns — not because of weakness, but because the brain\nlearns routines.\n\nYou’re not changing anything today. You’re just observing.\n\nCTA button:\n\n_Continue_\n\nUX notes:\n\nNo numbers (no “Day 3 of 90”)\nCalm spacing\nNeutral color palette"
-          },
-          {
-            "title": "WHY TIME MATTERS (CONTEXT)",
-            "body": "Screen title: Why timing matters\n\nMain copy (exact):\n\nUrges often show up at familiar times.\n\nMorning. Evening. After work. Before sleep.\n\nThese patterns don’t mean you _want_ to smoke or drink.\n\nThey usually mean your body expects a routine.\n\nToday, you’re learning to recognize those moments.\n\nCTA button:\n\n_Continue_\n\nWhy this screen matters\n\nRemoves self-blame\nFrames urges as learned patterns, not desire\nPrepares users for future structure"
-          },
-          {
-            "title": "GUIDED AWARENESS (TEXT + OPTIONAL AUDIO)",
-            "body": "Screen title: Noticing the time\n\nInstruction text:\n\nThis is a simple noticing practice you’ll use throughout the day.\n\nMain guidance (exact):\n\nWhen an urge appears today, quietly note the time.\n\nYou don’t need to write it down immediately.\n\nJust notice whether it’s morning, afternoon, evening, or night.\n\nOptional helper text (small):\n\nEven noticing after the urge has passed still counts.\n\nOptional audio button:\n\n_Listen (1 min)_\n\nOPTIONAL AUDIO SCRIPT (Word-for-Word)\n\nDay 3 – Time Patterns (7-Minute Guided\nMeditation) Find a comfortable place to sit. There is nothing you need to\nprepare. Just a few quiet minutes to notice. If it feels okay, gently close your\neyes. Or let your gaze soften. Take one slow breath in... And let it go\nnaturally. No need to change your breathing. Just notice it. In... And out...\nToday is about noticing when urges tend to appear. Not stopping them. Not\ncontrolling them. Just understanding their timing. Let your breath continue\nnaturally. Now, gently think back to the past few days. You don’t need to\nremember everything. Just let one moment come to mind — A time when an urge\nappeared. Notice what time of day it was.\n\nMorning... Afternoon... Evening... Night... You don’t need the exact clock time.\nJust the general part of the day. Stay with that for a moment. Was it early,\nwhen the day was just beginning? Later, after work? At night, when things felt\nquieter? Notice without judging. Urges often follow patterns. Not because you\nwant them to. But because the brain learns routines. Take a slow breath in...\nAnd gently out. Now imagine that time of day again. Picture yourself in that\nmoment. What was happening around you? Were you transitioning between tasks?\nFinishing something? Starting something? Sitting still? Moving? Just observe.\nYou are gathering information. Nothing more. Notice how it feels to recognize\nthat this timing may repeat. Does it feel predictable? Unexpected? Neutral?\n\nThere is no right reaction. Just awareness. Take another slow breath in... And\nout. Now widen your attention. Think about a different part of the day. Maybe a\ntime when urges feel weaker. Or not present at all. Morning, perhaps. Or a busy\nperiod. Or a calm moment. Notice that too. Patterns include both intensity and\nease. Some times are harder. Some times are lighter. Both are useful to notice.\nYou don’t need to change your schedule. You don’t need to avoid anything. Today\nis simply about recognizing timing. Like noticing when the sun rises and sets.\nIt doesn’t require effort. It only requires attention. Stay with your breath for\na few moments. In... And out... If your mind wanders, gently bring it back. Time\npatterns often operate quietly. Once noticed, they feel less mysterious. Less\nrandom. And when something feels less random... It feels less overwhelming.\n\nTake one more slow breath in... And let it go gently. Notice the room around you\nagain. The surface beneath you. The sounds in the distance. You are learning\nyour own rhythm. Morning. Afternoon. Evening. Night. There is no need to fix it.\nJust knowing is enough for today. When you’re ready... Gently open your eyes.\nAnd return to your day. Patterns are information. And today, you gathered some\n\nCTA button: _Continue_"
-          },
-          {
-            "title": "MICRO PRACTICE (TEXT-ONLY)",
-            "body": "Screen title: Today’s practice\n\nMain copy (exact):\n\nToday, try to notice at least one urge and quietly mark the time it appeared.\n\nThat’s all.\n\nSecondary text (smaller):\n\nYou don’t need to respond differently yet.\n\nCTA button:\n\n_Continue_\n\nUX notes:\n\nNo checkbox\nNo reminders forced\nThis is an invitation, not a task"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nWhen did you notice an urge today?\n\nSuggested options (tappable, optional):\n\nMorning\n🌤 Afternoon\nEvening\nNight\n\nOptional follow-up (collapsed):\n\nWas this time familiar or unexpected?\n\nHelper text (small):\n\nA few words are enough — or skip this entirely.\n\nCTA buttons:\n\n_Save & Continue_\n_Skip for Today_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough for today\n\nMain copy (exact):\n\nTime patterns often repeat quietly.\n\nNoticing them gives you more choice later — without needing effort today.\n\nSecondary text:\n\nYou’re building awareness, one detail at a time.\n\nCTA button:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nDay marked as “visited”\nNo streaks incremented\nJournal saved privately\nTime data used later for Insights (non-medical)\nNo evaluation of “success”\n\nSAFETY & COMPLIANCE CHECK\n\nDay 3:\n\nNo medical claims\nNo quitting pressure\nNo predictions\nNo fear language\n\nDay 3 supports:\n\nPattern awareness\nApp Store compliance\nEmotional safety\n\nCORE MESSAGE DAY 3 DELIVERS\n\nUrges don’t appear randomly.\n\nThey often follow time-based habits — and habits can be gently reshaped later.\n\nThis prepares users psychologically for Phase 2 (Structure).\n\nDESIGN NOTES FOR DEVELOPERS\n\nKeep screens lightweight\nAvoid graphs on Day 3\nSave time-of-day tags silently\nUse this data later for Weekly Insights (“Evenings tend to be harder”)\n\nCOACH INTERNAL NOTE (NOT USER-FACING)\n\nIf a user says:\n\n“It’s always the same time.”\n\nCoach response:\n\n“That’s useful information. It means we can plan support before that moment.”\n\nNever frame this as a problem.\n\nDay 4 – Emotional Triggers\n\nFocus: Emotions before urges Exercise: Name one emotion you felt today.\nJournal: “What emotion appeared before the urge?” Close: “Feelings don’t\nneed fixing.”\n\nDAY 4 – EMOTIONAL TRIGGERS\n\n(Text + Guided Awareness + Reflection)\n\nTotal time: 6 – 8 minutes Tone: Gentle, curious, validating Goal:\nHelp users recognize emotions that often _precede_ urges — without digging into\ntrauma or forcing disclosure"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 4 · Emotional Triggers\n\nMain copy (exact):\n\nToday is about noticing emotions that often come before urges.\n\nThis isn’t about fixing how you feel.\n\nIt’s about recognizing what’s present — so urges feel less confusing when they\nappear.\n\nCTA button:\n\n_Continue_\n\nUX notes:\n\nSoft tone, no intensity cues\nAvoid words like _why_ , _problem_ , _cause_"
-          },
-          {
-            "title": "NORMALIZING EMOTIONS (CONTEXT)",
-            "body": "Screen title: Why emotions matter\n\nMain copy (exact):\n\nMany people don’t smoke or drink because they want to.\n\nThey do it to shift how they feel — stress, boredom, loneliness, pressure, or\nfatigue.\n\nNoticing emotions doesn’t make them stronger.\n\nIt makes them clearer.\n\nCTA button:\n\n_Continue_\n\nWhy this screen matters\n\nRemoves shame\nPrevents “I’m emotionally weak” thinking\nFrames emotions as information"
-          },
-          {
-            "title": "GUIDED AWARENESS (PRIMARY)",
-            "body": "Screen title: Checking in with emotions\n\nInstruction text:\n\nThis short exercise helps you notice what you’re feeling — without changing it.\n\nOPTIONAL AUDIO SCRIPT (Word-for-Word, ~2 min)\n\nDay 4 – Emotional Triggers (7-Minute Guided Meditation) Find a comfortable\nplace to sit. There is nothing special you need to do. Just a few quiet minutes\nto notice. If it feels okay, gently close your eyes. Or let your gaze soften.\nTake a slow breath in... And let it go naturally. No need to change your\nbreathing. Just notice it. In... And out... Today is about noticing emotions.\nNot fixing them.\n\nNot analyzing them. Just recognizing what’s present. Let your breath continue at\nits natural pace. Now, gently think about a recent moment when you felt an urge.\nThere’s no need to choose the strongest one. Just a simple, ordinary moment.\nBefore the urge appeared... What were you feeling? Was there stress? Boredom?\nTiredness? Frustration? Loneliness? Or something harder to name? You don’t need\nthe perfect word. Just notice what comes to mind. Take a slow breath in... And\ngently out. Emotions often show up quietly. Sometimes we only notice the habit\nthat follows. Today, you’re pausing one step earlier. See if you can sense that\nemotion in your body. Was it a tightness? A heaviness? Restlessness? A subtle\npressure? Or maybe it felt neutral. Whatever you notice is okay. There is no\n“correct” emotion. Stay with that feeling for a few breaths. You don’t need to\nchange it.\n\nYou don’t need to make it smaller. Just allow it to exist. Breathing in...\nBreathing out... Emotions move. They rise... Pause... Shift... And soften. Even\nif it doesn’t feel that way in the moment. Notice what happens as you give the\nemotion space. Does it stay the same? Change slightly? Become clearer? Or fade?\nEven small shifts count. If your mind says something like, “I shouldn’t feel\nthis,” Just notice that thought too. You don’t need to argue with it. Simply\nreturn to your breath. In... And out... Emotions are not instructions. They are\nsignals. Signals don’t require immediate action. They simply ask to be noticed.\nTake another slow breath in... And let it go gently. Now widen your awareness.\nNotice your shoulders.\n\nYour hands. Your face. Allow them to soften slightly if they feel tense. You are\nnot here to fix your feelings. You are here to understand them. And\nunderstanding reduces confusion. Even if the emotion feels uncomfortable... It\nbelongs. It does not mean something is wrong with you. It does not define you.\nIt is simply part of being human. Stay with your breath for a few moments. In...\nAnd out... You may not always notice the emotion before an urge. That’s okay.\nEven noticing once makes a difference. Take one final slow breath in... And a\nsteady breath out. Notice the room around you. The surface beneath you. The\nquiet space you just created. Emotions often show up before habits. And today,\nyou practiced seeing them a little earlier. That’s enough. When you’re ready...\nGently open your eyes. And return to your day. Awareness comes before control.\nAnd today, you strengthened awareness.\n\nCTA button:\n\n_Continue_"
-          },
-          {
-            "title": "EMOTION TAGGING (TEXT-ONLY)",
-            "body": "Screen title: Today’s noticing practice\n\nMain copy (exact):\n\nWhen an urge appears today, see if you can notice the emotion underneath it.\n\nSelectable emotion tags (optional, multi-select):\n\nStress\nBoredom\nLoneliness\n\nTiredness\nFrustration\nNeutral / unsure\n\nHelper text (small):\n\nIf you’re not sure, “neutral” is completely fine.\n\nCTA button:\n\n_Continue_\n\nUX notes:\n\nNever require a selection\nNo “correct” answers\nNo analytics shown to user here"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nWhat emotion felt strongest today?\n\nOptional follow-up (collapsed):\n\nDid this feeling change during the day?\n\nHelper text (small):\n\nOne word is enough — or skip this entirely.\n\nCTA buttons:\n\n_Save & Continue_\n_Skip for Today_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough for today\n\nMain copy (exact):\n\nEmotions often show up quietly before urges.\n\nNoticing them gives you more choice later — without needing to change anything\ntoday.\n\nSecondary text:\n\nAwareness comes before control.\n\nCTA button:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE TO USER)\n\nDay marked as “visited”\nEmotion tags stored privately\nNo scoring or emotional profiling\nData used later only for pattern-based insights (e.g., “stressful days\n  feel harder”)\nNo alerts or push messages triggered\n\nSAFETY & COMPLIANCE CHECK\n\nDay 4 intentionally avoids:\n\nTrauma probing\nMental health diagnosis\nTherapy language\nEmotional pressure\n\nDay 4 supports:\n\nEmotional literacy\nPsychological safety\nApp Store compliance\n\nCORE MESSAGE DAY 4 DELIVERS\n\nUrges are often responses to emotions — not personal failures.\n\nThis reframing is critical for long-term engagement.\n\nUI / UX DESIGN NOTES\n\nEmotion tags should feel neutral , not expressive emojis\nNo red/orange colors\nKeep the experience calm and brief\n\nAllow exit at every screen\n\nCOACH INTERNAL NOTE (NOT USER-FACING)\n\nIf a user says:\n\n“I don’t know what I feel.”\n\nCoach response:\n\n“That’s completely normal. Noticing ‘I’m not sure’ is still awareness.”\n\nNever push labeling.\n\nDay 5 – Body Sensations\n\nFocus: Where urges live in the body Exercise: Body scan for 1 minute.\nJournal: “Where did I feel tension today?” Close: “The body speaks\nquietly.”\n\nDAY 5 – BODY SENSATIONS\n\n(Text + Guided Awareness + Reflection)\n\nTotal time: 6 – 8 minutes Tone: Grounded, neutral, reassuring Goal:\nHelp users notice _physical sensations that often come before urges_ , without\nfear or over-focus on the body"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 5 · Body Sensations\n\nMain copy (exact):\n\nToday is about noticing what happens in your body just before an urge appears.\n\nThis isn’t about checking your health or changing how your body feels.\n\nIt’s simply about noticing physical signals that often come before habits.\n\nCTA button:\n\n_Continue_\n\nUX notes:\n\nAvoid any anatomical visuals\nCalm spacing, neutral font weight"
-          },
-          {
-            "title": "NORMALIZING BODY SIGNALS (CONTEXT)",
-            "body": "Screen title: Why body sensations matter\n\nMain copy (exact):\n\nBefore an urge becomes a thought, it often shows up as a physical sensation.\n\nTightness. Restlessness. Pressure. Fatigue.\n\nThese sensations don’t mean something is wrong.\n\nThey’re simply signals your body has learned through repetition.\n\nCTA button:\n\n_Continue_\n\nWhy this screen matters\n\nPrevents health anxiety\nKeeps sensations neutral\nSeparates sensation from danger"
-          },
-          {
-            "title": "GUIDED BODY AWARENESS (PRIMARY)",
-            "body": "Screen title: Noticing the body\n\nInstruction text:\n\nThis short exercise helps you notice sensations without reacting to them.\n\nOPTIONAL AUDIO SCRIPT (Word-for-Word, ~2–3 min)\n\nDay 5 – Body Sensations (7-Minute\nGuided Meditation)\n\nFind a comfortable place to sit. There’s nothing you need to prepare. Just a few\nquiet minutes to notice. If it feels okay, gently close your eyes. Or soften\nyour gaze. Take a slow breath in... And let it go naturally. No need to change\nyour breathing. Just notice it. In... And out... Today is about noticing what\nhappens in your body. Not checking for problems. Not evaluating your health.\nSimply noticing physical signals that may come before habits. Let your breath\ncontinue at its natural pace. Now gently bring your attention to your shoulders.\nAre they tense... Or relaxed? There’s no right answer. Just notice. Move your\nattention to your jaw. Is it tight? Loose? Neutral? Again, just observe. Now\nnotice your chest. Is there openness? Pressure? Movement with your breath? Or\nnothing in particular?\n\nAll responses are normal. Let your awareness move to your stomach. Is it calm?\nRestless? Heavy? Light? Or difficult to sense? Simply noticing is enough. Take a\nslow breath in... And gently out. Sometimes, before an urge appears, the body\nshifts slightly. A small restlessness. A subtle tension. A quiet pressure. Think\nback to a recent urge. Before the thought appeared... Was there a physical\nsensation? You don’t need to be certain. Just notice what comes to mind. Maybe\nyour hands felt busy. Maybe your chest felt tight. Maybe there was a sense of\nunease. Or maybe you didn’t notice anything at all. Both are completely fine.\nStay with your breath. In... And out... If a sensation is present right now...\nYou don’t need to change it. You don’t need to calm it down. You don’t need to\nmake it disappear.\n\nSimply let it exist. Notice its shape. Its location. Its intensity. Does it stay\nthe same? Shift slightly? Move? Physical sensations often rise... Pause... And\nsoften. Just like urges do. Take another slow breath in... And let it go gently.\nIf your mind tries to interpret the sensation... Or label it as good or bad...\nSimply notice that thought. And return your focus to the body. You are not\ndiagnosing. You are observing. Your body often reacts before your mind does. And\nnoticing that reaction gives you time. Time to pause. Time to choose. Stay here\nfor a few more breaths. In... And out... Allow your shoulders to soften\nslightly. Let your hands rest comfortably. Feel the surface beneath you. Notice\nthe simple presence of your body sitting here. There is nothing to fix.\n\nNothing to solve. Just awareness. Take one final slow breath in... And a steady\nbreath out. Gently widen your awareness to the room around you. The sounds. The\nspace. The stillness. Today, you practiced noticing the body’s signals. Even\nsubtle awareness matters. When you’re ready... Gently open your eyes. And return\nto your day. The body speaks quietly. And today, you listened.\n\nCTA button:\n\n_Continue_\n\nUX notes:\n\nNo body scan countdown\nDo not mention organs\nKeep language neutral and optional"
-          },
-          {
-            "title": "BODY SIGNAL TAGGING (TEXT-ONLY)",
-            "body": "Screen title: Today’s noticing practice\n\nMain copy (exact):\n\nWhen an urge appears today, see if you can notice any body sensation that came\njust before it.\n\nSelectable body sensations (optional, multi-select):\n\nTight chest\nRestlessness\nJaw or shoulder tension\nFatigue\nEmpty / numb feeling\nNo clear sensation\n\nHelper text (small):\n\nIt’s okay if you don’t notice anything.\n\nCTA button: _Continue_\n\nUX notes:\n\n“No clear sensation” must always be visible\nNever require selection\nNo highlighting or scoring"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nDid you notice any body signals today?\n\nOptional follow-up (collapsed):\n\nWhere did you feel them most?\n\nHelper text (small):\n\nA few words are enough — or skip this entirely.\n\nCTA buttons:\n\n_Save & Continue_\n_Skip for Today_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough for today\n\nMain copy (exact):\n\nYour body often reacts before your mind does.\n\nNoticing these signals early gives you more choice later — without needing\neffort today.\n\nSecondary text:\n\nAwareness starts quietly.\n\nCTA button:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nDay marked as “visited”\nBody tags stored privately\nUsed later only for pattern awareness (e.g., “evening urges often come\n  with restlessness”)\nNo health interpretation\nNo alerts or warnings\n\nSAFETY & COMPLIANCE CHECK\n\nDay 5 avoids:\n\nOrgan references\nHealth evaluation\nDiagnosis language\nBody fear messaging\n\nDay 5 supports:\n\nNervous system awareness\nApp Store compliance\nEmotional safety\n\nCORE MESSAGE DAY 5 DELIVERS\n\nUrges often begin in the body, not the mind — and noticing that gives you time.\n\nThis prepares users perfectly for Day 6 – Habit Moments.\n\nUI / UX DESIGN NOTES\n\nNeutral body icons only (if any)\nAvoid red, orange, or alert colors\nKeep the experience short and skippable\nAlways allow exit\n\nCOACH INTERNAL NOTE (NOT USER-FACING)\n\nIf a user says:\n\n“I feel tension and then I smoke.”\n\nCoach response:\n\n“That’s useful awareness. It gives us a moment to pause before reacting.”\n\nNever interpret physically\n\nDay 6 – Habit Moments\n\nFocus: Routine-based urges Exercise: Notice one repeated habit moment.\nJournal: “Which moments feel automatic?” Close: “Habits form quietly.”\n\nDAY 6 – HABIT MOMENTS\n\n(Text + Guided Awareness + Reflection)\n\nTotal time: 6 – 8 minutes Tone: Practical, reassuring, non-judgmental\nGoal: Help users recognize _automatic habit moments_ without shame or\npressure to change yet"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 6 · Habit Moments\n\nMain copy (exact):\n\nToday is about noticing habit moments — the times when actions happen\nautomatically.\n\nThis isn’t about stopping habits.\n\nIt’s about recognizing the moments when your body and brain move on their own.\n\nCTA button:\n\n_Continue_\n\nUX notes:\n\nAvoid words like _addiction_ , _problem_ , _control_\nKeep tone neutral and observational"
-          },
-          {
-            "title": "NORMALIZING HABITS (CONTEXT)",
-            "body": "Screen title: Why habits matter\n\nMain copy (exact):\n\nHabits form through repetition — not because of weakness or lack of discipline.\n\nOver time, the brain learns to act without needing a conscious decision.\n\nThese moments can feel sudden, but they’re usually predictable once noticed.\n\nToday, you’re simply learning to spot them.\n\nCTA button:\n\n_Continue_\n\nWhy this screen matters\n\nRemoves moral judgment\nSeparates habit from identity\nBuilds curiosity instead of resistance"
-          },
-          {
-            "title": "GUIDED AWARENESS (PRIMARY)",
-            "body": "Screen title: Noticing a habit moment\n\nInstruction text:\n\nThis short exercise helps you recognize a habit moment as it happens.\n\nOPTIONAL AUDIO SCRIPT (Word-for-Word, ~2–3 min)\n\nDay 6 – Habit\nMoments (7-Minute Guided Meditation) Find a comfortable place to sit. There’s\nnothing special you need to prepare. Just a few quiet minutes to notice. If it\nfeels okay, gently close your eyes. Or soften your gaze. Take one slow breath\nin... And let it go naturally. No need to control your breathing. Just notice\nit. In... And out... Today is about noticing habit moments. Not stopping them.\nNot correcting them. Just recognizing when something happens automatically.\n\nLet your breath continue at its natural rhythm. Now gently think about a recent\nmoment when you found yourself reaching for a cigarette... or preparing to\ndrink... almost without thinking. There’s no need to judge that moment. Just\nbring it to mind. What was happening just before it? Were you finishing\nsomething? Starting something? Sitting in a familiar place? Talking to someone?\nOr alone? Notice the moment just before the action. Stay there for a few\nbreaths. In... And out... Habit moments often feel quick. But if you slow them\ndown in your memory, you may notice small steps. A shift in posture. A familiar\nthought. A certain time of day. A routine movement. You don’t need to analyze\ndeeply. Just observe the sequence. This happened... Then this... Then this...\nAutomatic does not mean uncontrollable. It often means repeated.\n\nAnd repeated things become quiet. Notice how it feels to see the pattern more\nclearly. Does it feel predictable? Neutral? Surprising? There is no right\nreaction. Just awareness. Take another slow breath in... And gently out. Now\nimagine that same situation happening again. But this time, imagine pausing for\njust one breath before the automatic action. You are not stopping it. You are\nnot changing it. Just adding one breath of space. In... And out... Feel how that\nsmall pause shifts the moment slightly. Even if only a little. That pause is\nwhere choice lives. You don’t need to use it perfectly. Just knowing it exists\nis enough. Stay with your breath. In... And out... If your mind says, “It just\nhappens.” Notice that thought too. Habits work best when they are quiet. Today,\nyou made one of them visible.\n\nThat visibility matters. Bring your attention back to your body. Notice your\nshoulders. Your hands. Your breathing. You are not trying to remove habits\ntoday. You are learning how they move. And once something is seen clearly, it\nbecomes less mysterious. Less automatic. Take one final slow breath in... And a\nsteady breath out. Notice the room around you. The surface beneath you. The\nsimple act of sitting here. You practiced noticing automatic moments. Even once\nis meaningful. When you’re ready, gently open your eyes. And return to your day.\nHabits form quietly. And today, you saw one a little more clearly.\n\nCTA button:\n\n_Continue_\n\nUX notes:\n\nAvoid showing examples too vividly (no sensory detail)\nKeep pace slow, non-directive"
-          },
-          {
-            "title": "HABIT MOMENT TAGGING (TEXT-ONLY)",
-            "body": "Screen title: Today’s noticing practice\n\nMain copy (exact):\n\nWhen an urge or action appears today, see if you can notice whether it felt\nautomatic.\n\nSelectable habit-moment tags (optional, multi-select):\n\nAfter waking up\nAfter meals\nAfter work\nDuring breaks\nWhile socializing\nBefore sleep\nNot sure\n\nHelper text (small):\n\n“Not sure” is completely okay.\n\nCTA button:\n\n_Continue_\n\nUX notes:\n\nNever force tagging\nNo “habit score”\nKeep tags neutral, not emotional"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nDid you notice any moments today that felt automatic?\n\nOptional follow-up (collapsed):\n\nWhat usually happens just before those moments?\n\nHelper text (small):\n\nA sentence or two is enough — or skip this entirely.\n\nCTA buttons:\n\n_Save & Continue_\n_Skip for Today_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough for today\n\nMain copy (exact):\n\nHabits don’t mean you want something.\n\nThey mean your brain learned a shortcut.\n\nNoticing those shortcuts gives you more choice later — without needing effort\ntoday.\n\nSecondary text:\n\nAwareness comes before change.\n\nCTA button:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE TO USER)\n\nDay marked as “visited”\nHabit-moment tags stored privately\nUsed later only for pattern insights (e.g., “Evening habits feel most\n  automatic”)\nNo scoring, grading, or warnings\nNo push notifications triggered\n\nSAFETY & COMPLIANCE CHECK\n\nDay 6 avoids:\n\nMoral framing\nDiagnosis language\n“Bad habit” labeling\nPressure to stop\n\nDay 6 supports:\n\nSelf-compassion\nBehavioral awareness\nApp Store compliance\n\nCORE MESSAGE DAY 6 DELIVERS\n\nAutomatic does not mean uncontrollable.\n\nIt means _unnoticed_ — until now.\n\nThis prepares users psychologically for Day 7: Weekly Reflection and Phase\n2 (Structure).\n\nUI / UX DESIGN NOTES\n\nKeep habit tags visually subtle\nNo red/green success cues\nAlways allow skipping\nDo not introduce routines yet (that’s Phase 2)\n\nCOACH INTERNAL NOTE (NOT USER-FACING)\n\nIf a user says:\n\n“It just happens automatically.”\n\nCoach response:\n\n“That makes sense. Habits work best when they’re quiet. Now that you’ve noticed\nthem, we can plan calmly later.”\n\nNever push action yet.\n\nDay 7 – Weekly Reflection\n\nFocus: First-week awareness Exercise: Review the week calmly.\nJournal: “What pattern surprised me?” Close: “Noticing is progress.”\n\nThis day is extremely important. It determines whether users feel\ndiscouraged or grounded going into the next week.\n\nEverything here is:\n\nnon-medical\nnon-judgmental\napp-ready\ncoach-safe\nApp Store compliant"
+            "title": "Today’s Practice",
+            "body": "When an urge appears, pause for 10\nseconds."
           }
         ],
         "audio": {
@@ -593,10 +473,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "A guided reflection designed to slow the urge-response loop.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "A guided reflection designed to slow the urge-response loop.",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "A guided reflection designed to slow the urge-response loop."
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-003.mp3",
           "durationSeconds": 420,
@@ -610,10 +499,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "Find a comfortable\nplace to sit. There is nothing special you need to do. Just a few quiet minutes\nto notice. If it feels okay, gently close your eyes. Or let your gaze soften.\nTake a slow breath in... And let it go naturally. No need to change your\nbreathing. Just notice it. In... And out... Today is about noticing emotions.\nNot fixing them.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "Find a comfortable\nplace to sit. There is nothing special you need to do. Just a few quiet minutes\nto notice. If it feels okay, gently close your eyes. Or let your gaze soften.\nTake a slow breath in... And let it go naturally. No need to change your\nbreathing. Just notice it. In... And out... Today is about noticing emotions.\nNot fixing them.",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "Find a comfortable\nplace to sit. There is nothing special you need to do. Just a few quiet minutes\nto notice. If it feels okay, gently close your eyes. Or let your gaze soften.\nTake a slow breath in... And let it go naturally. No need to change your\nbreathing. Just notice it. In... And out... Today is about noticing emotions.\nNot fixing them."
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-004.mp3",
           "durationSeconds": 420,
@@ -627,10 +525,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "A guided reflection designed to slow the urge-response loop.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "A guided reflection designed to slow the urge-response loop.",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "A guided reflection designed to slow the urge-response loop."
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-005.mp3",
           "durationSeconds": 420,
@@ -640,25 +547,21 @@ export const GENERATED_PROGRAMS = {
       {
         "programSlug": "ninety_day_transform",
         "dayNumber": 6,
-        "title": "Habit Moments",
+        "title": "Day 6",
         "subtitle": null,
-        "summary": "Routine-based urges",
-        "prompt": "Which moments feel automatic?",
-        "close": "Habits form quietly.",
+        "summary": "A guided reflection designed to slow the urge-response loop.",
+        "prompt": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": "Routine-based urges",
+        "focus": "A guided reflection designed to slow the urge-response loop.",
         "sections": [
           {
-            "title": "Daily Focus",
-            "body": "Routine-based urges"
+            "title": "Today’s Focus",
+            "body": "A guided reflection designed to slow the urge-response loop."
           },
           {
             "title": "Today’s Practice",
-            "body": "Notice one repeated habit moment."
-          },
-          {
-            "title": "Gentle Close",
-            "body": "Habits form quietly."
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
           }
         ],
         "audio": {
@@ -672,523 +575,19 @@ export const GENERATED_PROGRAMS = {
         "dayNumber": 7,
         "title": "Weekly Reflection",
         "subtitle": null,
-        "summary": "(Text + Guided Reflection + Journaling)",
+        "summary": "First-week awareness",
         "prompt": "What pattern surprised me?",
         "close": "Noticing is progress.",
         "estimatedMinutes": 7,
         "focus": "First-week awareness",
         "sections": [
           {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 7 · Weekly Reflection\n\nMain copy (exact):\n\nToday is about looking back — not to judge the week, but to understand it.\n\nYou’re not measuring success or failure.\n\nYou’re noticing patterns, effort, and how the week actually felt.\n\nCTA button:\n\n_Continue_\n\nUX notes:\n\nNo charts yet\nNo checkmarks\nCalm spacing\nNeutral color palette"
+            "title": "Today’s Focus",
+            "body": "First-week awareness"
           },
           {
-            "title": "REFRAMING REFLECTION (CRITICAL)",
-            "body": "Screen title: Before we reflect\n\nMain copy (exact):\n\nReflection isn’t about asking “Did I do this right?”\n\nIt’s about asking: “What did I notice?”\n\nEven a difficult week still offers useful information.\n\nCTA button:\n\n_Continue_\n\nWhy this screen matters\n\nPrevents shame\nStops perfection thinking\nKeeps users engaged even after slips"
-          },
-          {
-            "title": "GUIDED REFLECTION (PRIMARY)",
-            "body": "Screen title: Looking back gently\n\nInstruction text:\n\nThis short reflection helps you make sense of the week as a whole.\n\nOPTIONAL AUDIO SCRIPT (Word-for-Word, ~3 min)\n\nDay 7 –\nWeekly Reflection (7-Minute Guided Meditation) Find a comfortable place to\nsit. There’s nothing you need to prepare. This is not a test. Just a quiet\nmoment to look back gently. If it feels okay, close your eyes. Or soften your\ngaze. Take one slow breath in... And let it go naturally.\n\nNo need to change anything. Just notice the breath. In... And out... Over the\npast week, you’ve been paying attention. To urges. To emotions. To timing. To\nbody sensations. To habit moments. Today is not about asking, “Did I do this\nright?” It’s about asking, “What did I notice?” Let your breath continue\nnaturally. Now gently think back over the last few days. You don’t need to\nremember everything. Just let one moment stand out. When did urges feel\nstrongest? Morning? Evening? After work? When alone? When stressed? Just notice\nwhat comes up. No need to judge it. Take a slow breath in... And gently out. Now\nthink about a different kind of moment. Was there a time when you noticed an\nurge earlier than before? Even slightly earlier? Maybe you caught a feeling.\n\nOr a body sensation. Or a familiar time pattern. Even if you still acted\nafterward... Noticing earlier still counts. Stay with that awareness for a few\nbreaths. In... And out... Were there emotions that repeated this week? Stress?\nBoredom? Fatigue? Frustration? Loneliness? Or something harder to name? You\ndon’t need perfect clarity. Just notice what seemed to return. Patterns are\ninformation. Not problems. Now think about habit moments. Were there times that\nfelt automatic? After meals? In certain places? At specific times? Again — this\nis not about fixing. It’s about understanding. Take another slow breath in...\nAnd let it go gently. Notice how it feels to reflect without judging. Without\nscoring. Without measuring. Awareness grows quietly.\n\nEven messy weeks teach something. Even difficult days offer information. There\nis no such thing as a perfect week here. There is only noticing. Stay with your\nbreath. In... And out... If your mind begins to evaluate — “Good” or “Bad” —\nsimply notice that too. And gently return to observing. You are not being\ngraded. You are learning yourself. That takes courage. That takes honesty. And\nyou showed up for it. Take one more slow breath in... And a steady breath out.\nLet your shoulders soften slightly. Notice the room around you. The surface\nbeneath you. You completed a full week of paying attention. Not perfectly. Not\nforcefully. But honestly. And that matters. There is nothing you need to change\ntoday. Nothing you need to promise. Just rest in the awareness you’ve built.\nWhen you’re ready, gently open your eyes.\n\nYou don’t need to plan the next step right now. For today, understanding is\nenough.\n\nCTA button:\n\n_Continue_\n\nUX notes:\n\nNo background music with rhythm\nSilence is intentional\nNo “completion” animation"
-          },
-          {
-            "title": "WEEKLY SNAPSHOT (TEXT-ONLY)",
-            "body": "Screen title: This week, you noticed\n\nMain copy (dynamic, calm):\n\nOver the past week, you’ve been paying attention to:\n\nWhen urges appear\nEmotions that come before them\nBody sensations and habit moments\n\nThis awareness didn’t require perfection — only honesty.\n\n_(No numbers shown here)_\n\nCTA button:\n\n_Continue_\n\nWhy no numbers\n\nNumbers come later in Insights\nThis day is about meaning , not metrics"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nWhat patterns did you notice this week?\n\nOptional follow-up prompts (collapsed, user can expand):\n\n“When did urges feel strongest?”\n“What surprised you?”\n“What felt slightly easier than expected?”\n\nHelper text (small):\n\nA few words are enough — or skip this entirely.\n\nCTA buttons:\n\n_Save & Continue_\n_Skip for Today_"
-          },
-          {
-            "title": "MEANING-MAKING (TEXT)",
-            "body": "Screen title: What this means\n\nMain copy (exact):\n\nPatterns don’t tell you what to do.\n\nThey tell you where to be gentle and where support might help.\n\nNext week, you’ll begin adding light structure — only where it makes sense.\n\nCTA button:\n\n_Continue_\n\nWhy this matters This prepares users psychologically for Phase 2\n(Structure) without fear or pressure."
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough for today\n\nMain copy (exact):\n\nYou completed a full week of paying attention.\n\nThat alone builds awareness many people never reach.\n\nYou don’t need to plan anything right now.\n\nSecondary text:\n\nRest. Continue when you’re ready.\n\nCTA button:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE TO USER)\n\nWeek marked as “reflected”\nNo success/failure state\nJournal stored privately\nSignals backend to:\n\n```\no unlock Weekly Insights\n```\n\n```\no prepare Phase 2 onboarding\n```\n\nNo notifications triggered\n\nSAFETY & COMPLIANCE CHECK\n\nDay 7 avoids:\n\nScores\nEvaluation language\nHealth claims\nAbstinence framing\n\nDay 7 supports:\n\nReflection\nSelf-trust\nApp Store compliance\n\nCORE MESSAGE DAY 7 DELIVERS\n\nAwareness is not passive.\n\nIt’s preparation.\n\nThis is the bridge between understanding and change.\n\nUI / UX DESIGN NOTES\n\nDo NOT show graphs here\nDo NOT celebrate with confetti\nKeep tone calm and grounded\nLet the user leave feeling stable , not “pumped”\n\nCOACH INTERNAL NOTE (NOT USER-FACING)\n\nIf a user says:\n\n“This week felt messy.”\n\nCoach response:\n\n“Messy weeks often teach the most. Now we know where to add support gently.”\n\nNever reframe as failure.\n\nAUTO-GENERATED WEEKLY INSIGHTS (USER-FACING COPY)\n\nThis is what users see after Day 7 , and then weekly going forward.\n\nPurpose\n\nReflect patterns without judgment\nReinforce awareness\nPrepare users for gentle structure\nAvoid performance evaluation\n\nWEEKLY INSIGHTS – STRUCTURE\n\nScreen Title\n\nWeekly Insights\n\nIntro Copy (always shown)\n\nThese insights reflect patterns from your recent check-ins.\n\nThey are meant to support awareness — not measure success or failure.\n\nINSIGHT SECTIONS (AUTO-GENERATED)\n\nCheck-In Consistency\n\nCopy examples (choose one dynamically):\n\n“You checked in consistently this week. Showing up matters.”\n“You checked in on several days. Even partial consistency builds awareness.”\n“You checked in a few times this week. That’s enough to notice patterns.”\n\n_(Never show a percentage or score)_\n\nUrge Intensity Trend\n\nCopy examples:\n\n“Urges varied in intensity this week.”\n“Some urges felt stronger at certain times of day.”\n“You noticed urges earlier than before.”\n\nOptional gentle insight:\n\n“Many people find that noticing urges early helps them respond more calmly over\ntime.”\n\nTime & Context Patterns\n\nCopy examples:\n\n“Urges appeared more often in the evenings.”\n“Workdays showed different patterns than weekends.”\n“Certain moments felt more automatic than others.”\n\n_(No predictions. No ‘risk’ language.)_\n\nEmotional & Body Signals\n\nCopy examples:\n\n“Stress and tiredness appeared before some urges.”\n“Some urges were preceded by restlessness or tension.”\n“Not all urges were linked to strong emotions.”\n\nGentle Encouragement (Always End With This)\n\nCopy (fixed):\n\nAwareness builds quietly.\n\nYou don’t need to change everything at once. Next week, you’ll begin adding\nlight structure where it makes sense.\n\nWHAT WEEKLY INSIGHTS MUST NEVER SHOW\n\nScores\n\nHealth impact\n\nDamage / recovery claims\n\nPredictions\n\nComparisons\n\n“You should” language\n\nUX NOTES\n\nText-first, no charts in early weeks\n“New” badge only once per week\nAllow dismiss without reading\nArchive old insights silently\n\nCOACH GUIDANCE — TRANSITIONING USERS TO PHASE 2\n\nThis is internal-only guidance for coaches.\n\nPurpose of the Transition\n\nThe transition is not about control. It’s about adding support only where\nawareness already exists.\n\nCOACH MESSAGE (FIRST TRANSITION MESSAGE)\n\nExact recommended copy:\n\nYou’ve spent time noticing patterns over the past week.\n\nThat awareness gives us a clear place to add gentle structure — not everywhere,\njust where it helps most.\n\nWe’ll keep this simple and flexible.\n\nHOW COACHES SHOULD READ USER DATA\n\nBefore suggesting anything, review:\n\nTime patterns (when urges appear)\nEmotional tags (stress, boredom, fatigue)\nHabit moments (automatic times)\nUrge intensity trends\n\nOnly suggest structure where patterns repeat.\n\nHOW TO INTRODUCE STRUCTURE (SCRIPT)\n\nCoach script:\n\nI noticed urges tend to show up around the same time.\n\nInstead of trying to stop them, we can add a small pause or routine just before\nthat moment.\n\nWould you like to try that next week?\n\n_(Always ask permission.)_\n\nWHAT COACHES SHOULD NOT DO\n\nDo not suggest multiple routines at once\nDo not say “You should”\nDo not push abstinence goals\nDo not frame structure as discipline\n\nCOACH DECISION GUIDE\n\n```\nPattern Seen Suggested Structure\n```\n\n```\nEvening urges Short pause + walk\n```\n\n```\nStress-based urges Breathing or grounding\n```\n\n```\nHabit-based urges Routine swap\n```\n\n```\nSocial triggers Prepared response script\n```\n\n```\nPattern Seen Suggested Structure\n```\n\n```\nFatigue-based urges Rest + hydration\n```\n\nOnly one suggestion at a time.\n\nSUCCESS METRIC FOR COACHES\n\nSuccess is:\n\nUser feels calmer\nUser reports more choice\nUser recovers faster after slips\n\nNot:\n\nZero urges\nPerfect weeks\nConstant check-ins\n\nSAFETY REMINDER FOR COACHES\n\nIf a user expresses:\n\nSevere distress\nMedical concerns\nSelf-harm thoughts\n\nStop coaching and redirect to emergency support.\n\nFINAL TRANSITION MESSAGE (CORE BELIEF)\n\nAwareness prepared the ground. Structure simply supports it.\n\nDay 8 – Stress Signals\n\nFocus: Stress and urges Exercise: Rate stress once today\n(low/medium/high). Journal: “How does stress affect me?” Close: “Stress\nasks for care.”\n\nDAY 8 – STRESS SIGNALS\n\n(Audio + Text + Reflection Screens)\n\nTotal time: 6 – 8 minutes Tone: Reassuring, grounded, non-alarming\nGoal: Help users recognize stress as a _signal_ , not a problem — and reduce\nautomatic urge responses"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 8 · Stress Signals\n\nMain copy (exact):\n\nToday is about noticing stress — not to reduce it or manage it perfectly, but to\nrecognize when it’s present.\n\nStress often comes before urges. Not because you’re weak, but because the body\nlooks for relief.\n\nCTA button:\n\n_Continue_\n\nUX notes:\n\nAvoid “stress management” language\nNo intensity colors (no red/orange)\nCalm spacing"
-          },
-          {
-            "title": "NORMALIZING STRESS (CONTEXT)",
-            "body": "Screen title: Why stress matters\n\nMain copy (exact):\n\nStress is part of daily life.\n\nIt doesn’t mean something is wrong.\n\nWhen stress builds quietly, the brain often reaches for familiar habits to feel\nsome relief.\n\nNoticing stress early can soften urges later.\n\nCTA button:\n\n_Continue_\n\nWhy this screen matters\n\nRemoves fear around stress\n\nPrevents “I need to fix this” thinking\nReframes stress as information"
-          },
-          {
-            "title": "GUIDED AUDIO (PRIMARY)",
-            "body": "Screen title: Checking in with stress\n\nInstruction text (above audio player):\n\nThis short exercise helps you notice stress without reacting to it.\n\nAUDIO SCRIPT (Word-for-Word, ~2–3 minutes)\n\nDay 8 – Stress Signals (7-Minute Guided Meditation) Find a\ncomfortable place to sit. There’s nothing special you need to prepare. Just a\nfew quiet minutes to check in. If it feels okay, gently close your eyes. Or\nsoften your gaze. Take one slow breath in... And let it go naturally. No need to\nchange your breathing. Just notice it. In... And out... Today is about noticing\nstress. Not reducing it. Not managing it perfectly. Just recognizing when it’s\npresent. Let your breath continue at its natural pace. Gently ask yourself: How\nstressed do I feel right now? There’s no need for a precise answer. You might\nsense it feels low... Medium... Or high. Whatever the level is... That’s okay.\nStress is part of being human. It doesn’t mean something is wrong. Take a slow\nbreath in...\n\nAnd gently out. Now bring your attention to your body. Notice your shoulders.\nAre they slightly tight? Relaxed? Neutral? Notice your jaw. Your hands. Your\nchest. Stress often shows up quietly in the body before we name it. Just\nobserve. No fixing. No correcting. Now think about a recent moment when you felt\nan urge. Before the urge appeared... Was there stress present? Even subtle\nstress? Maybe from work. Conversation. Fatigue. Pressure. Or simply having too\nmuch happening at once. Notice without judging. Stress doesn’t cause habits. But\nwhen stress builds quietly, the brain often looks for something familiar. Not\nbecause you’re weak. But because relief feels easier than noticing. Take another\nslow breath in... And let it go gently. Now imagine noticing stress slightly\nearlier.\n\nBefore it builds. Before it peaks. Just a quiet check-in: “I feel stressed.”\nStay with that for a few breaths. In... And out... Notice what happens when\nstress is acknowledged. Does it feel slightly clearer? Softer? The same? Even if\nnothing changes, awareness reduces confusion. Stress does not need to be pushed\naway. It does not need to be solved in this moment. Sometimes it simply needs\nrecognition. Stay here for a few more breaths. If your mind says, “I shouldn’t\nfeel this,” Notice that thought gently. And return to your breath. Stress is not\na failure signal. It’s a request for care. Sometimes small care. Sometimes\nsimple care. Take one final slow breath in... And a steady breath out. Notice\nthe room around you. The surface beneath you. The quiet space you created. Today\nyou practiced noticing stress\n\nbefore reacting to it. That alone builds space. And space creates choice. When\nyou’re ready, gently open your eyes. There is nothing else you need to do today.\nNoticing stress is enough.\n\nCTA button:\n\n_Continue_\n\nUX notes:\n\nNo countdown timer shown\nSilence is intentional\n\nNo calming “success” sound"
-          },
-          {
-            "title": "STRESS RATING (TEXT-ONLY)",
-            "body": "Screen title: Today’s stress check\n\nMain copy (exact):\n\nAt least once today, quietly notice your stress level.\n\nSelectable options (single select, optional):\n\nLow\nMedium\nHigh\n\nHelper text (small):\n\nThis is just for awareness. You don’t need to change anything.\n\nCTA button:\n\n_Continue_\n\nUX notes:\n\nNo color saturation (keep muted tones)\nNever require a selection\nNo storing as a “score”"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nHow does stress affect you?\n\nOptional follow-up (collapsed):\n\nWhen stress rises, what usually changes for you?\n\nHelper text (small):\n\nA few words are enough — or skip this entirely.\n\nCTA buttons:\n\n_Save & Continue_\n\n_Skip for Today_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough for today\n\nMain copy (exact):\n\nStress isn’t a failure signal.\n\nIt’s a request for care — sometimes small, sometimes simple.\n\nNoticing it is the first step.\n\nSecondary text:\n\nYou don’t need to respond perfectly.\n\nCTA button:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nDay marked as “visited”\nStress rating stored privately\nUsed later only for pattern insights (e.g., “High-stress days often come\n  before evening urges”)\nNo alerts or recommendations triggered today\n\nSAFETY & COMPLIANCE CHECK\n\nDay 8 avoids:\n\nMedical stress claims\nAnxiety labeling\nFix-it language\nUrgency cues\n\nDay 8 supports:\n\nNervous system awareness\nApp Store compliance\nEmotional safety\n\nCORE MESSAGE DAY 8 DELIVERS\n\nStress doesn’t cause urges — ignoring stress often does.\n\nThis prepares users for Day 9 – Boredom Awareness and later\nstructure-based support.\n\nUI / UX DESIGN NOTES\n\nKeep stress options neutral and muted\nAvoid bar charts or meters\nAllow exit at any screen\nKeep total flow under 8 minutes\n\nCOACH INTERNAL NOTE (NOT USER-FACING)\n\nIf a user says:\n\n“My stress is always high.”\n\nCoach response:\n\n“That tells us your system may be overloaded — not that you’re doing something\nwrong. We’ll add support gradually.”\n\nNever escalate or alarm.\n\nDay 9 – Boredom Awareness\n\nFocus: Boredom vs desire Exercise: Sit with boredom for 30 seconds.\nJournal: “What do I usually do when bored?” Close: “Boredom passes.”\n\nDAY 9 – BOREDOM AWARENESS\n\n(Audio + Text + Reflection Screens)\n\nTotal time: 6 – 8 minutes Tone: Neutral, steady, lightly curious\nGoal: Help users distinguish boredom from desire and reduce automatic\nhabit responses"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 9 · Boredom Awareness\n\nMain copy (exact):\n\nToday is about noticing boredom — and how it’s different from desire.\n\nBoredom can feel uncomfortable, but it doesn’t mean you want something.\n\nOften, it simply means nothing is happening right now.\n\nCTA button:\n\n_Continue_\n\nUX notes:\n\nAvoid stimulating visuals\nNeutral colors\nComfortable line spacing"
-          },
-          {
-            "title": "REFRAMING BOREDOM (CONTEXT)",
-            "body": "Screen title: Why boredom matters\n\nMain copy (exact):\n\nBoredom is a pause between activities.\n\nThe brain doesn’t always like pauses, so it looks for something familiar to fill\nthe space.\n\nThat doesn’t mean you’re craving — it often means you’re unstimulated.\n\nLearning to recognize boredom reduces unnecessary urges.\n\nCTA button:\n\n_Continue_\n\nWhy this screen matters\n\nSeparates boredom from “want”\nRemoves urgency\nNormalizes stillness"
-          },
-          {
-            "title": "GUIDED AUDIO (PRIMARY)",
-            "body": "Screen title: Sitting with boredom\n\nInstruction text (above audio player):\n\nThis short exercise helps you sit with boredom without reacting to it.\n\nAUDIO SCRIPT (Word-for-Word, ~2 minutes)\n\nDay 9 – Boredom Awareness (7-Minute Guided\nMeditation) Find a comfortable place to sit. There is nothing you need to\naccomplish right now. Just a few quiet minutes to notice. If it feels okay,\ngently close your eyes. Or soften your gaze. Take one slow breath in... And let\nit go naturally. No need to change the rhythm. Just notice the breath. In... And\nout... Today is about noticing boredom. Not filling it. Not escaping it. Just\nrecognizing it. Let your breath continue at its natural pace. Now gently ask\nyourself: Is there any sense of restlessness right now? Any feeling of wanting\nsomething to happen? A subtle emptiness? Or a quiet space? If there is, simply\nnotice it. If there isn’t, imagine a recent moment when you felt bored.\n\nMaybe you were waiting. Scrolling. Sitting alone. Between tasks. Bring that\nmoment to mind gently. Notice how boredom feels in your body. Is it\nrestlessness? A slight agitation? A wandering mind? A heaviness? Or something\nelse entirely? There is no right way for boredom to feel. Just observe. Take a\nslow breath in... And gently out. Boredom often feels uncomfortable because\nnothing is happening. The mind prefers movement. Stimulation. Activity. But\nboredom itself is simply a pause. Stay with the feeling for a few breaths. In...\nAnd out... Notice if your mind starts looking for something. A distraction. A\nthought. An urge. Simply observe that movement too. There is no need to act. No\nneed to change the moment.\n\nJust sit with it. Notice how boredom shifts. Does it intensify? Soften? Move\naround in your body? Or fade slightly? Even subtle changes count. Take another\nslow breath in... And let it go gently. Boredom is not desire. It doesn’t\nnecessarily mean you want something. Often it simply means there is space. And\nspace can feel unfamiliar. Stay here for a few more breaths. Let the stillness\nexist. You don’t need to enjoy it. You don’t need to fight it. Just notice it.\nIf an urge appears during boredom, observe the difference. Is the urge stronger\nthan the boredom? Or is it simply a way to fill the space? No need to answer\nperfectly. Just notice. Take one more slow breath in... And a steady breath out.\nFeel the surface beneath you. The air around you. The quiet of this moment.\nBoredom rises...\n\nPauses... And passes. Just like other sensations. Just like urges. There is\nnothing you need to do right now. Simply sitting here is enough. When you’re\nready, gently open your eyes. Return to your day. Boredom is not a problem to\nsolve. It’s a space to notice. And today, you practiced noticing.\n\nCTA button:\n\n_Continue_\n\nUX notes:\n\nNo countdown timer shown\nSilence is intentional\nNo “success” tone or vibration"
-          },
-          {
-            "title": "MICRO PRACTICE (TEXT-ONLY)",
-            "body": "Screen title: Today’s practice\n\nMain copy (exact):\n\nAt least once today, when you notice boredom, sit with it for about 30 seconds\nbefore doing anything else.\n\nSecondary text (smaller):\n\nYou don’t need to enjoy it. Just notice it.\n\nCTA button:\n\n_Continue_\n\nUX notes:\n\nDo not auto-start timers\nThis is a suggestion, not a task"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nWhat do you usually do when bored?\n\nOptional follow-up (collapsed):\n\nDoes boredom often lead to automatic habits for you?\n\nHelper text (small):\n\nA few words are enough — or skip this entirely.\n\nCTA buttons:\n\n_Save & Continue_\n_Skip for Today_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough for today\n\nMain copy (exact):\n\nBoredom doesn’t last forever.\n\nIt rises, pauses, and passes on its own.\n\nNoticing it gives you time before habits take over.\n\nSecondary text:\n\nBoredom passes.\n\nCTA button:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nDay marked as “visited”\nNo boredom “score”\nJournal stored privately\nUsed later only for pattern insights (e.g., “Boredom appears before\n  evening urges”)\nNo nudges or alerts triggered\n\nSAFETY & COMPLIANCE CHECK\n\nDay 9 avoids:\n\nDesire manipulation\nDopamine language\nProductivity pressure\nNegative framing of boredom\n\nDay 9 supports:\n\nEmotional tolerance\nApp Store compliance\nPsychological safety\n\nCORE MESSAGE DAY 9 DELIVERS\n\nBoredom is not a craving.\n\nIt’s a space — and spaces don’t need filling immediately.\n\nThis insight significantly reduces impulsive use.\n\nUI / UX DESIGN NOTES\n\nAvoid animations on this day\nKeep everything slow and calm\nNo visual stimulation\nEncourage stillness subtly\n\nCOACH INTERNAL NOTE (NOT USER-FACING)\n\nIf a user says:\n\n“I smoke when I’m bored.”\n\nCoach response:\n\n“That makes sense. Boredom often triggers habits because it feels empty. We’ll\nexplore gentle ways to sit with it or redirect later.”\n\nNever shame.\n\nREADY FOR IMPLEMENTATION\n\nDay 9 is now:\n\nFully scripted\nAudio-ready\nJournal-safe\nDeveloper-ready\nAligned with Recovery Compass philosophy\n\nDay 10 – Social Situations\n\nFocus: People and pressure Exercise: Recall one social trigger.\nJournal: “Which situations increase urges?” Close: “Awareness creates\nchoice.”\n\nDAY 10 – SOCIAL SITUATIONS\n\n(Text + Guided Awareness + Reflection)\n\nTotal time: 7 – 9 minutes Tone: Supportive, steady, non-confrontational\nGoal: Help users recognize social pressure as a trigger , without\nforcing avoidance or confrontation"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 10 · Social Situations\n\nMain copy (exact):\n\nToday is about noticing how social situations can influence urges.\n\nThis isn’t about avoiding people or changing who you are.\n\nIt’s about understanding how context can quietly shape choices.\n\nCTA button:\n\n_Continue_\n\nUX notes:\n\nAvoid “peer pressure” phrasing (too strong)\nKeep tone respectful, not defensive"
-          },
-          {
-            "title": "NORMALIZING SOCIAL INFLUENCE (CONTEXT)",
-            "body": "Screen title: Why social situations matter\n\nMain copy (exact):\n\nHumans are social by nature.\n\nWe often adjust our behavior to fit into the moment — sometimes without\nrealizing it.\n\nBeing around certain people, places, or conversations can make habits feel\nautomatic.\n\nNoticing this isn’t weakness. It’s awareness.\n\nCTA button:\n\n_Continue_\n\nWhy this screen matters\n\nRemoves self-blame\n\nSeparates behavior from identity\nMakes social influence neutral, not negative"
-          },
-          {
-            "title": "GUIDED AUDIO (PRIMARY)",
-            "body": "Screen title: Noticing social influence\n\nInstruction text (above audio player):\n\nThis short exercise helps you reflect on social situations calmly.\n\nAUDIO SCRIPT (Word-for-Word, ~3 minutes)\n\nDay 10 –\nSocial Situations (7-Minute Guided Meditation) Find a comfortable place to\nsit. There is nothing you need to prepare. Just a few quiet minutes to notice.\nIf it feels okay, gently close your eyes. Or soften your gaze. Take one slow\nbreath in... And let it go naturally. No need to change your breathing. Just\nnotice it. In... And out... Today is about noticing how social situations\ninfluence you. Not avoiding people. Not changing who you are. Just understanding\ncontext. Let your breath continue at its natural pace. Gently bring to mind a\nrecent social situation.\n\nIt could be small. A conversation. A gathering. A meeting. Or even a moment when\nyou were alone but thinking about someone. Picture it softly. Who was there?\nWhere were you? What was happening? There’s no need to replay it perfectly. Just\nlet the scene sit lightly in your mind. Take a slow breath in... And gently out.\nNow ask yourself: Did this situation make habits feel easier? More automatic?\nMore expected? There is no right answer. Just notice what comes up. Social\nenvironments shape behavior quietly. We often adjust without realizing it. Not\nbecause we’re weak. But because we’re human. Stay with that understanding for a\nfew breaths. In... And out... Notice if your body shifts as you reflect. Does\nthinking about that situation create tension? Neutrality? Restlessness? Calm?\n\nJust observe. Now imagine being in that same situation again. But this time,\nimagine noticing the environment. The people. The atmosphere. And adding one\nslow breath before reacting to anything. In... And out... You are not refusing\nanything. You are not deciding anything. You are simply noticing. That small\npause creates space. And space allows choice. Even if the choice stays the same.\nStay with your breath. In... And out... Social influence is powerful because\nconnection matters. Because belonging matters. Because familiarity matters. That\ndoesn’t mean you have no control. It means context plays a role. And awareness\nreduces surprise. Take another slow breath in... And let it go gently. Notice\nthe surface beneath you. The room around you. The quiet in this moment.\n\nYou don’t need to isolate yourself. You don’t need to avoid life. You are simply\nlearning how situations shape you. And that understanding builds steadiness.\nTake one final slow breath in... And a steady breath out. When you’re ready,\ngently open your eyes. Return to your day. Awareness creates choice. And today,\nyou practiced awareness.\n\nCTA button:\n\n_Continue_\n\nUX notes:\n\nNo background music with beat\n\nSilence matters\nNo “insight unlocked” feedback"
-          },
-          {
-            "title": "SOCIAL CONTEXT TAGGING (TEXT-ONLY)",
-            "body": "Screen title: Today’s noticing practice\n\nMain copy (exact):\n\nWhen an urge appears today, notice whether you’re around others or thinking\nabout a social situation.\n\nSelectable social context tags (optional, multi-select):\n\nWith friends\nWith family\nWith colleagues\nAt a social event\nAlone but thinking about others\nNo social influence noticed\n\nHelper text (small):\n\nYou don’t need to label every situation.\n\nCTA button:\n\n_Continue_\n\nUX notes:\n\nNever require selection\nNo “high-risk” labels\nKeep tags neutral"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nHow do social situations affect your choices?\n\nOptional follow-up (collapsed):\n\nAre there certain settings that feel harder than others?\n\nHelper text (small):\n\nA few words are enough — or skip this entirely.\n\nCTA buttons:\n\n_Save & Continue_\n_Skip for Today_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough for today\n\nMain copy (exact):\n\nSocial influence is powerful — not because you’re weak, but because you’re\nhuman.\n\nNoticing it helps you prepare without needing to avoid life.\n\nSecondary text:\n\nAwareness creates choice.\n\nCTA button:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nDay marked as “visited”\nSocial context tags stored privately\nUsed later only for pattern insights (e.g., “Certain social settings\n  increase automatic habits”)\nNo warnings or suggestions triggered today\n\nSAFETY & COMPLIANCE CHECK\n\nDay 10 avoids:\n\nMoral judgment\nAnti-social messaging\nAbstinence pressure\nConfrontation advice\n\nDay 10 supports:\n\nSocial awareness\nPsychological safety\nApp Store compliance\n\nCORE MESSAGE DAY 10 DELIVERS\n\nSocial situations influence behavior — awareness gives you space without\nisolating you.\n\nThis prepares users for Day 11 – Energy & Fatigue and later social scripts\nin Phase 2.\n\nUI / UX DESIGN NOTES\n\nAvoid party imagery or alcohol visuals\nNeutral icons only (people outlines)\nNo alerts or reminders tied to social tags\nAlways allow skipping\n\nCOACH INTERNAL NOTE (NOT USER-FACING)\n\nIf a user says:\n\n“I always give in around others.”\n\nCoach response:\n\n“That’s very common. Social settings make habits feel normal. We’ll prepare calm\nresponses later — not avoid people.”\n\nNever push avoidance.\n\nDay 11 – Energy Levels\n\nFocus: Fatigue and urges Exercise: Notice energy morning vs evening.\nJournal: “When do I feel most tired?” Close: “Low energy needs rest.”\n\nDAY 11 – ENERGY & FATIGUE\n\n(Text + Guided Awareness + Reflection)\n\nTotal time: 6 – 8 minutes Tone: Supportive, grounding, realistic\nGoal: Help users recognize fatigue as a trigger , not a failure — and\nreduce automatic habit responses driven by low energy"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 11 · Energy & Fatigue\n\nMain copy (exact):\n\nToday is about noticing your energy levels — especially moments of tiredness or\nmental fatigue.\n\nLow energy often increases urges, not because you want something, but because\nyour system is worn down.\n\nCTA button:\n\n_Continue_\n\nUX notes:\n\nAvoid productivity language\nAvoid “optimize” or “perform”\nCalm spacing, soft pacing"
-          },
-          {
-            "title": "NORMALIZING FATIGUE (CONTEXT)",
-            "body": "Screen title: Why energy matters\n\nMain copy (exact):\n\nWhen energy is low, the brain looks for quick relief.\n\nSmoking or drinking can feel like a shortcut to feeling different — not because\nit helps, but because it’s familiar.\n\nNoticing fatigue early can reduce the pull of habits later.\n\nCTA button:\n\n_Continue_\n\nWhy this screen matters\n\nRemoves willpower framing\n\nSeparates fatigue from desire\nPrevents self-criticism"
-          },
-          {
-            "title": "GUIDED AUDIO (PRIMARY)",
-            "body": "Screen title: Checking in with energy\n\nInstruction text (above audio player):\n\nThis short exercise helps you notice your energy level without judging it.\n\nAUDIO SCRIPT (Word-for-Word, ~2–3 minutes)\n\nDay 11 – Energy & Fatigue (7-Minute Guided\nMeditation) Find a comfortable place to sit. There is nothing you need to\naccomplish right now. Just a few quiet minutes to notice. If it feels okay,\ngently close your eyes. Or soften your gaze. Take one slow breath in... And let\nit go naturally. No need to adjust your breathing. Just notice it. In... And\nout... Today is about noticing your energy. Not increasing it. Not fixing it.\nJust understanding where it is right now. Gently ask yourself: How does my\nenergy feel in this moment? High? Low?\n\nSomewhere in between? There is no correct level. Energy naturally shifts\nthroughout the day. Take a slow breath in... And gently out. Now bring your\nattention to your body. Do you feel heaviness? Lightness? Slowness? Alertness?\nRestlessness? Or something difficult to describe? Just observe. Fatigue can show\nup in subtle ways. A slower mind. A heavier posture. A desire to escape or\ndistract. You don’t need to correct it. Just notice it. Think back to a recent\nmoment when an urge appeared during low energy. Maybe you were tired. After\nwork. Late at night. Or between tasks. Before the urge appeared, was there\nfatigue? Boredom? Mental drain? Stay with that reflection gently. In...\n\nAnd out... Low energy can make habits feel easier. Not because you lack\nstrength. But because the mind prefers something familiar when it feels\ndepleted. Notice how it feels to understand that. No blame. Just awareness. Take\nanother slow breath in... And let it go gently. Now imagine noticing low energy\nslightly earlier. Before reacting. Before reaching for something automatic. Just\na quiet recognition: “I feel tired.” Stay with that phrase softly. Let your\nbreath move naturally. Energy doesn’t need to be high all the time. Rest is part\nof balance. Fatigue is not a flaw. It’s information. Notice what happens when\nyou allow low energy without trying to escape it. Does it soften? Stay steady?\nShift slightly? Even small changes matter. Stay with your breath for a few\nmoments. In... And out... If your mind says,\n\n“I should be more productive,” just notice that thought. And gently return to\nyour breath. You are not here to measure performance. You are here to understand\npatterns. Energy rises. Energy falls. Habits often follow those waves. And\nawareness reduces surprise. Take one final slow breath in... And a steady breath\nout. Notice the room around you. The surface beneath you. The quiet steadiness\nof sitting here. Today, you practiced noticing energy without judging it. That\nis enough. When you’re ready, gently open your eyes. Return to your day. Energy\nshifts naturally. And today, you paid attention to it.\n\nCTA button:\n\n_Continue_\n\nUX notes:\n\nNo “energy meter” visuals\nNo upbeat sounds\nSilence is intentional"
-          },
-          {
-            "title": "ENERGY CHECK-IN (TEXT-ONLY)",
-            "body": "Screen title: Today’s energy check\n\nMain copy (exact):\n\nAt least once today, quietly notice your energy level.\n\nSelectable options (single select, optional):\n\nLow\nMedium\nHigh\n\nHelper text (small):\n\nThis is just information — not something to fix.\n\nCTA button:\n\n_Continue_\n\nUX notes:\n\nMuted colors only\nNever require a selection\nDo not treat this as a “score”"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nHow does low energy affect your choices?\n\nOptional follow-up (collapsed):\n\nWhat do you usually reach for when you feel tired?\n\nHelper text (small):\n\nA few words are enough — or skip this entirely.\n\nCTA buttons:\n\n_Save & Continue_\n_Skip for Today_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough for today\n\nMain copy (exact):\n\nFatigue isn’t a personal flaw.\n\nIt’s a signal that your system may need care, rest, or simplicity.\n\nNoticing it early gives you more choice later.\n\nSecondary text:\n\nEnergy changes. Awareness helps.\n\nCTA button:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nDay marked as “visited”\nEnergy check stored privately\nUsed later only for pattern insights (e.g., “Evening fatigue often\n  precedes urges”)\nNo alerts, no recommendations triggered today\n\nSAFETY & COMPLIANCE CHECK\n\nDay 11 avoids:\n\nMedical advice\nSleep or nutrition prescriptions\nWillpower framing\nPerformance pressure\n\nDay 11 supports:\n\nNervous system awareness\nEmotional safety\nApp Store compliance\n\nCORE MESSAGE DAY 11 DELIVERS\n\nLow energy doesn’t create failure — it creates vulnerability. Awareness restores\nchoice.\n\nThis prepares users perfectly for Day 12 – Self-Talk.\n\nUI / UX DESIGN NOTES\n\nKeep experience brief and gentle\nNo charts yet\nNo achievement badges\nAlways allow exit\n\nCOACH INTERNAL NOTE (NOT USER-FACING)\n\nIf a user says:\n\n“I always give in when I’m tired.”\n\nCoach response:\n\n“That makes sense. Fatigue reduces resistance. We’ll add support during\nlow-energy moments later.”\n\nNever blame.\n\nDay 12 – Self-Talk\n\nFocus: Internal dialogue Exercise: Catch one self-talk phrase today.\nJournal: “What did I say to myself?” Close: “Kind language matters.”\n\nDAY 12 – SELF-TALK\n\n(Text + Guided Awareness + Reflection)\n\nTotal time: 7 – 9 minutes Tone: Gentle, grounding, non-confrontational\nGoal: Help users notice how they talk to themselves before, during, and\nafter urges — without trying to “fix” it yet"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 12 · Self-Talk\n\nMain copy (exact):\n\nToday is about noticing how you talk to yourself.\n\nNot out loud — but the quiet, automatic thoughts that appear during urges or\ndifficult moments.\n\nYou’re not changing your thoughts today.\n\nYou’re simply noticing the tone they carry.\n\nCTA button:\n\n_Continue_\n\nUX notes:\n\nAvoid “positive thinking” language\nKeep tone observational, not corrective\nCalm spacing, no emphasis words"
-          },
-          {
-            "title": "NORMALIZING SELF-TALK (CONTEXT)",
-            "body": "Screen title: Why self-talk matters\n\nMain copy (exact):\n\nEveryone has an inner voice.\n\nIt often speaks quickly and automatically — especially under stress, fatigue, or\npressure.\n\nSometimes it’s supportive. Sometimes it’s harsh or impatient.\n\nThis voice doesn’t define you.\n\nBut noticing it can change how urges feel.\n\nCTA button:\n\n_Continue_\n\nWhy this screen matters\n\nPrevents shame\nSeparates thoughts from identity\nAvoids “toxic positivity” framing"
-          },
-          {
-            "title": "GUIDED AUDIO (PRIMARY)",
-            "body": "Screen title: Listening to self-talk\n\nInstruction text (above audio player):\n\nThis short exercise helps you notice your inner voice without engaging with it.\n\nAUDIO SCRIPT (Word-for-Word, ~3 minutes)\n\nDay 12 – The Small\nPause (7-Minute Guided Meditation) Find a comfortable place to sit. There is\nnothing you need to prepare. Just a few quiet minutes to slow down slightly. If\nit feels okay, gently close your eyes. Or soften your gaze. Take one slow breath\nin... And let it go naturally. No need to change the rhythm.\n\nJust notice it. In... And out... Today is about something small. A pause. Not a\nbig decision. Not a permanent change. Just a brief moment of space. Let your\nbreath continue at its natural pace. Now imagine a recent moment when you\nreached for a cigarette... or a drink... almost automatically. You don’t need to\njudge that moment. Just picture it gently. Now, replay that scene slowly. And\nimagine inserting one breath before the action. Just one. In... And out... You\nare not stopping anything. You are not correcting anything. Just adding space.\nStay with that idea for a few breaths. In... And out... A pause can be very\nsmall. Sometimes less than a second. But even a small pause changes the rhythm.\nNotice how it feels\n\nto imagine that extra breath. Does it feel subtle? Strange? Neutral? There is no\nright reaction. Just awareness. Take another slow breath in... And gently out.\nNow bring your attention to your hands. Resting. Still. Imagine the simple act\nof pausing before moving them. Before reaching. Before reacting. Even now,\nsitting here, you can feel the space between intention and action. Stay with\nthat awareness. In... And out... You don’t need to use the pause perfectly. You\ndon’t need to use it every time. Today is only about noticing that it exists.\nThere is a small gap between feeling and acting. Between thought and movement.\nBetween urge and response. That gap may feel tiny. But it is there. Take a slow\nbreath in...\n\nAnd gently out. Now imagine a future moment later today. Perhaps when you feel\nstress. Or boredom. Or fatigue. Picture yourself pausing for one breath. Not\nsolving anything. Not forcing anything. Just breathing once. Stay with that\nimage. In... And out... Notice how one breath feels different from reacting\nimmediately. Even if the action stays the same, the pause changes the\nexperience. It reduces rush. It increases awareness. And awareness builds\nsteadily over time. Let your shoulders soften slightly. Let your jaw relax. Feel\nthe surface beneath you. The steadiness of sitting here. You are not here to\ncontrol everything. You are here to notice space. And today, you practiced\nfinding it. Take one final slow breath in... And a steady breath out. Notice the\nroom around you. The quiet presence of this moment.\n\nA small pause. One breath. That is enough for today. When you’re ready, gently\nopen your eyes. Return to your day. The pause is available. Whenever you\nremember it.\n\nCTA button:\n\n_Continue_\n\nUX notes:\n\nNo affirmations\nNo “replace this thought” guidance\n\nSilence is intentional"
-          },
-          {
-            "title": "SELF-TALK AWARENESS (TEXT-ONLY)",
-            "body": "Screen title: Today’s noticing practice\n\nMain copy (exact):\n\nWhen an urge or difficult moment appears today, see if you can notice how you\nspeak to yourself.\n\nSelectable self-talk tone tags (optional, multi-select):\n\nCritical (“Why am I like this?”)\nUrgent (“I need this now.”)\nDefeated (“What’s the point?”)\nNeutral (“This is happening.”)\nSupportive (“I can handle this.”)\nNot sure\n\nHelper text (small):\n\nYou don’t need to change the thought. Just notice the tone.\n\nCTA button:\n\n_Continue_\n\nUX notes:\n\nNever require a selection\nNo highlighting “good” vs “bad”\nKeep examples subtle and optional"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nWhat did you notice about your self-talk today?\n\nOptional follow-up (collapsed):\n\nWas it different during urges compared to calm moments?\n\nHelper text (small):\n\nOne sentence is enough — or skip this entirely.\n\nCTA buttons:\n\n_Save & Continue_\n_Skip for Today_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough for today\n\nMain copy (exact):\n\nThe way you speak to yourself can either add pressure or create space.\n\nSimply noticing that voice is the first step toward changing its impact.\n\nSecondary text:\n\nYou don’t need to fix it today.\n\nCTA button:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nDay marked as “visited”\nSelf-talk tags stored privately\nUsed later only for pattern insights (e.g., “Critical self-talk appears\n  more often during high-stress days”)\nNo alerts or automated advice triggered today\n\nSAFETY & COMPLIANCE CHECK\n\nDay 12 avoids:\n\nCognitive restructuring\nTherapy language\n“Change your thoughts” instructions\nMental health diagnosis\n\nDay 12 supports:\n\nMetacognitive awareness\nEmotional safety\nApp Store compliance\n\nCORE MESSAGE DAY 12 DELIVERS\n\nYou are not your thoughts.\n\nBut noticing them changes how much power they have.\n\nThis sets the foundation for Day 13 – Environment & Triggers and later\ngentle reframing in Phase 2.\n\nUI / UX DESIGN NOTES\n\nKeep fonts readable, not bold\nAvoid bright icons\nNo charts or metrics\nAlways allow exit\n\nCOACH INTERNAL NOTE (NOT USER-FACING)\n\nIf a user says:\n\n“My self-talk is very negative.”\n\nCoach response:\n\n“That’s very common under stress. Noticing it means you’re already creating\ndistance from it.”\n\nNever force reframing yet\n\nDay 13 – Environment\n\nFocus: Places that trigger habits Exercise: Notice one location linked\nto urges. Journal: “Where do urges appear most?” Close: “Environment\nshapes behavior.”\n\nDAY 13 – ENVIRONMENT & PLACES\n\n(Text + Guided Awareness + Reflection)\n\nTotal time: 7 – 9 minutes Tone: Observational, grounding, non-blaming\nGoal: Help users recognize how places and environments influence urges ,\nwithout asking them to avoid life or make drastic changes"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 13 · Environment & Places\n\nMain copy (exact):\n\nToday is about noticing how your surroundings influence urges and habits.\n\nThis isn’t about changing where you go or avoiding certain places.\n\nIt’s about understanding how environments quietly shape behavior.\n\nCTA button:\n\n_Continue_\n\nUX notes:\n\nNo “trigger warning” language\nCalm spacing\nNeutral, grounded tone"
-          },
-          {
-            "title": "NORMALIZING ENVIRONMENTAL INFLUENCE (CONTEXT)",
-            "body": "Screen title: Why environment matters\n\nMain copy (exact):\n\nPlaces carry memory.\n\nOver time, your brain links certain environments with certain actions.\n\nA balcony. A car. A specific chair. A shop.\n\nWhen you enter these places, habits can feel automatic — not because you want\nthem, but because the environment is familiar.\n\nNoticing this reduces self-blame.\n\nCTA button: _Continue_\n\nWhy this screen matters\n\nSeparates environment from identity\nReduces “something is wrong with me” thinking\nPrepares users for small, future adjustments"
-          },
-          {
-            "title": "GUIDED AUDIO (PRIMARY)",
-            "body": "Screen title: Noticing your surroundings\n\nInstruction text (above audio player):\n\nThis short exercise helps you reflect on how places influence habits.\n\nAUDIO SCRIPT (Word-for-Word, ~3 minutes)\n\nDay 13 – Choice Without Pressure (7-Minute Guided Meditation)\nFind a comfortable place to sit. There is nothing you need to achieve right now.\nJust a few quiet minutes to notice. If it feels okay, gently close your eyes. Or\nsoften your gaze. Take one slow breath in... And let it go naturally. No need to\nadjust the rhythm. Just notice it. In... And out... Today is about noticing\nchoice. Not forcing it. Not proving it. Just recognizing that it exists. Let\nyour breath continue at its natural pace. Think about a recent moment when you\nfelt an urge. Perhaps it felt automatic. Quick. Almost inevitable. Bring that\nmoment to mind gently.\n\nNow, instead of focusing on what happened, focus on the space around it. Was\nthere even a small second between the urge and the action? Even a tiny\nhesitation? Even a brief awareness? You don’t need to remember perfectly. Just\nnotice what comes up. Take a slow breath in... And gently out. Choice doesn’t\nalways feel powerful. Sometimes it feels subtle. Quiet. Almost invisible. Stay\nwith that idea for a few breaths. In... And out... Imagine that same situation\nagain. But this time, imagine noticing the urge clearly. And instead of reacting\nimmediately, imagine asking yourself one simple question: “What do I want right\nnow?” No pressure. No right answer. Just the question. Stay with it gently.\nIn... And out... Choice does not mean you must say no. Choice does not mean you\nmust say yes.\n\nIt simply means you are aware. Notice how it feels to sit with the question\nwithout rushing to answer it. Does it create space? Curiosity? Stillness? Or\ndiscomfort? All responses are normal. Take another slow breath in... And let it\ngo gently. Choice can feel unfamiliar when habits have been automatic. But\nunfamiliar does not mean impossible. It just means new. Stay with your breath.\nIn... And out... If your mind says, “It doesn’t feel like a choice,” notice that\nthought too. And gently return to the breath. Even noticing that feeling is part\nof awareness. You are not here to win. You are not here to resist. You are here\nto recognize space. Space between feeling and action. Space between thought and\nmovement. Space where choice quietly lives. Take one final slow breath in...\n\nAnd a steady breath out. Feel the surface beneath you. The room around you. The\nsteadiness of sitting here. Today, you practiced noticing that choice doesn’t\nneed to be dramatic. It can be simple. It can be quiet. It can begin with one\nquestion. When you’re ready, gently open your eyes. Return to your day. Choice\ndoesn’t need pressure. It only needs awareness. And today, you practiced\nawareness.\n\nCTA button: _Continue_\n\nUX notes:\n\nNo imagery of alcohol/cigarettes\nNo sound effects beyond silence\nCalm pacing"
-          },
-          {
-            "title": "PLACE AWARENESS (TEXT-ONLY)",
-            "body": "Screen title: Today’s noticing practice\n\nMain copy (exact):\n\nWhen an urge appears today, notice where you are.\n\nSelectable place tags (optional, multi-select):\n\nAt home\nIn a specific room\nAt work\nIn a vehicle\nOutdoors\nAt a social venue\nNot sure\n\nHelper text (small):\n\nYou don’t need to label every moment.\n\nCTA button:\n\n_Continue_\n\nUX notes:\n\nNever require selection\nAvoid “high-risk place” labels\nKeep icons minimal and neutral"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nAre there places where urges feel more automatic?\n\nOptional follow-up (collapsed):\n\nWhat usually happens right before you’re in that place?\n\nHelper text (small):\n\nA sentence or two is enough — or skip this entirely.\n\nCTA buttons:\n\n_Save & Continue_\n_Skip for Today_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough for today\n\nMain copy (exact):\n\nEnvironments shape habits quietly.\n\nNoticing this doesn’t mean you need to change your life.\n\nIt simply gives you more awareness the next time you’re there.\n\nSecondary text:\n\nAwareness creates options.\n\nCTA button:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nDay marked as “visited”\nPlace tags stored privately\nUsed later only for pattern insights (e.g., “Certain rooms or locations\n  often precede urges”)\nNo alerts or warnings triggered\n\nSAFETY & COMPLIANCE CHECK\n\nDay 13 avoids:\n\nAvoidance instructions\n\nFear-based trigger language\nLifestyle restriction advice\nMedical or psychological claims\n\nDay 13 supports:\n\nSituational awareness\nReduced self-blame\nApp Store compliance\n\nCORE MESSAGE DAY 13 DELIVERS\n\nHabits are often tied to places — not personal weakness.\n\nAwareness lets you respond differently _when you’re ready._\n\nThis prepares users for Day 14 – Weekly Reflection (Phase 1 wrap-up).\n\nUI / UX DESIGN NOTES\n\nAvoid maps or GPS visuals\nKeep text-first design\nAllow exit at any time\nNo metrics or charts on this day\n\nCOACH INTERNAL NOTE (NOT USER-FACING)\n\nIf a user says:\n\n“I always smoke in the same place.”\n\nCoach response:\n\n“That’s very common. Places hold habit memory. Once noticed, we can add gentle\nchanges later — if you want.”\n\nNever suggest avoidance immediately.\n\nDay 14 – Weekly Reflection\n\nFocus: Awareness deepening Exercise: Review last 7 days. Journal:\n“What repeats most often?” Close: “You’re learning yourself.”\n\nDAY 14 – WEEKLY REFLECTION\n\n(Phase 1 Close · Full Depth)\n\nPurpose: Close Phase 1 without judgment, create psychological readiness for\nstructure, and prevent drop-off.\n\nTotal time: 8 – 12 minutes Tone: Grounded, affirming, steady Goal:\nIntegration, not evaluation"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 14 · Weekly Reflection\n\nMain copy (exact):\n\nOver the past two weeks, you’ve been paying attention — to urges, emotions,\nenergy, habits, and the situations around them.\n\nToday isn’t about judging that experience.\n\nIt’s about understanding what you’ve learned before moving forward.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "REFRAMING THE REFLECTION (CRITICAL)",
-            "body": "Screen title: Before we reflect\n\nMain copy (exact):\n\nReflection is not a test.\n\nYou’re not measuring success or failure.\n\nYou’re noticing patterns — and patterns help you respond more calmly later.\n\nEven difficult weeks still provide useful information.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GUIDED AUDIO (PRIMARY)",
-            "body": "Screen title: Looking back gently\n\nAUDIO SCRIPT (Word-for-Word, ~4 minutes)\n\nDay 14 – Two-Week Reflection (7-Minute Guided Meditation) Find a\ncomfortable place to sit. There’s nothing you need to prepare. Nothing to\ncomplete. Just a few quiet minutes to reflect gently. If it feels okay, close\nyour eyes. Or soften your gaze. Take one slow breath in... And let it go\nnaturally. No need to control it. Just notice. In... And out... Two weeks ago,\nyou began paying attention. Not forcing change. Not setting strict goals.\n\nJust observing. Today is not about asking, “Did I succeed?” It’s about asking,\n“What have I learned?” Let your breath continue at its natural rhythm. Gently\nthink back over the past two weeks. You don’t need to remember everything. Just\nlet one pattern stand out. When do urges tend to appear? What emotions show up\nmost often? What times of day feel easier? What times feel heavier? Notice\nwhatever comes forward. No analysis needed. Just awareness. Take a slow breath\nin... And gently out. Now reflect on stress. Have you noticed stress earlier\nthan before? Even once? Have you recognized low energy before reacting? Even\nbriefly? If yes, simply acknowledge it. If not, simply notice that too. There is\nno right outcome. Only information. Stay with your breath. In... And out...\nThink about the small pauses you practiced. Were there moments you remembered to\nbreathe first?\n\nEven one time? That counts. And if you forgot most days, that’s information too.\nAwareness grows quietly. Sometimes slowly. Sometimes unevenly. But it grows\nthrough noticing. Take another slow breath in... And let it go gently. Now\nconsider your relationship with urges. Do they feel more predictable? Less\nmysterious? Even slightly more understandable? You don’t need certainty. Just a\nsense. Patterns often feel less overwhelming once they are seen clearly. Stay\nhere for a few breaths. In... And out... If your mind begins evaluating — “Good”\nor “Not enough” — notice that gently. And return to observing. Reflection is not\nperformance. It is understanding. You are not being graded. You are becoming\nfamiliar with yourself. That familiarity builds steadiness. Take one more slow\nbreath in...\n\nAnd a steady breath out. Let your shoulders soften slightly. Notice the surface\nbeneath you. The quiet space you’ve created. Two weeks of attention may not feel\ndramatic. But attention changes how experience feels. Even subtle awareness\nmatters. There is nothing you need to promise. Nothing you need to fix today.\nJust acknowledge: You have been looking. You have been noticing. And that is\nmeaningful. When you’re ready, gently open your eyes. Return to your day.\nUnderstanding builds slowly. And over these two weeks, you have built some. That\nis enough for today."
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Primary prompt (exact):\n\nWhat patterns have you noticed over the past two weeks?\n\nOptional follow-ups (collapsed):\n\n“When did urges feel most automatic?”\n“What situations felt hardest?”\n“What surprised you?”\n\nHelper text:\n\nA few words are enough — or skip this entirely."
-          },
-          {
-            "title": "GENTLE CLOSE (PHASE TRANSITION)",
-            "body": "Main copy (exact):\n\nYou’ve completed the awareness phase.\n\nAwareness doesn’t remove urges — it gives you space around them.\n\nNext, you’ll begin adding light structure only where it supports you.\n\nCTA:\n\n_Continue_\n\nPHASE 1 SUMMARY SCREEN (Days 1–14)\n\nPurpose: Make invisible effort visible without metrics.\n\nSCREEN TITLE\n\nPhase 1 · Awareness Complete\n\nMAIN COPY (exact)\n\nOver the past two weeks, you learned to notice:\n\nWhen urges appear\nWhat emotions come before them\nHow stress, boredom, and fatigue affect you\nWhere habits feel automatic\nHow environments influence behavior\n\nThis awareness didn’t require perfection — only attention.\n\nSECONDARY COPY\n\nAwareness is the foundation.\n\nStructure will come next — gently, gradually, and only where it helps.\n\nCTA:\n\n_Begin Phase 2_\n\nPHASE 2 ONBOARDING – INTRODUCING STRUCTURE\n\n(Very Important)\n\nPurpose: Prevent fear, resistance, and “discipline panic”."
-          },
-          {
-            "title": "WHAT STRUCTURE IS (TEXT)",
-            "body": "Screen title: What comes next\n\nMain copy (exact):\n\nStructure doesn’t mean restriction.\n\nIt doesn’t mean control or pressure.\n\nIt means adding support in moments that already feel difficult — so you don’t\nhave to rely on willpower.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "WHAT STRUCTURE IS NOT",
-            "body": "Main copy (exact):\n\nStructure is not:\n\nForcing yourself\nAvoiding life\nBeing perfect\nRemoving all urges\n\nStructure is:\n\nShort pauses\nSimple routines\nEarlier support\nFaster recovery\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "PERMISSION & CONTROL",
-            "body": "Main copy (exact):\n\nYou’ll always stay in control.\n\nYou choose:\n\nWhich routines to try\nWhen to use support\nWhat feels realistic\n\nNothing is mandatory. Everything is adjustable.\n\nCTA:\n\n_Start Phase 2_\n\nMAP PLACES → ROUTINE NUDGES\n\n(Backend + UX Logic)\n\nThis is quietly powerful and should feel supportive, not intrusive.\n\nDATA INPUT (From Phase 1)\n\nPlaces identified:\n\nHome (specific rooms)\nWork\nVehicle\nSocial venues\nOutdoors\n\nMAPPING LOGIC (INVISIBLE)\n\n```\nPlace Noticed Gentle Routine Nudge\n```\n\n```\nBalcony / specific room 60 - second pause + grounding\n```\n\n```\nCar Breath + music reset\n```\n\n```\nAfter work Walk / stretch\n```\n\n```\nSocial venue Prepared response reminder\n```\n\n```\nBedtime Wind-down routine\n```\n\nHOW NUDGES APPEAR (IMPORTANT)\n\nNo automatic push notifications\n\nNo “high-risk” warnings\n\nAppear as optional cards inside:\n\nToday screen\nRoutines tab\nUrge Now\n\nEXAMPLE COPY (IN-APP)\n\nYou’ve noticed urges often appear in this situation.\n\nWould you like to try a short pause here next time?\n\nButtons:\n\nTry this\nNot now\n\nCOACH RULE\n\nOnly one routine suggestion at a time. Never stack routines.\n\nFINAL DESIGN PRINCIPLE (VERY IMPORTANT)\n\nAwareness builds trust. Structure builds support. Pressure destroys both.\n\nDay 15 – Early Urge Signals\n\nFocus: Catching urges early Exercise: Pause at first hint of urge.\nJournal: “How early did I notice it?” Close: “Early noticing helps.”\n\nDAY 15 – EARLY URGE SIGNALS\n\n(Text + Guided Awareness + Reflection)\n\nTotal time: 7 – 9 minutes Tone: Calm, empowering, steady Goal: Help\nusers recognize the very first signs of an urge , before it turns intense"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 15 · Early Urge Signals\n\nMain copy (exact):\n\nToday is about noticing urges early — before they feel strong or urgent.\n\nUrges don’t usually appear suddenly.\n\nThey often begin as small signals that are easy to miss.\n\nLearning to catch them early gives you more time and space.\n\nCTA button:\n\n_Continue_\n\nUX notes:\n\nAvoid “warning signs” language\nKeep tone observational, not alerting\nSoft pacing"
-          },
-          {
-            "title": "NORMALIZING EARLY SIGNALS (CONTEXT)",
-            "body": "Screen title: Why early noticing matters\n\nMain copy (exact):\n\nEarly urge signals are often subtle.\n\nA thought. A shift in mood. A small body sensation. A familiar situation.\n\nWhen urges are noticed early, they tend to feel more manageable.\n\nMissing them doesn’t mean failure.\n\nToday is simply about practicing awareness a little sooner than before.\n\nCTA button:\n\n_Continue_\n\nWhy this screen matters\n\nPrevents fear of “missing it”\nReinforces learning over performance\nKeeps pressure low"
-          },
-          {
-            "title": "GUIDED AUDIO (PRIMARY)",
-            "body": "Screen title: Catching the first signal\n\nInstruction text (above audio player):\n\nThis short exercise helps you recognize the earliest signs of an urge.\n\nAUDIO SCRIPT (Word-for-Word, ~3 minutes)\n\nDay 15 – Responding Instead of Reacting (7-Minute Guided\nMeditation) Find a comfortable place to sit. There is nothing you need to\nachieve right now. Just a few quiet minutes to notice. If it feels okay, gently\nclose your eyes. Or soften your gaze. Take one slow breath in... And let it go\nnaturally. No need to adjust your breathing. Just notice it.\n\nIn... And out... Over the past two weeks, you’ve been observing. Today, we\ngently explore the space between reacting and responding. Not to perfect it.\nJust to notice it. Let your breath continue at its natural pace. Think about a\nrecent moment when something happened unexpectedly. Maybe stress. Maybe a\ndifficult conversation. Maybe boredom. Maybe fatigue. Notice how your body\nresponded first. Was there tension? A quick thought? A tightening? A sense of\nurgency? Stay with that memory gently. In... And out... Reactions happen\nquickly. Often before we realize it. They are not wrong. They are automatic. Now\nimagine that same situation again. But this time, insert one slow breath between\nwhat happened and what you did next. In...\n\nAnd out... Notice how that breath feels. Does it slow the moment slightly?\nCreate space? Feel unfamiliar? There is no right answer. Just observe. Response\ndoes not mean forcing yourself to behave differently. It simply means adding\nawareness before moving forward. Stay with your breath. In... And out... Now\ngently ask yourself: When stress appears, can I notice it first? When boredom\nappears, can I name it first? When fatigue appears, can I acknowledge it first?\nYou don’t need to promise. Just imagine noticing. Notice how it feels to\nconsider responding instead of reacting. Does it feel calmer? Neutral? Subtle?\nUncertain? All responses are welcome. Take another slow breath in...\n\nAnd gently out. Reaction is immediate. Response begins with awareness. Awareness\noften begins with breath. And breath is always available. Stay here for a few\nmoments. In... And out... You don’t need to eliminate reaction. You don’t need\nto perform perfectly. You are simply learning that there is space. And space\ngives options. Even small options. Even quiet ones. Take one final slow breath\nin... And a steady breath out. Feel the surface beneath you. Notice the room\naround you. The steadiness of sitting here. Today, you practiced noticing the\ndifference between reacting and responding. Not perfectly. Just gently. When\nyou’re ready, open your eyes. Return to your day. Response doesn’t require\nforce. It begins with one breath. And that breath is enough.\n\nCTA button:\n\n_Continue_\n\nUX notes:\n\nNo urgency cues\nSilence is intentional\nDo not add timers or countdowns"
-          },
-          {
-            "title": "MICRO PRACTICE (TEXT-ONLY)",
-            "body": "Screen title: Today’s practice\n\nMain copy (exact):\n\nToday, when you notice the first hint of an urge, pause for a few seconds before\nresponding.\n\nYou don’t need to stop the urge.\n\nJust notice that you caught it early.\n\nSecondary text (smaller):\n\nEven noticing slightly earlier than before counts.\n\nCTA button:\n\n_Continue_\n\nUX notes:\n\nDo not force reminders\nThis is an invitation, not a task"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nHow early did you notice the urge today?\n\nOptional follow-up (collapsed):\n\nWhat was the first signal you noticed?\n\nHelper text (small):\n\nA few words are enough — or skip this entirely.\n\nCTA buttons:\n\n_Save & Continue_\n_Skip for Today_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough for today\n\nMain copy (exact):\n\nUrges feel strongest when they go unnoticed for too long.\n\nCatching them early gives you more choice — without needing force.\n\nEarly noticing helps.\n\nCTA button:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nDay marked as “visited”\nEarly-signal reflections stored privately\nUsed later for Phase 2 routines (e.g., “Pause earlier in the evening”)\nNo alerts or recommendations triggered today\n\nSAFETY & COMPLIANCE CHECK\n\nDay 15 avoids:\n\nAlarmist language\nUrge suppression instructions\nMedical or psychological claims\n\nDay 15 supports:\n\nEarly awareness\nPsychological safety\nApp Store compliance\n\nCORE MESSAGE DAY 15 DELIVERS\n\nControl doesn’t come from strength.\n\nIt comes from noticing earlier.\n\nThis prepares users perfectly for Day 16 – Physical Needs (Hunger, Thirst,\nRest).\n\nUI / UX DESIGN NOTES\n\nKeep flow short and calm\nAvoid highlighting “success”\nAllow exit at any screen\nNo charts or numbers today\n\nCOACH INTERNAL NOTE (NOT USER-FACING)\n\nIf a user says:\n\n“I only noticed it when it was strong.”\n\nCoach response:\n\n“That’s completely normal. Each time you notice a little earlier, you build more\nspace.”\n\nNever push urgency.\n\nDay 16 – Physical Needs\n\nFocus: Hunger, thirst, sleep Exercise: Drink water mindfully.\nJournal: “Was this urge physical?” Close: “Care reduces cravings.”\n\nDAY 16 – PHYSICAL NEEDS\n\n(Full Depth · Audio + Text + Journal)\n\nFocus: Hunger, thirst, rest, physical depletion Goal: Help users\nrecognize when urges are driven by basic unmet needs , not desire or habit\n\nTotal time: 7 – 9 minutes Tone: Grounded, practical, reassuring"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 16 · Physical Needs\n\nMain copy (exact):\n\nToday is about noticing basic physical needs — like hunger, thirst, and rest.\n\nWhen these needs are unmet, urges often feel stronger and more urgent.\n\nThis doesn’t mean something is wrong.\n\nIt means your system may be asking for simple care.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "NORMALIZING PHYSICAL SIGNALS (CONTEXT)",
-            "body": "Screen title: Why physical needs matter\n\nMain copy (exact):\n\nThe body looks for balance.\n\nWhen it’s low on energy, hydration, or rest, the brain often reaches for\nfamiliar habits to change how it feels.\n\nThis isn’t weakness.\n\nIt’s a natural response to depletion.\n\nNoticing physical needs early can reduce unnecessary urges later.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GUIDED AUDIO (PRIMARY)",
-            "body": "Screen title: Checking in with physical needs\n\nAUDIO SCRIPT (Word-for-Word, ~3 minutes)\n\nDay 16 – Steady\nAlternatives (7-Minute Guided Meditation)\n\nFind a comfortable place to sit. There is nothing you need to accomplish right\nnow. Just a few quiet minutes to explore gently. If it feels okay, close your\neyes. Or soften your gaze. Take one slow breath in... And let it go naturally.\nNo need to change anything. Just notice. In... And out... Over the past days,\nyou’ve been noticing urges. Emotions. Stress. Energy. Pauses. Today, we gently\nexplore something new. Not removing a habit. Not forcing change. Just\nconsidering small alternatives. Let your breath continue naturally. Think about\na recent moment when an urge appeared. Not the strongest one. Just an ordinary\none. Picture that moment softly. Now imagine that before reacting, you paused\nfor one breath. In... And out... After that breath,\n\nimagine choosing something small. Maybe a sip of water. Maybe standing up. Maybe\nstepping outside for a minute. Maybe simply staying seated. There is no perfect\nalternative. Just something slightly different. Notice how it feels to imagine\nthat shift. Does it feel manageable? Neutral? Uncertain? All responses are okay.\nTake another slow breath in... And gently out. Alternatives don’t need to be\nbig. They don’t need to solve everything. They don’t need to feel exciting.\nSometimes they are simply pauses with movement. Now bring your attention to your\nbody. Notice your hands. Your shoulders. Your breath. Imagine responding to\ntension with one slow exhale. That alone is an alternative. Stay with that\nfeeling for a few breaths. In... And out... Now imagine boredom appearing.\nInstead of filling it immediately, imagine letting it sit for one breath.\n\nOr standing up slowly. Or looking out a window. Small shifts. Not dramatic ones.\nNotice how subtle they feel. Alternatives are not punishments. They are options.\nOptions create flexibility. Flexibility reduces pressure. Take a slow breath\nin... And let it go gently. If your mind says, “This won’t work,” just notice\nthat thought. And return to your breath. You are not committing to change\neverything. You are exploring possibilities. Stay here for a few more breaths.\nIn... And out... Small actions repeated gently feel steadier than large\npromises. And steadiness builds quietly. Take one final slow breath in... And a\nsteady breath out. Feel the surface beneath you. Notice the room around you.\nToday, you explored the idea that something small can shift a moment. You don’t\nneed to use it perfectly. You don’t need to use it every time.\n\nJust knowing alternatives exist creates space. When you’re ready, gently open\nyour eyes. Return to your day. Small shifts are enough. And today, you practiced\nnoticing them."
-          },
-          {
-            "title": "PHYSICAL NEEDS CHECK (TEXT-ONLY)",
-            "body": "Screen title: Today’s noticing practice\n\nMain copy (exact):\n\nWhen an urge appears today, pause briefly and check in with your body.\n\nSelectable options (multi-select, optional):\n\nHungry\nThirsty\nTired\nRestless\nNone noticed\n\nHelper text:\n\nYou don’t need to respond perfectly. Just noticing is enough.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Primary prompt (exact):\n\nDid physical needs play a role today?\n\nOptional follow-up (collapsed):\n\nWhat did your body seem to need most?\n\nCTA buttons:\n\nSave & Continue | Skip for Today"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Main copy (exact):\n\nMany urges are requests for care — not cravings.\n\nListening to your body early gives you more choice later.\n\nSecondary text:\n\nSimple needs matter.\n\nCTA:\n\n_Go to Today_\n\nBACKGROUND LOGIC\n\nPhysical-need tags stored privately\nUsed later for routine suggestions (hydration, rest, pause)\nNo medical interpretation\nNo alerts triggered today\n\nMAP EARLY SIGNALS → URGE PROTOCOL TIMING\n\n(Core Intelligence Layer)\n\nThis is where Recovery Compass becomes truly smart — without being invasive.\n\nINPUT DATA (From Days 1–16)\n\nEarly signals include:\n\nSubtle thoughts\nStress shifts\nBoredom\nFatigue\nPhysical needs\nTime / place patterns\n\nTIMING LOGIC (INVISIBLE TO USER)\n\n```\nEarliest Signal Detected Best Protocol Timing\n```\n\n```\nStress rising Before urge appears\n```\n\n```\nBoredom At first restlessness\n```\n\n```\nFatigue Earlier in evening\n```\n\n```\nHunger/thirst Immediately\n```\n\n```\nHabit moment Just before routine\n```\n\n```\nSocial context Before entering situation\n```\n\nHOW PROTOCOLS APPEAR (UX-SAFE)\n\nNo forced notifications\n\nNo “high-risk” alerts\n\nShown as optional cards in:\n\nToday screen\nUrge Now\nRoutines tab\n\nEXAMPLE IN-APP COPY\n\nYou’ve noticed urges often start when you feel tired.\n\nWould you like to try a short pause before that moment today?\n\nButtons:\n\nTry this\nNot now\n\nKEY RULES\n\nOnly one protocol suggestion at a time\nNever interrupt the user\nAlways optional\nAuto-disappear if ignored\n\nDay 17 – Mood Shifts\n\nFocus: Mood changes Exercise: Notice mood before/after urges.\nJournal: “How did my mood change?” Close: “Moods move.”\n\nDAY 17 – MOOD SHIFTS\n\n(Full Depth · Audio + Text + Journal)\n\nFocus: Mood changes before and after urges Goal: Help users notice how\nmoods shift over time — without labeling, fixing, or suppressing them\n\nTotal time: 7 – 9 minutes Tone: Gentle, normalizing, steady"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 17 · Mood Shifts\n\nMain copy (exact):\n\nToday is about noticing how your mood changes — before and after urges.\n\nMoods don’t stay the same.\n\nThey rise, shift, and pass throughout the day.\n\nNoticing these shifts helps urges feel less permanent.\n\nCTA:\n\n_Continue_\n\nUX notes:\n\nAvoid emotional intensity cues\nNeutral typography\nCalm pacing"
-          },
-          {
-            "title": "NORMALIZING MOODS (CONTEXT)",
-            "body": "Screen title: Why mood shifts matter\n\nMain copy (exact):\n\nMoods are temporary states.\n\nStress, fatigue, boredom, or social situations can change how you feel —\nsometimes quickly.\n\nUrges often follow mood shifts, not because the mood is “bad,” but because the\nbrain looks for relief.\n\nNoticing how moods change reduces the sense that urges are fixed.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nPrevents emotional labeling\nReduces fear of mood changes\nSeparates mood from behavior"
-          },
-          {
-            "title": "GUIDED AUDIO (PRIMARY)",
-            "body": "Screen title: Noticing mood shifts\n\nAUDIO SCRIPT (Word-for-Word, ~3 minutes)\n\nDay 17 – Familiar Environments (7-Minute Guided Meditation)\nFind a comfortable place to sit. There’s nothing you need to change right now.\nJust a few quiet minutes to notice. If it feels okay, gently close your eyes. Or\nsoften your gaze. Take one slow breath in... And let it go naturally. No need to\nadjust your breathing. Just notice it. In... And out... Today is about noticing\nhow environments influence you. Not avoiding places. Not rearranging your life.\nJust understanding context. Let your breath continue at its natural rhythm.\nGently bring to mind a familiar place. A place where habits often happen. It\ncould be a balcony. A car. A certain chair. A break area. A specific room.\n\nPicture it softly. Notice the details. The light. The sounds. The atmosphere.\nStay there for a few breaths. In... And out... Places hold memory. When we\nrepeat actions in the same location, the body remembers. Not because we decide\nto. But because repetition creates familiarity. Now gently ask yourself: When\nI’m in this place, does the urge feel stronger? More automatic? More expected?\nJust notice what comes up. No need to judge it. Take a slow breath in... And\ngently out. Now imagine being in that same place again. But this time, imagine\nnoticing the environment clearly. The chair. The air. The position of your body.\nAnd imagine adding one slow breath. In... And out...\n\nYou are not removing the place. You are not avoiding it. You are simply adding\nawareness to it. Notice how that feels. Does the place seem slightly less\nautomatic? More neutral? The same? All responses are welcome. Stay with your\nbreath. In... And out... Environments don’t control behavior. But they influence\nrhythm. And awareness changes rhythm. Now imagine adjusting something small.\nSitting slightly differently. Standing instead of sitting. Holding a glass of\nwater. Opening a window. Tiny shifts. Notice how those subtle changes feel.\nAlternatives don’t require dramatic change. Sometimes a small adjustment alters\nthe moment. Take another slow breath in... And let it go gently. Notice the\nsurface beneath you right now. The environment you’re currently in. The sounds\naround you. The quiet of this moment. You don’t need to escape your\nsurroundings.\n\nYou are learning to see them more clearly. And clarity reduces surprise. Take\none final slow breath in... And a steady breath out. When you’re ready, gently\nopen your eyes. Return to your day. Places may carry memory. But awareness\ncarries choice. And today, you practiced awareness."
-          },
-          {
-            "title": "MOOD AWARENESS PRACTICE (TEXT-ONLY)",
-            "body": "Screen title: Today’s noticing practice\n\nMain copy (exact):\n\nWhen an urge appears today, notice your mood before it starts and again after it\npasses.\n\nSelectable mood tags (optional, multi-select):\n\nCalm\nTense\nLow\nIrritable\nNeutral\nUnsure\n\nHelper text:\n\nYou don’t need to label everything. Noticing even once is enough.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Primary prompt (exact):\n\nHow did your mood change today?\n\nOptional follow-up (collapsed):\n\nDid urges affect your mood as much as you expected?\n\nHelper text:\n\nA few words are enough — or skip this entirely.\n\nCTA buttons:\n\nSave & Continue | Skip for Today"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Main copy (exact):\n\nMoods are not instructions.\n\nThey move, even when we don’t act on them.\n\nNoticing their movement gives you space around urges.\n\nMoods move.\n\nCTA:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nMood tags stored privately\nUsed later for pattern insights (e.g., “Urges often follow tense moods”)\nNo mood scoring\nNo alerts or mental-health labeling\n\nSAFETY & COMPLIANCE CHECK\n\nDay 17 avoids:\n\nMental health diagnosis\nMood fixing or regulation instructions\nEmotional urgency\nTherapy language\n\nDay 17 supports:\n\nEmotional awareness\nApp Store compliance\nPsychological safety\n\nCORE MESSAGE DAY 17 DELIVERS\n\nMoods feel powerful only when we forget they change.\n\nThis sets the stage for Day 18 – Releasing Expectations and deeper emotional\nflexibility.\n\nUI / UX DESIGN NOTES\n\nNo emotive color coding\nKeep mood labels neutral\nAvoid graphs on this day\nAllow exit anytime\n\nCOACH INTERNAL NOTE (NOT USER-FACING)\n\nIf a user says:\n\n“My mood gets worse after urges.”\n\nCoach response:\n\n“That’s very common. Noticing that shift helps you understand what urges\nactually give — and what they don’t.”\n\nNever shame or label.\n\nDay 18 – Expectation Release\n\nFocus: Letting go of outcomes Exercise: Say: “I don’t need to fix\ntoday.” Journal: “What pressure can I release?” Close: “Ease builds\nstability.”\n\nDAY 18 – RELEASING EXPECTATIONS\n\n(Full Depth · Audio + Text + Journal)\n\nFocus: Letting go of rigid expectations about progress, urges, and moods\nGoal: Reduce pressure that quietly fuels urges; increase flexibility and\nself-trust\n\nTotal time: 7 – 9 minutes Tone: Gentle, permission-giving, grounding"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 18 · Releasing Expectations\n\nMain copy (exact):\n\nToday is about noticing expectations — especially the quiet ones you place on\nyourself.\n\nExpectations can add pressure, even when they’re meant to help.\n\nReleasing them doesn’t mean giving up.\n\nIt means creating space to respond more calmly.\n\nCTA:\n\n_Continue_\n\nUX notes:\n\nAvoid “let go of control” language\nKeep tone reassuring, not directive"
-          },
-          {
-            "title": "NORMALIZING EXPECTATIONS (CONTEXT)",
-            "body": "Screen title: Why expectations matter\n\nMain copy (exact):\n\nMany people expect urges to disappear once they start paying attention.\n\nWhen that doesn’t happen, frustration or self-criticism can follow.\n\nThat pressure often increases urges — not because you’re failing, but because\nthe nervous system tightens.\n\nReleasing expectations allows progress to unfold more naturally.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nPrevents discouragement\nReframes progress as non-linear\nReduces “I should be better by now” thinking"
-          },
-          {
-            "title": "GUIDED AUDIO (PRIMARY)",
-            "body": "Screen title: Softening expectations\n\nAUDIO SCRIPT (Word-for-Word, ~3 minutes)\n\nDay 18 – Repetition &\nRoutine (7-Minute Guided Meditation) Find a comfortable place to sit. There is\nnothing you need to complete. Just a few quiet minutes to notice. If it feels\nokay, gently close your eyes. Or soften your gaze. Take one slow breath in...\nAnd let it go naturally. No need to control your breathing. Just notice it.\nIn... And out... Today is about repetition. The small routines that shape your\nday. Not to change them. Just to understand them. Let your breath continue at\nits natural rhythm. Think about a typical day. Morning... Afternoon...\nEvening...\n\nNotice how many things happen in the same order. Wake up. Brush teeth. Drink\nsomething. Sit in a certain place. Take breaks at familiar times. Most routines\nhappen without thinking. That’s how repetition works. Take a slow breath in...\nAnd gently out. Now think about a moment when a habit usually happens. After a\nmeal. During a break. At a certain time. Notice how the body may anticipate it\nbefore the mind does. That’s repetition. Not weakness. Not failure. Just\nfamiliarity. Stay with that understanding for a few breaths. In... And out...\nRepetition creates comfort. Even if the action itself isn’t helpful. The rhythm\nfeels known. Predictable. Safe. Now imagine that same routine. But this time,\ninsert one small variation.\n\nNot a dramatic change. Just something subtle. Maybe sitting slightly\ndifferently. Maybe stepping outside for a minute. Maybe taking one slow breath\nbefore moving. Notice how even a small shift changes the feeling of repetition.\nDoes it feel different? Awkward? Neutral? Stay with that awareness. Take another\nslow breath in... And let it go gently. Repetition doesn’t disappear overnight.\nAnd it doesn’t need to. Today is not about breaking routines. It’s about seeing\nthem clearly. When something is seen clearly, it feels less automatic. Less\ninvisible. Now bring your attention back to your body. Notice your posture. Your\nhands. Your breathing. Even the way you sit right now is part of a routine. And\nyou’re noticing it. Stay here for a few breaths. In... And out... If your mind\nsays,\n\n“This is just how I am,” notice that thought too. Repetition feels permanent\nbecause it repeats. But awareness introduces flexibility. Take one final slow\nbreath in... And a steady breath out. Notice the room around you. The surface\nbeneath you. The quiet steadiness of this moment. Routines shape rhythm. And\nrhythm shapes habit. Today, you practiced noticing rhythm. No pressure. No\nforce. Just awareness. When you’re ready, gently open your eyes. Return to your\nday. Repetition becomes clearer when you pay attention. And today, you did."
-          },
-          {
-            "title": "MICRO PRACTICE (TEXT-ONLY)",
-            "body": "Screen title: Today’s practice\n\nMain copy (exact):\n\nWhen an urge or difficult moment appears today, see if you can release the\nexpectation that it _shouldn’t_ be happening.\n\nNotice what changes when you stop arguing with the moment.\n\nSecondary text:\n\nAcceptance often reduces pressure.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Primary prompt (exact):\n\nWhat expectations did you notice today?\n\nOptional follow-up (collapsed):\n\nHow did releasing them affect you?\n\nCTA buttons: Save & Continue | Skip for Today"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Main copy (exact):\n\nProgress doesn’t require pressure.\n\nReleasing expectations makes room for steadier change.\n\nSecondary text:\n\nEase helps.\n\nCTA:\n\n_Go to Today_\n\nBACKGROUND LOGIC\n\nExpectation notes stored privately\nUsed later for coach reflections , not automation\nNo alerts or prompts triggered today\n\nMAP MOOD SHIFTS → GENTLE SUPPORT TIMING\n\n(Intelligence Layer · Non-Intrusive)\n\nThis mapping ensures support meets users when they’re open , not\noverwhelmed.\n\nINPUT DATA\n\nFrom Days 1–18:\n\nMood before/after urges\nStress levels\nEnergy levels\nTime & place patterns\nEarly urge signals\n\nSUPPORT-TIMING LOGIC\n\n```\nMood Pattern Detected Best Support Timing\n```\n\n```\nTense → Urge Before urge escalation\n```\n\n```\nLow → Urge Early gentle support\n```\n\n```\nIrritable → Habit Short pause + grounding\n```\n\n```\nNeutral → Urge Awareness reminder only\n```\n\n```\nMood improves after pause Reinforce timing\n```\n\nHOW SUPPORT APPEARS (IMPORTANT)\n\nNo automatic push alerts\n\nNo “risk” notifications\n\nAppears as optional in-app cards :\n\nToday screen\nUrge Now\nWeekly Insights suggestions\n\nEXAMPLE IN-APP COPY\n\nYou’ve noticed urges often follow tense moods.\n\nA short pause earlier in those moments may help reduce intensity.\n\nWould you like to try that this week?\n\nButtons:\n\nTry this\nNot now\n\nRULES\n\nOne suggestion at a time\nAlways optional\nDisappears if ignored\nNever framed as prevention\n\nWEEKLY INSIGHTS — MOOD-BASED COPY\n\n(User-Facing · Calm & Observational)\n\nThese insights appear after enough data , never immediately.\n\nSECTION TITLE\n\nMood Patterns\n\nCOPY VARIATIONS (AUTO-SELECTED)\n\nNeutral patterns\n\n“Your mood shifted throughout the week. Urges appeared during different\nemotional states.”\n\nStress-linked patterns\n\n“Urges often followed tense or stressed moments. Noticing these shifts earlier\nmay help.”\n\nLow-mood patterns\n\n“Lower moods sometimes preceded urges. These moments often respond well to\ngentler support.”\n\nFlexible patterns\n\n“Not all urges were linked to mood changes, which shows growing flexibility.”\n\nALWAYS END WITH (FIXED)\n\nMoods move.\n\nAwareness gives you space without needing pressure.\n\nDay 19 – Control vs Compulsion\n\nFocus: Choice awareness Exercise: Delay one response today. Journal:\n“What helped me pause?” Close: “Pause creates space.”\n\njudgmental, app-ready standard of Days 1–18.\n\nThis day is very important conceptually. It helps users stop seeing urges as\n“loss of control” and start seeing where choice still exists , even in small\nways.\n\nEverything below is non-medical, non-therapeutic, App Store safe , and ready\nto build.\n\nDAY 19 – CONTROL vs COMPULSION\n\n(Full Depth · Audio + Text + Journal)\n\nFocus: Understanding the difference between automatic compulsion and\navailable choice Goal: Help users recognize moments of control that\nalready exist , without forcing behavior change\n\nTotal time: 7 – 9 minutes Tone: Grounding, empowering, non-blaming"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 19 · Control vs Compulsion\n\nMain copy (exact):\n\nToday is about understanding the difference between compulsion and control.\n\nMany people think urges mean they have no control at all.\n\nIn reality, control often exists — just in smaller moments than expected.\n\nToday is about noticing those moments.\n\nCTA:\n\n_Continue_\n\nUX notes\n\nAvoid words like _addicted_ , _powerless_\nCalm spacing\nNeutral emphasis"
-          },
-          {
-            "title": "REFRAMING CONTROL (CONTEXT)",
-            "body": "Screen title: What control really means\n\nMain copy (exact):\n\nControl doesn’t mean never having urges.\n\nIt doesn’t mean stopping every habit.\n\nControl means having a moment of choice — even a brief one — before responding.\n\nCompulsion feels fast and automatic. Control feels slower and quieter.\n\nToday, you’re learning to notice where that quiet space already exists.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nRemoves all-or-nothing thinking\nPrevents “I failed” loops\nBuilds confidence without pressure"
-          },
-          {
-            "title": "GUIDED AUDIO (PRIMARY)",
-            "body": "Screen title: Finding the space\n\nAUDIO SCRIPT (Word-for-Word, ~3 minutes)\n\nDay 19 – Subtle Cravings (7-Minute Guided Meditation) Find a comfortable\nplace to sit. There is nothing you need to solve right now. Just a few quiet\nminutes to notice. If it feels okay, gently close your eyes. Or soften your\ngaze. Take one slow breath in... And let it go naturally. No need to adjust your\nbreathing.\n\nJust notice it. In... And out... Today is about noticing subtle cravings. Not\nthe strong ones. Not the obvious ones. The quiet ones. Let your breath continue\nat its natural pace. Sometimes cravings don’t feel intense. They don’t feel\nurgent. They feel like a small thought. A suggestion. A quiet nudge. Gently ask\nyourself: Have I noticed any subtle urges recently? Not overwhelming ones. Just\nsmall impulses. A passing idea. A light restlessness. If one comes to mind,\nbring it forward gently. Stay with it for a few breaths. In... And out... Notice\nhow subtle cravings feel in the body. Are they thoughts first? Or sensations? A\nslight tension? A wandering attention? A feeling of “something is missing”? You\ndon’t need to define it clearly.\n\nJust observe. Subtle cravings often pass unnoticed because they don’t demand\nattention. They simply drift through. Stay with the feeling. Does it grow\nstronger when you pay attention? Or does it soften? Take a slow breath in... And\ngently out. Sometimes a subtle craving is just a habit of thought. A familiar\npattern. Not a strong desire. Not an emergency. Just repetition. Notice how it\nfeels to sit with it without reacting. Without pushing it away. Just allowing it\nto be present. In... And out... If your mind says, “It’s small, it doesn’t\nmatter,” notice that thought too. Subtle signals often appear before stronger\nones. And noticing them early reduces surprise later. Now imagine a subtle\ncraving appearing later today. Picture yourself noticing it gently. Without\nalarm. Without judgment.\n\nJust recognition. “I see that.” Stay with that phrase softly. In... And out...\nSubtle cravings rise. Pause. And often fade quietly. They don’t always need\naction. They don’t always need resistance. They sometimes just need\nacknowledgment. Notice your body again. Your shoulders. Your hands. Your\nbreathing. Even subtle shifts matter. Awareness grows through repetition. The\nmore you notice early signals, the clearer patterns become. Take one final slow\nbreath in... And a steady breath out. Notice the room around you. The surface\nbeneath you. The steadiness of this moment. Today, you practiced noticing the\nquiet beginnings. Not dramatic urges. Just subtle ones. And subtle awareness\nbuilds steadily. When you’re ready, gently open your eyes. Return to your day.\n\nSmall signals matter. And today, you listened for them."
-          },
-          {
-            "title": "AWARENESS PRACTICE (TEXT-ONLY)",
-            "body": "Screen title: Today’s noticing practice\n\nMain copy (exact):\n\nWhen an urge appears today, see if you can notice even a small moment of pause\nbefore responding.\n\nSelectable options (optional):\n\nNoticed a pause\nResponded automatically\nNot sure\n\nHelper text:\n\nAll responses are information. None mean failure.\n\nCTA:\n\n_Continue_\n\nUX notes\n\nNever reward “pause”\nNever mark “automatic” as bad\nKeep tone neutral"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Primary prompt (exact):\n\nDid you notice any space between urge and action?\n\nOptional follow-up (collapsed):\n\nWhat did that space feel like?\n\nHelper text:\n\nA word or two is enough — or skip this entirely.\n\nCTA buttons: Save & Continue | Skip for Today"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Main copy (exact):\n\nCompulsion feels immediate.\n\nControl feels quiet.\n\nNoticing even a small pause is a sign of growing choice.\n\nYou don’t need more than that today.\n\nSecondary text:\n\nSmall spaces matter.\n\nCTA:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\n“Pause noticed” stored privately\nUsed later for confidence-based insights\nNo scoring\nNo automation triggered\n\nSAFETY & COMPLIANCE CHECK\n\nDay 19 avoids:\n\nPowerlessness framing\nAbstinence goals\nMoral language\nTherapy constructs\n\nDay 19 supports:\n\nAgency\nPsychological safety\nApp Store compliance\n\nCORE MESSAGE DAY 19 DELIVERS\n\nControl is not the absence of urges.\n\nIt’s the presence of a pause.\n\nThis prepares users perfectly for Day 20 – Readiness and the end of Phase 1.\n\nUI / UX DESIGN NOTES\n\nNo progress indicators\nNo comparison to previous days\nKeep flow slow and grounding\nAllow exit at any screen\n\nCOACH INTERNAL NOTE (NOT USER-FACING)\n\nIf a user says:\n\n“I still acted automatically.”\n\nCoach response:\n\n“That’s completely normal. Noticing how fast it happens is the first step to\nslowing it down.”\n\nNever push behavior change yet.\n\nDay 20 – Readiness\n\nFocus: Preparing for structure Exercise: Visualize handling one urge\ncalmly. Journal: “What support helps most?” Close: “You’re ready for the\nnext phase.”\n\nDAY 20 – READINESS\n\n(Full Depth · Audio + Text + Journal)\n\nFocus: Readiness for gentle structure Goal: Help users notice _where_\nthey already feel capable of small support — without forcing commitment\n\nTotal time: 7 – 9 minutes Tone: Permission-giving, steady,\nconfidence-building"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 20 · Readiness\n\nMain copy (exact):\n\nToday is about noticing readiness.\n\nReadiness doesn’t mean feeling confident all the time.\n\nIt doesn’t mean urges are gone.\n\nIt means there may be one or two moments where a little support could help.\n\nToday, you’re simply noticing where that might be true.\n\nCTA:\n\n_Continue_\n\nUX notes\n\nAvoid “commitment” or “decision” language\nCalm spacing\nNo progress indicators"
-          },
-          {
-            "title": "REFRAMING READINESS (CONTEXT)",
-            "body": "Screen title: What readiness really means\n\nMain copy (exact):\n\nMany people wait to feel “ready” before adding structure.\n\nBut readiness is usually quiet.\n\nIt shows up as:\n\nCuriosity\nSlight openness\nWillingness to try once\n\nYou don’t need to be fully prepared.\n\nYou only need one moment where support feels possible.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nRemoves pressure\nPrevents all-or-nothing thinking\nFrames readiness as flexible"
-          },
-          {
-            "title": "GUIDED AUDIO (PRIMARY)",
-            "body": "Screen title: Checking in with readiness\n\nAUDIO SCRIPT (Word-for-Word, ~3 minutes)\n\nDay 20 – Slowing Down\nthe Sequence (7-Minute Guided Meditation) Find a comfortable place to sit.\nThere is nothing you need to change right now. Just a few quiet minutes to slow\ndown. If it feels okay, gently close your eyes. Or soften your gaze. Take one\nslow breath in... And let it go naturally. No need to adjust your breathing.\nJust notice it. In... And out... Today is about slowing things down. Not\nstopping them. Not fixing them. Just noticing the sequence. Let your breath\ncontinue at its natural rhythm. Think about a recent moment when a habit\nhappened. Not a dramatic one. Just an ordinary moment. Now gently replay that\nscene in your mind. But slower than it happened. Before the action... What came\nfirst? A feeling? A thought? A sensation? A time of day?\n\nA location? Stay with that beginning. In... And out... Now notice the next step.\nWhat followed the feeling? Did your body shift? Did your attention move? Did\nyour hand reach automatically? Continue slowing it down. Step by step. No\njudgment. Just observation. Habits often feel instant because the steps are\nquick. But they are made of smaller parts. And each part is visible when slowed\ndown. Take another slow breath in... And gently out. Notice how it feels to see\nthe sequence clearly. Does it feel predictable? Mechanical? Neutral? That\nclarity is not about control. It’s about understanding. Now imagine that same\nsequence happening again. But this time, imagine pausing after the first step.\nJust one breath.\n\nIn... And out... You are not stopping the sequence. You are noticing its rhythm.\nNotice how that pause changes the flow. Even slightly. Stay with that awareness\nfor a few breaths. In... And out... When sequences slow down, they feel less\nautomatic. Less invisible. More understandable. You don’t need to alter every\nstep. Just seeing the order creates space. Bring your attention back to your\nbody. Notice your hands. Your shoulders. Your breathing. Even now, there is a\nsequence. Breath in. Breath out. Calm noticing. Stay here quietly. In... And\nout... If your mind begins analyzing too much, gently return to simple\nobservation. You are not solving a puzzle.\n\nYou are watching a pattern. Patterns become clearer when slowed down. Take one\nfinal slow breath in... And a steady breath out. Notice the room around you. The\nsurface beneath you. The steadiness of this moment. Today, you practiced slowing\nthe sequence. Not to control it. Just to understand it. And understanding builds\ngradually. When you’re ready, gently open your eyes. Return to your day. Habits\nare made of small steps. And today, you saw them more clearly."
-          },
-          {
-            "title": "READINESS AWARENESS PRACTICE (TEXT-ONLY)",
-            "body": "Screen title: Today’s noticing practice\n\nMain copy (exact):\n\nToday, see if you can notice one moment where support might have helped — even a\nlittle.\n\nSelectable options (optional):\n\nDuring stress\nDuring boredom\nDuring fatigue\nIn a specific place\nIn a social situation\nNot sure yet\n\nHelper text:\n\nNot sure is a valid answer.\n\nCTA:\n\n_Continue_\n\nUX notes\n\nNever require selection\nNo “right” answers\nNo future promises"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Primary prompt (exact):\n\nWhere might a small amount of support help you right now?\n\nOptional follow-up (collapsed):\n\nWhat kind of support feels realistic?\n\nHelper text:\n\nOne sentence is enough — or skip this entirely.\n\nCTA buttons:\n\nSave & Continue | Skip for Today"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Main copy (exact):\n\nReadiness doesn’t mean you have to change everything.\n\nIt means you’re open to being supported in one or two moments.\n\nThat’s enough to begin.\n\nSecondary text:\n\nYou move at your pace.\n\nCTA:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nReadiness tags stored privately\nUsed to suggest Phase 2 starting points\nNo routines auto-created\nNo alerts triggered\nNo pressure applied\n\nSAFETY & COMPLIANCE CHECK\n\nDay 20 avoids:\n\nCommitment pressure\nBehavior goals\n“Now you must act” framing\nMedical or psychological claims\n\nDay 20 supports:\n\nAutonomy\nConfidence without pressure\nApp Store compliance\n\nCORE MESSAGE DAY 20 DELIVERS\n\nReadiness isn’t certainty.\n\nIt’s openness — even briefly.\n\nThis prepares users perfectly for Day 21 – Phase 1 Completion & Transition.\n\nUI / UX DESIGN NOTES\n\nKeep this day very calm\nNo charts or summaries\nNo achievements\nAllow exit at any point\n\nCOACH INTERNAL NOTE (NOT USER-FACING)\n\nIf a user says:\n\n“I don’t feel ready.”\n\nCoach response:\n\n“That’s okay. Readiness comes and goes. We’ll start where it feels easiest — or\nwait.”\n\nNever push.\n\nDay 21 – Phase Reflection\n\nFocus: Awareness summary Exercise: Review key patterns. Journal:\n“What do I understand now?” Close: “Awareness achieved.”\n\nor changing behavior perfectly.\n\nIt was about learning to notice — urges, moods, patterns, and moments with more\nclarity.\n\nToday is about recognizing what that awareness has given you.\n\nCTA:\n\n_Continue_\n\nUX notes\n\nNo “congratulations” fireworks\nCalm spacing\nNeutral typography"
-          },
-          {
-            "title": "WHAT YOU’VE BEEN DOING (CONTEXT)",
-            "body": "Screen title: What Phase 1 was really about\n\nMain copy (exact):\n\nOver the past few weeks, you practiced noticing:\n\nEarly urge signals\nStress, boredom, and fatigue\nMood shifts\nEnvironments and situations\nMoments of pause\nYour own readiness\n\nYou didn’t need to control these things.\n\nYou learned to see them more clearly.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nMakes invisible effort visible\nPrevents “I didn’t do enough” thinking\nFrames awareness as active work"
-          },
-          {
-            "title": "GUIDED AUDIO (PRIMARY)",
-            "body": "Screen title: Looking back with perspective\n\nAUDIO SCRIPT (Word-for-Word, ~4 minutes)\n\nDay 21 –\nThree-Week Reflection (7-Minute Guided Meditation) Find a comfortable place to\nsit. There is nothing you need to complete. Nothing you need to prove. Just a\nfew quiet minutes to reflect gently. If it feels okay, close your eyes. Or\nsoften your gaze. Take one slow breath in... And let it go naturally. No need to\nchange the rhythm. Just notice it. In... And out... Three weeks ago, you began\npaying attention.\n\nNot to fix everything. Not to change everything at once. Just to notice. Today\nis about looking back softly. Not scoring. Not measuring. Just observing what\nhas become clearer. Let your breath continue at its natural pace. Gently think\nback to the beginning. When you first started noticing urges. Stress. Energy.\nRoutines. What feels more familiar now? Are patterns easier to recognize? Even\nslightly? Take a slow breath in... And gently out. Notice if urges feel less\nsurprising. Not necessarily weaker. Just less mysterious. Patterns often feel\noverwhelming when they are unclear. Clarity changes that feeling. Now think\nabout stress. Do you notice it earlier than before? Even once? Perhaps you\nrecognized tension before reacting. If that happened even one time, just\nacknowledge it quietly.\n\nIf not, notice that too. Reflection is information. Not evaluation. Stay with\nyour breath. In... And out... Think about the small pauses. Have there been\nmoments when you remembered to breathe first? Even briefly? Even imperfectly?\nAwareness doesn’t need perfection. It grows through repetition. Now gently\nconsider familiar places. Times of day. Emotions. Fatigue. Have you noticed\npatterns emerging? You don’t need a complete map. Just a sense. Take another\nslow breath in... And let it go gently. If your mind starts comparing — “This\nshould be different by now,” notice that thought softly. And return to\nobserving. Three weeks is not a finish line. It’s a period of familiarity. You\nare becoming familiar with your own rhythms.\n\nThat familiarity builds steadiness. Stay here for a few breaths. In... And\nout... Notice how it feels to reflect without pressure. Without expectation.\nWithout needing a conclusion. You are not here to declare success. You are here\nto understand. Understanding reduces confusion. And reduced confusion builds\ncalm. Take one final slow breath in... And a steady breath out. Notice the room\naround you. The surface beneath you. The steadiness of this moment. Three weeks\nof attention may feel subtle. But subtle awareness changes experience. You are\nseeing patterns more clearly. And clarity builds quietly. When you’re ready,\ngently open your eyes. Return to your day. Understanding grows gradually. And\nover these three weeks, you have grown in understanding. That is enough for\ntoday."
-          },
-          {
-            "title": "INTEGRATION PRACTICE (TEXT-ONLY)",
-            "body": "Screen title: What you’ve learned\n\nMain copy (exact):\n\nWithout judging or measuring, see if you can name one thing you understand\nbetter now than you did before Phase 1.\n\nSelectable prompts (optional):\n\nWhen urges usually begin\nWhat affects my urges most\nHow moods and energy influence me\nWhere I have small moments of choice\nSomething else\n\nHelper text:\n\nThere’s no right answer.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Primary prompt (exact):\n\nWhat stands out most from Phase 1 for you?\n\nOptional follow-up (collapsed):\n\nDid anything surprise you?\n\nHelper text:\n\nA few words are enough — or skip this entirely.\n\nCTA buttons:\n\nSave & Continue | Skip for Today"
-          },
-          {
-            "title": "TRANSITION TO PHASE 2 (CRITICAL)",
-            "body": "Screen title: What comes next\n\nMain copy (exact):\n\nPhase 2 will introduce gentle structure — short routines and supports designed\naround what you’ve already noticed.\n\nThis isn’t about forcing change.\n\nIt’s about making difficult moments a little easier to navigate.\n\nSecondary copy:\n\nYou’ll stay in control the entire time.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "PERMISSION & AUTONOMY (MUST-HAVE)",
-            "body": "Main copy (exact):\n\nYou choose:\n\nWhat to try\nWhen to use support\nWhat feels realistic\n\nNothing will be mandatory.\n\nProgress will still move at your pace.\n\nCTA:\n\n_Enter Phase 2_\n\n_(Secondary: “I’ll explore later”)_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nPhase 1 marked as complete\n\nAwareness data unlocked for gentle structure mapping\nNo routines auto-enabled\nNo notifications scheduled\nNo pressure mechanics introduced\n\nSAFETY & COMPLIANCE CHECK\n\nDay 21 avoids:\n\nAchievement pressure\nAbstinence framing\nMoral language\nTherapy claims\n\nDay 21 supports:\n\nAutonomy\nConfidence\nPsychological safety\nApp Store compliance\n\nCORE MESSAGE DAY 21 DELIVERS\n\nYou don’t move forward because you’re “ready enough.”\n\nYou move forward because you understand yourself better.\n\nUI / UX DESIGN NOTES\n\nNo progress bars\nNo streaks on this screen\nSoft transitions\nCalm color palette\nAllow exit at any time\n\nCOACH INTERNAL NOTE (NOT USER-FACING)\n\nIf a user says:\n\n“I don’t feel like I accomplished much.”\n\nCoach response:\n\n“Understanding your patterns _is_ the accomplishment. Structure just builds on\nthat.”\n\nNever compare users.\n\nPHASE 2: STRUCTURE (DAYS 22–60)\n\nGoal: Replace reactions with simple routines.\n\nI’ll continue with the same level of detail but grouped to keep this readable.\n\nDAY 22 – INTRODUCING THE PAUSE\n\n(Phase 2 · Full Depth · Foundational Day)\n\nFocus: Learning what a pause is Core Skill: Delay without pressure\nGoal: Create space between urge and response — _without trying to stop\nanything_\n\nTotal time: 8 – 10 minutes Tone: Calm, reassuring, permission-giving"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 22 · Introducing the Pause\n\nMain copy (exact):\n\nToday begins a new kind of practice — the pause.\n\nA pause is not about stopping urges.\n\nIt’s about slowing things down just enough to notice what’s happening before\nresponding.\n\nYou’re not trying to change outcomes today.\n\nYou’re learning to create space.\n\nCTA:\n\n_Continue_\n\nUX notes\n\nNo urgency language\nNo “challenge” framing\nSpacious line breaks"
-          },
-          {
-            "title": "WHAT A PAUSE IS (CONTEXT)",
-            "body": "Screen title: What the pause is — and isn’t\n\nMain copy (exact):\n\nA pause is:\n\nShort\nGentle\nOptional\nAllowed to end in action\n\nA pause is _not_ :\n\nResisting\nFighting urges\nForcing control\nPromising not to act\n\nThe pause simply gives the moment a little time.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nRemoves fear of “losing control”\nPrevents perfection thinking\nSets correct expectations early"
-          },
-          {
-            "title": "WHY PAUSES HELP (REFRAMING)",
-            "body": "Screen title: Why pausing works\n\nMain copy (exact):\n\nUrges often feel urgent because they happen quickly.\n\nWhen things move fast, choices feel limited.\n\nA pause slows the moment down.\n\nWhen moments slow down, choices quietly reappear — even if nothing else changes.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GUIDED PAUSE (PRIMARY EXPERIENCE)",
-            "body": "Screen title: Your first pause\n\nInstruction text (above audio):\n\nThis is a short, guided pause you can use anytime an urge appears.\n\nAUDIO SCRIPT (Word-for-Word, ~90 seconds)\n\nDay 22 – Expanding the Pause (7-Minute Guided Meditation) Find a\ncomfortable place to sit.\n\nThere is nothing you need to accomplish. Just a few quiet minutes to slow down\ngently. If it feels okay, close your eyes. Or soften your gaze. Take one slow\nbreath in... And let it go naturally. No need to adjust the rhythm. Just notice\nit. In... And out... Over the past days, you’ve practiced noticing a small\npause. Today, we gently explore making that pause slightly wider. Not forced.\nNot dramatic. Just slightly longer. Let your breath continue naturally. Think\nabout a recent moment when an urge appeared. Picture it softly. Now imagine the\nvery first signal. The first thought. The first sensation. The first shift.\nInstead of moving immediately, imagine taking two slow breaths. In... And out...\nAgain... In... And out... Notice how two breaths feel different from one.\n\nDoes it feel longer? More spacious? Neutral? Stay with that awareness. The pause\ndoesn’t need to stop anything. It simply slows the rhythm. Take another slow\nbreath in... And gently out. Now imagine that same situation again. After the\ntwo breaths, imagine asking yourself quietly: “What’s happening right now?” No\npressure to answer perfectly. Just the question. Stay there gently. In... And\nout... Expanding the pause isn’t about control. It’s about clarity. When a\nmoment slows down, you can see more of it. Notice how it feels to imagine space\nbetween impulse and action. Does it feel steady? Uncertain? Subtle? All\nresponses are welcome. Bring your attention back to your body. Notice your hands\nresting. Your shoulders softening. Your breathing steady.\n\nEven right now, you are in a pause. Nothing urgent. Nothing required. Just\nawareness. Stay with that feeling for a few breaths. In... And out... Sometimes\nthe pause is only one breath. Sometimes it can be two. Sometimes it may be\nlonger. It doesn’t need to be consistent. It only needs to exist. If your mind\nsays, “I should use this every time,” notice that thought gently. And return to\nobserving. There is no requirement. Only practice. Take one more slow breath\nin... And let it go gently. Feel the surface beneath you. The room around you.\nThe steadiness of sitting here. Expanding the pause doesn’t require force. It\nrequires noticing. And today, you practiced widening space slightly. That is\nenough. When you’re ready, gently open your eyes. Return to your day.\n\nThe pause is flexible. And today, you explored its edges."
-          },
-          {
-            "title": "TODAY’S PRACTICE (TEXT)",
-            "body": "Screen title: Today’s practice\n\nMain copy (exact):\n\nToday, try pausing once when an urge appears.\n\nThe pause can be brief.\n\nActing after the pause is completely allowed.\n\nSecondary text (small):\n\nThe pause itself is the practice.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nWhat did the pause feel like?\n\nOptional follow-ups (collapsed):\n\nDid anything shift during the pause?\nDid it feel uncomfortable, neutral, or calming?\n\nHelper text (small):\n\nA few words are enough — or skip this entirely.\n\nCTA buttons:\n\n_Save & Continue_\n\n_Skip for Today_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough for today\n\nMain copy (exact):\n\nYou didn’t try to stop anything today.\n\nYou created space.\n\nThat space is where change begins — quietly and without force.\n\nSecondary text:\n\nPausing is a beginning.\n\nCTA:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nDay marked as Phase 2 start\nPause attempt logged as:\n\n```\no Paused\n```\n\n```\no Didn’t pause\n```\n\n```\no Not sure\n```\n\nNo evaluation\nNo reminders triggered\nData used later only for confidence insights\n\nSAFETY & COMPLIANCE CHECK\n\nDay 22 avoids:\n\nAbstinence language\n\n“Resist / fight” wording\n\nSuccess/failure framing\n\nTherapy claims\n\nDay 22 supports:\n\nPsychological safety\n\nAutonomy\n\nApp Store compliance\n\nCORE MESSAGE OF DAY 22\n\nYou don’t need to stop urges to regain choice.\n\nYou only need to slow the moment down.\n\nThis message must remain unchanged — it’s foundational\n\nDAY 23 – STAYING WITH DISCOMFORT\n\n(Phase 2 · Full Depth)\n\nFocus: Allowing discomfort without immediate reaction Core Skill:\nTolerance, not control Goal: Reduce fear of urge sensations\n\nTotal time: 8 – 10 minutes Tone: Reassuring, steady, validating"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 23 · Staying with Discomfort\n\nMain copy (exact):\n\nToday is about discomfort.\n\nNot discomfort to push through — but discomfort to notice.\n\nUrges often feel uncomfortable before they feel overwhelming.\n\nLearning to stay with that feeling — even briefly — builds confidence quietly.\n\nCTA:\n\n_Continue_\n\nUX notes\n\nAvoid “challenge” language\nSpacious layout\nSoft typography"
-          },
-          {
-            "title": "REFRAMING DISCOMFORT (CONTEXT)",
-            "body": "Screen title: What discomfort really means\n\nMain copy (exact):\n\nDiscomfort doesn’t mean something is wrong.\n\nIt often means your system is adjusting.\n\nWhen discomfort appears, the urge to escape it can feel strong.\n\nToday’s practice is about staying for a short time — without fixing or forcing.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nSeparates discomfort from danger\nReduces urgency bias\nNormalizes the experience"
-          },
-          {
-            "title": "WHY STAYING HELPS (EDUCATION WITHOUT SCIENCE)",
-            "body": "Screen title: Why staying matters\n\nMain copy (exact):\n\nWhen discomfort is avoided immediately, it often returns stronger.\n\nWhen discomfort is noticed and allowed, it usually changes on its own.\n\nStaying doesn’t mean liking the feeling.\n\nIt means discovering that you can tolerate it longer than you thought.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GUIDED PRACTICE (PRIMARY EXPERIENCE)",
-            "body": "Screen title: Staying for a moment\n\nInstruction text (above audio):\n\nThis is a short practice to use when discomfort appears.\n\nAUDIO SCRIPT (Word-for-Word, ~2 minutes)\n\nDay 23 – Responding\nto Discomfort (7-Minute Guided Meditation) Find a comfortable place to sit.\nThere is nothing you need to change. Just a few quiet minutes to notice. If it\nfeels okay, gently close your eyes. Or soften your gaze. Take one slow breath\nin... And let it go naturally. No need to adjust your breathing. Just notice it.\nIn... And out... Today is about discomfort. Not solving it. Not removing it.\nJust noticing it. Let your breath continue at its natural pace. Gently ask\nyourself: Is there any discomfort present right now? It might be physical.\nMental. Emotional. Or very subtle. If something is there, simply acknowledge it.\nIf nothing stands out, think of a recent moment when discomfort appeared before\na habit. Bring that moment to mind softly.\n\nNow shift your focus from the story to the sensation. Where was the discomfort\nfelt? In the chest? The stomach? The shoulders? As restlessness? As pressure? As\na quiet unease? You don’t need to label it perfectly. Just notice its location.\nTake a slow breath in... And gently out. Discomfort often feels urgent. As if it\nneeds immediate action. But right now, you are simply observing. Stay with the\nsensation for a few breaths. In... And out... Notice if it stays steady. Changes\nslightly. Moves. Softens. Or remains the same. There is no right outcome. Just\ninformation. Now imagine responding to discomfort with one slow breath instead\nof immediate action. In...\n\nAnd out... Notice how that breath feels. Does it create even a small amount of\nspace? Discomfort does not mean danger. It does not always require escape.\nSometimes it just needs recognition. Stay here for a few more breaths. In... And\nout... If your mind says, “I don’t like this,” notice that thought gently. And\nreturn to observing. You don’t have to like discomfort to notice it. You only\nneed to be aware of it. Even brief awareness reduces automatic reaction. Bring\nyour attention back to your body. Notice your shoulders. Your hands. Your\nbreathing. Allow your jaw to soften slightly. Discomfort rises. Pauses. Shifts.\nJust like other sensations. It may not disappear immediately. But it rarely\nstays exactly the same. Take one final slow breath in... And a steady breath\nout.\n\nNotice the room around you. The surface beneath you. The steadiness of this\nmoment. Today, you practiced noticing discomfort without rushing to remove it.\nThat alone builds space. When you’re ready, gently open your eyes. Return to\nyour day. Discomfort can be observed. And today, you practiced observing it."
-          },
-          {
-            "title": "TODAY’S PRACTICE (TEXT)",
-            "body": "Screen title: Today’s practice\n\nMain copy (exact):\n\nToday, when discomfort appears, see if you can stay with it just a little longer\nbefore responding.\n\nEven a few seconds count.\n\nSecondary text (small):\n\nResponding afterward is allowed.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nWhat happened when you stayed with discomfort?\n\nOptional follow-ups (collapsed):\n\nDid it change at all?\nDid it feel stronger, weaker, or different?\nDid your reaction shift?\n\nHelper text (small):\n\nOne sentence is enough — or skip this entirely.\n\nCTA buttons:\n\n_Save & Continue_\n\n_Skip for Today_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough for today\n\nMain copy (exact):\n\nDiscomfort isn’t a signal to panic.\n\nIt’s a signal to slow down.\n\nYou stayed.\n\nThat matters.\n\nSecondary text:\n\nStaying builds strength.\n\nCTA:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nLogs “Stayed with discomfort” as:\n\n```\no Yes\n```\n\n```\no No\n```\n\n```\no Not sure\n```\n\nNo success scoring\n\nNo streak impact\nUsed later for confidence insights only\n\nSAFETY & COMPLIANCE CHECK\n\nDay 23 avoids:\n\nExposure therapy framing\n\n“Push through” language\n\nMoral framing\n\nMedical claims\n\nDay 23 supports:\n\nPsychological safety\n\nAutonomy\n\nApp Store compliance\n\nCORE MESSAGE OF DAY 23\n\nDiscomfort is not an emergency.\n\nIt’s a moment that can be stayed with.\n\nThis message prepares users for:\n\nDay 24: Watching the urge change\nDay 25: Pausing without expectation\nLong-term emotional regulation\n\nDAY 24 – WATCHING THE URGE CHANGE\n\n(Phase 2 · Full Depth)\n\nFocus: Observing how urges shift over time Core Skill: Curiosity instead\nof urgency Goal: Break the belief that urges are permanent or commanding\n\nTotal time: 8 – 10 minutes Tone: Curious, steady, reassuring"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 24 · Watching the Urge Change\n\nMain copy (exact):\n\nToday is about observing urges as they move and change.\n\nUrges often feel fixed — like they will stay the same unless acted on.\n\nToday’s practice is simply to watch what happens when you give an urge time.\n\nCTA:\n\n_Continue_\n\nUX notes\n\nCalm pacing\nNo dramatic language\nSpacious layout"
-          },
-          {
-            "title": "REFRAMING URGES (CONTEXT)",
-            "body": "Screen title: Urges aren’t static\n\nMain copy (exact):\n\nUrges are experiences — not commands.\n\nWhen urges are rushed, they feel intense and fixed.\n\nWhen urges are observed, they often shift in intensity, shape, or attention.\n\nToday isn’t about controlling urges.\n\nIt’s about noticing how they move.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nRemoves “must act” belief\nEncourages curiosity\nBuilds emotional distance"
-          },
-          {
-            "title": "WHAT TO NOTICE (GUIDANCE)",
-            "body": "Screen title: What to watch for\n\nMain copy (exact):\n\nWhen an urge appears, you might notice:\n\nIntensity rising or falling\nAttention shifting elsewhere\nPhysical sensations changing\nThe urge fading, then returning\n\nAny change counts.\n\nEven small shifts matter.\n\nCTA: _Continue_"
-          },
-          {
-            "title": "GUIDED OBSERVATION (PRIMARY EXPERIENCE)",
-            "body": "Screen title: Observing the urge\n\nInstruction text (above audio):\n\nUse this short guide when an urge appears.\n\nAUDIO SCRIPT (Word-for-Word, ~2 minutes)\n\nDay 23 – Responding\nto Discomfort (7-Minute Guided Meditation) Find a comfortable place to sit.\nThere is nothing you need to change. Just a few quiet minutes to notice. If it\nfeels okay, gently close your eyes. Or soften your gaze. Take one slow breath\nin... And let it go naturally. No need to adjust your breathing. Just notice it.\nIn... And out... Today is about discomfort. Not solving it. Not removing it.\nJust noticing it. Let your breath continue at its natural pace. Gently ask\nyourself: Is there any discomfort present right now? It might be physical.\nMental. Emotional. Or very subtle. If something is there, simply acknowledge it.\nIf nothing stands out, think of a recent moment when discomfort appeared before\na habit. Bring that moment to mind softly.\n\nNow shift your focus from the story to the sensation. Where was the discomfort\nfelt? In the chest? The stomach? The shoulders? As restlessness? As pressure? As\na quiet unease? You don’t need to label it perfectly. Just notice its location.\nTake a slow breath in... And gently out. Discomfort often feels urgent. As if it\nneeds immediate action. But right now, you are simply observing. Stay with the\nsensation for a few breaths. In... And out... Notice if it stays steady. Changes\nslightly. Moves. Softens. Or remains the same. There is no right outcome. Just\ninformation. Now imagine responding to discomfort with one slow breath instead\nof immediate action. In...\n\nAnd out... Notice how that breath feels. Does it create even a small amount of\nspace? Discomfort does not mean danger. It does not always require escape.\nSometimes it just needs recognition. Stay here for a few more breaths. In... And\nout... If your mind says, “I don’t like this,” notice that thought gently. And\nreturn to observing. You don’t have to like discomfort to notice it. You only\nneed to be aware of it. Even brief awareness reduces automatic reaction. Bring\nyour attention back to your body. Notice your shoulders. Your hands. Your\nbreathing. Allow your jaw to soften slightly. Discomfort rises. Pauses. Shifts.\nJust like other sensations. It may not disappear immediately. But it rarely\nstays exactly the same. Take one final slow breath in... And a steady breath\nout.\n\nNotice the room around you. The surface beneath you. The steadiness of this\nmoment. Today, you practiced noticing discomfort without rushing to remove it.\nThat alone builds space. When you’re ready, gently open your eyes. Return to\nyour day. Discomfort can be observed. And today, you practiced observing it."
-          },
-          {
-            "title": "TODAY’S PRACTICE (TEXT)",
-            "body": "Screen title: Today’s practice\n\nMain copy (exact):\n\nToday, when an urge appears, see if you can watch it for a short time before\nresponding.\n\nYou’re not trying to change it.\n\nYou’re noticing what changes naturally.\n\nSecondary text (small):\n\nActing afterward is allowed.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nDid the urge change at all when you watched it?\n\nOptional follow-ups (collapsed):\n\nDid it feel stronger, weaker, or different?\nDid your attention shift?\nDid the urge pass, pause, or move?\n\nHelper text (small):\n\nA few words are enough — or skip this entirely.\n\nCTA buttons: _Save & Continue_\n\n_Skip for Today_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough for today\n\nMain copy (exact):\n\nUrges don’t stay the same forever.\n\nWhen you watch them, they often change on their own.\n\nYou noticed.\n\nThat’s the skill.\n\nSecondary text:\n\nObservation builds choice.\n\nCTA:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nLogs “Observed urge” as:\n\n```\no Yes\n```\n\n```\no No\n```\n\n```\no Not sure\n```\n\nNo scoring or success metrics\nUsed later for confidence & insight summaries\nNo notifications triggered\n\nSAFETY & COMPLIANCE CHECK\n\nDay 24 avoids:\n\nAbstinence framing\n\nTherapy language\n\nExposure claims\n\nPerformance pressure\n\nDay 24 supports: Psychological safety\n\nCuriosity over control\n\nApp Store compliance\n\nCORE MESSAGE OF DAY 24\n\nUrges feel permanent when they’re rushed.\n\nThey feel temporary when they’re observed.\n\nThis insight is foundational for long-term changes\n\nDAY 25 – PAUSING WITHOUT EXPECTATION\n\n(Phase 2 · Full Depth)\n\nFocus: Letting go of “did it work?” thinking Core Skill: Neutral\npractice without outcome pressure Goal: Prevent frustration, self-doubt, and\ndrop-off\n\nTotal time: 8 – 10 minutes Tone: Grounded, freeing, pressure-reducing"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 25 · Pausing Without Expectation\n\nMain copy (exact):\n\nToday is about pausing without expecting anything to happen.\n\nSometimes urges change after a pause.\n\nSometimes they don’t.\n\nBoth are okay.\n\nToday’s practice is about letting the pause be enough — without judging the\nresult.\n\nCTA:\n\n_Continue_\n\nUX notes\n\nNo motivational tone\nCalm spacing\nNeutral typography"
-          },
-          {
-            "title": "WHY EXPECTATIONS CREATE PRESSURE (CONTEXT)",
-            "body": "Screen title: When pauses feel disappointing\n\nMain copy (exact):\n\nIt’s common to pause and then think:\n\n“It didn’t work.”\n\nBut pausing isn’t meant to remove urges every time.\n\nWhen we expect results, pressure returns — and urgency increases again.\n\nToday is about practicing without measuring success.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nPrevents “this doesn’t help me” thinking\nReduces performance anxiety\nKeeps users engaged long-term"
-          },
-          {
-            "title": "REFRAMING SUCCESS (IMPORTANT)",
-            "body": "Screen title: What counts today\n\nMain copy (exact):\n\nToday, success is not:\n\nFeeling calm\nReducing intensity\nMaking a “better” choice\n\nToday, success is simply:\n\nPausing\nNoticing\nAllowing the moment to pass as it is\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GUIDED PAUSE (PRIMARY EXPERIENCE)",
-            "body": "Screen title: Pausing without waiting for change\n\nInstruction text (above audio):\n\nThis pause has no goal. You’re not waiting for anything to happen.\n\nAUDIO SCRIPT (Word-for-Word, ~2 minutes)\n\nDay 23 – Responding\nto Discomfort (7-Minute Guided Meditation) Find a comfortable place to sit.\nThere is nothing you need to change. Just a few quiet minutes to notice. If it\nfeels okay, gently close your eyes. Or soften your gaze. Take one slow breath\nin... And let it go naturally. No need to adjust your breathing. Just notice it.\nIn... And out... Today is about discomfort. Not solving it. Not removing it.\nJust noticing it. Let your breath continue at its natural pace. Gently ask\nyourself: Is there any discomfort present right now? It might be physical.\nMental. Emotional. Or very subtle. If something is there, simply acknowledge it.\nIf nothing stands out, think of a recent moment when discomfort appeared before\na habit. Bring that moment to mind softly.\n\nNow shift your focus from the story to the sensation. Where was the discomfort\nfelt? In the chest? The stomach? The shoulders? As restlessness? As pressure? As\na quiet unease? You don’t need to label it perfectly. Just notice its location.\nTake a slow breath in... And gently out. Discomfort often feels urgent. As if it\nneeds immediate action. But right now, you are simply observing. Stay with the\nsensation for a few breaths. In... And out... Notice if it stays steady. Changes\nslightly. Moves. Softens. Or remains the same. There is no right outcome. Just\ninformation. Now imagine responding to discomfort with one slow breath instead\nof immediate action. In...\n\nAnd out... Notice how that breath feels. Does it create even a small amount of\nspace? Discomfort does not mean danger. It does not always require escape.\nSometimes it just needs recognition. Stay here for a few more breaths. In... And\nout... If your mind says, “I don’t like this,” notice that thought gently. And\nreturn to observing. You don’t have to like discomfort to notice it. You only\nneed to be aware of it. Even brief awareness reduces automatic reaction. Bring\nyour attention back to your body. Notice your shoulders. Your hands. Your\nbreathing. Allow your jaw to soften slightly. Discomfort rises. Pauses. Shifts.\nJust like other sensations. It may not disappear immediately. But it rarely\nstays exactly the same. Take one final slow breath in... And a steady breath\nout.\n\nNotice the room around you. The surface beneath you. The steadiness of this\nmoment. Today, you practiced noticing discomfort without rushing to remove it.\nThat alone builds space. When you’re ready, gently open your eyes. Return to\nyour day. Discomfort can be observed. And today, you practiced observing it."
-          },
-          {
-            "title": "TODAY’S PRACTICE (TEXT)",
-            "body": "Screen title: Today’s practice\n\nMain copy (exact):\n\nToday, pause without checking whether it helped.\n\nDon’t evaluate the pause.\n\nDon’t analyze the outcome.\n\nLet the pause stand on its own.\n\nSecondary text (small):\n\nActing afterward is allowed.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nHow did pausing without expectation feel?\n\nOptional follow-ups (collapsed):\n\nDid it feel easier or harder?\nDid it reduce pressure in any way?\nDid you notice less self-judgment?\n\nHelper text (small):\n\nOne sentence is enough — or skip this entirely.\n\nCTA buttons:\n\n_Save & Continue_\n\n_Skip for Today_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough for today\n\nMain copy (exact):\n\nPauses don’t need to work to be worthwhile.\n\nYou paused without pressure.\n\nThat’s the skill today.\n\nSecondary text:\n\nNeutral practice builds steadiness.\n\nCTA:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nLogs “Paused without expectation” as:\n\n```\no Yes\n```\n\n```\no No\n```\n\n```\no Not sure\n```\n\nNo streak impact\nNo evaluation metrics\nUsed later only for confidence insights\n\nSAFETY & COMPLIANCE CHECK\n\nDay 25 avoids:\n\n“It should feel better” framing\n\nTherapy claims\n\nSuccess/failure language\n\nAbstinence pressure\n\nDay 25 supports:\n\nPsychological safety\n\nLong-term engagement\n\nApp Store compliance\n\nCORE MESSAGE OF DAY 25\n\nChange doesn’t happen because pauses “work.”\n\nIt happens because pressure slowly leaves.\n\nThis message protects users from self-blame — a huge differentiator.\n\nDAY 26 – PAUSING EARLIER\n\n(Phase 2 · Full Depth)\n\nFocus: Catching moments _before_ urgency peaks Core Skill: Early\nnoticing → early pause Goal: Reduce intensity by intervening sooner, not\nharder\n\nTotal time: 8 – 10 minutes Tone: Empowering, gentle, confidence-building"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 26 · Pausing Earlier\n\nMain copy (exact):\n\nToday is about pausing earlier — before urges feel strong.\n\nMany habits don’t start at the peak of an urge.\n\nThey start quietly — in familiar moments, routines, or environments.\n\nToday’s practice is about noticing those earlier signals.\n\nCTA:\n\n_Continue_\n\nUX notes\n\nNo “you missed it before” language\nCalm pacing\nClear reassurance"
-          },
-          {
-            "title": "WHY EARLIER MATTERS (CONTEXT)",
-            "body": "Screen title: Why earlier pauses help\n\nMain copy (exact):\n\nWhen urges are strong, pausing can feel difficult.\n\nWhen urges are just beginning, pausing is often easier.\n\nEarlier pauses don’t require more effort — they require more awareness.\n\nYou’ve already been building that awareness.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nRemoves pressure\nFrames skill as _already developing_\nBuilds confidence"
-          },
-          {
-            "title": "WHAT “EARLY” CAN LOOK LIKE (GUIDANCE)",
-            "body": "Screen title: Early signals to notice\n\nMain copy (exact):\n\nEarly signals might include:\n\nReaching for something automatically\nMoving toward a familiar place\nA subtle thought or anticipation\nA change in mood or energy\nA familiar time of day\n\nThese signals are quiet.\n\nThat’s why they’re powerful places to pause.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GUIDED EARLY PAUSE (PRIMARY EXPERIENCE)",
-            "body": "Screen title: Pausing before momentum builds\n\nInstruction text (above audio):\n\nUse this when you notice an early signal — not a strong urge.\n\nAUDIO SCRIPT (Word-for-Word, ~2 minutes)\n\nDay 23 – Responding\nto Discomfort (7-Minute Guided Meditation) Find a comfortable place to sit.\nThere is nothing you need to change. Just a few quiet minutes to notice. If it\nfeels okay, gently close your eyes. Or soften your gaze. Take one slow breath\nin... And let it go naturally. No need to adjust your breathing. Just notice it.\nIn... And out... Today is about discomfort. Not solving it. Not removing it.\nJust noticing it. Let your breath continue at its natural pace. Gently ask\nyourself: Is there any discomfort present right now? It might be physical.\nMental. Emotional. Or very subtle. If something is there, simply acknowledge it.\nIf nothing stands out, think of a recent moment when discomfort appeared before\na habit. Bring that moment to mind softly.\n\nNow shift your focus from the story to the sensation. Where was the discomfort\nfelt? In the chest? The stomach? The shoulders? As restlessness? As pressure? As\na quiet unease? You don’t need to label it perfectly. Just notice its location.\nTake a slow breath in... And gently out. Discomfort often feels urgent. As if it\nneeds immediate action. But right now, you are simply observing. Stay with the\nsensation for a few breaths. In... And out... Notice if it stays steady. Changes\nslightly. Moves. Softens. Or remains the same. There is no right outcome. Just\ninformation. Now imagine responding to discomfort with one slow breath instead\nof immediate action. In...\n\nAnd out... Notice how that breath feels. Does it create even a small amount of\nspace? Discomfort does not mean danger. It does not always require escape.\nSometimes it just needs recognition. Stay here for a few more breaths. In... And\nout... If your mind says, “I don’t like this,” notice that thought gently. And\nreturn to observing. You don’t have to like discomfort to notice it. You only\nneed to be aware of it. Even brief awareness reduces automatic reaction. Bring\nyour attention back to your body. Notice your shoulders. Your hands. Your\nbreathing. Allow your jaw to soften slightly. Discomfort rises. Pauses. Shifts.\nJust like other sensations. It may not disappear immediately. But it rarely\nstays exactly the same. Take one final slow breath in... And a steady breath\nout.\n\nNotice the room around you. The surface beneath you. The steadiness of this\nmoment. Today, you practiced noticing discomfort without rushing to remove it.\nThat alone builds space. When you’re ready, gently open your eyes. Return to\nyour day. Discomfort can be observed. And today, you practiced observing it."
-          },
-          {
-            "title": "TODAY’S PRACTICE (TEXT)",
-            "body": "Screen title: Today’s practice\n\nMain copy (exact):\n\nToday, try pausing at the _first hint_ of a familiar habit moment.\n\nYou don’t need to wait for a strong urge.\n\nEven a brief pause counts.\n\nSecondary text (small):\n\nActing afterward is allowed.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nHow early did you notice the moment today?\n\nOptional follow-ups (collapsed):\n\nWhat sign did you notice first?\nDid pausing earlier feel easier or harder?\nDid intensity change later on?\n\nHelper text (small):\n\nA few words are enough — or skip this entirely.\n\nCTA buttons:\n\n_Save & Continue_\n\n_Skip for Today_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough for today\n\nMain copy (exact):\n\nPausing earlier doesn’t require more strength.\n\nIt requires noticing sooner.\n\nYou noticed.\n\nThat’s the skill today.\n\nSecondary text:\n\nEarlier noticing helps.\n\nCTA:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nLogs “Paused early” as:\n\n```\no Yes\n```\n\n```\no No\n```\n\n```\no Not sure\n```\n\nNo scoring\nNo streak impact\nUsed later for confidence & insight summaries\n\nSAFETY & COMPLIANCE CHECK\n\nDay 26 avoids:\n\n“You should’ve caught it earlier” framing\n\nPressure or guilt language\n\nTherapy claims\n\nAbstinence framing\n\nDay 26 supports:\n\nPsychological safety\n\nSkill progression\n\nApp Store compliance\n\nCORE MESSAGE OF DAY 26\n\nThe earlier you pause, the less force you need.\n\nAwareness does the work."
+            "title": "Today’s Practice",
+            "body": "Review the week calmly."
           }
         ],
         "audio": {
@@ -1204,10 +603,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "Find a\ncomfortable place to sit. There’s nothing special you need to prepare. Just a\nfew quiet minutes to check in. If it feels okay, gently close your eyes. Or\nsoften your gaze. Take one slow breath in... And let it go naturally. No need to\nchange your breathing. Just notice it. In... And out... Today is about noticing\nstress. Not reducing it. Not managing it perfectly. Just recognizing when it’s\npresent. Let your breath continue at its natural pace. Gently ask yourself: How\nstressed do I feel right now? There’s no need for a precise answer. You might\nsense it feels low... Medium... Or high. Whatever the level is... That’s okay.\nStress is part of being human. It doesn’t mean something is wrong. Take a slow\nbreath in...",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "Find a\ncomfortable place to sit. There’s nothing special you need to prepare. Just a\nfew quiet minutes to check in. If it feels okay, gently close your eyes. Or\nsoften your gaze. Take one slow breath in... And let it go naturally. No need to\nchange your breathing. Just notice it. In... And out... Today is about noticing\nstress. Not reducing it. Not managing it perfectly. Just recognizing when it’s\npresent. Let your breath continue at its natural pace. Gently ask yourself: How\nstressed do I feel right now? There’s no need for a precise answer. You might\nsense it feels low... Medium... Or high. Whatever the level is... That’s okay.\nStress is part of being human. It doesn’t mean something is wrong. Take a slow\nbreath in...",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "Find a\ncomfortable place to sit. There’s nothing special you need to prepare. Just a\nfew quiet minutes to check in. If it feels okay, gently close your eyes. Or\nsoften your gaze. Take one slow breath in... And let it go naturally. No need to\nchange your breathing. Just notice it. In... And out... Today is about noticing\nstress. Not reducing it. Not managing it perfectly. Just recognizing when it’s\npresent. Let your breath continue at its natural pace. Gently ask yourself: How\nstressed do I feel right now? There’s no need for a precise answer. You might\nsense it feels low... Medium... Or high. Whatever the level is... That’s okay.\nStress is part of being human. It doesn’t mean something is wrong. Take a slow\nbreath in..."
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-008.mp3",
           "durationSeconds": 420,
@@ -1217,25 +625,21 @@ export const GENERATED_PROGRAMS = {
       {
         "programSlug": "ninety_day_transform",
         "dayNumber": 9,
-        "title": "Boredom Awareness",
+        "title": "Day 9",
         "subtitle": null,
-        "summary": "Boredom vs desire",
-        "prompt": "What do I usually do when bored?",
-        "close": "Boredom passes.",
+        "summary": "A guided reflection designed to slow the urge-response loop.",
+        "prompt": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": "Boredom vs desire",
+        "focus": "A guided reflection designed to slow the urge-response loop.",
         "sections": [
           {
-            "title": "Daily Focus",
-            "body": "Boredom vs desire"
+            "title": "Today’s Focus",
+            "body": "A guided reflection designed to slow the urge-response loop."
           },
           {
             "title": "Today’s Practice",
-            "body": "Sit with boredom for 30 seconds."
-          },
-          {
-            "title": "Gentle Close",
-            "body": "Boredom passes."
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
           }
         ],
         "audio": {
@@ -1251,10 +655,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "Find a comfortable place to\nsit. There is nothing you need to prepare. Just a few quiet minutes to notice.\nIf it feels okay, gently close your eyes. Or soften your gaze. Take one slow\nbreath in... And let it go naturally. No need to change your breathing. Just\nnotice it. In... And out... Today is about noticing how social situations\ninfluence you. Not avoiding people. Not changing who you are. Just understanding\ncontext. Let your breath continue at its natural pace. Gently bring to mind a\nrecent social situation.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "Find a comfortable place to\nsit. There is nothing you need to prepare. Just a few quiet minutes to notice.\nIf it feels okay, gently close your eyes. Or soften your gaze. Take one slow\nbreath in... And let it go naturally. No need to change your breathing. Just\nnotice it. In... And out... Today is about noticing how social situations\ninfluence you. Not avoiding people. Not changing who you are. Just understanding\ncontext. Let your breath continue at its natural pace. Gently bring to mind a\nrecent social situation.",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "Find a comfortable place to\nsit. There is nothing you need to prepare. Just a few quiet minutes to notice.\nIf it feels okay, gently close your eyes. Or soften your gaze. Take one slow\nbreath in... And let it go naturally. No need to change your breathing. Just\nnotice it. In... And out... Today is about noticing how social situations\ninfluence you. Not avoiding people. Not changing who you are. Just understanding\ncontext. Let your breath continue at its natural pace. Gently bring to mind a\nrecent social situation."
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-010.mp3",
           "durationSeconds": 420,
@@ -1264,25 +677,21 @@ export const GENERATED_PROGRAMS = {
       {
         "programSlug": "ninety_day_transform",
         "dayNumber": 11,
-        "title": "Energy Levels",
+        "title": "Day 11",
         "subtitle": null,
-        "summary": "Fatigue and urges",
-        "prompt": "When do I feel most tired?",
-        "close": "Low energy needs rest.",
+        "summary": "A guided reflection designed to slow the urge-response loop.",
+        "prompt": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": "Fatigue and urges",
+        "focus": "A guided reflection designed to slow the urge-response loop.",
         "sections": [
           {
-            "title": "Daily Focus",
-            "body": "Fatigue and urges"
+            "title": "Today’s Focus",
+            "body": "A guided reflection designed to slow the urge-response loop."
           },
           {
             "title": "Today’s Practice",
-            "body": "Notice energy morning vs evening."
-          },
-          {
-            "title": "Gentle Close",
-            "body": "Low energy needs rest."
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
           }
         ],
         "audio": {
@@ -1294,25 +703,21 @@ export const GENERATED_PROGRAMS = {
       {
         "programSlug": "ninety_day_transform",
         "dayNumber": 12,
-        "title": "Self-Talk",
+        "title": "Day 12",
         "subtitle": null,
-        "summary": "Internal dialogue",
-        "prompt": "What did I say to myself?",
-        "close": "Kind language matters.",
+        "summary": "A guided reflection designed to slow the urge-response loop.",
+        "prompt": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": "Internal dialogue",
+        "focus": "A guided reflection designed to slow the urge-response loop.",
         "sections": [
           {
-            "title": "Daily Focus",
-            "body": "Internal dialogue"
+            "title": "Today’s Focus",
+            "body": "A guided reflection designed to slow the urge-response loop."
           },
           {
             "title": "Today’s Practice",
-            "body": "Catch one self-talk phrase today."
-          },
-          {
-            "title": "Gentle Close",
-            "body": "Kind language matters."
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
           }
         ],
         "audio": {
@@ -1328,10 +733,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "Find a comfortable place to sit. There is nothing you need to achieve right now.\nJust a few quiet minutes to notice. If it feels okay, gently close your eyes. Or\nsoften your gaze. Take one slow breath in... And let it go naturally. No need to\nadjust the rhythm. Just notice it. In... And out... Today is about noticing\nchoice. Not forcing it. Not proving it. Just recognizing that it exists. Let\nyour breath continue at its natural pace. Think about a recent moment when you\nfelt an urge. Perhaps it felt automatic. Quick. Almost inevitable. Bring that\nmoment to mind gently.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "Find a comfortable place to sit. There is nothing you need to achieve right now.\nJust a few quiet minutes to notice. If it feels okay, gently close your eyes. Or\nsoften your gaze. Take one slow breath in... And let it go naturally. No need to\nadjust the rhythm. Just notice it. In... And out... Today is about noticing\nchoice. Not forcing it. Not proving it. Just recognizing that it exists. Let\nyour breath continue at its natural pace. Think about a recent moment when you\nfelt an urge. Perhaps it felt automatic. Quick. Almost inevitable. Bring that\nmoment to mind gently.",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "Find a comfortable place to sit. There is nothing you need to achieve right now.\nJust a few quiet minutes to notice. If it feels okay, gently close your eyes. Or\nsoften your gaze. Take one slow breath in... And let it go naturally. No need to\nadjust the rhythm. Just notice it. In... And out... Today is about noticing\nchoice. Not forcing it. Not proving it. Just recognizing that it exists. Let\nyour breath continue at its natural pace. Think about a recent moment when you\nfelt an urge. Perhaps it felt automatic. Quick. Almost inevitable. Bring that\nmoment to mind gently."
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-013.mp3",
           "durationSeconds": 420,
@@ -1341,25 +755,21 @@ export const GENERATED_PROGRAMS = {
       {
         "programSlug": "ninety_day_transform",
         "dayNumber": 14,
-        "title": "Weekly Reflection",
+        "title": "Day 14",
         "subtitle": null,
-        "summary": "Awareness deepening",
-        "prompt": "What repeats most often?",
-        "close": "You’re learning yourself.",
+        "summary": "Find a\ncomfortable place to sit. There’s nothing you need to prepare. Nothing to\ncomplete. Just a few quiet minutes to reflect gently. If it feels okay, close\nyour eyes. Or soften your gaze. Take one slow breath in... And let it go\nnaturally. No need to control it. Just notice. In... And out... Two weeks ago,\nyou began paying attention. Not forcing change. Not setting strict goals.",
+        "prompt": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": "Awareness deepening",
+        "focus": "Find a\ncomfortable place to sit. There’s nothing you need to prepare. Nothing to\ncomplete. Just a few quiet minutes to reflect gently. If it feels okay, close\nyour eyes. Or soften your gaze. Take one slow breath in... And let it go\nnaturally. No need to control it. Just notice. In... And out... Two weeks ago,\nyou began paying attention. Not forcing change. Not setting strict goals.",
         "sections": [
           {
-            "title": "Daily Focus",
-            "body": "Awareness deepening"
+            "title": "Today’s Focus",
+            "body": "Find a\ncomfortable place to sit. There’s nothing you need to prepare. Nothing to\ncomplete. Just a few quiet minutes to reflect gently. If it feels okay, close\nyour eyes. Or soften your gaze. Take one slow breath in... And let it go\nnaturally. No need to control it. Just notice. In... And out... Two weeks ago,\nyou began paying attention. Not forcing change. Not setting strict goals."
           },
           {
             "title": "Today’s Practice",
-            "body": "Review last 7 days."
-          },
-          {
-            "title": "Gentle Close",
-            "body": "You’re learning yourself."
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
           }
         ],
         "audio": {
@@ -1371,25 +781,21 @@ export const GENERATED_PROGRAMS = {
       {
         "programSlug": "ninety_day_transform",
         "dayNumber": 15,
-        "title": "Early Urge Signals",
+        "title": "Day 15",
         "subtitle": null,
-        "summary": "Catching urges early",
-        "prompt": "How early did I notice it?",
-        "close": "Early noticing helps.",
+        "summary": "A guided reflection designed to slow the urge-response loop.",
+        "prompt": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": "Catching urges early",
+        "focus": "A guided reflection designed to slow the urge-response loop.",
         "sections": [
           {
-            "title": "Daily Focus",
-            "body": "Catching urges early"
+            "title": "Today’s Focus",
+            "body": "A guided reflection designed to slow the urge-response loop."
           },
           {
             "title": "Today’s Practice",
-            "body": "Pause at first hint of urge."
-          },
-          {
-            "title": "Gentle Close",
-            "body": "Early noticing helps."
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
           }
         ],
         "audio": {
@@ -1401,25 +807,21 @@ export const GENERATED_PROGRAMS = {
       {
         "programSlug": "ninety_day_transform",
         "dayNumber": 16,
-        "title": "Physical Needs",
+        "title": "Day 16",
         "subtitle": null,
-        "summary": "Hunger, thirst, sleep",
-        "prompt": "Was this urge physical?",
-        "close": "Care reduces cravings.",
+        "summary": "A guided reflection designed to slow the urge-response loop.",
+        "prompt": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": "Hunger, thirst, sleep",
+        "focus": "A guided reflection designed to slow the urge-response loop.",
         "sections": [
           {
-            "title": "Daily Focus",
-            "body": "Hunger, thirst, sleep"
+            "title": "Today’s Focus",
+            "body": "A guided reflection designed to slow the urge-response loop."
           },
           {
             "title": "Today’s Practice",
-            "body": "Drink water mindfully."
-          },
-          {
-            "title": "Gentle Close",
-            "body": "Care reduces cravings."
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
           }
         ],
         "audio": {
@@ -1431,25 +833,21 @@ export const GENERATED_PROGRAMS = {
       {
         "programSlug": "ninety_day_transform",
         "dayNumber": 17,
-        "title": "Mood Shifts",
+        "title": "Day 17",
         "subtitle": null,
-        "summary": "Mood changes",
-        "prompt": "How did my mood change?",
-        "close": "Moods move.",
+        "summary": "Find a comfortable place to sit. There’s nothing you need to change right now.\nJust a few quiet minutes to notice. If it feels okay, gently close your eyes. Or\nsoften your gaze. Take one slow breath in... And let it go naturally. No need to\nadjust your breathing. Just notice it. In... And out... Today is about noticing\nhow environments influence you. Not avoiding places. Not rearranging your life.\nJust understanding context. Let your breath continue at its natural rhythm.\nGently bring to mind a familiar place. A place where habits often happen. It\ncould be a balcony. A car. A certain chair. A break area. A specific room.",
+        "prompt": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": "Mood changes",
+        "focus": "Find a comfortable place to sit. There’s nothing you need to change right now.\nJust a few quiet minutes to notice. If it feels okay, gently close your eyes. Or\nsoften your gaze. Take one slow breath in... And let it go naturally. No need to\nadjust your breathing. Just notice it. In... And out... Today is about noticing\nhow environments influence you. Not avoiding places. Not rearranging your life.\nJust understanding context. Let your breath continue at its natural rhythm.\nGently bring to mind a familiar place. A place where habits often happen. It\ncould be a balcony. A car. A certain chair. A break area. A specific room.",
         "sections": [
           {
-            "title": "Daily Focus",
-            "body": "Mood changes"
+            "title": "Today’s Focus",
+            "body": "Find a comfortable place to sit. There’s nothing you need to change right now.\nJust a few quiet minutes to notice. If it feels okay, gently close your eyes. Or\nsoften your gaze. Take one slow breath in... And let it go naturally. No need to\nadjust your breathing. Just notice it. In... And out... Today is about noticing\nhow environments influence you. Not avoiding places. Not rearranging your life.\nJust understanding context. Let your breath continue at its natural rhythm.\nGently bring to mind a familiar place. A place where habits often happen. It\ncould be a balcony. A car. A certain chair. A break area. A specific room."
           },
           {
             "title": "Today’s Practice",
-            "body": "Notice mood before/after urges."
-          },
-          {
-            "title": "Gentle Close",
-            "body": "Moods move."
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
           }
         ],
         "audio": {
@@ -1465,10 +863,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "A guided reflection designed to slow the urge-response loop.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "A guided reflection designed to slow the urge-response loop.",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "A guided reflection designed to slow the urge-response loop."
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-018.mp3",
           "durationSeconds": 420,
@@ -1478,25 +885,21 @@ export const GENERATED_PROGRAMS = {
       {
         "programSlug": "ninety_day_transform",
         "dayNumber": 19,
-        "title": "Control vs Compulsion",
+        "title": "Day 19",
         "subtitle": null,
-        "summary": "Choice awareness",
-        "prompt": "What helped me pause?",
-        "close": "Pause creates space.",
+        "summary": "Find a comfortable\nplace to sit. There is nothing you need to solve right now. Just a few quiet\nminutes to notice. If it feels okay, gently close your eyes. Or soften your\ngaze. Take one slow breath in... And let it go naturally. No need to adjust your\nbreathing.",
+        "prompt": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": "Choice awareness",
+        "focus": "Find a comfortable\nplace to sit. There is nothing you need to solve right now. Just a few quiet\nminutes to notice. If it feels okay, gently close your eyes. Or soften your\ngaze. Take one slow breath in... And let it go naturally. No need to adjust your\nbreathing.",
         "sections": [
           {
-            "title": "Daily Focus",
-            "body": "Choice awareness"
+            "title": "Today’s Focus",
+            "body": "Find a comfortable\nplace to sit. There is nothing you need to solve right now. Just a few quiet\nminutes to notice. If it feels okay, gently close your eyes. Or soften your\ngaze. Take one slow breath in... And let it go naturally. No need to adjust your\nbreathing."
           },
           {
             "title": "Today’s Practice",
-            "body": "Delay one response today."
-          },
-          {
-            "title": "Gentle Close",
-            "body": "Pause creates space."
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
           }
         ],
         "audio": {
@@ -1512,10 +915,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "A guided reflection designed to slow the urge-response loop.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "A guided reflection designed to slow the urge-response loop.",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "A guided reflection designed to slow the urge-response loop."
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-020.mp3",
           "durationSeconds": 420,
@@ -1525,25 +937,21 @@ export const GENERATED_PROGRAMS = {
       {
         "programSlug": "ninety_day_transform",
         "dayNumber": 21,
-        "title": "Phase Reflection",
+        "title": "Day 21",
         "subtitle": null,
-        "summary": "Awareness summary",
-        "prompt": "What do I understand now?",
-        "close": "Awareness achieved.",
+        "summary": "Find a comfortable place to\nsit. There is nothing you need to complete. Nothing you need to prove. Just a\nfew quiet minutes to reflect gently. If it feels okay, close your eyes. Or\nsoften your gaze. Take one slow breath in... And let it go naturally. No need to\nchange the rhythm. Just notice it. In... And out... Three weeks ago, you began\npaying attention.",
+        "prompt": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": "Awareness summary",
+        "focus": "Find a comfortable place to\nsit. There is nothing you need to complete. Nothing you need to prove. Just a\nfew quiet minutes to reflect gently. If it feels okay, close your eyes. Or\nsoften your gaze. Take one slow breath in... And let it go naturally. No need to\nchange the rhythm. Just notice it. In... And out... Three weeks ago, you began\npaying attention.",
         "sections": [
           {
-            "title": "Daily Focus",
-            "body": "Awareness summary"
+            "title": "Today’s Focus",
+            "body": "Find a comfortable place to\nsit. There is nothing you need to complete. Nothing you need to prove. Just a\nfew quiet minutes to reflect gently. If it feels okay, close your eyes. Or\nsoften your gaze. Take one slow breath in... And let it go naturally. No need to\nchange the rhythm. Just notice it. In... And out... Three weeks ago, you began\npaying attention."
           },
           {
             "title": "Today’s Practice",
-            "body": "Review key patterns."
-          },
-          {
-            "title": "Gentle Close",
-            "body": "Awareness achieved."
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
           }
         ],
         "audio": {
@@ -1559,10 +967,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "Find a\ncomfortable place to sit.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "Find a\ncomfortable place to sit.",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "Find a\ncomfortable place to sit."
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-022.mp3",
           "durationSeconds": 420,
@@ -1576,10 +993,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "A guided reflection designed to slow the urge-response loop.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "A guided reflection designed to slow the urge-response loop.",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "A guided reflection designed to slow the urge-response loop."
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-023.mp3",
           "durationSeconds": 420,
@@ -1593,10 +1019,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "Find a comfortable\nplace to sit. There is nothing you need to improve right now. Just a few quiet\nminutes to notice. If it feels okay, gently close your eyes. Or soften your\ngaze. Take one slow breath in... And let it go naturally. No need to adjust your\nbreathing. Just notice it. In... And out... Today is about noticing how you\nspeak to yourself. Not changing it. Not correcting it. Just listening. Let your\nbreath continue at its natural pace. Gently think about a recent moment when an\nurge appeared. Or when discomfort showed up.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "Find a comfortable\nplace to sit. There is nothing you need to improve right now. Just a few quiet\nminutes to notice. If it feels okay, gently close your eyes. Or soften your\ngaze. Take one slow breath in... And let it go naturally. No need to adjust your\nbreathing. Just notice it. In... And out... Today is about noticing how you\nspeak to yourself. Not changing it. Not correcting it. Just listening. Let your\nbreath continue at its natural pace. Gently think about a recent moment when an\nurge appeared. Or when discomfort showed up.",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "Find a comfortable\nplace to sit. There is nothing you need to improve right now. Just a few quiet\nminutes to notice. If it feels okay, gently close your eyes. Or soften your\ngaze. Take one slow breath in... And let it go naturally. No need to adjust your\nbreathing. Just notice it. In... And out... Today is about noticing how you\nspeak to yourself. Not changing it. Not correcting it. Just listening. Let your\nbreath continue at its natural pace. Gently think about a recent moment when an\nurge appeared. Or when discomfort showed up."
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-024.mp3",
           "durationSeconds": 420,
@@ -1610,10 +1045,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "A guided reflection designed to slow the urge-response loop.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "A guided reflection designed to slow the urge-response loop.",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "A guided reflection designed to slow the urge-response loop."
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-025.mp3",
           "durationSeconds": 420,
@@ -1627,10 +1071,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "Find a comfortable place to\nsit. There is nothing you need to fix right now. Just a few quiet minutes to\nreturn. If it feels okay, gently close your eyes. Or soften your gaze. Take one\nslow breath in... And let it go naturally. No need to change your breathing.\nJust notice it. In... And out... Today is about returning. Not dramatically. Not\nforcefully. Just steadily. Let your breath continue at its natural rhythm. Over\nthe past days or weeks, there may have been moments when awareness felt strong.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "Find a comfortable place to\nsit. There is nothing you need to fix right now. Just a few quiet minutes to\nreturn. If it feels okay, gently close your eyes. Or soften your gaze. Take one\nslow breath in... And let it go naturally. No need to change your breathing.\nJust notice it. In... And out... Today is about returning. Not dramatically. Not\nforcefully. Just steadily. Let your breath continue at its natural rhythm. Over\nthe past days or weeks, there may have been moments when awareness felt strong.",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "Find a comfortable place to\nsit. There is nothing you need to fix right now. Just a few quiet minutes to\nreturn. If it feels okay, gently close your eyes. Or soften your gaze. Take one\nslow breath in... And let it go naturally. No need to change your breathing.\nJust notice it. In... And out... Today is about returning. Not dramatically. Not\nforcefully. Just steadily. Let your breath continue at its natural rhythm. Over\nthe past days or weeks, there may have been moments when awareness felt strong."
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-026.mp3",
           "durationSeconds": 420,
@@ -1640,161 +1093,21 @@ export const GENERATED_PROGRAMS = {
       {
         "programSlug": "ninety_day_transform",
         "dayNumber": 27,
-        "title": "Day 27",
+        "title": "Pausing With Kindness",
         "subtitle": null,
-        "summary": "(Phase 2 · Full Depth)",
+        "summary": "A guided reflection designed to slow the urge-response loop.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
+        "focus": "A guided reflection designed to slow the urge-response loop.",
         "sections": [
           {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 27 · Pausing with Kindness\n\nMain copy (exact):\n\nToday is about how you treat yourself during a pause.\n\nPausing isn’t just about slowing down.\n\nIt’s also about the _tone_ you bring to the moment.\n\nKindness makes pauses easier.\n\nHarshness makes them harder.\n\nCTA:\n\n_Continue_\n\nUX notes\n\nGentle spacing\nNo motivational pressure\nCalm, warm typography"
+            "title": "Today’s Focus",
+            "body": "A guided reflection designed to slow the urge-response loop."
           },
           {
-            "title": "WHY KINDNESS MATTERS (CONTEXT)",
-            "body": "Screen title: The role of kindness\n\nMain copy (exact):\n\nWhen urges appear, many people automatically think:\n\n“I shouldn’t feel this.”\n\nOr: “I should be better by now.”\n\nThese thoughts increase pressure and make urges feel stronger.\n\nKindness reduces that pressure — allowing pauses to work naturally.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nIdentifies a hidden trigger (self-talk)\nNormalizes inner criticism without shaming\nPositions kindness as practical, not emotional"
-          },
-          {
-            "title": "WHAT KINDNESS LOOKS LIKE (GUIDANCE)",
-            "body": "Screen title: What pausing with kindness means\n\nMain copy (exact):\n\nKindness during a pause might sound like:\n\n“This is hard right now.”\n“I don’t need to fix this immediately.”\n“I’m allowed to take a moment.”\n\nKindness does _not_ mean:\n\nLetting go of awareness\nIgnoring patterns\nForcing positivity\n\nIt simply softens the moment.\n\nCTA: _Continue_"
-          },
-          {
-            "title": "GUIDED KIND PAUSE (PRIMARY EXPERIENCE)",
-            "body": "Screen title: A kinder pause\n\nInstruction text (above audio):\n\nUse this when you notice tension, urgency, or self-criticism.\n\nAUDIO SCRIPT (Word-for-Word, ~2 minutes)\n\nDay 27 – Consistency Without Force\n(7-Minute Guided Meditation) Find a comfortable place to sit. There is nothing\nyou need to prove right now. Just a few quiet minutes to return again. If it\nfeels okay, gently close your eyes. Or soften your gaze. Take one slow breath\nin... And let it go naturally. No need to adjust the rhythm. Just notice it.\nIn... And out... Today is about consistency.\n\nNot rigid consistency. Not perfection. Just steady returning. Let your breath\ncontinue at its natural pace. Over the past days, you have been noticing.\nSometimes clearly. Sometimes less clearly. That’s normal. Consistency does not\nmean doing everything perfectly. It means showing up again. Right now, you are\nshowing up again. Take a slow breath in... And gently out. Notice how it feels\nto sit here once more. No big decision. No dramatic shift. Just quiet attention.\nConsistency can feel ordinary. Almost unremarkable. But ordinary attention\nbuilds familiarity. And familiarity builds steadiness. Stay with your breath.\nIn... And out... Think about a time recently when awareness felt available. Even\nbriefly. Perhaps you noticed a pattern. Or paused before reacting. Or recognized\na feeling.\n\nThat moment did not need to be perfect. It only needed to happen once.\nConsistency grows from repetition. Not intensity. Take another slow breath in...\nAnd let it go gently. If your mind says, “I should be more consistent,” notice\nthat thought softly. And return to observing. Force often creates resistance.\nGentle repetition creates rhythm. Now bring your attention to your body. Notice\nyour shoulders. Your hands resting. Your breathing steady. Even breathing itself\nis consistent. In... And out... Without force. Without effort. Just rhythm.\nImagine applying that same rhythm to awareness. Not forcing attention. Just\nreturning when you remember. Stay here quietly for a few breaths. In... And\nout... Consistency doesn’t need to feel strong. It can feel calm.\n\nIt can feel simple. It can feel like this moment. Take one final slow breath\nin... And a steady breath out. Notice the room around you. The surface beneath\nyou. The quiet steadiness of sitting here. You don’t need intensity to continue.\nYou don’t need pressure to move forward. You can return gently. And today, you\ndid. When you’re ready, gently open your eyes. Return to your day. Consistency\ncan be quiet. And quiet can be steady. That is enough."
-          },
-          {
-            "title": "TODAY’S PRACTICE (TEXT)",
-            "body": "Screen title: Today’s practice\n\nMain copy (exact):\n\nToday, when you pause, notice the tone you use with yourself.\n\nIf it feels harsh, see if you can soften it — even slightly.\n\nThat’s enough.\n\nSecondary text (small):\n\nActing afterward is allowed.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nHow did kindness affect the pause?\n\nOptional follow-ups (collapsed):\n\nDid the urge feel different?\nDid pressure reduce at all?\nDid the moment feel more manageable?\n\nHelper text (small):\n\nA few words are enough — or skip this entirely.\n\nCTA buttons: _Save & Continue_\n\n_Skip for Today_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough for today\n\nMain copy (exact):\n\nKindness doesn’t mean letting go.\n\nIt means supporting yourself while staying aware.\n\nYou paused with care today.\n\nThat matters.\n\nSecondary text:\n\nKindness supports consistency.\n\nCTA:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nLogs “Paused with kindness” as:\n\n```\no Yes\n```\n\n```\no No\n```\n\n```\no Not sure\n```\n\nNo scoring\nNo streak impact\nUsed later for confidence and steadiness insights\n\nSAFETY & COMPLIANCE CHECK\n\nDay 27 avoids:\n\nTherapy language\n\nMoral judgments\n\n“Be kind or else” framing\n\nAbstinence pressure\n\nDay 27 supports: Psychological safety\n\nReduced shame loops\n\nApp Store compliance\n\nCORE MESSAGE OF DAY 27\n\nHow you pause matters as much as that you pause.\n\nThis is a keystone day. Without kindness, tools become pressure.\n\nDAY 28 – INTEGRATING THE PAUSE\n\n(Phase 2 · Full Depth · Wrap-Up Day)\n\nFocus: Integration, not performance Core Skill: Recognizing the pause as\na usable life skill Goal: Help users trust the pause without overusing or\nforcing it\n\nTotal time: 10 – 12 minutes Tone: Reflective, affirming, steady"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 28 · Integrating the Pause\n\nMain copy (exact):\n\nToday brings this week of pausing to a close.\n\nYou’re not reviewing how well you did.\n\nYou’re noticing what pausing has already given you — even in small ways.\n\nIntegration means the skill doesn’t need effort anymore.\n\nIt becomes available when needed.\n\nCTA:\n\n_Continue_\n\nUX notes\n\nNo progress bars\nNo celebratory language\n\nCalm spacing"
-          },
-          {
-            "title": "WHAT YOU PRACTICED (CONTEXT)",
-            "body": "Screen title: What pausing taught you\n\nMain copy (exact):\n\nOver the past few days, you practiced:\n\nPausing without stopping\nStaying with discomfort\nWatching urges change\nPausing without expectation\nPausing earlier\nPausing with kindness\n\nYou didn’t need to master these.\n\nYou only needed to experience them.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nMakes learning explicit\nPrevents users from minimizing progress\nReinforces skill acquisition"
-          },
-          {
-            "title": "GUIDED REFLECTION AUDIO (PRIMARY)",
-            "body": "Screen title: Letting the pause settle\n\nAUDIO SCRIPT (Word-for-Word, ~4 minutes)\n\n[NEW SCRIPT FOR DAY NOT FOUND]"
-          },
-          {
-            "title": "INTEGRATION PRACTICE (TEXT)",
-            "body": "Screen title: Using the pause naturally\n\nMain copy (exact):\n\nFrom today on, pausing doesn’t need to be intentional every time.\n\nYou can:\n\nPause when it helps\nSkip it when it doesn’t\nUse it briefly or longer\n\nThe pause is now a tool — not a task.\n\nHelper text (small):\n\nThere’s no requirement to pause daily.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nWhat did pausing change for you this week?\n\nOptional follow-ups (collapsed):\n\nDid anything feel less urgent?\nDid you respond differently?\n\nDid your inner tone shift?\n\nHelper text (small):\n\nA few words are enough — or skip this entirely.\n\nCTA buttons:\n\n_Save & Continue_\n\n_Skip for Today_"
-          },
-          {
-            "title": "TRANSITION TO ROUTINES (IMPORTANT)",
-            "body": "Screen title: What comes next\n\nMain copy (exact):\n\nNext, you’ll begin adding gentle routines — small supports designed for moments\nyou already know are difficult.\n\nRoutines won’t replace pausing.\n\nThey’ll build on it.\n\nSecondary text:\n\nYou’ll choose what feels realistic.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough for today\n\nMain copy (exact):\n\nYou don’t need to pause more.\n\nYou don’t need to pause better.\n\nYou know how to pause when it matters.\n\nThat’s integration.\n\nSecondary text:\n\nPause week complete.\n\nCTA:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nMarks Pause Week completed\nUnlocks Routine Introduction (Day 29)\nNo streaks\nNo achievements\nInsight seed stored:\n\n```\no “User has learned pausing skill”\n```\n\nSAFETY & COMPLIANCE CHECK\n\nDay 28 avoids:\n\n“You should now be able to...” language\n\nAchievement framing\n\nTherapy claims\n\nDependence on the app\n\nDay 28 supports:\n\nAutonomy\n\nSkill ownership\n\nLong-term retention\n\nApp Store compliance\n\nCORE MESSAGE OF DAY 28\n\nPausing isn’t something you perform.\n\nIt’s something you carry with you.\n\nThis message is foundational for routines and confidence.\n\nDAY 29 – IDENTIFYING A HIGH-RISK MOMENT\n\n(Phase 2 · Full Depth · Foundation Day)\n\nFocus: Identifying _one_ difficult moment Core Skill: Precision instead\nof pressure Goal: Choose a single moment where support will help most\n\nTotal time: 8 – 10 minutes Tone: Calm, simplifying, reassuring"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 29 · Identifying a High-Risk Moment\n\nMain copy (exact):\n\nToday is about choosing one moment that feels harder than others.\n\nYou’re not fixing it yet.\n\nYou’re not changing anything.\n\nYou’re simply identifying where support would help most.\n\nCTA:\n\n_Continue_\n\nUX notes\n\nAvoid words like “trigger” or “danger”\nUse generous spacing\nNeutral, grounded tone"
-          },
-          {
-            "title": "WHAT “HIGH-RISK” MEANS (CONTEXT)",
-            "body": "Screen title: What “high-risk” really means\n\nMain copy (exact):\n\n“High-risk” doesn’t mean failure.\n\nIt simply means a moment where urges feel stronger or habits feel more\nautomatic.\n\nEveryone has moments like this.\n\nChoosing one keeps things simple and sustainable.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nRemoves fear and shame\nPrevents catastrophizing\nNormalizes difficulty"
-          },
-          {
-            "title": "COMMON HIGH-RISK MOMENTS (GUIDANCE)",
-            "body": "Screen title: Common examples\n\nMain copy (exact):\n\nA high-risk moment might be:\n\nAfter work\nLate at night\nWhen alone\nDuring stress\nDuring boredom\nIn social settings\nAt a familiar time of day\n\nThere’s no “best” choice.\n\nChoose what feels most real right now.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GUIDED IDENTIFICATION (PRIMARY EXPERIENCE)",
-            "body": "Screen title: Noticing your moment\n\nInstruction text (above audio):\n\nThis short reflection helps you identify one moment — nothing more.\n\nAUDIO SCRIPT (Word-for-Word, ~2 minutes)\n\nDay 29 – Renewing\nIntention (7-Minute Guided Meditation) Find a comfortable place to sit. There\nis nothing you need to promise right now. Just a few quiet minutes to clarify\ngently. If it feels okay, close your eyes. Or soften your gaze. Take one slow\nbreath in... And let it go naturally. No need to adjust your breathing. Just\nnotice it. In... And out... Today is about intention. Not a dramatic commitment.\n\nNot a permanent declaration. Just a quiet reminder of why you began paying\nattention. Let your breath continue at its natural pace. Gently ask yourself:\nWhy did I start this process? Not to judge the answer. Just to remember. Was it\ncuriosity? Health? Clarity? Energy? Freedom from automatic patterns? Let\nwhatever comes up be simple. Take a slow breath in... And gently out. Intention\ndoesn’t need to feel strong. It doesn’t need to feel emotional. It can feel\ncalm. Steady. Quiet. Notice how it feels in your body to reconnect with your\nreason. Does it create softness? Stability? Neutrality? All responses are\nwelcome. Stay with your breath. In... And out... Now imagine an ordinary moment\nlater today. A familiar situation.\n\nPicture yourself remembering your intention for just one breath. In... And\nout... Not forcing behavior. Not controlling the outcome. Just remembering.\nIntention guides direction. It does not guarantee perfection. You don’t need\nintensity to continue. You don’t need pressure to stay aware. You can simply\nreturn to what matters to you. Take another slow breath in... And let it go\ngently. If your mind says, “I should feel more motivated,” notice that thought\nsoftly. And return to the present moment. Motivation rises and falls. Intention\nremains steady. Now bring your attention back to your body. Notice your\nshoulders. Your hands resting. Your breathing steady. You are sitting here\nagain. That alone shows direction. Stay here quietly for a few breaths. In...\nAnd out... You don’t need to prove anything. You don’t need to promise\nperfection.\n\nYou can simply continue. With awareness. With steadiness. With quiet clarity.\nTake one final slow breath in... And a steady breath out. Notice the room around\nyou. The surface beneath you. The calm of this moment. Intention can be simple.\n“I am paying attention.” That is enough. When you’re ready, gently open your\neyes. Return to your day. Quiet intention guides gently. And today, you renewed\nit."
-          },
-          {
-            "title": "SELECTION (INTERACTIVE)",
-            "body": "Screen title: Choose one moment\n\nPrompt (exact):\n\nWhich moment feels hardest right now?\n\nSelectable options (examples):\n\nAfter work\nEvening / night\nWhen stressed\nWhen bored\nSocial situations\nBeing alone\nA specific time or place\n\n_(Allow “Other” with text input)_\n\nHelper text (small):\n\nYou can change this later.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nWhat makes this moment difficult for you?\n\nOptional follow-ups (collapsed):\n\nIs it about mood, energy, habit, or environment?\nDoes it feel automatic or emotional?\n\nHelper text (small):\n\nA few words are enough — or skip this entirely.\n\nCTA buttons: _Save & Continue_\n\n_Skip for Today_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough for today\n\nMain copy (exact):\n\nYou didn’t try to fix anything today.\n\nYou chose clarity over effort.\n\nThat clarity will guide the support you add next.\n\nSecondary text:\n\nOne moment is enough.\n\nCTA:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nStores selected high-risk moment\nUsed to:\n\n```\no Suggest routine timing\n```\n\n```\no Personalize reminders (optional)\n```\n\n```\no Customize insights later\n```\n\nNo success scoring\nNo streak impact\n\nSAFETY & COMPLIANCE CHECK\n\nDay 29 avoids:\n\nTrigger-heavy language\n\nMoral framing\n\nPressure to change behavior\n\nTherapy or diagnosis claims\n\nDay 29 supports:\n\nPsychological safety\n\nFocused design\n\nApp Store compliance\n\nCORE MESSAGE OF DAY 29\n\nChange becomes manageable when it becomes specific.\n\nDAY 30 – UNDERSTANDING THE HIGH-RISK MOMENT\n\n(Phase 2 · Full Depth)\n\nFocus: Understanding, not fixing Core Skill: Curiosity instead of\nself-judgment Goal: See what makes the chosen moment difficult so support\ncan fit naturally\n\nTotal time: 8 – 10 minutes Tone: Curious, validating, explanatory"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 30 · Understanding the Moment\n\nMain copy (exact):\n\nYesterday, you identified one moment that feels harder than others.\n\nToday isn’t about changing that moment.\n\nIt’s about understanding what makes it difficult.\n\nWhen moments make sense, they feel less overwhelming.\n\nCTA:\n\n_Continue_\n\nUX notes\n\nCalm pacing\nNo corrective language\nSpacious layout"
-          },
-          {
-            "title": "REMOVING SELF-BLAME (CONTEXT)",
-            "body": "Screen title: It’s not about willpower\n\nMain copy (exact):\n\nHigh-risk moments are rarely about lack of discipline or strength.\n\nThey usually involve:\n\nStress\nFatigue\nBoredom\nHabit memory\nEnvironment\nEmotional load\n\nUnderstanding these factors reduces pressure and opens the door to support.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nNeutralizes shame\nPrevents “what’s wrong with me?” thinking\nFrames difficulty as understandable"
-          },
-          {
-            "title": "WHAT’S PRESENT IN THE MOMENT (GUIDANCE)",
-            "body": "Screen title: What to notice\n\nMain copy (exact):\n\nWhen this moment appears, see if you can notice:\n\nYour energy level\nYour mood\nYour surroundings\nWhat you’re thinking\nWhat you’ve just been doing\n\nYou don’t need to analyze deeply.\n\nSimple noticing is enough.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GUIDED CURIOSITY (PRIMARY EXPERIENCE)",
-            "body": "Screen title: Exploring the moment gently\n\nInstruction text (above audio):\n\nThis reflection helps you understand the moment — not solve it.\n\nAUDIO SCRIPT (Word-for-Word, ~2–3 minutes)\n\nDay 30 – One-Month Reflection (7-Minute Guided Meditation) Find a\ncomfortable place to sit. There is nothing you need to complete. Nothing to\nprove. Just a few quiet minutes to reflect gently. If it feels okay, close your\neyes. Or soften your gaze. Take one slow breath in... And let it go naturally.\nNo need to change the rhythm. Just notice it. In... And out... It has been about\na month since you began paying attention.\n\nNot forcing change. Not measuring progress. Just observing patterns. Today is\nnot about celebrating. And not about evaluating. It is about understanding what\nfeels clearer. Let your breath continue at its natural pace. Gently think back\nto the beginning. When you first started noticing urges. Stress. Energy.\nRoutines. What feels more familiar now? Are certain patterns easier to\nrecognize? Even slightly? Take a slow breath in... And gently out. Notice\nwhether urges feel less surprising. Not necessarily weaker. Just more\nunderstandable. Understanding reduces confusion. Confusion often increases\nreaction. Stay with that thought quietly. In... And out... Think about pauses.\nHave there been moments when you remembered to breathe first? Even briefly? Even\nonce? Awareness does not need to be constant. It grows through repetition.\n\nNow reflect on stress. Fatigue. Boredom. Social situations. Are these easier to\nidentify before reacting? You don’t need a perfect answer. Just notice what\nfeels different. Take another slow breath in... And let it go gently. If your\nmind begins evaluating — “This should look bigger by now,” notice that thought\nsoftly. And return to observing. One month is not a finish line. It is a period\nof familiarity. You are becoming familiar with your patterns. Familiarity builds\nsteadiness. Stay with your breath. In... And out... Now gently ask yourself:\nWhat feels slightly clearer than before? It might be small. It might feel\nsubtle. That is enough. Small clarity reduces automatic movement. And clarity\nbuilds gradually. Bring your attention back to your body. Notice your shoulders.\nYour hands resting. Your breathing steady.\n\nYou are here again. Present. Aware. That continuity matters. Take one final slow\nbreath in... And a steady breath out. Notice the room around you. The surface\nbeneath you. The quiet steadiness of this moment. One month of attention does\nnot need to feel dramatic. It only needs to feel real. And real awareness grows\nslowly. When you’re ready, gently open your eyes. Return to your day. You are\nnot finishing. You are continuing. And that is enough."
-          },
-          {
-            "title": "TODAY’S PRACTICE (TEXT)",
-            "body": "Screen title: Today’s practice\n\nMain copy (exact):\n\nToday, when your high-risk moment appears, see if you can notice what’s present\n— without trying to change anything.\n\nAwareness comes before support.\n\nSecondary text (small):\n\nResponding as usual is allowed.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nWhat seems to make this moment difficult?\n\nOptional follow-ups (collapsed):\n\nIs it more about energy, mood, or habit?\nDoes the environment play a role?\nDoes it feel emotional or automatic?\n\nHelper text (small):\n\nA few words are enough — or skip this entirely.\n\nCTA buttons:\n\n_Save & Continue_\n\n_Skip for Today_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough for today\n\nMain copy (exact):\n\nUnderstanding reduces struggle.\n\nYou’re not weak in this moment — you’re human.\n\nClarity prepares the way for gentle support.\n\nSecondary text:\n\nAwareness comes first.\n\nCTA:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nStores:\n\n```\no energy/mood/environment tags (if selected)\n```\n\nUsed to:\n\n```\no suggest routine types (body, breath, environment)\n```\n\n```\no personalize reminders (optional)\n```\n\nNo scoring\nNo streak impact\n\nSAFETY & COMPLIANCE CHECK\n\nDay 30 avoids:\n\nDiagnosis or therapy framing\n\nMoral judgment\n\nPressure to change behavior\n\n“Fixing” language\n\nDay 30 supports:\n\nPsychological safety\n\nCuriosity\n\nApp Store compliance\n\nCORE MESSAGE OF DAY 30\n\nWhen a moment makes sense, it feels less powerful.\n\nDAY 31 – INTRODUCING A REPLACEMENT ROUTINE\n\n(Phase 2 · Full Depth)\n\nFocus: Adding support, not removing habits Core Skill: Gentle\nreplacement Goal: Introduce one small routine that reduces intensity during\nthe high-risk moment\n\nTotal time: 10 – 12 minutes Tone: Reassuring, practical, non-demanding"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 31 · Introducing a Routine\n\nMain copy (exact):\n\nToday introduces a routine — not as a rule, not as a requirement, but as\nsupport.\n\nYou’re not removing anything today.\n\nYou’re adding one small action to help during a moment that already feels\ndifficult.\n\nCTA:\n\n_Continue_\n\nUX notes\n\nAvoid “habit replacement” jargon\nEmphasize _addition_ , not removal\nCalm spacing"
-          },
-          {
-            "title": "WHAT A ROUTINE IS (CONTEXT)",
-            "body": "Screen title: What routines are for\n\nMain copy (exact):\n\nA routine is a short, neutral action you can use during your high-risk moment.\n\nRoutines work best when they are:\n\nSimple\nEasy to remember\nShort\nLow effort\n\nThey’re not meant to stop urges.\n\nThey’re meant to reduce intensity.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nPrevents “this has to fix me” thinking\nFrames routines realistically\nLowers performance anxiety"
-          },
-          {
-            "title": "WHY REPLACEMENT WORKS (REFRAMING)",
-            "body": "Screen title: Why adding helps more than removing\n\nMain copy (exact):\n\nHabits don’t disappear easily when something is taken away.\n\nThey loosen their grip when something gentle takes their place — even briefly.\n\nToday’s routine is not permanent.\n\nIt’s an experiment.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GUIDED ROUTINE SELECTION (PRIMARY EXPERIENCE)",
-            "body": "Screen title: Choosing a routine\n\nInstruction text (above audio):\n\nChoose something small that feels realistic for your moment.\n\nAUDIO SCRIPT (Word-for-Word, ~2 minutes)\n\nDay 31 – Steady\nSelf-Leadership (7-Minute Guided Meditation) Find a comfortable place to sit.\nThere is nothing you need to accomplish. Just a few quiet minutes to settle. If\nit feels okay, gently close your eyes. Or soften your gaze. Take one slow breath\nin... And let it go naturally. No need to adjust the rhythm. Just notice it.\nIn... And out... You’ve spent the past month observing.\n\nNot forcing. Not judging. Just noticing patterns. Today begins a slightly deeper\npractice. Not stronger. Not louder. Just steadier. Let your breath continue at\nits natural pace. Gently ask yourself: What does it feel like to guide yourself\ncalmly? Not control. Not pressure. Just guidance. Notice what comes up. Take a\nslow breath in... And gently out. Self-leadership does not mean perfection. It\ndoes not mean eliminating reaction. It means noticing earlier. Responding\ngently. Returning consistently. Stay with your breath. In... And out... Think of\na recent situation where you felt pulled by a habit. Now imagine observing that\nmoment as if you were gently guiding yourself. Not criticizing. Not commanding.\nJust noticing.\n\nPicture yourself saying quietly: “I see what’s happening.” Stay with that\nphrase. In... And out... Notice how it feels to approach yourself with\nsteadiness. Does it feel calmer? Neutral? Subtle? All responses are welcome.\nLeadership can be quiet. It does not need to be visible to anyone else. It\nbegins internally. In small decisions. In small pauses. In small awareness. Take\nanother slow breath in... And let it go gently. Now imagine a moment later today\nwhen stress appears. Or boredom. Or fatigue. Picture yourself noticing it first.\nBefore reacting. Just recognizing it. In... And out... That recognition is\nleadership. Not dramatic. Not forceful.\n\nJust steady. Bring your attention back to your body. Notice your shoulders. Your\nhands resting. Your breathing steady. You are sitting here by choice. That is\nguidance. Stay here for a few breaths. In... And out... If your mind says, “I\ndon’t feel like a leader,” notice that thought softly. And return to your\nbreath. Leadership in this context simply means responding with awareness. You\ndon’t need intensity. You don’t need authority. Just steadiness. Take one final\nslow breath in... And a steady breath out. Notice the room around you. The\nsurface beneath you. The quiet of this moment. Month two does not require force.\nIt invites steadiness. And today, you practiced it. When you’re ready, gently\nopen your eyes. Return to your day. Leadership can be quiet.\n\nAnd quiet can be strong."
-          },
-          {
-            "title": "ROUTINE OPTIONS (INTERACTIVE)",
-            "body": "Screen title: Pick one routine\n\nPrompt (exact):\n\nWhich routine feels easiest to try?\n\nExample options (show 5–7 max):\n\nDrink a glass of water\nStep outside briefly\nStretch shoulders or neck\nTake 5 slow breaths\nWash hands mindfully\nSit quietly for one minute\nChange rooms\n\nHelper text (small):\n\nYou can change this later.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "ROUTINE DETAILS (LIGHT SETUP)",
-            "body": "Screen title: Your routine\n\nMain copy (exact):\n\nYou’ll use this routine during your chosen moment — not every time, just when it\nfeels helpful.\n\nOptional toggles:\n\nReminder (off by default)\nDuration (30–90 seconds)\nSilent / audio guidance\n\nHelper text (small):\n\nThis is support, not a rule.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "TODAY’S PRACTICE (TEXT)",
-            "body": "Screen title: Today’s practice\n\nMain copy (exact):\n\nToday, if your high-risk moment appears, try your routine once.\n\nIf the moment doesn’t appear, that’s okay.\n\nYou’re learning the routine — not forcing it.\n\nSecondary text (small):\n\nActing afterward is allowed.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nHow did the routine affect the moment?\n\nOptional follow-ups (collapsed):\n\nDid intensity change at all?\nDid it slow things down?\nDid it feel awkward, neutral, or supportive?\n\nHelper text (small):\n\nOne sentence is enough — or skip this entirely.\n\nCTA buttons:\n\n_Save & Continue_\n\n_Skip for Today_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough for today\n\nMain copy (exact):\n\nYou didn’t try to fix a habit today.\n\nYou added support where it mattered most.\n\nThat’s how sustainable change begins.\n\nSecondary text:\n\nSimple routines work.\n\nCTA:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nStores:\n\n```\no Selected routine\n```\n\n```\no Associated high-risk moment\n```\n\nEnables:\n\n```\no Optional reminders\n```\n\n```\no Routine insights later\n```\n\nNo scoring\nNo streak dependency\n\nSAFETY & COMPLIANCE CHECK\n\nDay 31 avoids:\n\n“Replace smoking/drinking” language\n\nAbstinence pressure\n\nPerformance goals\n\nTherapy framing\n\nDay 31 supports:\n\nAutonomy\n\nLow-friction action\n\nApp Store compliance\n\nCORE MESSAGE OF DAY 31\n\nYou don’t remove habits by force.\n\nYou loosen them by adding support.\n\nnon-medical\nnon-judgmental\nApp Store safe\ncoach-safe\nautonomy-first"
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
           }
         ],
         "audio": {
@@ -1810,10 +1123,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "A guided reflection designed to slow the urge-response loop.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "A guided reflection designed to slow the urge-response loop.",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "A guided reflection designed to slow the urge-response loop."
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-028.mp3",
           "durationSeconds": 420,
@@ -1827,10 +1149,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "A guided reflection designed to slow the urge-response loop.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "A guided reflection designed to slow the urge-response loop.",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "A guided reflection designed to slow the urge-response loop."
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-029.mp3",
           "durationSeconds": 420,
@@ -1844,10 +1175,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "Find a\ncomfortable place to sit. There is nothing you need to complete. Nothing to\nprove. Just a few quiet minutes to reflect gently. If it feels okay, close your\neyes. Or soften your gaze. Take one slow breath in... And let it go naturally.\nNo need to change the rhythm. Just notice it. In... And out... It has been about\na month since you began paying attention.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "Find a\ncomfortable place to sit. There is nothing you need to complete. Nothing to\nprove. Just a few quiet minutes to reflect gently. If it feels okay, close your\neyes. Or soften your gaze. Take one slow breath in... And let it go naturally.\nNo need to change the rhythm. Just notice it. In... And out... It has been about\na month since you began paying attention.",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "Find a\ncomfortable place to sit. There is nothing you need to complete. Nothing to\nprove. Just a few quiet minutes to reflect gently. If it feels okay, close your\neyes. Or soften your gaze. Take one slow breath in... And let it go naturally.\nNo need to change the rhythm. Just notice it. In... And out... It has been about\na month since you began paying attention."
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-030.mp3",
           "durationSeconds": 420,
@@ -1861,10 +1201,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "A guided reflection designed to slow the urge-response loop.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "A guided reflection designed to slow the urge-response loop.",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "A guided reflection designed to slow the urge-response loop."
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-031.mp3",
           "durationSeconds": 420,
@@ -1874,489 +1223,21 @@ export const GENERATED_PROGRAMS = {
       {
         "programSlug": "ninety_day_transform",
         "dayNumber": 32,
-        "title": "Day 32",
+        "title": "Trying The Routine Once",
         "subtitle": null,
-        "summary": "(Phase 2 · Full Depth)",
+        "summary": "A guided reflection designed to slow the urge-response loop.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
+        "focus": "A guided reflection designed to slow the urge-response loop.",
         "sections": [
           {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 32 · Trying the Routine Once\n\nMain copy (exact):\n\nToday is about trying your routine once.\n\nNot trying to make it work.\n\nNot checking if it’s effective.\n\nJust experiencing what it’s like to add a small support during a difficult\nmoment.\n\nCTA:\n\n_Continue_\n\nUX notes\n\nNo challenge framing\nEmphasis on experience, not outcome\nSpacious layout"
+            "title": "Today’s Focus",
+            "body": "A guided reflection designed to slow the urge-response loop."
           },
           {
-            "title": "REMOVING PRESSURE (CONTEXT)",
-            "body": "Screen title: What today is — and isn’t\n\nMain copy (exact):\n\nToday is:\n\nA first try\nA learning moment\nAllowed to feel awkward\n\nToday is not:\n\nA test\nA commitment\nA measure of success\n\nOne try is enough.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nReduces performance anxiety\nEncourages follow-through\nPrevents early dropout"
-          },
-          {
-            "title": "GUIDED PREPARATION (PRIMARY EXPERIENCE)",
-            "body": "Screen title: Preparing to try\n\nInstruction text (above audio):\n\nThis short guide helps you approach the routine without pressure.\n\nAUDIO SCRIPT (Word-for-Word, ~2 minutes)\n\nDay 32 – Calm Decision-Making (7-Minute Guided\nMeditation) Find a comfortable place to sit. There is nothing you need to\ndecide right now. Just a few quiet minutes to slow down. If it feels okay,\ngently close your eyes. Or soften your gaze. Take one slow breath in... And let\nit go naturally. No need to adjust your breathing. Just notice it. In... And\nout... Today is about decisions. Not big ones. Not life-changing ones. Just\nordinary moments of choice. Let your breath continue at its natural pace. Think\nabout a recent moment when you made a quick decision. It might have been about a\nhabit. Or about how to respond to stress. Or about filling a moment of boredom.\nNotice how that decision felt. Was it rushed? Automatic? Quiet? Stay with that\nmemory gently. In... And out... Decisions made under urgency\n\noften feel narrow. Immediate. Focused only on relief. Now imagine that same\nmoment again. But this time, insert one slow breath before deciding. In... And\nout... Notice how one breath changes the rhythm. Even slightly. Does it create\nspace? Clarity? Or simply slow things down? Stay with that awareness. Calm\ndecisions don’t require perfect thinking. They require presence. Now gently ask\nyourself: When I pause, does the choice feel different? Not necessarily easier.\nJust clearer. Take another slow breath in... And let it go gently. Bring your\nattention to your body. Notice your shoulders. Your jaw. Your hands. If there is\nany tension, allow it to soften slightly. Calm begins in the body. And calm\ninfluences decisions.\n\nStay with your breath. In... And out... Now imagine a moment later today when\nyou feel pulled toward a quick reaction. Picture yourself pausing for one\nbreath. And asking quietly: “What feels steady right now?” No need to answer\nperfectly. Just the question. Notice how that question feels. Does it widen the\nmoment? All responses are welcome. Decisions do not need to feel dramatic. They\ncan feel simple. They can feel quiet. They can begin with one breath. Take one\nfinal slow breath in... And a steady breath out. Notice the room around you. The\nsurface beneath you. The steadiness of this moment. Calm is not the absence of\nchoice. It is the space before it. And today, you practiced creating space. When\nyou’re ready, gently open your eyes. Return to your day. A calm breath can guide\na decision. And that is enough."
-          },
-          {
-            "title": "TODAY’S PRACTICE (TEXT)",
-            "body": "Screen title: Today’s practice\n\nMain copy (exact):\n\nToday, if your high-risk moment appears, try your routine once.\n\nIf the moment doesn’t appear, that’s okay.\n\nYou’re learning what the routine feels like.\n\nSecondary text (small):\n\nActing afterward is allowed.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "LIGHT REFLECTION (NOT EVALUATIVE)",
-            "body": "Screen title: After the moment (Optional)\n\nMain copy (exact):\n\nYou don’t need to analyze anything.\n\nJust notice:\n\nDid it slow the moment at all?\nDid it feel neutral, awkward, or supportive?\n\nCTA:\n\n_Continue_\n\n_(This screen can be skipped without logging.)_"
-          },
-          {
-            "title": "JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nWhat was it like to try the routine?\n\nOptional follow-ups (collapsed):\n\nDid anything surprise you?\nDid it feel easy, strange, or neutral?\n\nHelper text (small):\n\nOne sentence is enough — or skip this entirely.\n\nCTA buttons:\n\n_Save & Continue_\n\n_Skip for Today_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough for today\n\nMain copy (exact):\n\nTrying once is progress.\n\nYou don’t need to decide whether to keep the routine yet.\n\nToday was about experience — and you showed up.\n\nSecondary text:\n\nOne try is enough.\n\nCTA:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nLogs “Routine tried” as:\n\n```\no Yes\n```\n\n```\no No\n```\n\n```\no Not sure\n```\n\nNo scoring\nNo streak impact\nNo optimization suggestions yet\n\nSAFETY & COMPLIANCE CHECK\n\nDay 32 avoids: “Did it work?” framing\n\nSuccess/failure labels\n\nTherapy claims\n\nAbstinence language\n\nDay 32 supports:\n\nPsychological safety\n\nLow-pressure engagement\n\nApp Store compliance\n\nCORE MESSAGE OF DAY 32\n\nYou don’t need to know whether something helps on the first try.\n\nDAY 33 – ADJUSTING THE ROUTINE\n\n(Phase 2 · Full Depth)\n\nFocus: Flexibility over correctness Core Skill: Adjusting support\ninstead of abandoning it Goal: Help the routine fit the user — not the other\nway around\n\nTotal time: 8 – 10 minutes Tone: Normalizing, empowering, practical"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 33 · Adjusting the Routine\n\nMain copy (exact):\n\nToday is about adjustment.\n\nRoutines are not meant to work perfectly the first time.\n\nIf something felt awkward, unhelpful, or hard to remember — that’s not a\nfailure.\n\nIt’s information.\n\nToday, you’ll use that information to make the routine fit you better.\n\nCTA:\n\n_Continue_\n\nUX notes\n\nRemove “optimize” language\nKeep tone human and normalizing\nSpacious layout"
-          },
-          {
-            "title": "WHY ADJUSTMENT MATTERS (CONTEXT)",
-            "body": "Screen title: Why routines need adjustment\n\nMain copy (exact):\n\nMost people stop using routines not because they don’t help — but because they\ndon’t fit.\n\nSmall changes can make routines:\n\nEasier to remember\nLess effortful\nMore natural\n\nAdjustment is how routines become sustainable.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nPrevents all-or-nothing thinking\nEncourages experimentation\nKeeps users engaged"
-          },
-          {
-            "title": "WHAT CAN BE ADJUSTED (GUIDANCE)",
-            "body": "Screen title: What you can change\n\nMain copy (exact):\n\nYou can adjust:\n\nTiming — earlier or later\nDuration — shorter is okay\nLocation — where you do it\nType — body, breath, or environment\nGuidance — with or without audio\n\nYou don’t need to change everything.\n\nOne small adjustment is enough.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GUIDED ADJUSTMENT (PRIMARY EXPERIENCE)",
-            "body": "Screen title: Finding a better fit\n\nInstruction text (above audio):\n\nThis reflection helps you adjust without overthinking.\n\nAUDIO SCRIPT (Word-for-Word, ~2 minutes)\n\nDay 33 – Staying Present in Difficult Moments\n(7-Minute Guided Meditation)\n\nFind a comfortable place to sit. There is nothing you need to solve right now.\nJust a few quiet minutes to be here. If it feels okay, gently close your eyes.\nOr soften your gaze. Take one slow breath in... And let it go naturally. No need\nto adjust your breathing. Just notice it. In... And out... Today is about\ndifficult moments. Not dramatic ones. Just the ordinary difficult moments.\nStress. Discomfort. Uncertainty. Let your breath continue at its natural pace.\nGently think about a recent moment that felt slightly challenging. It doesn’t\nneed to be intense. Just something that felt uncomfortable. Bring it to mind\nsoftly. Now notice what your mind did during that moment. Did it jump ahead? Did\nit imagine outcomes? Did it try to escape the feeling? That’s natural. The mind\noften moves away from discomfort. Take a slow breath in... And gently out.\n\nNow imagine that same moment again. But instead of moving away, imagine staying\nwith the present part of it. Just the immediate sensation. Not the story. Not\nthe future. Just what was happening right then. In... And out... Notice how\nstaying present changes the feeling. Does it make the moment smaller? More\ndefined? Less overwhelming? Even slightly? Difficult moments often grow when we\nadd anticipation. Presence reduces that expansion. Stay with your breath. In...\nAnd out... Now bring your attention to your body. Notice your shoulders. Your\nhands. Your breathing. Imagine experiencing discomfort while keeping attention\non your breath. Not to eliminate discomfort. Just to anchor yourself. In... And\nout... Difficult moments are temporary.\n\nEven if they feel long. Even if they feel repetitive. They rise. They shift.\nThey pass. Stay here quietly for a few breaths. In... And out... If your mind\ndrifts into the story again, gently bring it back to the present sensation. This\nbreath. This seat. This moment. Presence doesn’t remove difficulty. It reduces\nexaggeration. Now imagine a moment later today when something feels\nuncomfortable. Picture yourself noticing it. And staying with just one breath.\nIn... And out... That is enough. You don’t need to be fearless. You don’t need\nto be perfectly calm. Just present. Take one final slow breath in... And a\nsteady breath out. Notice the room around you. The surface beneath you. The\nsteadiness of sitting here. Difficult moments are part of being human.\n\nPresence makes them clearer. And today, you practiced presence. When you’re\nready, gently open your eyes. Return to your day. One breath can hold a\ndifficult moment. And that is enough."
-          },
-          {
-            "title": "ADJUSTMENT SELECTION (INTERACTIVE)",
-            "body": "Screen title: Make one adjustment\n\nPrompt (exact):\n\nWhat would make the routine easier?\n\nSelectable options (examples):\n\nShorten it\n\nUse it earlier\nChange where I do it\nSwitch to a different routine\nRemove reminders\nKeep it the same\n\nHelper text (small):\n\nYou can change this again later.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "TODAY’S PRACTICE (TEXT)",
-            "body": "Screen title: Today’s practice\n\nMain copy (exact):\n\nToday, try the routine with your adjustment — just once, without evaluating it.\n\nThe goal is ease, not effectiveness.\n\nSecondary text (small):\n\nActing afterward is allowed.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nHow did the adjustment change the experience?\n\nOptional follow-ups (collapsed):\n\nDid it feel easier to start?\nDid it feel more natural?\nDid it reduce friction at all?\n\nHelper text (small):\n\nOne sentence is enough — or skip this entirely.\n\nCTA buttons:\n\n_Save & Continue_\n\n_Skip for Today_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough for today\n\nMain copy (exact):\n\nAdjusting doesn’t mean something was wrong.\n\nIt means you’re learning what works for you.\n\nFlexibility keeps support alive.\n\nSecondary text:\n\nAdjustment is progress.\n\nCTA:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nStores adjustment type(s)\nUpdates routine configuration\nUsed later for:\n\n```\no “What worked best” insights\n```\n\nNo scoring\nNo streak dependency\n\nSAFETY & COMPLIANCE CHECK\n\nDay 33 avoids:\n\nOptimization pressure\n\n“Fixing” language\n\nTherapy framing\n\nSuccess/failure labels\n\nDay 33 supports:\n\nPersonalization\n\nPsychological safety\n\nApp Store compliance\n\nCORE MESSAGE OF DAY 33\n\nIf support doesn’t fit, you adjust it — not yourself.\n\nDAY 34 – USING THE ROUTINE WITH LESS EFFORT\n\n(Phase 2 · Full Depth)\n\nFocus: Reducing friction Core Skill: Letting routines feel lighter and\nmore natural Goal: Make the routine easier to use — not more effective\n\nTotal time: 8 – 10 minutes Tone: Reassuring, simplifying, steady"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 34 · Using the Routine with Less Effort\n\nMain copy (exact):\n\nToday is about effort.\n\nIf a routine feels like work, it won’t last.\n\nThe goal isn’t to do more — it’s to do less, more gently.\n\nToday, you’ll learn how to let your routine feel easier to use.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "WHY LESS EFFORT WORKS (CONTEXT)",
-            "body": "Screen title: Why ease matters\n\nMain copy (exact):\n\nRoutines that require effort depend on motivation.\n\nMotivation changes.\n\nRoutines that feel easy don’t need motivation — they happen naturally.\n\nEase is what makes routines sustainable.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "SIGNS A ROUTINE IS TOO HEAVY (GUIDANCE)",
-            "body": "Screen title: When effort is too high\n\nMain copy (exact):\n\nA routine may feel too heavy if:\n\nYou forget it often\nYou delay starting it\nYou feel resistance beforehand\nYou think, “I’ll do it later”\n\nThese aren’t failures.\n\nThey’re signals to simplify.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GUIDED SIMPLIFICATION (PRIMARY EXPERIENCE)",
-            "body": "Screen title: Making it lighter\n\nInstruction text (above audio):\n\nThis reflection helps you reduce effort — not increase discipline.\n\nAUDIO SCRIPT (Word-for-Word, ~2 minutes)\n\nDay 34 – Emotional Steadiness (7-Minute\nGuided Meditation) Find a comfortable place to sit. There is nothing you need\nto change. Just a few quiet minutes to notice. If it feels okay, gently close\nyour eyes. Or soften your gaze. Take one slow breath in... And let it go\nnaturally. No need to adjust your breathing. Just notice it. In... And out...\nToday is about emotions. Not analyzing them. Not controlling them. Just noticing\nhow they move. Let your breath continue at its natural pace. Gently ask\nyourself: What emotion feels present right now? It might be clear. Or subtle. Or\ndifficult to name. Whatever you notice is enough. Take a slow breath in...\n\nAnd gently out. Emotions rise and fall throughout the day. Sometimes quickly.\nSometimes gradually. They are part of being human. Notice where the emotion sits\nin your body. Is there warmth? Tension? Heaviness? Lightness? Or neutrality?\nStay with that sensation gently. In... And out... Emotional steadiness does not\nmean eliminating feelings. It means allowing them to move without amplifying\nthem. Now imagine a recent moment when an emotion felt stronger. Stress.\nFrustration. Restlessness. Before reacting, imagine observing the emotion\nquietly. Not labeling it as good or bad. Just noticing its presence. In... And\nout... Notice how that slight distance feels. Does the emotion feel more\nmanageable? More defined?\n\nLess overwhelming? Even slightly? Steadiness grows when observation increases.\nStay with your breath. In... And out... If your mind begins creating a story,\ngently return to the sensation. Emotion in the body. Breath moving. Present\nawareness. Emotions change. They shift naturally. Even intense feelings rarely\nstay the same for long. Bring your attention back to your shoulders. Allow them\nto soften slightly. Notice your jaw relaxing. Your hands resting. Steadiness\noften begins physically. And spreads gently. Take another slow breath in... And\nlet it go gently. Now imagine experiencing emotion later today. But staying\npresent. Observing it. Allowing it to move without rushing to act. Picture\nyourself breathing once. In... And out... That is emotional steadiness. Not\nsuppression.\n\nNot intensity. Just awareness. Take one final slow breath in... And a steady\nbreath out. Notice the room around you. The surface beneath you. The calm of\nthis moment. Emotions will continue to move. And you can remain steady while\nthey do. Today, you practiced that steadiness. When you’re ready, gently open\nyour eyes. Return to your day. Emotions shift. Awareness remains. And that is\nenough."
-          },
-          {
-            "title": "SIMPLIFY THE ROUTINE (INTERACTIVE)",
-            "body": "Screen title: Make it easier\n\nPrompt (exact):\n\nWhat would reduce effort most?\n\nSelectable options (examples):\n\nShorten it further\nDo only the first step\nRemove guidance/audio\nTie it to an existing habit\nLet it be optional\nKeep it the same\n\nHelper text (small):\n\nEasier routines are used more often.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "TODAY’S PRACTICE (TEXT)",
-            "body": "Screen title: Today’s practice\n\nMain copy (exact):\n\nToday, use your routine in its easier form — even if it feels very small.\n\nSmall routines done consistently are more powerful than bigger routines done\nrarely.\n\nSecondary text (small):\n\nActing afterward is allowed.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nHow did reducing effort change the experience?\n\nOptional follow-ups (collapsed):\n\nDid it feel easier to start?\nDid resistance reduce?\nDid it feel more natural?\n\nHelper text (small):\n\nOne sentence is enough — or skip this entirely.\n\nCTA buttons:\n\n_Save & Continue_\n\n_Skip for Today_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough for today\n\nMain copy (exact):\n\nRoutines don’t need effort to help.\n\nThey need permission to be simple.\n\nYou chose ease today.\n\nThat’s what lasts.\n\nSecondary text:\n\nEase builds consistency.\n\nCTA: _Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nUpdates routine to “low-effort mode”\nTracks friction reduction (yes/no)\nUsed later for:\n\n```\no Consistency insights\n```\n\nNo scoring\nNo streak dependency\n\nSAFETY & COMPLIANCE CHECK\n\nDay 34 avoids:\n\nDiscipline framing\n\n“Push yourself” language\n\nOptimization pressure\n\nTherapy claims\n\nDay 34 supports:\n\nSustainability\n\nPsychological safety\n\nApp Store compliance\n\nCORE MESSAGE OF DAY 34\n\nIf a routine feels easy, it gets used.\n\nThat’s what matters.\n\nDAY 35 – NOTICING WHAT HELPS\n\n(Phase 2 · Full Depth · Wrap-Up Day)\n\nFocus: Awareness, not judgment Core Skill: Recognizing helpful support\nGoal: Build confidence by noticing subtle shifts\n\nTotal time: 8 – 10 minutes Tone: Reflective, affirming, calm"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 35 · Noticing What Helps\n\nMain copy (exact):\n\nToday is about noticing — not measuring.\n\nOver the past few days, you’ve added gentle support to a difficult moment.\n\nYou’re not asking “Did this work?”\n\nYou’re asking, “What helped, even a little?”\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "WHY NOTICING MATTERS (CONTEXT)",
-            "body": "Screen title: Why noticing builds confidence\n\nMain copy (exact):\n\nChange rarely arrives all at once.\n\nIt shows up quietly:\n\nSlightly less urgency\nFaster recovery\nLess inner pressure\nMore choice\n\nWhen these shifts are noticed, confidence grows naturally.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "WHAT “HELPING” CAN LOOK LIKE (GUIDANCE)",
-            "body": "Screen title: Signs something helped\n\nMain copy (exact):\n\nSomething may have helped if:\n\nThe moment slowed down\nIntensity reduced slightly\nYou felt more grounded\nYou recovered faster\nYou felt less reactive\n\nHelp doesn’t have to mean the urge disappeared.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GUIDED REFLECTION (PRIMARY EXPERIENCE)",
-            "body": "Screen title: Looking back gently\n\nInstruction text (above audio):\n\nThis reflection helps you notice support without evaluating yourself.\n\nAUDIO SCRIPT (Word-for-Word, ~2–3 minutes)\n\nDay 35 – Expanding Inner Stability (7-Minute Guided Meditation) Find\na comfortable place to sit. There is nothing you need to achieve. Just a few\nquiet minutes to settle. If it feels okay, gently close your eyes. Or soften\nyour gaze. Take one slow breath in... And let it go naturally. No need to change\nthe rhythm. Just notice it. In... And out... Over the past month, you’ve been\nobserving. Pausing. Noticing patterns.\n\nToday is about stability. Not dramatic strength. Just steady grounding. Let your\nbreath continue at its natural pace. Bring your attention to the feeling of\nsitting. The weight of your body supported. The surface beneath you. Stable.\nSteady. Unmoving. Notice that stability for a few breaths. In... And out...\nInner stability doesn’t mean emotions disappear. It doesn’t mean urges vanish.\nIt means something inside remains steady even when things shift. Now gently\nimagine a recent moment that felt slightly unsettling. Stress. Discomfort.\nFatigue. Notice that moment. And now imagine staying grounded while it happened.\nNot perfectly calm. Just steady. Breathing. Present. In... And out...\n\nNotice how that feels. Even imagining steadiness creates space. Stability is\noften quiet. It does not announce itself. It simply holds. Bring your attention\nback to your breath. Feel the rhythm. In... And out... No forcing. No urgency.\nJust repetition. Repetition builds steadiness. Now imagine a moment later today\nwhen something feels uncertain. Picture yourself feeling your feet on the\nground. Taking one breath. Allowing the feeling to exist without rushing. That\nis inner stability. Not rigid. Not tense. Just grounded. Take another slow\nbreath in... And let it go gently. Notice your shoulders. Allow them to soften\nslightly. Notice your hands resting. Even in stillness, there is strength. Stay\nhere quietly for a few breaths.\n\nIn... And out... If your mind drifts, gently return to the sensation of sitting.\nSupported. Balanced. Present. Stability grows through small returns. Not\ndramatic effort. You don’t need to become unshakable. You only need to remain\naware. Take one final slow breath in... And a steady breath out. Notice the room\naround you. The surface beneath you. The steadiness of this moment. Inner\nstability expands gradually. And today, you practiced it. When you’re ready,\ngently open your eyes. Return to your day. Steadiness does not need intensity.\nIt grows quietly. And that is enough."
-          },
-          {
-            "title": "TODAY’S PRACTICE (TEXT)",
-            "body": "Screen title: Today’s practice\n\nMain copy (exact):\n\nToday, simply notice what felt supportive this week.\n\nYou’re not locking anything in.\n\nYou’re observing what your system responds to best.\n\nSecondary text (small):\n\nActing afterward is allowed.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nWhat helped you most this week?\n\nOptional follow-ups (collapsed):\n\nWas it the pause, the routine, or timing?\nDid anything surprise you?\nDid ease increase over time?\n\nHelper text (small):\n\nA few words are enough — or skip this entirely.\n\nCTA buttons:\n\n_Save & Continue_\n\n_Skip for Today_"
-          },
-          {
-            "title": "TRANSITION FORWARD",
-            "body": "Screen title: Carrying this forward\n\nMain copy (exact):\n\nFrom here on, you don’t need to add more tools.\n\nYou’ll continue using what helps — and letting go of what doesn’t.\n\nSupport becomes personal when it’s chosen this way.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough for today\n\nMain copy (exact):\n\nYou noticed what helps.\n\nThat awareness is a form of confidence.\n\nYou’re building steadiness — quietly and sustainably.\n\nSecondary text:\n\nRoutine foundation complete.\n\nCTA:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nMarks Routine Introduction phase complete\nStores:\n\n```\no “What helped” tags (pause, routine, timing)\n```\n\nSeeds:\n\n```\no Weekly insights\n```\n\n```\no Confidence summaries\n```\n\nNo scoring\nNo streak dependency\n\nSAFETY & COMPLIANCE CHECK\n\nDay 35 avoids:\n\nPerformance evaluation\n\nSuccess/failure framing\n\nTherapy language\n\nPressure to continue routines\n\nDay 35 supports: Autonomy\n\nConfidence building\n\nApp Store compliance\n\nCORE MESSAGE OF DAY 35\n\nConfidence grows when you notice what helps — not when you force change.\n\nThis message prepares users for:\n\nLonger-term consistency (Days 36+)\nConfidence building (Days 61–70 later)\nSustainable, self-directed recovery\n\nDAY 36 – RETURNING WITHOUT RESETTING\n\n(Consistency Phase · Full Depth)\n\nFocus: Continuity, not streaks Core Skill: Returning gently after breaks\nGoal: Remove fear of “falling off” and normalize coming back\n\nTotal time: 8 – 10 minutes Tone: Reassuring, stabilizing,\nconfidence-preserving"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 36 · Returning Without Resetting\n\nMain copy (exact):\n\nToday begins a new phase — consistency.\n\nConsistency does not mean doing everything perfectly.\n\nIt means returning when life interrupts.\n\nToday is about learning that nothing is lost when you come back.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "NORMALIZING BREAKS (CONTEXT)",
-            "body": "Screen title: Breaks are part of progress\n\nMain copy (exact):\n\nEveryone misses days.\n\nEveryone forgets routines.\n\nEveryone has moments where support isn’t used.\n\nThese moments don’t erase progress.\n\nWhat matters is how gently you return afterward.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nPrevents shame spirals\nProtects long-term engagement\nReframes “breaks” as neutral"
-          },
-          {
-            "title": "THE RESET MYTH (IMPORTANT)",
-            "body": "Screen title: You don’t need to reset\n\nMain copy (exact):\n\nMany programs teach: “If you miss, start over.”\n\nThat approach creates pressure and discouragement.\n\nHere, nothing resets.\n\nYou don’t go back to Day 1.\n\nYou continue from where you are.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GUIDED RETURN (PRIMARY EXPERIENCE)",
-            "body": "Screen title: Returning gently\n\nInstruction text (above audio):\n\nThis short guide is for moments when you feel disconnected or off-track.\n\nAUDIO SCRIPT (Word-for-Word, ~2–3 minutes)\n\nDay 36 – Clearer Boundaries With\nYourself (7-Minute Guided Meditation) Find a comfortable place to sit. There\nis nothing you need to enforce. Just a few quiet minutes to notice. If it feels\nokay, gently close your eyes. Or soften your gaze. Take one slow breath in...\n\nAnd let it go naturally. No need to adjust your breathing. Just notice it. In...\nAnd out... Today is about boundaries. Not strict rules. Not restrictions. Just\nclarity. Let your breath continue at its natural pace. Gently ask yourself: What\nfeels steady for me right now? And what feels unsteady? You don’t need a\ndetailed answer. Just notice what comes up. Take a slow breath in... And gently\nout. Boundaries often begin as awareness. A sense that something feels aligned.\nOr slightly off. Think about a recent moment when you acted automatically. Did\nit feel steady? Or slightly unsettled afterward? Stay with that memory gently.\nIn... And out... Now imagine that same situation again. But this time, imagine\nnoticing the internal signal first. A quiet sense of:\n\n“This feels steady.” Or, “This feels rushed.” You don’t need to act differently.\nJust noticing is enough. Boundaries are not walls. They are signals. Signals of\nwhat supports you. And what pulls you off balance. Bring your attention back to\nyour body. Notice your shoulders. Your chest. Your breathing. Is there a sense\nof calm right now? Or subtle tension? Both are information. Take another slow\nbreath in... And let it go gently. Now imagine a moment later today when you\nfeel pulled toward a familiar habit. Picture yourself asking quietly: “Does this\nfeel steady?” No pressure to answer correctly. Just the question. Notice how\nthat question feels. Does it slow the moment? Create space? Even slightly? Stay\nhere for a few breaths. In... And out...\n\nClear boundaries don’t require force. They require awareness. Awareness reduces\nconfusion. And clarity builds gradually. If your mind says, “I don’t always know\nwhat’s steady,” notice that thought gently. And return to your breath. Learning\nyour boundaries takes time. And attention. You are building both. Take one final\nslow breath in... And a steady breath out. Notice the room around you. The\nsurface beneath you. The steadiness of sitting here. Boundaries can be quiet.\nThey begin inside. And today, you practiced listening. When you’re ready, gently\nopen your eyes. Return to your day. Clarity grows through noticing. And that is\nenough."
-          },
-          {
-            "title": "TODAY’S PRACTICE (TEXT)",
-            "body": "Screen title: Today’s practice\n\nMain copy (exact):\n\nToday, practice returning.\n\nIf you’ve been consistent, return anyway.\n\nIf you’ve missed days, return without explanation.\n\nReturning is enough.\n\nSecondary text (small):\n\nNo need to make up for anything.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nWhat helps you return when things feel off?\n\nOptional follow-ups (collapsed):\n\nWhat makes returning harder?\nWhat makes it easier?\nHow does it feel to return without pressure?\n\nHelper text (small):\n\nA few words are enough — or skip this entirely.\n\nCTA buttons:\n\n_Save & Continue_\n\n_Skip for Today_"
-          },
-          {
-            "title": "CONSISTENCY REFRAME (TEXT)",
-            "body": "Screen title: What consistency really means\n\nMain copy (exact):\n\nConsistency isn’t a streak.\n\nIt’s a pattern of returning.\n\nThe faster you return, the steadier things become.\n\nEven if returns are imperfect.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough for today\n\nMain copy (exact):\n\nNothing needs to be restarted.\n\nYou’re already here.\n\nThat’s consistency.\n\nSecondary text:\n\nReturning builds stability.\n\nCTA:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nMarks Consistency Phase started\nNo streak penalties\nNo “missed day” flags\nLogs “returned today” (neutral tag)\nUsed later for:\n\n```\no Confidence insights\n```\n\n```\no Relapse-resilience summaries\n```\n\nSAFETY & COMPLIANCE CHECK\n\nDay 36 avoids:\n\nStreak pressure\n\nReset language\n\nShame framing\n\nTherapy claims\n\nDay 36 supports:\n\nPsychological safety\n\nLong-term retention\n\nApp Store compliance\n\nCORE MESSAGE OF DAY 36\n\nYou don’t stay consistent by never leaving —\n\nyou stay consistent by returning.\n\nDAY 37 – HANDLING MISSED MOMENTS WITH CALM\n\n(Consistency Phase · Full Depth)\n\nFocus: Responding calmly after missed moments Core Skill: Emotional\nregulation without self-judgment Goal: Break guilt → urgency → repetition\nloops\n\nTotal time: 8 – 10 minutes Tone: Stabilizing, compassionate, grounding"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 37 · Handling Missed Moments with Calm\n\nMain copy (exact):\n\nToday is about missed moments.\n\nMoments where a pause wasn’t used.\n\nA routine wasn’t tried.\n\nOr support wasn’t remembered.\n\nThese moments don’t undo progress.\n\nWhat matters is how you respond afterward.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "NORMALIZING MISSES (CONTEXT)",
-            "body": "Screen title: Misses are normal\n\nMain copy (exact):\n\nMissing a pause or routine doesn’t mean you failed.\n\nIt means you’re human in a fast-moving moment.\n\nMissed moments happen even when progress is real.\n\nCalm responses prevent missed moments from turning into patterns.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nStops catastrophizing\nNormalizes slips\nReframes “mistakes” as data"
-          },
-          {
-            "title": "THE GUILT TRAP (IMPORTANT)",
-            "body": "Screen title: Why guilt makes things harder\n\nMain copy (exact):\n\nAfter a missed moment, guilt often shows up.\n\nGuilt increases pressure.\n\nPressure increases urgency.\n\nUrgency increases repetition.\n\nCalm interrupts this loop.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GUIDED CALM RESPONSE (PRIMARY EXPERIENCE)",
-            "body": "Screen title: Responding calmly\n\nInstruction text (above audio):\n\nUse this when you notice self-criticism after a missed moment.\n\nAUDIO SCRIPT (Word-for-Word, ~2–3 minutes)\n\nDay 37 – Strengthening Self-Trust (7-Minute Guided Meditation) Find\na comfortable place to sit. There is nothing you need to prove. Just a few quiet\nminutes to notice. If it feels okay, gently close your eyes. Or soften your\ngaze. Take one slow breath in...\n\nAnd let it go naturally. No need to adjust the rhythm. Just notice it. In... And\nout... Today is about self-trust. Not confidence in everything. Just reliability\nin small moments. Let your breath continue at its natural pace. Think back over\nthe past few weeks. Have there been moments when you noticed something earlier\nthan before? A stress signal. A subtle urge. A shift in mood. Even once. Stay\nwith that memory gently. In... And out... Self-trust does not begin with\nperfection. It begins with noticing and returning. Every time you pause, you\nreinforce reliability. Now gently ask yourself: Can I trust myself to notice?\nNot to react perfectly. Not to eliminate habits. Just to notice. Stay with that\nquestion softly. In...\n\nAnd out... Imagine a moment later today when something feels automatic. Picture\nyourself recognizing it. Even briefly. That recognition is trust. Trust grows\nthrough repetition. Not intensity. Not dramatic promises. Just steady awareness.\nBring your attention back to your body. Notice your breathing. Your shoulders.\nYour hands resting. You are here again. Present. That is reliability. Stay here\nquietly for a few breaths. In... And out... If your mind says, “I still make\nmistakes,” notice that thought gently. And return to your breath. Mistakes do\nnot remove trust. Avoidance does. And you are not avoiding. You are observing.\nThat matters. Self-trust feels quiet. It feels steady.\n\nIt does not need applause. It grows through consistency. Take another slow\nbreath in... And let it go gently. Notice how it feels to simply rely on your\nbreath. In... And out... Reliable. Steady. Present. Take one final slow breath\nin... And a steady breath out. Notice the room around you. The surface beneath\nyou. The calm of this moment. Self-trust is not a declaration. It is a pattern\nof returning. And today, you returned. When you’re ready, gently open your eyes.\nReturn to your day. Trust grows quietly. And you are building it. That is enough"
-          },
-          {
-            "title": "TODAY’S PRACTICE (TEXT)",
-            "body": "Screen title: Today’s practice\n\nMain copy (exact):\n\nToday, if you notice a missed moment, respond with calm — not correction.\n\nNo explanations.\n\nNo promises.\n\nJust return.\n\nSecondary text (small):\n\nCalm is the response.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nHow did responding calmly change the moment?\n\nOptional follow-ups (collapsed):\n\nDid guilt reduce?\nDid urgency settle faster?\nDid returning feel easier?\n\nHelper text (small):\n\nA few words are enough — or skip this entirely.\n\nCTA buttons:\n\n_Save & Continue_\n\n_Skip for Today_"
-          },
-          {
-            "title": "STABILITY REFRAME (TEXT)",
-            "body": "Screen title: Calm builds stability\n\nMain copy (exact):\n\nStability isn’t built by avoiding mistakes.\n\nIt’s built by how gently you respond when they happen.\n\nCalm responses reduce repetition more than strict rules ever could.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough for today\n\nMain copy (exact):\n\nYou handled difficulty with calm today.\n\nThat’s a powerful skill.\n\nCalm keeps progress moving.\n\nSecondary text:\n\nCalm supports consistency.\n\nCTA:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nLogs “calm response after miss” (yes/no/not sure)\nNo streak loss\nNo penalty\nUsed later for:\n\n```\no Relapse-resilience insights\n```\n\n```\no Confidence summaries\n```\n\nSAFETY & COMPLIANCE CHECK\n\nDay 37 avoids:\n\nShame language\n\nMoral framing\n\n“Get back on track” urgency\n\nTherapy claims\n\nDay 37 supports: Emotional regulation\n\nPsychological safety\n\nApp Store compliance\n\nCORE MESSAGE OF DAY 37\n\nMissed moments don’t cause setbacks.\n\nHarsh reactions do.\n\nDAY 38 – REDUCING ALL-OR-NOTHING THINKING\n\n(Consistency Phase · Full Depth)\n\nFocus: Mental flexibility Core Skill: Seeing progress in partial steps\nGoal: Prevent “I already messed up” spirals\n\nTotal time: 8 – 10 minutes Tone: Normalizing, grounding,\nperspective-building"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 38 · Reducing All-or-Nothing Thinking\n\nMain copy (exact):\n\nToday is about how the mind frames progress.\n\nAll-or-nothing thinking says: “If it’s not perfect, it doesn’t matter.”\n\nThat belief creates pressure and discouragement.\n\nToday, you’ll practice seeing progress in parts — not extremes.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "WHAT ALL-OR-NOTHING THINKING LOOKS LIKE (CONTEXT)",
-            "body": "Screen title: How this thinking shows up\n\nMain copy (exact):\n\nAll-or-nothing thinking often sounds like:\n\n“I already slipped, so what’s the point?”\n“Today is ruined.”\n“I’ll start again tomorrow.”\n“If I can’t do it right, I won’t do it at all.”\n\nThese thoughts feel convincing — but they’re not facts.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nHelps users recognize the pattern\nSeparates thoughts from truth\nReduces self-blame"
-          },
-          {
-            "title": "THE COST OF EXTREMES (IMPORTANT)",
-            "body": "Screen title: Why extremes make things harder\n\nMain copy (exact):\n\nAll-or-nothing thinking:\n\nTurns small slips into big setbacks\nErases partial progress\nIncreases urgency and guilt\nMakes returning harder\n\nFlexibility does the opposite.\n\nIt keeps progress moving.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GUIDED FLEXIBLE THINKING (PRIMARY EXPERIENCE)",
-            "body": "Screen title: Making space between extremes\n\nInstruction text (above audio):\n\nThis short guide helps you notice progress without needing perfection.\n\nAUDIO SCRIPT (Word-for-Word, ~2–3 minutes)\n\nDay 38 – Strengthening Inner Direction (7-Minute Guided Meditation) Find a\ncomfortable place to sit. There is nowhere you need to rush to. Just a few quiet\nminutes to settle. If it feels okay, gently close your eyes. Or soften your\ngaze.\n\nTake one slow breath in... And let it go naturally. No need to adjust your\nbreathing. Just notice it. In... And out... Today is about direction. Not\ndramatic change. Not big decisions. Just the quiet sense of where you are\nheading. Let your breath continue at its natural pace. Gently ask yourself: What\ndirection feels steady for me right now? Not what feels urgent. Not what others\nexpect. Just what feels steady. Stay with that question softly. In... And out...\nDirection does not always feel clear. Sometimes it feels like a small leaning. A\nslight preference. A subtle shift. Notice if there is even a small sense of\nleaning toward awareness. Toward steadiness. Toward clarity. Take a slow breath\nin... And gently out. Now imagine a familiar situation. A time of day when\nhabits feel automatic.\n\nPicture yourself entering that moment with quiet direction. Not forcing\nanything. Just remembering what feels steady. In... And out... Notice how that\nsubtle sense of direction changes the atmosphere of the moment. Even slightly.\nDirection does not need intensity. It does not need loud motivation. It can feel\ncalm. Consistent. Grounded. Bring your attention back to your body. Notice your\nfeet on the ground. Your back supported. Your breathing steady. Even your\nposture has direction. Balanced. Centered. Stay here for a few breaths. In...\nAnd out... If your mind says, “I don’t know my direction,” notice that thought\ngently. And return to the breath. Direction can begin with something simple: “I\nwant clarity.” “I want steadiness.”\n\n“I want awareness.” Simple is enough. Take another slow breath in... And let it\ngo gently. Now imagine yourself a few weeks from now. Not dramatically\ndifferent. Just slightly steadier. Picture that version of you sitting calmly.\nAware. Grounded. Notice how that feels. Subtle. Realistic. Possible. Stay with\nthat image softly. In... And out... Direction grows through repetition. Small\nawareness. Small pauses. Small choices. Take one final slow breath in... And a\nsteady breath out. Notice the room around you. The surface beneath you. The calm\nof this moment. Direction does not require urgency. It grows quietly. And today,\nyou noticed it. When you’re ready, gently open your eyes.\n\nReturn to your day. Steady direction is enough. And you are building it."
-          },
-          {
-            "title": "TODAY’S PRACTICE (TEXT)",
-            "body": "Screen title: Today’s practice\n\nMain copy (exact):\n\nToday, notice any all-or-nothing thoughts.\n\nYou don’t need to argue with them.\n\nJust gently add: “Some progress still counts.”\n\nThat’s enough.\n\nSecondary text (small):\n\nPartial effort is still effort.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nWhere did you notice “all or nothing” thinking today?\n\nOptional follow-ups (collapsed):\n\nHow did flexibility change the moment?\nDid returning feel easier?\n\nDid pressure reduce at all?\n\nHelper text (small):\n\nA few words are enough — or skip this entirely.\n\nCTA buttons:\n\n_Save & Continue_\n\n_Skip for Today_"
-          },
-          {
-            "title": "CONSISTENCY REFRAME (TEXT)",
-            "body": "Screen title: Progress is not erased\n\nMain copy (exact):\n\nOne moment doesn’t define a day.\n\nOne day doesn’t define a week.\n\nProgress accumulates even when things aren’t perfect.\n\nYou don’t lose what you’ve built because of one moment.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough for today\n\nMain copy (exact):\n\nLetting go of extremes creates steadiness.\n\nYou allowed room for progress today.\n\nThat flexibility matters.\n\nSecondary text:\n\nFlexibility supports consistency.\n\nCTA:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nLogs “flexible response used” (yes/no/not sure)\nNo streak impact\nNo penalty\nUsed later for:\n\n```\no Thought-pattern insights\n```\n\n```\no Confidence summaries\n```\n\nSAFETY & COMPLIANCE CHECK\n\nDay 38 avoids:\n\nCognitive restructuring claims\n\nTherapy framing\n\nMoral pressure\n\n“Correct your thinking” language\n\nDay 38 supports:\n\nEmotional safety\n\nSelf-compassion\n\nApp Store compliance\n\nCORE MESSAGE OF DAY 38\n\nProgress lives in the middle — not at the extremes.\n\nDAY 39 – CONTINUING AFTER A SLIP\n\n(Consistency Phase · Full Depth)\n\nFocus: What comes next after a slip Core Skill: Non-reactive\ncontinuation Goal: Prevent slips from turning into setbacks\n\nTotal time: 8 – 10 minutes Tone: Steady, compassionate, grounding"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 39 · Continuing After a Slip\n\nMain copy (exact):\n\nToday is about slips.\n\nA slip might mean:\n\nActing on an urge\nSkipping a pause\nNot using a routine\n\nSlips happen.\n\nThey don’t undo progress.\n\nWhat matters is how you continue afterward.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "NORMALIZING SLIPS (CONTEXT)",
-            "body": "Screen title: Slips are not setbacks\n\nMain copy (exact):\n\nSlips are part of learning.\n\nThey don’t mean you’re back where you started.\n\nMost progress happens _between_ slips — in how quickly and calmly you continue\nafterward.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nReduces panic responses\nPrevents abandonment thinking\nKeeps users engaged"
-          },
-          {
-            "title": "THE ESCALATION TRAP (IMPORTANT)",
-            "body": "Screen title: What turns slips into setbacks\n\nMain copy (exact):\n\nA slip becomes a setback when it triggers:\n\nHarsh self-talk\n“I’ve ruined it” thinking\n\nGiving up for the day\nAvoiding support\n\nCalm continuation stops this chain.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GUIDED CONTINUATION (PRIMARY EXPERIENCE)",
-            "body": "Screen title: Continuing calmly\n\nInstruction text (above audio):\n\nUse this when you notice a slip — immediately or later.\n\nAUDIO SCRIPT (Word-for-Word, ~2–3 minutes)\n\nDay\n39 – Balanced Effort (7-Minute Guided Meditation) Find a comfortable place to\nsit. There is nothing you need to push. Just a few quiet minutes to settle. If\nit feels okay, gently close your eyes. Or soften your gaze. Take one slow breath\nin... And let it go naturally. No need to control your breathing. Just notice\nit. In... And out... Today is about effort. Not strong effort. Not forceful\neffort. Just balanced effort. Let your breath continue at its natural pace.\nNotice how breathing itself requires effort. But not strain. It happens\nsteadily. In... And out... Balanced effort feels similar. It moves. But it does\nnot force. Think about your awareness over the past weeks. Have there been\nmoments when you tried very hard? Moments when you tried less?\n\nNotice how each felt. Take a slow breath in... And gently out. Too much force\ncan create tension. Too little attention can create drift. Balanced effort sits\nsomewhere in between. Steady. Sustainable. Now imagine a moment later today when\nan urge appears. Picture yourself responding with calm attention. Not gripping\nthe moment. Not pushing it away. Just staying present. In... And out... Notice\nhow that feels. Does it feel manageable? Less exhausting? Balanced effort does\nnot demand perfection. It allows rhythm. Bring your attention back to your body.\nNotice your shoulders. If they feel tight, soften slightly. Notice your jaw.\nAllow it to relax. Effort that is balanced does not feel rigid. Stay here for a\nfew breaths. In...\n\nAnd out... If your mind says, “I need to try harder,” notice that thought\ngently. And return to the breath. If your mind says, “It doesn’t matter,” notice\nthat too. Balance lives between extremes. Now imagine applying gentle attention\nto one small moment today. Not all moments. Just one. That is enough. Stay with\nyour breath. In... And out... Consistency grows through balanced effort. Not\nintensity. Not avoidance. Just steady presence. Take one final slow breath in...\nAnd a steady breath out. Notice the room around you. The surface beneath you.\nThe quiet steadiness of sitting here. Balanced effort supports sustainability.\nAnd sustainability builds stability. Today, you practiced balance. When you’re\nready, gently open your eyes.\n\nReturn to your day. Steady effort is enough. And you are learning it."
-          },
-          {
-            "title": "TODAY’S PRACTICE (TEXT)",
-            "body": "Screen title: Today’s practice\n\nMain copy (exact):\n\nToday, if a slip happens, practice continuing —\n\nwithout punishment and without excuses.\n\nContinue with awareness.\n\nThat’s enough.\n\nSecondary text (small):\n\nNo reset required.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nHow did continuing calmly change the experience?\n\nOptional follow-ups (collapsed):\n\nDid guilt reduce?\nDid the urge to give up lessen?\nDid returning feel easier?\n\nHelper text (small):\n\nA few words are enough — or skip this entirely.\n\nCTA buttons:\n\n_Save & Continue_\n\n_Skip for Today_"
-          },
-          {
-            "title": "STABILITY REFRAME (TEXT)",
-            "body": "Screen title: Continuation is strength\n\nMain copy (exact):\n\nStrength isn’t avoiding slips.\n\nStrength is continuing without making them bigger.\n\nCalm continuation protects what you’ve built.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough for today\n\nMain copy (exact):\n\nYou practiced continuing today.\n\nThat keeps progress moving — even through difficulty.\n\nSecondary text:\n\nContinuation builds stability.\n\nCTA: _Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nLogs “continued after slip” (yes / no / not sure)\nNo streak penalty\nNo negative scoring\nUsed later for:\n\n```\no Relapse-resilience insights\n```\n\n```\no Confidence summaries\n```\n\nSAFETY & COMPLIANCE CHECK\n\nDay 39 avoids:\n\nAbstinence framing\n\nMoral judgment\n\nTherapy claims\n\n“Get back on track” urgency\n\nDay 39 supports:\n\nPsychological safety\n\nSelf-regulation\n\nApp Store compliance\n\nCORE MESSAGE OF DAY 39\n\nSlips don’t define progress.\n\nHow you continue does.\n\nDAY 40 – HANDLING MIXED DAYS CALMLY\n\n(Consistency Phase · Full Depth)\n\nFocus: Neutralizing day-level judgment Core Skill: Holding mixed\nexperiences without escalation Goal: Prevent emotional overreaction to\nimperfect days\n\nTotal time: 8 – 10 minutes Tone: Grounded, stabilizing, realistic"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 40 · Handling Mixed Days Calmly\n\nMain copy (exact):\n\nToday is about mixed days.\n\nDays where some moments feel steady and others feel difficult.\n\nThese days are normal.\n\nThey don’t mean progress is stalling.\n\nToday’s practice is about holding the whole day calmly — without labeling it.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "WHY MIXED DAYS ARE NORMAL (CONTEXT)",
-            "body": "Screen title: Most days are mixed\n\nMain copy (exact):\n\nVery few days are fully smooth or fully difficult.\n\nMost days include:\n\nMoments of awareness\nMoments of habit\nMoments of effort\nMoments of ease\n\nWhen days are judged as “bad,” pressure increases unnecessarily.\n\nCalm acceptance keeps balance.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nPrevents binary thinking\nReduces emotional spikes\nEncourages realism"
-          },
-          {
-            "title": "THE PROBLEM WITH DAY LABELS (IMPORTANT)",
-            "body": "Screen title: Labels add pressure\n\nMain copy (exact):\n\nLabeling days as “good” or “bad” creates pressure to perform.\n\nIt also:\n\nErases partial progress\nMagnifies difficult moments\nEncourages giving up early\n\nMixed days don’t need labels.\n\nThey need calm.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GUIDED BALANCED VIEW (PRIMARY EXPERIENCE)",
-            "body": "Screen title: Seeing the whole day\n\nInstruction text (above audio):\n\nThis short guide helps you hold a mixed day without judgment.\n\nAUDIO SCRIPT (Word-for-Word, ~2–3 minutes)\n\nDay 40 –\nSix-Week Reflection (7-Minute Guided Meditation) Find a comfortable place to\nsit. There is nothing you need to measure. Nothing you need to prove. Just a few\nquiet minutes to reflect gently. If it feels okay, close your eyes. Or soften\nyour gaze. Take one slow breath in... And let it go naturally. No need to adjust\nyour breathing. Just notice it. In... And out... It has been several weeks of\nnoticing. Not forcing change. Not chasing results. Just observing patterns.\nToday is about looking back softly. Not to evaluate. Just to understand. Let\nyour breath continue at its natural pace. Gently think back to the earlier\nweeks. When you first started noticing urges. Stress. Energy shifts. Habit\nmoments. What feels more familiar now? Are patterns easier to recognize?\n\nEven slightly? Take a slow breath in... And gently out. Notice whether your\nreactions feel less surprising. Not necessarily eliminated. Just clearer.\nClarity often feels subtle. It rarely feels dramatic. Now reflect on pauses.\nHave they become more accessible? Even occasionally? Awareness does not need to\nbe constant. It grows through repetition. Stay with your breath. In... And\nout... Think about emotional steadiness. Does it feel slightly easier to stay\npresent during discomfort? Even briefly? If so, acknowledge it quietly. If not,\nsimply notice that too. Reflection is information. Not evaluation. Take another\nslow breath in... And let it go gently. If your mind begins comparing — “I\nshould be further by now,” notice that thought softly. And return to observing.\nSix weeks is not a finish line.\n\nIt is a period of familiarity. Familiarity reduces confusion. And reduced\nconfusion builds calm. Bring your attention back to your body. Notice your\nbreathing. Your shoulders. Your hands resting. You are here again. Present.\nAware. That continuity matters. Stay here quietly for a few breaths. In... And\nout... Now gently ask yourself: What feels slightly steadier than before? It may\nbe small. It may be subtle. That is enough. Change does not need to be loud. It\noften unfolds quietly. Take one final slow breath in... And a steady breath out.\nNotice the room around you. The surface beneath you. The quiet of this moment.\nSix weeks of attention may not feel dramatic. But steady awareness builds\ngradually. And you have been building it. When you’re ready, gently open your\neyes.\n\nReturn to your day. You are not finishing. You are continuing. And that is\nenough."
-          },
-          {
-            "title": "TODAY’S PRACTICE (TEXT)",
-            "body": "Screen title: Today’s practice\n\nMain copy (exact):\n\nToday, if you notice the urge to judge the day, pause and remind yourself:\n\n“This day can be mixed.”\n\nThat’s enough.\n\nSecondary text (small):\n\nNo labels required.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nWhat parts of today felt steady, even briefly?\n\nOptional follow-ups (collapsed):\n\nWhat parts felt difficult?\nHow did holding both feel?\nDid pressure reduce when you didn’t label the day?\n\nHelper text (small):\n\nA few words are enough — or skip this entirely.\n\nCTA buttons: _Save & Continue_\n\n_Skip for Today_"
-          },
-          {
-            "title": "CONSISTENCY REFRAME (TEXT)",
-            "body": "Screen title: Mixed days still count\n\nMain copy (exact):\n\nProgress doesn’t require perfect days.\n\nIt requires staying present through mixed ones.\n\nCalm steadiness builds over time — not from flawless stretches.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough for today\n\nMain copy (exact):\n\nYou held a mixed day with calm today.\n\nThat steadiness is real progress.\n\nSecondary text:\n\nMixed days build strength.\n\nCTA:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nLogs “handled mixed day calmly” (yes / no / not sure)\nNo scoring\nNo streak impact\nUsed later for:\n\n```\no Emotional steadiness insights\n```\n\n```\no Weekly reflections\n```\n\nSAFETY & COMPLIANCE CHECK\n\nDay 40 avoids:\n\n“Good/bad day” scoring\n\nPerfection framing\n\nTherapy claims\n\nOutcome pressure\n\nDay 40 supports:\n\nEmotional balance\n\nPsychological safety\n\nApp Store compliance\n\nCORE MESSAGE OF DAY 40\n\nMixed days don’t slow progress.\n\nHarsh judgments do.\n\nDAY 41 – TRUSTING STEADINESS OVER INTENSITY\n\n(Consistency Phase · Full Depth)\n\nFocus: Valuing steady change instead of emotional highs Core Skill:\nRecognizing progress without intensity Goal: Prevent users from abandoning\ncalm progress in search of dramatic results\n\nTotal time: 8 – 10 minutes Tone: Grounded, reassuring,\nconfidence-building"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 41 · Trusting Steadiness\n\nMain copy (exact):\n\nToday is about steadiness.\n\nSometimes progress feels quiet.\n\nLess intense.\n\nLess dramatic.\n\nThat doesn’t mean nothing is happening.\n\nIt often means something stable is forming.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "WHY INTENSITY CAN BE MISLEADING (CONTEXT)",
-            "body": "Screen title: Why intensity isn’t the goal\n\nMain copy (exact):\n\nIntense change often feels motivating — but it doesn’t always last.\n\nSteady change may feel subtle, but it’s easier to maintain.\n\nWhen things feel calmer, the mind sometimes says: “Nothing is happening.”\n\nToday is about learning to trust the quiet signs of progress.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nPrevents boredom-driven dropout\nReframes calm as success\nStabilizes expectations"
-          },
-          {
-            "title": "SIGNS OF STEADY PROGRESS (GUIDANCE)",
-            "body": "Screen title: What steady progress looks like\n\nMain copy (exact):\n\nSteady progress may show up as:\n\nLess urgency\nFaster recovery after difficulty\nFewer emotional swings\nMore neutral moments\nLess mental debate\n\nThese signs are easy to miss — but they matter.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GUIDED TRUST PRACTICE (PRIMARY EXPERIENCE)",
-            "body": "Screen title: Noticing steadiness\n\nInstruction text (above audio):\n\nThis short guide helps you recognize steady progress without forcing excitement.\n\nAUDIO SCRIPT (Word-for-Word, ~2–3 minutes)\n\nDay 41 – Calm Under Pressure (7-Minute Guided Meditation) Find a\ncomfortable place to sit. There is nothing you need to handle right now. Just a\nfew quiet minutes to settle. If it feels okay, gently close your eyes. Or soften\nyour gaze. Take one slow breath in... And let it go naturally. No need to adjust\nthe rhythm. Just notice it. In... And out... Today is about pressure. Not\neliminating it. Not avoiding it. Just staying steady when it appears. Let your\nbreath continue at its natural pace. Gently think of a recent moment that felt\nslightly pressured. A deadline. A conversation. A responsibility. Notice how\nyour body reacted. Was there tightness? Faster thoughts? A sense of urgency?\nStay with that memory gently.\n\nIn... And out... Pressure often speeds things up. Breath shortens. Body\ntightens. Thoughts narrow. Now imagine that same moment again. But this time,\nimagine slowing your breath slightly. In... And out... Notice how even one\nslower breath changes the rhythm. Does it reduce urgency? Even a little? Calm\ndoes not remove pressure. It steadies it. Stay with your breath. In... And\nout... Now bring your attention to your shoulders. Allow them to soften\nslightly. Notice your jaw relaxing. Pressure often shows up physically. And calm\ncan begin physically too. Imagine being in a pressured moment later today.\nPicture yourself feeling it rise. And responding with one steady breath. Not\nsuppressing the feeling. Just staying present. In...\n\nAnd out... Notice how that feels. Steady. Grounded. Calm under pressure does not\nmean feeling nothing. It means feeling without rushing. If your mind says, “I\ncan’t stay calm,” notice that thought gently. And return to your breath. Calm\ngrows gradually. Through repetition. Through awareness. Not through force. Stay\nhere quietly for a few breaths. In... And out... Pressure rises. Pressure\nshifts. Pressure passes. Awareness remains. Take one final slow breath in... And\na steady breath out. Notice the room around you. The surface beneath you. The\nsteadiness of sitting here. Calm is not the absence of pressure. It is\nsteadiness within it. And today, you practiced steadiness. When you’re ready,\n\ngently open your eyes. Return to your day. Pressure may appear. And you can\nremain aware. That is enough."
-          },
-          {
-            "title": "TODAY’S PRACTICE (TEXT)",
-            "body": "Screen title: Today’s practice\n\nMain copy (exact):\n\nToday, notice any urge to look for intensity.\n\nWhen it appears, gently remind yourself:\n\n“Steady is enough.”\n\nThat’s the practice.\n\nSecondary text (small):\n\nCalm counts.\n\nCTA: _Continue_"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nWhere did you notice steadiness recently?\n\nOptional follow-ups (collapsed):\n\nDid anything feel less urgent?\nDid reactions feel calmer?\nDid you recover faster from difficulty?\n\nHelper text (small):\n\nA few words are enough — or skip this entirely.\n\nCTA buttons:\n\n_Save & Continue_\n\n_Skip for Today_"
-          },
-          {
-            "title": "CONSISTENCY REFRAME (TEXT)",
-            "body": "Screen title: Steady beats intense\n\nMain copy (exact):\n\nIntensity fades.\n\nSteadiness stays.\n\nProgress that feels calm is progress you can live with.\n\nYou don’t need to feel different every day to be changing.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough for today\n\nMain copy (exact):\n\nYou trusted steadiness today.\n\nThat trust supports long-term change.\n\nCalm progress is real progress.\n\nSecondary text:\n\nSteadiness builds resilience.\n\nCTA:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nLogs “recognized steady progress” (yes / no / not sure)\nNo streaks\nNo scoring\nUsed later for:\n\n```\no Confidence trend insights\n```\n\n```\no Long-term stability summaries\n```\n\nSAFETY & COMPLIANCE CHECK\n\nDay 41 avoids:\n\nMotivational hype\n\nOutcome guarantees\n\nTherapy language\n\nPressure to “feel better”\n\nDay 41 supports:\n\nEmotional regulation\n\nSustainable expectations\n\nApp Store compliance\n\nCORE MESSAGE OF DAY 41\n\nProgress doesn’t need intensity to be real.\n\nCalm change is the kind that lasts.\n\nDAY 42 – STAYING CONSISTENT WITHOUT MONITORING\n\n(Consistency Phase · Full Depth)\n\nFocus: Letting go of constant checking Core Skill: Trusting internal\nsignals instead of tracking Goal: Reduce mental load and prevent burnout\nfrom self-monitoring\n\nTotal time: 8 – 10 minutes Tone: Freeing, reassuring,\nconfidence-affirming"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 42 · Staying Consistent Without Monitoring\n\nMain copy (exact):\n\nToday is about easing off monitoring.\n\nTracking can be helpful — especially in the beginning.\n\nBut over time, constant checking can become tiring.\n\nToday, you’ll practice trusting steadiness without watching it closely.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "WHY MONITORING CAN BECOME HEAVY (CONTEXT)",
-            "body": "Screen title: When tracking turns into pressure\n\nMain copy (exact):\n\nMonitoring helps build awareness.\n\nBut too much monitoring can:\n\nIncrease self-judgment\nCreate pressure to perform\nKeep attention locked on habits\nMake progress feel fragile\n\nConsistency grows best when attention softens.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nPrevents tracking fatigue\n\nEncourages autonomy\nReduces anxiety around “doing it right”"
-          },
-          {
-            "title": "WHAT CONSISTENCY LOOKS LIKE WITHOUT TRACKING (GUIDANCE)",
-            "body": "Screen title: Signs you don’t need to monitor as much\n\nMain copy (exact):\n\nYou may be ready to loosen monitoring if:\n\nPausing happens naturally\nRoutines start without reminders\nUrges feel less urgent\nRecovery feels quicker\nYou think about habits less often\n\nThese signs mean steadiness is already forming.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GUIDED TRUST PRACTICE (PRIMARY EXPERIENCE)",
-            "body": "Screen title: Trusting what’s already happening\n\nInstruction text (above audio):\n\nThis short guide helps you release the need to check progress.\n\nAUDIO SCRIPT (Word-for-Word, ~2–3 minutes)\n\nDay 42 – Stability During Urges (7-Minute Guided\nMeditation) Find a comfortable place to sit. There is nothing you need to\nresist right now. Just a few quiet minutes to settle. If it feels okay, gently\nclose your eyes. Or soften your gaze. Take one slow breath in... And let it go\nnaturally. No need to adjust your breathing. Just notice it. In... And out...\nToday is about urges. Not eliminating them. Not overpowering them. Just staying\nsteady while they move. Let your breath continue at its natural pace. Gently\nthink of a recent urge. Not the strongest one. Just an ordinary moment of\nwanting. Bring it to mind softly. Now notice the first signal. Was it a thought?\nA sensation? A time of day? A feeling?\n\nStay with that beginning. In... And out... Urges often feel urgent. As if\nsomething must happen quickly. Notice how that urgency feels in the body. Is\nthere tightness? Restlessness? Movement? Just observe. Now imagine that same\nurge appearing again. But this time, imagine not rushing. Imagine breathing\nonce. In... And out... Notice how one steady breath changes the rhythm. Does the\nurge feel slightly slower? More defined? Even slightly less urgent? Stability\ndoes not mean the urge disappears. It means you remain grounded while it exists.\nBring your attention back to your body. Feel the weight of sitting. The support\nbeneath you. Your breathing steady. Even while imagining the urge, your body can\nremain grounded. Stay here quietly for a few breaths. In... And out...\n\nNow imagine letting the urge rise without acting. Just observing. Like watching\na wave form and begin to settle. Notice how waves change shape. Even strong ones\nshift. Urges move too. If your mind says, “I have to respond,” notice that\nthought gently. And return to the breath. Urgency often softens when observed.\nTake another slow breath in... And let it go gently. Stability grows through\nrepetition. Each time you remain present, even briefly, you strengthen\nsteadiness. Take one final slow breath in... And a steady breath out. Notice the\nroom around you. The surface beneath you. The quiet steadiness of this moment.\nUrges may rise. They may feel strong. But you can remain grounded while they\nmove. Today, you practiced stability. When you’re ready, gently open your eyes.\nReturn to your day.\n\nSteadiness reduces urgency. And that is enough."
-          },
-          {
-            "title": "TODAY’S PRACTICE (TEXT)",
-            "body": "Screen title: Today’s practice\n\nMain copy (exact):\n\nToday, practice not checking.\n\nNo reviewing stats.\n\nNo measuring the day.\n\nJust live the day and allow steadiness to happen.\n\nSecondary text (small):\n\nYou can always check later.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nHow did it feel to check less today?\n\nOptional follow-ups (collapsed):\n\nDid pressure reduce?\nDid you feel more relaxed?\nDid anything change unexpectedly?\n\nHelper text (small):\n\nA few words are enough — or skip this entirely.\n\nCTA buttons:\n\n_Save & Continue_\n\n_Skip for Today_"
-          },
-          {
-            "title": "AUTONOMY REFRAME (TEXT)",
-            "body": "Screen title: Consistency doesn’t need supervision\n\nMain copy (exact):\n\nYou don’t need to watch consistency for it to continue.\n\nSkills you’ve practiced don’t disappear when attention shifts.\n\nLetting go of monitoring is a sign of trust — not neglect.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough for today\n\nMain copy (exact):\n\nYou allowed progress to carry itself today.\n\nThat trust builds independence.\n\nYou’re learning how to live without constant effort.\n\nSecondary text:\n\nSteadiness is becoming natural.\n\nCTA:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nLogs “reduced monitoring” (yes / no / not sure)\nNo penalties\nNo streaks\nUsed later for:\n\n```\no Independence indicators\n```\n\n```\no Long-term readiness insights\n```\n\nSAFETY & COMPLIANCE CHECK\n\nDay 42 avoids:\n\nPressure to stop tracking permanently\n\n“You should be over this by now” language\n\nTherapy claims\n\nOutcome guarantees\n\nDay 42 supports:\n\nAutonomy\n\nReduced mental load\n\nApp Store compliance\n\nCORE MESSAGE OF DAY 42\n\nProgress doesn’t need to be watched to continue.\n\nDAY 45 – QUIET STRENGTH\n\n(Quiet Strength Phase · Full Depth)\n\nFocus: Recognizing strength that doesn’t announce itself Core Skill:\nTrusting internal stability Goal: Help users stop mistaking calm for\nstagnation\n\nTotal time: 8 – 10 minutes Tone: Grounded, affirming, quietly empowering"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 45 · Quiet Strength\n\nMain copy (exact):\n\nToday is about strength — not the loud kind.\n\nQuiet strength doesn’t feel intense.\n\nIt doesn’t push.\n\nIt doesn’t demand attention.\n\nIt simply holds steady when things move around it.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "WHY STRENGTH CAN FEEL INVISIBLE (CONTEXT)",
-            "body": "Screen title: When strength feels subtle\n\nMain copy (exact):\n\nMany people expect strength to feel like effort or resistance.\n\nBut as habits loosen, strength often feels calm.\n\nWhen things feel quieter, the mind may wonder if progress has slowed.\n\nToday is about recognizing that quiet often means stable.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nPrevents “nothing’s happening” thinking\nValidates calm states\nReduces unnecessary effort"
-          },
-          {
-            "title": "SIGNS OF QUIET STRENGTH (GUIDANCE)",
-            "body": "Screen title: What quiet strength looks like\n\nMain copy (exact):\n\nQuiet strength may show up as:\n\nLess inner debate\nFewer emotional swings\nFaster settling after urges\nMore neutral moments\nLess need to control\n\nThese signs are easy to miss — but they matter deeply.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GUIDED RECOGNITION (PRIMARY EXPERIENCE)",
-            "body": "Screen title: Noticing quiet strength\n\nInstruction text (above audio):\n\nThis short guide helps you notice stability without trying to increase it.\n\nAUDIO SCRIPT (Word-for-Word, ~2–3 minutes)\n\nDay 45 – Midpoint Reflection (7-Minute\nGuided Meditation) Find a comfortable place to sit. There is nothing you need\nto evaluate. Nothing you need to celebrate. Just a few quiet minutes to reflect\ngently. If it feels okay, close your eyes. Or soften your gaze. Take one slow\nbreath in... And let it go naturally. No need to adjust your breathing. Just\nnotice it. In... And out... You have been practicing awareness for several\nweeks. Not forcing change. Not chasing results. Just observing. Today is about\npausing and noticing what feels familiar. Let your breath continue at its\nnatural pace. Gently think back to the beginning. When you first started\nnoticing urges. Stress. Energy shifts. Routines. What feels clearer now? Are\npatterns easier to recognize?\n\nEven slightly? Take a slow breath in... And gently out. Notice whether reactions\nfeel less surprising. Not necessarily eliminated. Just more understandable.\nUnderstanding builds steadiness. Steadiness reduces urgency. Now reflect on\npauses. Have they become more natural? Even occasionally? Awareness does not\nneed to be constant. It grows through repetition. Stay with your breath. In...\nAnd out... Think about emotional steadiness. Does it feel slightly easier to\nstay present during discomfort? Even briefly? If so, acknowledge it quietly. If\nnot, simply notice that too. Reflection is information. Not evaluation. Take\nanother slow breath in... And let it go gently. If your mind begins comparing —\n“I should feel further along,” notice that thought softly. And return to\nobserving. This point is not a finish line.\n\nIt is simply a continuation. You are becoming familiar with your patterns.\nFamiliarity reduces confusion. And reduced confusion builds calm. Bring your\nattention back to your body. Notice your breathing. Your shoulders. Your hands\nresting. You are here again. Present. Aware. That continuity matters. Stay here\nquietly for a few breaths. In... And out... Now gently ask yourself: What feels\nslightly steadier than before? It may be subtle. It may be small. That is\nenough. Change often unfolds quietly. Without drama. Without announcement. Take\none final slow breath in... And a steady breath out. Notice the room around you.\nThe surface beneath you. The quiet of this moment. This is not a midpoint to\nmeasure. It is a moment to notice. You are continuing.\n\nAnd that is enough. When you’re ready, gently open your eyes. Return to your\nday. Steady awareness continues. And you are building it."
-          },
-          {
-            "title": "TODAY’S PRACTICE (TEXT)",
-            "body": "Screen title: Today’s practice\n\nMain copy (exact):\n\nToday, notice moments where things feel steady without effort.\n\nDon’t try to increase them.\n\nJust recognize them when they appear.\n\nSecondary text (small):\n\nCalm counts as strength.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nWhere did you notice quiet strength recently?\n\nOptional follow-ups (collapsed):\n\nDid anything feel easier than before?\nDid urges pass with less attention?\nDid calm feel unfamiliar or normal?\n\nHelper text (small):\n\nA few words are enough — or skip this entirely.\n\nCTA buttons: _Save & Continue_\n\n_Skip for Today_"
-          },
-          {
-            "title": "INDEPENDENCE REFRAME (TEXT)",
-            "body": "Screen title: Strength doesn’t need effort\n\nMain copy (exact):\n\nYou don’t need to hold yourself together for strength to exist.\n\nWhat you’ve practiced is beginning to support you on its own.\n\nThat’s not loss of control — it’s integration.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough for today\n\nMain copy (exact):\n\nQuiet strength doesn’t demand proof.\n\nIt simply continues.\n\nYou’re building something stable — even when it feels uneventful.\n\nSecondary text:\n\nStability is strength.\n\nCTA:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nLogs “recognized quiet strength” (yes / no / not sure)\nNo streaks\nNo scoring\nUsed later for:\n\n```\no Independence readiness insights\n```\n\n```\no Confidence summaries\n```\n\nSAFETY & COMPLIANCE CHECK\n\nDay 45 avoids:\n\n“Stay strong” pressure\n\nAchievement framing\n\nTherapy claims\n\nOutcome guarantees\n\nDay 45 supports:\n\nEmotional steadiness\n\nAutonomy\n\nApp Store compliance\n\nCORE MESSAGE OF DAY 45\n\nStrength doesn’t need intensity to be real.\n\nDAY 46 – TRUSTING YOURSELF WITHOUT TOOLS\n\n(Quiet Strength Phase · Full Depth)\n\nFocus: Internalizing skills Core Skill: Acting from awareness without\nprompts Goal: Build confidence that support lives _inside_ , not just in the\napp\n\nTotal time: 8 – 10 minutes Tone: Empowering, steady, reassuring"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 46 · Trusting Yourself Without Tools\n\nMain copy (exact):\n\nToday is about trust.\n\nNot trust in routines.\n\nNot trust in reminders.\n\nBut trust in yourself.\n\nOver time, tools are meant to become quieter — because you’ve learned how to\nrespond on your own.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "WHY TOOLS ARE MEANT TO FADE (CONTEXT)",
-            "body": "Screen title: Tools are temporary by design\n\nMain copy (exact):\n\nTools help build awareness.\n\nThey slow things down when everything feels fast.\n\nBut tools are not the goal.\n\nThe goal is to carry the skill without needing reminders.\n\nTrust grows when you notice you’re responding naturally.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nPrevents app dependence\nReinforces autonomy\nSignals healthy progress"
-          },
-          {
-            "title": "SIGNS YOU’RE READY (GUIDANCE)",
-            "body": "Screen title: Signs you’re already doing this\n\nMain copy (exact):\n\nYou may already be trusting yourself if:\n\nYou pause without thinking about it\nYou recover faster after urges\nYou don’t always reach for the app\nYou feel steadier without explanation\n\nThese are signs of learning — not of forgetting.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GUIDED SELF-TRUST PRACTICE (PRIMARY EXPERIENCE)",
-            "body": "Screen title: Letting yourself respond\n\nInstruction text (above audio):\n\nThis guide helps you notice your own responses without directing them.\n\nAUDIO SCRIPT (Word-for-Word, ~2–3 minutes)\n\nDay 46 – Long-Term\nStability (7-Minute Guided Meditation) Find a comfortable place to sit. There\nis nothing you need to complete. Just a few quiet minutes to settle. If it feels\nokay, gently close your eyes. Or soften your gaze. Take one slow breath in...\nAnd let it go naturally. No need to adjust your breathing. Just notice it. In...\nAnd out... You’ve spent weeks building awareness. Not through force. Not through\nintensity. Through repetition. Today is about long-term stability. Not short\nbursts of effort. Not dramatic change. Just sustainability. Let your breath\ncontinue at its natural pace. Bring your attention to the feeling of sitting.\nSupported. Balanced. Steady.\n\nStability feels like this. Quiet. Grounded. Unrushed. Take a slow breath in...\nAnd gently out. Long-term steadiness does not rely on motivation. Motivation\nrises and falls. Stability grows from rhythm. Now imagine yourself weeks from\nnow. Not drastically different. Just consistent. Calm. Aware. Picture yourself\nresponding to an urge with steadiness. Not tension. Not urgency. Just presence.\nIn... And out... Notice how that image feels. Sustainable. Realistic. Balanced.\nLong-term stability does not require perfection. It allows occasional mistakes.\nIt allows learning. It allows return. Bring your attention back to your breath.\nIn...\n\nAnd out... Notice how breathing continues without force. That is sustainability.\nEffort without strain. Awareness without pressure. Now imagine facing a\ndifficult moment later today. Picture yourself staying grounded. Not rushing.\nNot tightening. Just steady. In... And out... Stability grows from repetition.\nEach pause. Each moment of noticing. Each return. Stay here quietly for a few\nbreaths. In... And out... If your mind says, “What if I lose this steadiness?”\nnotice that thought gently. And return to the breath. Stability is not something\nyou hold tightly. It is something you practice. Again and again. Take one final\nslow breath in... And a steady breath out. Notice the room around you. The\nsurface beneath you.\n\nThe calm of this moment. Long-term change is not dramatic. It is steady. And you\nare building steadiness. When you’re ready, gently open your eyes. Return to\nyour day. Sustainable stability grows quietly. And today, you strengthened it."
-          },
-          {
-            "title": "TODAY’S PRACTICE (TEXT)",
-            "body": "Screen title: Today’s practice\n\nMain copy (exact):\n\nToday, allow yourself to respond naturally — without using tools first.\n\nIf you need support, it’s still available.\n\nBut notice what you can do on your own.\n\nSecondary text (small):\n\nSupport is optional — not required.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nWhere did you trust yourself today?\n\nOptional follow-ups (collapsed):\n\nDid anything surprise you?\nDid it feel easier than expected?\nDid confidence feel quiet or obvious?\n\nHelper text (small):\n\nA few words are enough — or skip this entirely.\n\nCTA buttons:\n\n_Save & Continue_\n\n_Skip for Today_"
-          },
-          {
-            "title": "INDEPENDENCE REFRAME (TEXT)",
-            "body": "Screen title: Support doesn’t disappear\n\nMain copy (exact):\n\nTrusting yourself doesn’t mean losing support.\n\nIt means you choose when to use it.\n\nIndependence is not absence — it’s flexibility.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough for today\n\nMain copy (exact):\n\nYou trusted yourself today.\n\nThat trust is earned — not forced.\n\nYou’re learning how to move forward with confidence.\n\nSecondary text:\n\nSelf-trust is forming.\n\nCTA:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nLogs “responded without tools” (yes / no / not sure)\nNo streak impact\nNo penalties\nUsed later for:\n\n```\no Independence readiness\n```\n\n```\no Confidence summaries\n```\n\nSAFETY & COMPLIANCE CHECK\n\nDay 46 avoids:\n\n“You don’t need help anymore” framing\n\nApp abandonment pressure\n\nTherapy claims\n\nOutcome guarantees\n\nDay 46 supports: Autonomy\n\nHealthy independence\n\nApp Store compliance\n\nCORE MESSAGE OF DAY 46\n\nTools teach skills.\n\nSkills become yours.\n\nDAY 47 – LETTING HABITS FADE NATURALLY\n\n(Quiet Strength Phase · Full Depth)\n\nFocus: Allowing change instead of forcing it Core Skill:\nNon-interference Goal: Reduce struggle by letting habits lose relevance on\ntheir own\n\nTotal time: 8 – 10 minutes Tone: Calm, spacious, relieving"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 47 · Letting Habits Fade Naturally\n\nMain copy (exact):\n\nToday is about not pushing.\n\nNot resisting.\n\nNot forcing habits to stop.\n\nWhen habits are no longer fed by urgency or attention, they often soften on\ntheir own.\n\nToday’s practice is about letting that happen.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "WHY FORCE KEEPS HABITS STRONG (CONTEXT)",
-            "body": "Screen title: Why effort can backfire\n\nMain copy (exact):\n\nWhen habits are fought aggressively, they often become louder.\n\nAttention, resistance, and pressure can all keep habits active.\n\nHabits fade more easily when they receive less energy — not more control.\n\nToday is about easing off.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nPrevents “trying harder” traps\nReduces inner conflict\nEncourages gentler change"
-          },
-          {
-            "title": "WHAT FADING CAN LOOK LIKE (GUIDANCE)",
-            "body": "Screen title: Signs habits are fading\n\nMain copy (exact):\n\nHabits may fade as:\n\nUrges feel less personal\nThoughts appear less often\nResponses feel automatic\nAttention moves elsewhere faster\nThe habit feels less important\n\nFading is subtle.\n\nIt doesn’t announce itself.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GUIDED ALLOWING PRACTICE (PRIMARY EXPERIENCE)",
-            "body": "Screen title: Letting things soften\n\nInstruction text (above audio):\n\nThis guide helps you step back and allow change without managing it.\n\nAUDIO SCRIPT (Word-for-Word, ~2–3 minutes)\n\nDay 47 – Identity Through Repetition (7-Minute Guided Meditation) Find a\ncomfortable place to sit. There is nothing you need to become right now. Just a\nfew quiet minutes to settle. If it feels okay, gently close your eyes. Or soften\nyour gaze. Take one slow breath in... And let it go naturally. No need to adjust\nthe rhythm. Just notice it. In... And out... Over the past weeks, you’ve been\npracticing awareness. Not dramatically. Not loudly. Just steadily. Today is\nabout identity. Not declaring a new one. Just noticing how repetition shapes it.\nLet your breath continue at its natural pace. Gently ask yourself: Who am I\nbecoming through repeated awareness?\n\nNot in a dramatic way. Just quietly. Stay with that question softly. In... And\nout... Identity often feels fixed. But it forms through repetition. Repeated\nreactions create one pattern. Repeated awareness creates another. Notice the\ndifference. Think of a recent moment when you paused instead of reacting\nimmediately. Even briefly. That repetition shapes identity. Not loudly. But\ngradually. Take a slow breath in... And gently out. You don’t need to say, “I am\ndifferent now.” You don’t need a new label. Identity shifts through behavior\nrepeated calmly. Now imagine a moment later today. An ordinary situation.\nPicture yourself responding with steadiness. That repetition reinforces\ndirection. In... And out... Notice how that feels. Natural. Realistic.\n\nSubtle. Identity through repetition does not feel dramatic. It feels familiar.\nBring your attention back to your body. Notice your breathing. Your posture.\nYour hands resting. Even the way you sit carries identity. Balanced. Grounded.\nPresent. Stay here for a few breaths. In... And out... If your mind says, “I’m\nstill the same,” notice that thought gently. And return to the breath. Sameness\nand change can coexist. Gradual shifts are often invisible while they are\nhappening. Repetition builds familiarity. Familiarity builds stability.\nStability builds identity. Take another slow breath in... And let it go gently.\nYou are not forcing a new version of yourself. You are reinforcing steady\nawareness. Again and again. Take one final slow breath in... And a steady breath\nout.\n\nNotice the room around you. The surface beneath you. The calm of this moment.\nIdentity is not a declaration. It is a pattern of repetition. And you are\nshaping it quietly. When you’re ready, gently open your eyes. Return to your\nday. Repetition builds identity. And today, you continued."
-          },
-          {
-            "title": "TODAY’S PRACTICE (TEXT)",
-            "body": "Screen title: Today’s practice\n\nMain copy (exact):\n\nToday, notice a habit without trying to fix it.\n\nReduce effort.\n\nReduce attention.\n\nLet it be less central to your day.\n\nSecondary text (small):\n\nNon-interference helps habits fade.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nWhat happens when you stop trying to change the habit?\n\nOptional follow-ups (collapsed):\n\nDid pressure reduce?\nDid attention shift more easily?\nDid the habit feel less urgent?\n\nHelper text (small):\n\nA few words are enough — or skip this entirely.\n\nCTA buttons:\n\n_Save & Continue_\n\n_Skip for Today_"
-          },
-          {
-            "title": "INDEPENDENCE REFRAME (TEXT)",
-            "body": "Screen title: Change doesn’t need force\n\nMain copy (exact):\n\nYou don’t need to make habits disappear for progress to continue.\n\nHabits lose strength when they’re no longer needed.\n\nLetting go happens naturally when pressure leaves.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough for today\n\nMain copy (exact):\n\nYou allowed change instead of forcing it today.\n\nThat gentleness creates lasting shifts.\n\nYou’re learning how to let go.\n\nSecondary text:\n\nEase supports change.\n\nCTA:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nLogs “allowed habit to fade” (yes / no / not sure)\nNo streak impact\nNo success metrics\nUsed later for:\n\n```\no Habit-relevance decline insights\n```\n\n```\no Long-term confidence summaries\n```\n\nSAFETY & COMPLIANCE CHECK\n\nDay 47 avoids:\n\n“Stop the habit” commands\n\nAbstinence framing\n\nTherapy claims\n\nOutcome guarantees\n\nDay 47 supports:\n\nPsychological safety\n\nNon-struggle change\n\nApp Store compliance\n\nCORE MESSAGE OF DAY 47\n\nHabits fade when they’re no longer needed — not when they’re fought.\n\nDAY 48 – LIVING WITHOUT CONSTANT REFERENCE\n\n(Quiet Strength Phase · Full Depth)\n\nFocus: De-centering the habit Core Skill: Shifting attention back to\nlife Goal: Reduce mental preoccupation with change itself\n\nTotal time: 8 – 10 minutes Tone: Spacious, relieving, forward-looking"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 48 · Living Without Constant Reference\n\nMain copy (exact):\n\nToday is about space.\n\nSpace where habits no longer dominate attention.\n\nWhen change stabilizes, constant reference to the habit becomes unnecessary.\n\nToday’s practice is about letting life take center stage again.\n\nCTA: _Continue_"
-          },
-          {
-            "title": "WHY CONSTANT REFERENCE CAN HOLD HABITS IN PLACE (CONTEXT)",
-            "body": "Screen title: When focus keeps habits active\n\nMain copy (exact):\n\nEven positive focus can keep a habit mentally alive.\n\nConstant checking, analyzing, or thinking about change can give habits more\nattention than they need.\n\nHabits fade more fully when attention moves elsewhere.\n\nToday is about loosening that focus.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nReduces rumination\nEncourages normalcy\nSignals readiness for independence"
-          },
-          {
-            "title": "SIGNS YOU’RE READY FOR THIS SHIFT (GUIDANCE)",
-            "body": "Screen title: Signs reference can soften\n\nMain copy (exact):\n\nYou may be ready to reduce reference if:\n\nYou think about the habit less\nUrges pass without much thought\nRoutines feel automatic\nLife activities feel more engaging\nChecking feels unnecessary\n\nThese are signs of integration — not avoidance.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GUIDED ATTENTION SHIFT (PRIMARY EXPERIENCE)",
-            "body": "Screen title: Letting attention move outward\n\nInstruction text (above audio):\n\nThis guide helps you shift focus back to daily life.\n\nAUDIO SCRIPT (Word-for-Word, ~2–3 minutes)\n\nDay 48 – Living\nFrom the New Pattern (7-Minute Guided Meditation) Find a comfortable place to\nsit. There is nothing you need to change right now. Just a few quiet minutes to\nsettle. If it feels okay, gently close your eyes. Or soften your gaze. Take one\nslow breath in... And let it go naturally. No need to adjust your breathing.\nJust notice it. In... And out... Over the past weeks, you have repeated\nawareness. Pauses. Observation. Steadiness. Today is about living from that\npattern. Not forcing it. Not announcing it. Just recognizing it.\n\nLet your breath continue at its natural pace. Think about a recent moment when\nawareness came naturally. You didn’t have to remind yourself. It simply\nhappened. Even briefly. Stay with that memory. In... And out... Notice how that\nfelt. Less effort. Less urgency. More natural. Patterns become natural through\nrepetition. Now imagine moving through your day from that place of awareness.\nNot hyper-focused. Not tense. Just steady. Picture yourself in a familiar\nsituation. A time of day when habits used to feel automatic. Now imagine\nresponding calmly. Not because you forced it. But because it feels normal. In...\nAnd out... Notice how that feels in your body. Is there softness? Balance?\nNeutral steadiness? Living from a new pattern does not feel dramatic.\n\nIt feels quiet. Almost ordinary. Bring your attention back to your breathing.\nNotice the rhythm. Steady. Reliable. Breathing once required effort as a child.\nNow it feels natural. Patterns work the same way. Repeated awareness becomes\nfamiliar. Familiarity becomes default. Stay here for a few breaths. In... And\nout... If your mind says, “It doesn’t feel that different,” notice that thought\ngently. And return to the breath. Gradual shifts rarely feel dramatic. They feel\nsubtle. Sustainable. Real. Now imagine facing a small challenge later today.\nPicture yourself staying grounded. Observing first. Responding calmly. That is\nliving from the new pattern. Not perfect. Not rigid. Just steady. Take one final\nslow breath in...\n\nAnd a steady breath out. Notice the room around you. The surface beneath you.\nThe quiet of this moment. You do not need to declare change. You are practicing\nit. And practice becomes pattern. When you’re ready, gently open your eyes.\nReturn to your day. Steady repetition becomes natural. And you are living it."
-          },
-          {
-            "title": "TODAY’S PRACTICE (TEXT)",
-            "body": "Screen title: Today’s practice\n\nMain copy (exact):\n\nToday, let your day unfold without referencing the habit unless it naturally\nappears.\n\nNo checking.\n\nNo managing.\n\nJust living.\n\nSecondary text (small):\n\nYou can return to support anytime.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nWhat did you notice when you thought about the habit less?\n\nOptional follow-ups (collapsed):\n\nDid anything feel lighter?\nDid life feel more present?\nDid attention shift easily or slowly?\n\nHelper text (small):\n\nA few words are enough — or skip this entirely.\n\nCTA buttons:\n\n_Save & Continue_\n\n_Skip for Today_"
-          },
-          {
-            "title": "INDEPENDENCE REFRAME (TEXT)",
-            "body": "Screen title: Life becomes central again\n\nMain copy (exact):\n\nHabits fade most completely when they’re no longer central.\n\nChange doesn’t require constant reference.\n\nYou’re allowed to move on.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough for today\n\nMain copy (exact):\n\nYou made room for life today.\n\nThat space supports lasting change.\n\nYou’re moving forward.\n\nSecondary text:\n\nSpace creates freedom.\n\nCTA:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nLogs “reduced habit reference” (yes / no / not sure)\nNo streaks\nNo performance metrics\nUsed later for:\n\n```\no Independence readiness\n```\n\n```\no Stability indicators\n```\n\nSAFETY & COMPLIANCE CHECK\n\nDay 48 avoids:\n\n“Forget the habit” commands\n\nAbstinence framing\n\nTherapy claims\n\nPressure to disengage\n\nDay 48 supports:\n\nPsychological safety\n\nAutonomy\n\nApp Store compliance\n\nCORE MESSAGE OF DAY 48\n\nChange completes when life becomes more important than the habit.\n\nndependence phase. This day gently consolidates everything without celebration\npressure, goal- setting, or performance framing.\n\nThis is a settling day , not a peak.\n\nEverything below is app-ready, non-medical, psychologically safe, and\ncoach-aligned."
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
           }
         ],
         "audio": {
@@ -2372,10 +1253,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "A guided reflection designed to slow the urge-response loop.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "A guided reflection designed to slow the urge-response loop.",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "A guided reflection designed to slow the urge-response loop."
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-033.mp3",
           "durationSeconds": 420,
@@ -2389,10 +1279,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "A guided reflection designed to slow the urge-response loop.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "A guided reflection designed to slow the urge-response loop.",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "A guided reflection designed to slow the urge-response loop."
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-034.mp3",
           "durationSeconds": 420,
@@ -2406,10 +1305,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "Find\na comfortable place to sit. There is nothing you need to achieve. Just a few\nquiet minutes to settle. If it feels okay, gently close your eyes. Or soften\nyour gaze. Take one slow breath in... And let it go naturally. No need to change\nthe rhythm. Just notice it. In... And out... Over the past month, you’ve been\nobserving. Pausing. Noticing patterns.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "Find\na comfortable place to sit. There is nothing you need to achieve. Just a few\nquiet minutes to settle. If it feels okay, gently close your eyes. Or soften\nyour gaze. Take one slow breath in... And let it go naturally. No need to change\nthe rhythm. Just notice it. In... And out... Over the past month, you’ve been\nobserving. Pausing. Noticing patterns.",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "Find\na comfortable place to sit. There is nothing you need to achieve. Just a few\nquiet minutes to settle. If it feels okay, gently close your eyes. Or soften\nyour gaze. Take one slow breath in... And let it go naturally. No need to change\nthe rhythm. Just notice it. In... And out... Over the past month, you’ve been\nobserving. Pausing. Noticing patterns."
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-035.mp3",
           "durationSeconds": 420,
@@ -2423,10 +1331,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "A guided reflection designed to slow the urge-response loop.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "A guided reflection designed to slow the urge-response loop.",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "A guided reflection designed to slow the urge-response loop."
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-036.mp3",
           "durationSeconds": 420,
@@ -2440,10 +1357,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "Find\na comfortable place to sit. There is nothing you need to prove. Just a few quiet\nminutes to notice. If it feels okay, gently close your eyes. Or soften your\ngaze. Take one slow breath in...",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "Find\na comfortable place to sit. There is nothing you need to prove. Just a few quiet\nminutes to notice. If it feels okay, gently close your eyes. Or soften your\ngaze. Take one slow breath in...",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "Find\na comfortable place to sit. There is nothing you need to prove. Just a few quiet\nminutes to notice. If it feels okay, gently close your eyes. Or soften your\ngaze. Take one slow breath in..."
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-037.mp3",
           "durationSeconds": 420,
@@ -2457,10 +1383,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "Find a\ncomfortable place to sit. There is nowhere you need to rush to. Just a few quiet\nminutes to settle. If it feels okay, gently close your eyes. Or soften your\ngaze.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "Find a\ncomfortable place to sit. There is nowhere you need to rush to. Just a few quiet\nminutes to settle. If it feels okay, gently close your eyes. Or soften your\ngaze.",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "Find a\ncomfortable place to sit. There is nowhere you need to rush to. Just a few quiet\nminutes to settle. If it feels okay, gently close your eyes. Or soften your\ngaze."
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-038.mp3",
           "durationSeconds": 420,
@@ -2474,10 +1409,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "A guided reflection designed to slow the urge-response loop.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "A guided reflection designed to slow the urge-response loop.",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "A guided reflection designed to slow the urge-response loop."
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-039.mp3",
           "durationSeconds": 420,
@@ -2491,10 +1435,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "Find a comfortable place to\nsit. There is nothing you need to measure. Nothing you need to prove. Just a few\nquiet minutes to reflect gently. If it feels okay, close your eyes. Or soften\nyour gaze. Take one slow breath in... And let it go naturally. No need to adjust\nyour breathing. Just notice it. In... And out... It has been several weeks of\nnoticing. Not forcing change. Not chasing results. Just observing patterns.\nToday is about looking back softly. Not to evaluate. Just to understand. Let\nyour breath continue at its natural pace. Gently think back to the earlier\nweeks. When you first started noticing urges. Stress. Energy shifts. Habit\nmoments. What feels more familiar now? Are patterns easier to recognize?",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "Find a comfortable place to\nsit. There is nothing you need to measure. Nothing you need to prove. Just a few\nquiet minutes to reflect gently. If it feels okay, close your eyes. Or soften\nyour gaze. Take one slow breath in... And let it go naturally. No need to adjust\nyour breathing. Just notice it. In... And out... It has been several weeks of\nnoticing. Not forcing change. Not chasing results. Just observing patterns.\nToday is about looking back softly. Not to evaluate. Just to understand. Let\nyour breath continue at its natural pace. Gently think back to the earlier\nweeks. When you first started noticing urges. Stress. Energy shifts. Habit\nmoments. What feels more familiar now? Are patterns easier to recognize?",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "Find a comfortable place to\nsit. There is nothing you need to measure. Nothing you need to prove. Just a few\nquiet minutes to reflect gently. If it feels okay, close your eyes. Or soften\nyour gaze. Take one slow breath in... And let it go naturally. No need to adjust\nyour breathing. Just notice it. In... And out... It has been several weeks of\nnoticing. Not forcing change. Not chasing results. Just observing patterns.\nToday is about looking back softly. Not to evaluate. Just to understand. Let\nyour breath continue at its natural pace. Gently think back to the earlier\nweeks. When you first started noticing urges. Stress. Energy shifts. Habit\nmoments. What feels more familiar now? Are patterns easier to recognize?"
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-040.mp3",
           "durationSeconds": 420,
@@ -2508,10 +1461,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "Find a\ncomfortable place to sit. There is nothing you need to handle right now. Just a\nfew quiet minutes to settle. If it feels okay, gently close your eyes. Or soften\nyour gaze. Take one slow breath in... And let it go naturally. No need to adjust\nthe rhythm. Just notice it. In... And out... Today is about pressure. Not\neliminating it. Not avoiding it. Just staying steady when it appears. Let your\nbreath continue at its natural pace. Gently think of a recent moment that felt\nslightly pressured. A deadline. A conversation. A responsibility. Notice how\nyour body reacted. Was there tightness? Faster thoughts? A sense of urgency?\nStay with that memory gently.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "Find a\ncomfortable place to sit. There is nothing you need to handle right now. Just a\nfew quiet minutes to settle. If it feels okay, gently close your eyes. Or soften\nyour gaze. Take one slow breath in... And let it go naturally. No need to adjust\nthe rhythm. Just notice it. In... And out... Today is about pressure. Not\neliminating it. Not avoiding it. Just staying steady when it appears. Let your\nbreath continue at its natural pace. Gently think of a recent moment that felt\nslightly pressured. A deadline. A conversation. A responsibility. Notice how\nyour body reacted. Was there tightness? Faster thoughts? A sense of urgency?\nStay with that memory gently.",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "Find a\ncomfortable place to sit. There is nothing you need to handle right now. Just a\nfew quiet minutes to settle. If it feels okay, gently close your eyes. Or soften\nyour gaze. Take one slow breath in... And let it go naturally. No need to adjust\nthe rhythm. Just notice it. In... And out... Today is about pressure. Not\neliminating it. Not avoiding it. Just staying steady when it appears. Let your\nbreath continue at its natural pace. Gently think of a recent moment that felt\nslightly pressured. A deadline. A conversation. A responsibility. Notice how\nyour body reacted. Was there tightness? Faster thoughts? A sense of urgency?\nStay with that memory gently."
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-041.mp3",
           "durationSeconds": 420,
@@ -2525,10 +1487,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "A guided reflection designed to slow the urge-response loop.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "A guided reflection designed to slow the urge-response loop.",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "A guided reflection designed to slow the urge-response loop."
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-042.mp3",
           "durationSeconds": 420,
@@ -2542,10 +1513,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "A guided reflection designed to slow the urge-response loop.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "A guided reflection designed to slow the urge-response loop.",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "A guided reflection designed to slow the urge-response loop."
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-043.mp3",
           "durationSeconds": 420,
@@ -2559,10 +1539,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "A guided reflection designed to slow the urge-response loop.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "A guided reflection designed to slow the urge-response loop.",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "A guided reflection designed to slow the urge-response loop."
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-044.mp3",
           "durationSeconds": 420,
@@ -2576,10 +1565,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "A guided reflection designed to slow the urge-response loop.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "A guided reflection designed to slow the urge-response loop.",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "A guided reflection designed to slow the urge-response loop."
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-045.mp3",
           "durationSeconds": 420,
@@ -2593,10 +1591,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "A guided reflection designed to slow the urge-response loop.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "A guided reflection designed to slow the urge-response loop.",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "A guided reflection designed to slow the urge-response loop."
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-046.mp3",
           "durationSeconds": 420,
@@ -2610,10 +1617,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "Find a\ncomfortable place to sit. There is nothing you need to become right now. Just a\nfew quiet minutes to settle. If it feels okay, gently close your eyes. Or soften\nyour gaze. Take one slow breath in... And let it go naturally. No need to adjust\nthe rhythm. Just notice it. In... And out... Over the past weeks, you’ve been\npracticing awareness. Not dramatically. Not loudly. Just steadily. Today is\nabout identity. Not declaring a new one. Just noticing how repetition shapes it.\nLet your breath continue at its natural pace. Gently ask yourself: Who am I\nbecoming through repeated awareness?",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "Find a\ncomfortable place to sit. There is nothing you need to become right now. Just a\nfew quiet minutes to settle. If it feels okay, gently close your eyes. Or soften\nyour gaze. Take one slow breath in... And let it go naturally. No need to adjust\nthe rhythm. Just notice it. In... And out... Over the past weeks, you’ve been\npracticing awareness. Not dramatically. Not loudly. Just steadily. Today is\nabout identity. Not declaring a new one. Just noticing how repetition shapes it.\nLet your breath continue at its natural pace. Gently ask yourself: Who am I\nbecoming through repeated awareness?",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "Find a\ncomfortable place to sit. There is nothing you need to become right now. Just a\nfew quiet minutes to settle. If it feels okay, gently close your eyes. Or soften\nyour gaze. Take one slow breath in... And let it go naturally. No need to adjust\nthe rhythm. Just notice it. In... And out... Over the past weeks, you’ve been\npracticing awareness. Not dramatically. Not loudly. Just steadily. Today is\nabout identity. Not declaring a new one. Just noticing how repetition shapes it.\nLet your breath continue at its natural pace. Gently ask yourself: Who am I\nbecoming through repeated awareness?"
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-047.mp3",
           "durationSeconds": 420,
@@ -2627,10 +1643,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "A guided reflection designed to slow the urge-response loop.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "A guided reflection designed to slow the urge-response loop.",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "A guided reflection designed to slow the urge-response loop."
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-048.mp3",
           "durationSeconds": 420,
@@ -2640,365 +1665,21 @@ export const GENERATED_PROGRAMS = {
       {
         "programSlug": "ninety_day_transform",
         "dayNumber": 49,
-        "title": "Day 49",
+        "title": "Quiet Confidence",
         "subtitle": null,
-        "summary": "(Quiet Strength Phase · Full Depth · Wrap-Up)",
+        "summary": "Find a\ncomfortable place to sit. There is nothing you need to defend right now. Just a\nfew quiet minutes to settle. If it feels okay, gently close your eyes. Or soften\nyour gaze. Take one slow breath in... And let it go naturally. No need to adjust\nyour breathing. Just notice it. In... And out... Over the past weeks, you’ve\nbeen building steadiness. Through repetition. Through awareness. Through\nreturning. Today is about maintaining that stability. Not tightly holding it.\nJust caring for it.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
+        "focus": "Find a\ncomfortable place to sit. There is nothing you need to defend right now. Just a\nfew quiet minutes to settle. If it feels okay, gently close your eyes. Or soften\nyour gaze. Take one slow breath in... And let it go naturally. No need to adjust\nyour breathing. Just notice it. In... And out... Over the past weeks, you’ve\nbeen building steadiness. Through repetition. Through awareness. Through\nreturning. Today is about maintaining that stability. Not tightly holding it.\nJust caring for it.",
         "sections": [
           {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 49 · Quiet Confidence\n\nMain copy (exact):\n\nToday is a wrap-up — not a finish line.\n\nConfidence doesn’t always feel bold.\n\nSometimes it feels calm.\n\nSometimes it feels ordinary.\n\nToday is about recognizing the steadiness that’s already here.\n\nCTA:\n\n_Continue_"
+            "title": "Today’s Focus",
+            "body": "Find a\ncomfortable place to sit. There is nothing you need to defend right now. Just a\nfew quiet minutes to settle. If it feels okay, gently close your eyes. Or soften\nyour gaze. Take one slow breath in... And let it go naturally. No need to adjust\nyour breathing. Just notice it. In... And out... Over the past weeks, you’ve\nbeen building steadiness. Through repetition. Through awareness. Through\nreturning. Today is about maintaining that stability. Not tightly holding it.\nJust caring for it."
           },
           {
-            "title": "WHAT QUIET CONFIDENCE IS (CONTEXT)",
-            "body": "Screen title: Confidence without noise\n\nMain copy (exact):\n\nQuiet confidence isn’t excitement.\n\nIt isn’t certainty.\n\nIt isn’t control.\n\nIt’s the sense that you can handle things — without rehearsing how.\n\nWhen skills integrate, confidence settles in quietly.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nPrevents “I should feel different” thinking\nNormalizes calm confidence\nSignals readiness for the next phase"
-          },
-          {
-            "title": "SIGNS CONFIDENCE IS FORMING (GUIDANCE)",
-            "body": "Screen title: Signs you may already feel it\n\nMain copy (exact):\n\nQuiet confidence may show up as:\n\nLess fear of urges\nLess planning around habits\nFewer mental debates\nFaster recovery after difficulty\nMore attention on daily life\n\nThese shifts don’t need to be dramatic to matter.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GUIDED SETTLING PRACTICE (PRIMARY EXPERIENCE)",
-            "body": "Screen title: Letting confidence settle\n\nInstruction text (above audio):\n\nThis short guide helps you notice confidence without trying to build it.\n\nAUDIO SCRIPT (Word-for-Word, ~2–3 minutes)\n\nDay 49 – Protecting Your Stability (7-Minute Guided Meditation) Find a\ncomfortable place to sit. There is nothing you need to defend right now. Just a\nfew quiet minutes to settle. If it feels okay, gently close your eyes. Or soften\nyour gaze. Take one slow breath in... And let it go naturally. No need to adjust\nyour breathing. Just notice it. In... And out... Over the past weeks, you’ve\nbeen building steadiness. Through repetition. Through awareness. Through\nreturning. Today is about maintaining that stability. Not tightly holding it.\nJust caring for it.\n\nLet your breath continue at its natural pace. Bring your attention to the\nfeeling of sitting. Supported. Balanced. Steady. Notice how stability feels in\nyour body. Calm. Grounded. Unrushed. Take a slow breath in... And gently out.\nStability does not require force to protect it. It requires awareness. Think\nabout a situation that sometimes disrupts your steadiness. Stress. Fatigue.\nCertain environments. Notice how it affects your body and mind. Stay with that\nmemory gently. In... And out... Now imagine entering that same situation again.\nBut this time, you remain aware. Not rigid. Not defensive. Just conscious of\nyour balance. Picture yourself taking one steady breath. In... And out... Notice\nhow that slight awareness changes the atmosphere.\n\nEven slightly. Protecting stability is not about avoidance. It is about\nremembering what keeps you steady. Now bring your attention back to your body.\nNotice your shoulders. If they feel tense, soften them slightly. Notice your\nbreathing. Even and steady. Stability often weakens when tension increases. And\nstrengthens when you relax into awareness. Stay here quietly for a few breaths.\nIn... And out... If your mind says, “What if I lose this steadiness?” notice\nthat thought gently. And return to your breath. Stability is not fragile. It\ngrows through practice. Through return. Through attention. Now imagine a small\nmoment later today where you gently choose steadiness. Not dramatically. Just\none small steady response. That is maintenance. That is care. Take another slow\nbreath in... And let it go gently. Steadiness is not something you grip. It is\nsomething you live.\n\nQuietly. Consistently. Take one final slow breath in... And a steady breath out.\nNotice the room around you. The surface beneath you. The calm of this moment.\nYou are not defending your stability. You are supporting it. And today, you\npracticed support. When you’re ready, gently open your eyes. Return to your day.\nSteadiness maintained calmly becomes long-lasting. And that is enough."
-          },
-          {
-            "title": "TODAY’S PRACTICE (TEXT)",
-            "body": "Screen title: Today’s practice\n\nMain copy (exact):\n\nToday, don’t try to improve anything.\n\nJust notice how you move through the day with what you’ve learned.\n\nThat noticing is enough.\n\nSecondary text (small):\n\nNo action required.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nWhat feels steadier now compared to before?\n\nOptional follow-ups (collapsed):\n\nWhat feels less effortful?\nWhat feels less important than it used to?\nWhat feels more neutral?\n\nHelper text (small):\n\nA few words are enough — or skip this entirely.\n\nCTA buttons: _Save & Continue_\n\n_Skip for Today_"
-          },
-          {
-            "title": "TRANSITION FORWARD (TEXT)",
-            "body": "Screen title: Moving forward\n\nMain copy (exact):\n\nFrom here, progress continues without needing daily attention.\n\nYou don’t need to manage change for it to remain.\n\nSupport is available — but not required.\n\nYou’re entering a phase of stability.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough for today\n\nMain copy (exact):\n\nYou don’t need to feel confident for confidence to exist.\n\nQuiet confidence is already working for you.\n\nYou’re ready to continue.\n\nSecondary text:\n\nStability begins here.\n\nCTA:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nMarks Quiet Strength phase complete\nNo achievement banners\nNo completion pressure\nUsed later for:\n\n```\no Stability readiness\n```\n\n```\no Confidence trend summaries\n```\n\nSAFETY & COMPLIANCE CHECK\n\nDay 49 avoids:\n\nGraduation framing\n\nOutcome promises\n\n“You’re cured” messaging\n\nTherapy language\n\nDay 49 supports:\n\nAutonomy\n\nPsychological safety\n\nApp Store compliance\n\nCORE MESSAGE OF DAY 49\n\nConfidence doesn’t announce itself.\n\nIt settles in — and continues quietly.\n\nDAY 50 – LIVING NORMALLY WITHOUT EFFORT\n\n(Stability Phase · Full Depth · Phase Opening)\n\nFocus: Normal life Core Skill: Allowing steadiness to blend into daily\nliving Goal: Remove the sense that recovery requires ongoing effort\n\nTotal time: 6 – 8 minutes Tone: Normalizing, relieving, grounded"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 50 · Living Normally Without Effort\n\nMain copy (exact):\n\nToday begins a new phase — stability.\n\nStability doesn’t mean “doing recovery well.”\n\nIt means recovery is no longer the main focus.\n\nToday is about living normally — without effort, tracking, or fixing.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "WHAT “NORMAL” MEANS HERE (CONTEXT)",
-            "body": "Screen title: Normal doesn’t mean perfect\n\nMain copy (exact):\n\nLiving normally doesn’t mean urges never appear or habits never cross your mind.\n\nIt means:\n\nThey take up less space\nThey resolve with less effort\nLife activities matter more\nAttention moves on naturally\n\nNormal life includes difficulty — without being organized around it.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nPrevents unrealistic expectations\nReframes “normal” safely\nReduces vigilance fatigue"
-          },
-          {
-            "title": "SIGNS LIFE IS NORMALIZING (GUIDANCE)",
-            "body": "Screen title: Signs you’re already here\n\nMain copy (exact):\n\nYou may already be living normally if:\n\nYou forget to check the app\nUrges pass without much thought\nYou don’t plan around habits\nDays feel full for other reasons\nCalm feels ordinary\n\nThese aren’t signs of neglect.\n\nThey’re signs of stability.\n\nCTA: _Continue_"
-          },
-          {
-            "title": "GUIDED SETTLING INTO NORMALCY (PRIMARY EXPERIENCE)",
-            "body": "Screen title: Letting life take over\n\nInstruction text (above audio):\n\nThis short guide helps you settle into normal living without monitoring change.\n\nAUDIO SCRIPT (Word-for-Word, ~2 minutes)\n\nDay 50\n– Stability in Social Situations (7-Minute Guided Meditation) Find a\ncomfortable place to sit. There is nothing you need to prepare for right now.\nJust a few quiet minutes to settle. If it feels okay, gently close your eyes. Or\nsoften your gaze. Take one slow breath in... And let it go naturally. No need to\nadjust your breathing. Just notice it. In... And out... Today is about staying\nsteady around others. Not isolating yourself. Not changing who you are.\n\nJust remaining aware in shared spaces. Let your breath continue at its natural\npace. Gently imagine a recent social situation. A gathering. A conversation. A\nworkplace moment. Notice how your body felt. Was there pressure? Energy?\nExpectation? Stay with that memory softly. In... And out... Being around others\ncan shift your rhythm. Attention moves outward. Energy increases. Habits may\nfeel more automatic. Now imagine entering that same situation again. But this\ntime, you stay connected to your breath. In... And out... Notice how that feels.\nYou are still present with others. But also grounded internally. Stability in\nsocial settings does not require distance. It requires awareness. Bring your\nattention to your body right now. Notice your feet on the ground. Your back\nsupported.\n\nYour breathing steady. Imagine carrying this steadiness into a conversation.\nListening. Speaking. Pausing when needed. In... And out... Notice how steadiness\nfeels in your posture. Relaxed shoulders. Calm breath. Balanced presence. You do\nnot need to perform steadiness. You simply remain connected to it. If your mind\nsays, “It’s harder around people,” notice that thought gently. And return to the\nbreath. Social energy rises and falls. Awareness can remain consistent. Now\nimagine a moment later today when you are around others. Picture yourself\nremembering your breath. Taking one quiet pause. Not visible. Just internal.\nThat is stability. Not rigid. Not distant. Just grounded. Stay here for a few\nbreaths.\n\nIn... And out... Steadiness does not disappear in company. It travels with you.\nTake one final slow breath in... And a steady breath out. Notice the room around\nyou. The surface beneath you. The calm of this moment. You can remain aware even\nin shared spaces. And today, you practiced that. When you’re ready, gently open\nyour eyes. Return to your day. Stability moves with you. And that is enough."
-          },
-          {
-            "title": "TODAY’S PRACTICE (TEXT)",
-            "body": "Screen title: Today’s practice\n\nMain copy (exact):\n\nToday, live your day without adjusting it for recovery.\n\nNo special focus.\n\nNo checking.\n\nNo improving.\n\nJust live.\n\nSecondary text (small):\n\nSupport is available if needed.\n\nCTA: _Continue_"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nWhat felt normal today?\n\nOptional follow-ups (collapsed):\n\nWhat took your attention naturally?\nDid anything feel easier than before?\nDid you think less about habits?\n\nHelper text (small):\n\nOne sentence is enough — or skip entirely.\n\nCTA buttons:\n\n_Save & Continue_\n\n_Skip for Today_"
-          },
-          {
-            "title": "STABILITY REFRAME (TEXT)",
-            "body": "Screen title: Stability is quiet\n\nMain copy (exact):\n\nStability doesn’t announce itself.\n\nIt shows up as:\n\nLess effort\nLess focus\nLess urgency\n\nWhen life feels normal again, change is already integrated.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough for today\n\nMain copy (exact):\n\nYou lived normally today.\n\nThat’s not avoidance — it’s stability.\n\nLife is taking the lead again.\n\nSecondary text:\n\nNormal life supports lasting change.\n\nCTA:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nMarks Stability Phase started\nNo engagement pressure\nNo streak logic\nUsed later for:\n\n```\no Stability confidence insights\n```\n\n```\no Reduced-dependence indicators\n```\n\nSAFETY & COMPLIANCE CHECK\n\nDay 50 avoids:\n\n“You’re done” language\n\nCure framing\n\nAbstinence promises\n\nTherapy claims\n\nDay 50 supports:\n\nNormalization\n\nAutonomy\n\nApp Store compliance\n\nCORE MESSAGE OF DAY 50\n\nRecovery doesn’t stay central.\n\nLife does.\n\nDAY 51 – HANDLING NORMAL STRESS WITHOUT OLD HABITS\n\n(Stability Phase · Full Depth)\n\nFocus: Everyday stress Core Skill: Letting stress pass without\nactivating old patterns Goal: Build confidence that stress can exist without\nrelapse or control\n\nTotal time: 6 – 8 minutes Tone: Grounded, realistic, reassuring"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 51 · Handling Normal Stress\n\nMain copy (exact):\n\nToday is about stress — the normal kind.\n\nWork stress.\n\nLife stress.\n\nUnexpected moments.\n\nStability doesn’t remove stress.\n\nIt changes how stress is met.\n\nToday is about letting stress pass without returning to old habits.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "NORMALIZING STRESS (CONTEXT)",
-            "body": "Screen title: Stress is part of normal life\n\nMain copy (exact):\n\nA stable life still includes stress.\n\nStress does not mean something is wrong.\n\nStress does not mean progress is slipping.\n\nWhat’s different now is how stress moves through you.\n\nToday is about trusting that difference.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nPrevents fear-based reactions\nNormalizes discomfort\nStops “stress = danger” thinking"
-          },
-          {
-            "title": "HOW OLD HABITS USED TO CONNECT TO STRESS (GUIDANCE)",
-            "body": "Screen title: How stress used to pull you in\n\nMain copy (exact):\n\nIn the past, stress often led to:\n\nUrgent relief seeking\nAutomatic habits\nEscaping the feeling\nNeeding stress to stop\n\nToday, stress can exist without demanding action.\n\nThat’s stability.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GUIDED STRESS PASSING PRACTICE (PRIMARY EXPERIENCE)",
-            "body": "Screen title: Letting stress move through\n\nInstruction text (above audio):\n\nThis short guide helps you allow stress without fixing it.\n\nAUDIO SCRIPT (Word-for-Word, ~2 minutes)\n\nDay 51 – Handling Unexpected Situations (7-Minute Guided Meditation) Find a\ncomfortable place to sit. There is nothing unexpected happening right now. Just\na few quiet minutes to settle. If it feels okay, gently close your eyes. Or\nsoften your gaze. Take one slow breath in... And let it go naturally. No need to\nadjust your breathing. Just notice it. In... And out... Today is about the\nunexpected. Moments that interrupt plans.\n\nShift routines. Change the rhythm of the day. Let your breath continue at its\nnatural pace. Think about a recent moment that did not go as expected. A change\nin schedule. A surprise conversation. An interruption. Notice how your body\nreacted. Was there tension? Urgency? Frustration? Stay with that memory gently.\nIn... And out... Unexpected moments often create tightening. A sense of losing\ncontrol. Now imagine that same situation again. But this time, imagine\nresponding with one steady breath. In... And out... Notice how one breath\nchanges the rhythm. Even slightly. Flexibility does not mean liking change. It\nmeans remaining steady when change happens. Bring your attention to your body.\nFeel your feet on the ground. Your back supported. Your breathing steady. Even\nwhen plans shift,\n\nyour breath continues. Steady. Reliable. Now imagine an unexpected moment later\ntoday. Picture yourself noticing the shift. And instead of reacting immediately,\nyou pause. In... And out... Notice how that small pause creates space. Space to\nrespond calmly. Flexibility grows through awareness. Not through control. If\nyour mind says, “I don’t like unpredictability,” notice that thought gently. And\nreturn to the breath. You do not need to enjoy uncertainty. You only need to\nremain present within it. Stay here quietly for a few breaths. In... And out...\nUnexpected situations rise. Shift. Settle. Just like emotions. Just like urges.\nJust like thoughts. Your steadiness does not disappear. It adapts. Take one\nfinal slow breath in...\n\nAnd a steady breath out. Notice the room around you. The surface beneath you.\nThe calm of this moment. Flexibility is part of stability. And today, you\npracticed both. When you’re ready, gently open your eyes. Return to your day.\nThe unexpected may come. And you can remain aware. That is enough."
-          },
-          {
-            "title": "TODAY’S PRACTICE (TEXT)",
-            "body": "Screen title: Today’s practice\n\nMain copy (exact):\n\nToday, when normal stress appears:\n\nDon’t fix it\nDon’t avoid it\nDon’t judge it\n\nLet it exist while you continue your day.\n\nSecondary text (small):\n\nStress doesn’t require old habits.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nHow did stress feel different today compared to before?\n\nOptional follow-ups (collapsed):\n\nDid urgency reduce?\nDid stress pass on its own?\nDid you feel more capable?\n\nHelper text (small):\n\nOne sentence is enough — or skip.\n\nCTA buttons:\n\n_Save & Continue_\n\n_Skip for Today_"
-          },
-          {
-            "title": "STABILITY REFRAME (TEXT)",
-            "body": "Screen title: Stress doesn’t control you\n\nMain copy (exact):\n\nStress used to signal danger.\n\nNow it’s just information.\n\nYou don’t need to remove stress to live steadily.\n\nYou only need to stop letting it decide your response.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough for today\n\nMain copy (exact):\n\nYou allowed stress without old habits today.\n\nThat’s a quiet sign of stability.\n\nLife can move forward — even on stressful days.\n\nSecondary text:\n\nStress can pass without control.\n\nCTA: _Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nLogs “stress tolerated without habit” (yes / no / not sure)\nNo streak logic\nNo risk flags\nUsed later for:\n\n```\no Stability confidence insights\n```\n\n```\no Long-term readiness summaries\n```\n\nSAFETY & COMPLIANCE CHECK\n\nDay 51 avoids:\n\nStress elimination promises\n\n“Manage stress perfectly” framing\n\nTherapy language\n\nRelapse fear messaging\n\nDay 51 supports:\n\nNormal stress tolerance\n\nPsychological safety\n\nApp Store compliance\n\nCORE MESSAGE OF DAY 51\n\nStress doesn’t need to disappear for stability to exist.\n\nDAY 52 – LETTING URGES APPEAR WITHOUT MEANING\n\n(Stability Phase · Full Depth)\n\nFocus: Neutralizing urge interpretation Core Skill: Allowing urges\nwithout attaching stories Goal: Prevent urges from triggering fear,\nanalysis, or action\n\nTotal time: 6 – 8 minutes Tone: Calm, normalizing, confidence-building"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 52 · Letting Urges Appear Without Meaning\n\nMain copy (exact):\n\nToday is about urges.\n\nNot stopping them.\n\nNot managing them.\n\nBut letting them appear without assigning meaning.\n\nAn urge does not mean something is wrong.\n\nIt doesn’t mean progress is slipping.\n\nIt’s simply a sensation passing through.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "WHY URGES FEEL IMPORTANT (CONTEXT)",
-            "body": "Screen title: Why urges used to feel urgent\n\nMain copy (exact):\n\nIn the past, urges often meant:\n\n“I need to act now”\n“I might lose control”\n“This means something bad”\n\nThese meanings gave urges power.\n\nToday, the urge itself hasn’t changed — only the interpretation has.\n\nRemoving meaning removes urgency.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nSeparates sensation from story\nReduces fear response\n\nWeakens conditioned loops"
-          },
-          {
-            "title": "WHAT AN URGE REALLY IS (GUIDANCE)",
-            "body": "Screen title: Urges are sensations, not messages\n\nMain copy (exact):\n\nAn urge may include:\n\nA body sensation\nA brief thought\nA memory\nA familiar pull\n\nNone of these require action.\n\nUrges don’t predict behavior.\n\nThey don’t define intent.\n\nThey don’t mean anything about you.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GUIDED NEUTRAL OBSERVATION (PRIMARY EXPERIENCE)",
-            "body": "Screen title: Letting an urge pass\n\nInstruction text (above audio):\n\nThis short guide helps you notice an urge without responding to it.\n\nAUDIO SCRIPT (Word-for-Word, ~2 minutes)\n\nDay 52 –\nLetting Go of Control (7-Minute Guided Meditation) Find a comfortable place to\nsit. There is nothing you need to manage right now. Just a few quiet minutes to\nsettle. If it feels okay, gently close your eyes. Or soften your gaze. Take one\nslow breath in... And let it go naturally. No need to adjust your breathing.\nJust notice it. In... And out... Today is about control. Not eliminating\nresponsibility. Not becoming passive. Just noticing where tension appears. Let\nyour breath continue at its natural pace. Gently ask yourself: Where do I try to\ncontrol too tightly?\n\nA schedule. An outcome. A reaction. A habit. You don’t need a full answer. Just\nnotice what comes up. Take a slow breath in... And gently out. Control often\nshows up in the body first. Tight shoulders. Clenched jaw. Shallow breath. Bring\nyour attention to those areas. Allow them to soften slightly. Without forcing.\nIn... And out... Now imagine a recent moment when something didn’t go your way.\nNotice how the body responded. Did it tighten? Resist? Push? Stay with that\nmemory gently. Now imagine that same moment again. But instead of tightening,\nimagine breathing. In... And out... Notice how breath softens resistance.\nLetting go of control does not mean giving up.\n\nIt means releasing unnecessary tension. Some things require effort. Others\nrequire space. Awareness helps you tell the difference. Bring your attention\nback to your body. Notice your hands resting. Your shoulders supported. Your\nbreathing steady. Even breathing happens without control. It continues on its\nown. Stay here for a few breaths. In... And out... If your mind says, “If I\ndon’t control it, things will fall apart,” notice that thought gently. And\nreturn to your breath. You are not removing effort. You are reducing strain. Now\nimagine a moment later today when something feels uncertain. Picture yourself\nnoticing tension rising. And gently softening your shoulders. Taking one breath.\nIn... And out... That is letting go. Not dramatically. Just physically. Just\nmentally. Just slightly.\n\nControl tightens. Awareness softens. Stay here quietly for a few breaths. In...\nAnd out... You do not need to control every outcome. You can remain steady\nwithin uncertainty. Take one final slow breath in... And a steady breath out.\nNotice the room around you. The surface beneath you. The calm of this moment.\nLetting go is not weakness. It is balance. And today, you practiced balance.\nWhen you’re ready, gently open your eyes. Return to your day. Release what\ntightens. Keep what steadies. That is enough."
-          },
-          {
-            "title": "TODAY’S PRACTICE (TEXT)",
-            "body": "Screen title: Today’s practice\n\nMain copy (exact):\n\nToday, if an urge appears:\n\nDon’t assign meaning\nDon’t evaluate it\nDon’t respond immediately\n\nLet it exist while you continue living.\n\nSecondary text (small):\n\nUrges don’t require action.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nWhat changed when you didn’t assign meaning to an urge?\n\nOptional follow-ups (collapsed):\n\nDid urgency reduce?\nDid the urge pass faster?\nDid you feel more neutral?\n\nHelper text (small):\n\nOne sentence is enough — or skip.\n\nCTA buttons:\n\n_Save & Continue_\n\n_Skip for Today_"
-          },
-          {
-            "title": "STABILITY REFRAME (TEXT)",
-            "body": "Screen title: Urges don’t define direction\n\nMain copy (exact):\n\nUrges don’t mean you’re moving backward.\n\nThey don’t mean you’re at risk.\n\nThey don’t need interpretation.\n\nWhen urges lose meaning, they lose power.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough for today\n\nMain copy (exact):\n\nYou allowed an urge without reacting today.\n\nThat neutrality supports long-term stability.\n\nUrges can come and go without changing your path.\n\nSecondary text:\n\nNeutrality brings freedom.\n\nCTA:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nLogs “urge observed without meaning” (yes / no / not sure)\nNo scoring\nNo streak impact\nUsed later for:\n\n```\no Urge reactivity decline insights\n```\n\n```\no Stability readiness summaries\n```\n\nSAFETY & COMPLIANCE CHECK\n\nDay 52 avoids: “Urges will stop” promises\n\nRelapse prediction language\n\nTherapy framing\n\nFear-based messaging\n\nDay 52 supports:\n\nPsychological safety\n\nNeutral awareness\n\nApp Store compliance\n\nCORE MESSAGE OF DAY 52\n\nUrges are sensations — not instructions.\n\nDAY 53 – LETTING THOUGHTS PASS WITHOUT ENGAGEMENT\n\n(Stability Phase · Full Depth)\n\nFocus: Disengaging from unhelpful thoughts Core Skill: Non-engagement\nGoal: Reduce mental effort and rumination\n\nTotal time: 6 – 8 minutes Tone: Light, freeing, neutral"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 53 · Letting Thoughts Pass\n\nMain copy (exact):\n\nToday is about thoughts.\n\nThoughts will appear — about habits, urges, stress, or progress.\n\nYou don’t need to stop them.\n\nYou don’t need to answer them.\n\nToday is about letting thoughts pass without getting involved.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "WHY ENGAGEMENT KEEPS THOUGHTS ACTIVE (CONTEXT)",
-            "body": "Screen title: Why thoughts stick around\n\nMain copy (exact):\n\nThoughts stay active when they’re engaged with.\n\nArguing, analyzing, reassuring, or resisting all keep attention locked in.\n\nThoughts lose strength when they’re allowed to pass without response.\n\nToday is about easing out of engagement.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nReduces mental exhaustion\nStops overthinking loops\nEncourages ease"
-          },
-          {
-            "title": "WHAT NON-ENGAGEMENT LOOKS LIKE (GUIDANCE)",
-            "body": "Screen title: Letting thoughts be background noise\n\nMain copy (exact):\n\nNon-engagement doesn’t mean:\n\nPushing thoughts away\nReplacing them\nFixing them\n\nIt means:\n\nNot following them\nNot responding\nLetting them fade naturally\n\nThoughts pass more easily when they’re not interacted with.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GUIDED NON-ENGAGEMENT PRACTICE (PRIMARY EXPERIENCE)",
-            "body": "Screen title: Letting thoughts move on\n\nInstruction text (above audio):\n\nThis short guide helps you notice thoughts without stepping into them.\n\nAUDIO SCRIPT (Word-for-Word, ~2 minutes)\n\nDay 53 – Trusting the Process\n(7-Minute Guided Meditation) Find a comfortable place to sit. There is nothing\nyou need to guarantee right now. Just a few quiet minutes to settle. If it feels\nokay, gently close your eyes. Or soften your gaze. Take one slow breath in...\nAnd let it go naturally. No need to adjust your breathing. Just notice it.\n\nIn... And out... Today is about trust. Not dramatic trust. Not forced belief.\nJust quiet confidence in repetition. Let your breath continue at its natural\npace. Think back over the past weeks. You’ve practiced noticing. Pausing.\nReturning. Even when it felt subtle. Even when it felt ordinary. That repetition\nbuilds process. Take a slow breath in... And gently out. Trust does not mean\neverything feels easy. It means you continue practicing even when progress feels\nquiet. Now imagine a recent moment when awareness appeared naturally. You\npaused. You observed. You stayed steady. Even briefly. Notice how that felt.\nReal. Grounded. Unforced. Stay with that memory softly. In...\n\nAnd out... Trusting the process does not require certainty. It requires\nconsistency. Not every day will feel steady. Not every moment will feel clear.\nAnd that is part of the process. Bring your attention back to your body. Notice\nyour breathing. Steady. Reliable. It continues whether you focus on it or not.\nThat is process. Now imagine a small challenge later today. Picture yourself\nresponding calmly. Not because you are perfect. But because you’ve practiced.\nIn... And out... Notice how that feels. Less dramatic. More natural. Trust\nbuilds when you recognize that repetition creates familiarity. Familiarity\ncreates steadiness. If your mind says, “What if this stops working?” notice that\nthought gently. And return to your breath. Process is not fragile. It\nstrengthens through return. Stay here quietly for a few breaths.\n\nIn... And out... You do not need to rush results. You do not need proof of\ntransformation. You can trust repetition. One pause. One breath. One steady\nresponse. Take one final slow breath in... And a steady breath out. Notice the\nroom around you. The surface beneath you. The calm of this moment. Trust is not\nloud. It grows quietly. And you are practicing it. When you’re ready, gently\nopen your eyes. Return to your day. Continue the process. That is enough."
-          },
-          {
-            "title": "TODAY’S PRACTICE (TEXT)",
-            "body": "Screen title: Today’s practice\n\nMain copy (exact):\n\nToday, when a thought appears:\n\nDon’t answer it\nDon’t correct it\nDon’t reassure it\n\nLet it pass while you continue your day.\n\nSecondary text (small):\n\nThoughts don’t require replies.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nWhat changed when you didn’t engage with a thought?\n\nOptional follow-ups (collapsed):\n\nDid the thought fade faster?\nDid mental tension reduce?\nDid focus return more easily?\n\nHelper text (small):\n\nOne sentence is enough — or skip.\n\nCTA buttons:\n\n_Save & Continue_\n\n_Skip for Today_"
-          },
-          {
-            "title": "STABILITY REFRAME (TEXT)",
-            "body": "Screen title: Thoughts don’t need management\n\nMain copy (exact):\n\nYou don’t need to manage your mind for stability to continue.\n\nThoughts come and go without affecting progress.\n\nEngagement gives thoughts weight.\n\nNon-engagement lets them dissolve.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough for today\n\nMain copy (exact):\n\nYou allowed thoughts to pass without effort today.\n\nThat ease supports long-term calm.\n\nThe mind can be active without being followed.\n\nSecondary text:\n\nEase supports clarity.\n\nCTA:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nLogs “thoughts not engaged” (yes / no / not sure)\nNo scoring\nNo streak impact\nUsed later for:\n\n```\no Mental flexibility insights\n```\n\n```\no Stability confidence summaries\n```\n\nSAFETY & COMPLIANCE CHECK\n\nDay 53 avoids:\n\n“Stop thinking” commands\n\nThought suppression\n\nTherapy framing\n\nCognitive correction claims\n\nDay 53 supports:\n\nMental ease\n\nPsychological safety\n\nApp Store compliance\n\nCORE MESSAGE OF DAY 53\n\nThoughts don’t need answers to move on.\n\nDAY 54 – LIVING WITH MENTAL QUIET\n\n(Stability Phase · Full Depth)\n\nFocus: Settled mind states Core Skill: Allowing quiet without searching\nfor stimulation Goal: Prevent users from reactivating habits to “feel\nsomething”\n\nTotal time: 6 – 8 minutes Tone: Spacious, reassuring, grounding"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 54 · Living with Mental Quiet\n\nMain copy (exact):\n\nToday is about mental quiet.\n\nAs urges and thoughts lose intensity, the mind can feel calmer.\n\nSometimes this quiet feels unfamiliar.\n\nIt can even feel empty or dull.\n\nToday is about learning to live comfortably inside that quiet.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "WHY QUIET CAN FEEL UNCOMFORTABLE (CONTEXT)",
-            "body": "Screen title: When quiet feels strange\n\nMain copy (exact):\n\nFor a long time, the mind may have been busy — planning, resisting, reacting.\n\nWhen that activity slows, quiet can feel unusual.\n\nThe mind may look for stimulation just to fill the space.\n\nToday is about letting quiet exist without needing to change it.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nPrevents boredom-driven relapse\nNormalizes calm states\nReduces the urge to “do something”"
-          },
-          {
-            "title": "WHAT MENTAL QUIET REALLY IS (GUIDANCE)",
-            "body": "Screen title: Quiet is not emptiness\n\nMain copy (exact):\n\nMental quiet doesn’t mean:\n\nYou’ve lost motivation\nYou’re disconnected\nSomething is missing\n\nIt means:\n\nLess mental noise\nMore space between thoughts\nFaster settling after stress\nAttention resting naturally\n\nQuiet is a sign of integration.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GUIDED QUIET PRESENCE (PRIMARY EXPERIENCE)",
-            "body": "Screen title: Resting in quiet\n\nInstruction text (above audio):\n\nThis short guide helps you sit with quiet without filling it.\n\nAUDIO SCRIPT (Word-for-Word, ~2 minutes)\n\nDay\n54 – Patience With Long-Term Change (7-Minute Guided Meditation) Find a\ncomfortable place to sit. There is nowhere you need to arrive today. Just a few\nquiet minutes to settle. If it feels okay, gently close your eyes. Or soften\nyour gaze. Take one slow breath in... And let it go naturally. No need to adjust\nyour breathing. Just notice it.\n\nIn... And out... Today is about patience. Not passive waiting. Not slowing\nprogress. Just allowing change to unfold at its own pace. Let your breath\ncontinue at its natural rhythm. Long-term change rarely feels dramatic. It often\nfeels subtle. Gradual. Almost invisible while it happens. Take a slow breath\nin... And gently out. Think about the early days of this practice. The first\npauses. The first observations. Notice what feels more familiar now. Even\nslightly. That familiarity came from time. Not intensity. Stay with that thought\nsoftly. In... And out... Now notice if there is any impatience in your body. A\nsense of wanting results faster. Wanting certainty. Wanting completion. If that\nfeeling is present, just observe it. No need to remove it. Take another slow\nbreath in...\n\nAnd let it go gently. Patience reduces tension. Rushing creates pressure.\nPressure often disrupts steadiness. Now imagine yourself a few months from now.\nNot dramatically different. Just consistently steady. Picture small, natural\nawareness. Calm responses. Balanced effort. That image does not need urgency. It\nonly needs continuity. In... And out... Notice how that feels. Realistic.\nSustainable. Long-term change is not built on intensity. It is built on\nrepetition. Bring your attention back to your breathing. Notice the steady\nrhythm. Breath does not rush. It continues. Calmly. Consistently. Stay here\nquietly for a few breaths. In... And out... If your mind says, “When will this\nbe complete?” notice that thought gently.\n\nAnd return to the breath. Completion is not the goal. Stability is. And\nstability grows gradually. Now imagine a moment later today when you choose\npatience. Not dramatically. Just one calm response instead of rushing. That is\nlong-term change in action. Take one final slow breath in... And a steady breath\nout. Notice the room around you. The surface beneath you. The quiet of this\nmoment. Patience protects what you are building. And you are building steadily.\nWhen you’re ready, gently open your eyes. Return to your day. Long-term change\nunfolds gradually. And that is enough."
-          },
-          {
-            "title": "TODAY’S PRACTICE (TEXT)",
-            "body": "Screen title: Today’s practice\n\nMain copy (exact):\n\nToday, when things feel quiet:\n\nDon’t rush to fill it\nDon’t judge it\nDon’t label it as boring\n\nLet quiet be part of your day.\n\nSecondary text (small):\n\nQuiet supports stability.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nHow did mental quiet feel today?\n\nOptional follow-ups (collapsed):\n\nComfortable or unfamiliar?\nPeaceful or neutral?\nDid you feel the urge to fill it?\n\nHelper text (small):\n\nOne sentence is enough — or skip.\n\nCTA buttons:\n\n_Save & Continue_\n\n_Skip for Today_"
-          },
-          {
-            "title": "STABILITY REFRAME (TEXT)",
-            "body": "Screen title: Quiet is a foundation\n\nMain copy (exact):\n\nMental quiet doesn’t stop life.\n\nIt supports it.\n\nFrom quiet, attention moves naturally toward what matters.\n\nYou don’t need noise to feel alive.\n\nCTA: _Continue_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough for today\n\nMain copy (exact):\n\nYou allowed quiet without reacting today.\n\nThat comfort is a sign of stability.\n\nSpace is becoming safe.\n\nSecondary text:\n\nQuiet builds ease.\n\nCTA:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nLogs “tolerated mental quiet” (yes / no / not sure)\nNo scoring\nNo streaks\nUsed later for:\n\n```\no Calm baseline insights\n```\n\n```\no Stability readiness summaries\n```\n\nSAFETY & COMPLIANCE CHECK\n\nDay 54 avoids:\n\n“Always be calm” messaging\n\nSpiritual bypassing\n\nTherapy claims\n\nEmotional suppression\n\nDay 54 supports:\n\nPsychological safety\n\nNormalization of calm\n\nApp Store compliance\n\nCORE MESSAGE OF DAY 54\n\nQuiet isn’t empty.\n\nIt’s space where life can breathe.\n\nDAY 55 – ENJOYING LIFE WITHOUT HABIT COMPARISON\n\n(Stability Phase · Full Depth)\n\nFocus: Letting enjoyment stand on its own Core Skill: Non-comparison\nGoal: Prevent nostalgia-driven pull back to old habits\n\nTotal time: 6 – 8 minutes Tone: Grounded, affirming, freeing"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 55 · Enjoying Life Without Comparison\n\nMain copy (exact):\n\nToday is about enjoyment.\n\nNot improving it.\n\nNot measuring it.\n\nJust letting it be.\n\nWhen habits fade, the mind sometimes compares: “Was it more enjoyable before?”\n\nToday is about dropping that comparison.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "WHY COMPARISON SHOWS UP (CONTEXT)",
-            "body": "Screen title: Why the mind compares\n\nMain copy (exact):\n\nComparison is a habit of the mind.\n\nIt often appears when things are calm.\n\nThe mind checks:\n\nIs this enough?\nWas something lost?\nShould I feel more?\n\nThese questions don’t mean something is missing.\n\nThey mean the habit no longer fills attention.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nNormalizes nostalgia\nPrevents romanticizing old habits\nReduces dissatisfaction"
-          },
-          {
-            "title": "WHAT COMPARISON DOES (GUIDANCE)",
-            "body": "Screen title: Comparison drains enjoyment\n\nMain copy (exact):\n\nComparison pulls attention away from what’s happening now.\n\nIt turns simple enjoyment into evaluation.\n\nEnjoyment fades not because it’s weaker — but because it’s measured.\n\nToday is about letting enjoyment exist unmeasured.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GUIDED NON-COMPARISON PRACTICE (PRIMARY EXPERIENCE)",
-            "body": "Screen title: Letting enjoyment be enough\n\nInstruction text (above audio):\n\nThis short guide helps you enjoy moments without comparing them.\n\nAUDIO SCRIPT (Word-for-Word, ~2 minutes)\n\nDay 55 – Living Without Constant\nMonitoring (7-Minute Guided Meditation) Find a comfortable place to sit. There\nis nothing you need to track right now. Just a few quiet minutes to settle. If\nit feels okay, gently close your eyes. Or soften your gaze. Take one slow breath\nin... And let it go naturally. No need to adjust your breathing. Just notice it.\n\nIn... And out... Over the past weeks, you’ve practiced awareness. Pausing.\nObserving. Returning. Today is about relaxing that effort slightly. Not removing\nawareness. Just softening intensity. Let your breath continue at its natural\npace. Sometimes, when we focus on change, we begin monitoring ourselves\nconstantly. Watching every thought. Every reaction. Every moment. Notice if that\nfeels familiar. Take a slow breath in... And gently out. Awareness does not\nrequire constant surveillance. It can be gentle. In the background. Steady but\nrelaxed. Now imagine moving through your day without analyzing every moment.\nJust noticing naturally when something stands out. Like hearing your name in a\ncrowd. Awareness can work like that. Effortless. In... And out... Notice how\nthat feels in your body.\n\nLess tight. Less pressured. Still steady. Bring your attention to your\nshoulders. Let them soften slightly. Notice your jaw relaxing. Monitoring often\ntightens the body. Relaxed awareness softens it. Stay here for a few breaths.\nIn... And out... Now imagine a familiar situation later today. Instead of\nscanning for problems, you simply remain present. If something arises, you\nnotice. If not, you continue calmly. No constant checking. No internal pressure.\nJust steady presence. If your mind says, “If I relax, I’ll lose progress,”\nnotice that thought gently. And return to your breath. Awareness built through\nrepetition does not disappear easily. It becomes natural. Like breathing. Now\nnotice your breath again. It continues without supervision.\n\nReliable. Steady. You don’t need to manage it. Stay here quietly for a few\nbreaths. In... And out... Relaxed awareness is sustainable. Sustainability\nbuilds long-term stability. Take one final slow breath in... And a steady breath\nout. Notice the room around you. The surface beneath you. The calm of this\nmoment. You do not need to constantly monitor yourself. You can live steadily.\nAwareness will remain available. When you’re ready, gently open your eyes.\nReturn to your day. Steady awareness can be quiet. And that is enough."
-          },
-          {
-            "title": "TODAY’S PRACTICE (TEXT)",
-            "body": "Screen title: Today’s practice\n\nMain copy (exact):\n\nToday, when you enjoy something:\n\nDon’t compare it\nDon’t measure it\nDon’t evaluate it\n\nLet the moment stand on its own.\n\nSecondary text (small):\n\nEnjoyment doesn’t need comparison.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nWhat changed when you stopped comparing enjoyment?\n\nOptional follow-ups (collapsed):\n\nDid the moment feel fuller?\nDid pressure reduce?\nDid enjoyment last longer?\n\nHelper text (small):\n\nOne sentence is enough — or skip.\n\nCTA buttons:\n\n_Save & Continue_\n\n_Skip for Today_"
-          },
-          {
-            "title": "STABILITY REFRAME (TEXT)",
-            "body": "Screen title: Life doesn’t need enhancement\n\nMain copy (exact):\n\nLife doesn’t need to feel intense to be meaningful.\n\nEnjoyment doesn’t need to match the past.\n\nWhen comparison stops, satisfaction becomes simpler.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough for today\n\nMain copy (exact):\n\nYou allowed enjoyment without comparison today.\n\nThat ease supports lasting stability.\n\nLife can be enjoyed as it is.\n\nSecondary text:\n\nSimplicity supports peace.\n\nCTA:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nLogs “enjoyment without comparison” (yes / no / not sure)\nNo scoring\nNo streaks\nUsed later for:\n\n```\no Satisfaction baseline insights\n```\n\n```\no Stability readiness summaries\n```\n\nSAFETY & COMPLIANCE CHECK\n\nDay 55 avoids:\n\n“Life is better now” claims\n\nEmotional intensity promises\n\nTherapy framing\n\nShame around nostalgia\n\nDay 55 supports:\n\nPsychological safety\n\nNon-attachment\n\nApp Store compliance\n\nCORE MESSAGE OF DAY 55\n\nEnjoyment doesn’t need to compete with the past to be real.\n\nDAY 56 – LETTING MOTIVATION COME AND GO\n\n(Stability Phase · Full Depth)\n\nFocus: Reducing dependence on motivation Core Skill: Continuing without\nemotional drive Goal: Prevent dips in motivation from being misread as\ndanger\n\nTotal time: 6 – 8 minutes Tone: Reassuring, steady, pressure-free"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 56 · Letting Motivation Come and Go\n\nMain copy (exact):\n\nToday is about motivation.\n\nMotivation rises.\n\nMotivation falls.\n\nIt always has.\n\nStability doesn’t require constant motivation.\n\nToday is about allowing motivation to come and go without changing direction.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "WHY MOTIVATION FEELS IMPORTANT (CONTEXT)",
-            "body": "Screen title: Why motivation gets overvalued\n\nMain copy (exact):\n\nEarly change often feels driven by motivation.\n\nOver time, motivation naturally softens.\n\nWhen motivation drops, the mind may worry: “Am I losing progress?”\n\nMotivation fading doesn’t mean stability is fading.\n\nIt often means habits are loosening.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nPrevents panic during low-motivation periods\n\nNormalizes emotional neutrality\nReduces pressure to “stay inspired”"
-          },
-          {
-            "title": "WHAT STABILITY LOOKS LIKE WITHOUT MOTIVATION (GUIDANCE)",
-            "body": "Screen title: Signs motivation isn’t needed anymore\n\nMain copy (exact):\n\nYou may notice:\n\nYou continue without thinking about it\nYou don’t need reminders to respond calmly\nUrges feel less dramatic\nDays pass without effort\n\nThese aren’t signs of apathy.\n\nThey’re signs of integration.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GUIDED NEUTRALITY PRACTICE (PRIMARY EXPERIENCE)",
-            "body": "Screen title: Allowing motivation to pass\n\nInstruction text (above audio):\n\nThis short guide helps you stay steady without needing drive or excitement.\n\nAUDIO SCRIPT (Word-for-Word, ~2 minutes)\n\nDay 56\n– Returning to Simplicity (7-Minute Guided Meditation) Find a comfortable\nplace to sit. There is nothing you need to improve. Nothing you need to analyze.\nJust a few quiet minutes to settle. If it feels okay, gently close your eyes. Or\nsoften your gaze. Take one slow breath in... And let it go naturally. No need to\nchange your breathing.\n\nJust notice it. In... And out... Today is about simplicity. Not reducing\neverything in your life. Just returning to what is basic. Let your breath\ncontinue at its natural pace. Over time, we can add layers. Expectations.\nAnalysis. Questions about progress. Today, you can set those aside. Just for\nthese few minutes. Take a slow breath in... And gently out. What is simple right\nnow? Breathing. Sitting. Being here. That is enough. Bring your attention fully\nto the sensation of breath. Air entering. Air leaving. No technique. No\nadjustment. Just natural rhythm. In... And out... Notice how uncomplicated that\nis. Now imagine a recent moment that felt complex.\n\nToo many thoughts. Too many emotions. Too many variables. Picture that moment\ngently. And now imagine removing the story. Leaving only the basic elements. A\nsensation. A breath. A pause. In... And out... Notice how complexity softens\nwhen you return to basics. Simplicity does not ignore reality. It reduces\nunnecessary layers. Bring your attention to your body. Notice your feet on the\nground. Your back supported. Your hands resting. Basic sensations. Nothing\ndramatic. Just presence. Stay here for a few breaths. In... And out... If your\nmind begins adding commentary, notice it gently. And return to the simplest\nanchor: the breath. You do not need to manage every detail. You can return to\nsimplicity at any time.\n\nNow imagine a moment later today when something feels overwhelming. Picture\nyourself simplifying it. One breath. One response. One steady action. Not\nsolving everything. Just doing the next steady thing. In... And out... Notice\nhow that feels. Clearer. Lighter. More manageable. Simplicity creates space.\nSpace supports stability. Stay here quietly for a few breaths. In... And out...\nYou do not need complexity to grow. You need consistency. And consistency is\nsimple. Take one final slow breath in... And a steady breath out. Notice the\nroom around you. The surface beneath you. The quiet of this moment. Returning to\nsimplicity restores steadiness. And today, you returned. When you’re ready,\ngently open your eyes.\n\nReturn to your day. One breath. One steady step. That is enough."
-          },
-          {
-            "title": "TODAY’S PRACTICE (TEXT)",
-            "body": "Screen title: Today’s practice\n\nMain copy (exact):\n\nToday, don’t check how motivated you feel.\n\nLet the day unfold regardless of energy or enthusiasm.\n\nStability doesn’t require motivation to function.\n\nSecondary text (small):\n\nSteadiness works on low-energy days too.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nWhat changed when you stopped monitoring motivation?\n\nOptional follow-ups (collapsed):\n\nDid pressure reduce?\nDid things feel easier?\nDid you continue anyway?\n\nHelper text (small):\n\nOne sentence is enough — or skip.\n\nCTA buttons:\n\n_Save & Continue_\n\n_Skip for Today_"
-          },
-          {
-            "title": "STABILITY REFRAME (TEXT)",
-            "body": "Screen title: Motivation is not a requirement\n\nMain copy (exact):\n\nMotivation is a feeling — not a foundation.\n\nStability rests on patterns, not emotions.\n\nYou don’t need to feel motivated to live steadily.\n\nCTA: _Continue_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough for today\n\nMain copy (exact):\n\nYou allowed motivation to come and go today.\n\nThat flexibility protects long-term stability.\n\nYou’re learning to continue without pressure.\n\nSecondary text:\n\nStability doesn’t depend on feelings.\n\nCTA:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nLogs “continued without motivation” (yes / no / not sure)\nNo streaks\nNo performance scoring\nUsed later for:\n\n```\no Stability confidence insights\n```\n\n```\no Long-term ease indicators\n```\n\nSAFETY & COMPLIANCE CHECK\n\nDay 56 avoids:\n\n“Stay motivated” messaging\n\nProductivity pressure\n\nTherapy framing\n\nEmotional suppression\n\nDay 56 supports:\n\nEmotional neutrality\n\nPsychological safety\n\nApp Store compliance\n\nCORE MESSAGE OF DAY 56\n\nMotivation can leave.\n\nStability stays.\n\nDAY 57 – TRUSTING LOW-EFFORT DAYS\n\n(Stability Phase · Full Depth)\n\nFocus: Ease instead of effort Core Skill: Trusting stability without\ntrying Goal: Prevent users from re-adding effort unnecessarily\n\nTotal time: 6 – 8 minutes Tone: Reassuring, validating, steady"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 57 · Trusting Low-Effort Days\n\nMain copy (exact):\n\nToday is about effort.\n\nOr rather — the absence of it.\n\nSome days feel easy.\n\nQuiet.\n\nUneventful.\n\nThese days don’t mean you’re slipping.\n\nThey often mean things are settling.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "WHY LOW-EFFORT DAYS CAN FEEL UNSETTLING (CONTEXT)",
-            "body": "Screen title: When ease feels suspicious\n\nMain copy (exact):\n\nFor a long time, progress may have required effort.\n\nWatching.\n\nManaging.\n\nResisting.\n\nWhen effort drops, the mind may ask: “Am I doing enough?”\n\nToday is about learning that ease is not a problem.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nPrevents self-sabotage through over-effort\nNormalizes calm days\nReduces unnecessary vigilance"
-          },
-          {
-            "title": "WHAT LOW-EFFORT STABILITY LOOKS LIKE (GUIDANCE)",
-            "body": "Screen title: Signs effort isn’t needed\n\nMain copy (exact):\n\nLow-effort days may include:\n\nLittle thought about habits\nAutomatic calm responses\nLess checking or monitoring\nFeeling neutral or ordinary\nLiving without planning around urges\n\nThese are not signs of neglect.\n\nThey are signs of trust forming.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GUIDED TRUST PRACTICE (PRIMARY EXPERIENCE)",
-            "body": "Screen title: Letting ease be enough\n\nInstruction text (above audio):\n\nThis short guide helps you stay steady without adding effort.\n\nAUDIO SCRIPT (Word-for-Word, ~2 minutes)\n\nDay 57 –\nNatural Confidence (7-Minute Guided Meditation) Find a comfortable place to\nsit. There is nothing you need to prove. Just a few quiet minutes to settle. If\nit feels okay, gently close your eyes. Or soften your gaze. Take one slow breath\nin... And let it go naturally. No need to adjust your breathing. Just notice it.\nIn... And out... Today is about confidence. Not loud confidence. Not dramatic\ncertainty. Just natural steadiness. Let your breath continue at its natural\npace. Over the past weeks, you have practiced awareness. You have paused.\nObserved. Returned. That repetition builds quiet reliability. Take a slow breath\nin... And gently out. Natural confidence does not feel tense. It does not feel\nforced. It feels relaxed.\n\nGrounded. Balanced. Bring your attention to your posture. Notice your back\nsupported. Your shoulders soft. Your breathing steady. Confidence often feels\nlike this. Calm and stable. Now think of a recent moment when you responded with\nawareness. Even briefly. Picture that moment gently. Notice how it felt. Not\ndramatic. Just steady. Stay with that feeling. In... And out... Confidence grows\nwhen you see yourself respond calmly. Again and again. It does not require\nperfection. It requires repetition. Now imagine a moment later today when\nsomething unexpected happens. Picture yourself remaining steady. Not rigid. Not\ndefensive. Just balanced. In... And out... Notice how that feels.\n\nNatural. Unforced. Sustainable. If your mind says, “I don’t feel confident,”\nnotice that thought gently. And return to the breath. Confidence is not a\ndeclaration. It is familiarity with steadiness. You are becoming familiar with\nsteadiness. Stay here quietly for a few breaths. In... And out... Natural\nconfidence does not rush. It does not compare. It does not need validation. It\nsimply remains present. Take one final slow breath in... And a steady breath\nout. Notice the room around you. The surface beneath you. The quiet of this\nmoment. Confidence that grows gradually lasts longer. And you are building it.\nWhen you’re ready, gently open your eyes. Return to your day. Steady awareness\nbecomes natural confidence. And that is enough."
-          },
-          {
-            "title": "TODAY’S PRACTICE (TEXT)",
-            "body": "Screen title: Today’s practice\n\nMain copy (exact):\n\nToday, don’t add effort just to feel productive.\n\nLet the day remain simple.\n\nLet responses stay natural.\n\nTrust what requires very little from you.\n\nSecondary text (small):\n\nEase is allowed.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nHow did it feel to not try today?\n\nOptional follow-ups (collapsed):\n\nDid ease feel comfortable or strange?\nDid anything still work without effort?\nDid you feel tempted to “do more”?\n\nHelper text (small):\n\nOne sentence is enough — or skip.\n\nCTA buttons:\n\n_Save & Continue_\n\n_Skip for Today_"
-          },
-          {
-            "title": "STABILITY REFRAME (TEXT)",
-            "body": "Screen title: Effort isn’t proof\n\nMain copy (exact):\n\nEffort doesn’t equal progress.\n\nCalm continuation does.\n\nWhat feels easy is often what lasts.\n\nYou don’t need to struggle for stability to continue.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough for today\n\nMain copy (exact):\n\nYou trusted a low-effort day today.\n\nThat trust strengthens stability.\n\nEase can be reliable.\n\nSecondary text:\n\nStability works quietly.\n\nCTA:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nLogs “trusted low-effort day” (yes / no / not sure)\nNo streaks\nNo performance metrics\nUsed later for:\n\n```\no Stability confidence summaries\n```\n\n```\no Burnout-prevention insights\n```\n\nSAFETY & COMPLIANCE CHECK\n\nDay 57 avoids:\n\nProductivity pressure\n\n“Try harder” messaging\n\nTherapy claims\n\nFear framing\n\nDay 57 supports:\n\nPsychological safety\n\nEase-based stability\n\nApp Store compliance\n\nCORE MESSAGE OF DAY 57\n\nStability doesn’t need effort to continue.\n\nDAY 58 – LETTING LIFE BE UNEVENTFUL\n\n(Stability Phase · Full Depth)\n\nFocus: Comfort with neutrality Core Skill: Allowing calm, ordinary days\nGoal: Prevent reintroducing habits to “feel something”\n\nTotal time: 6 – 8 minutes Tone: Grounded, spacious, reassuring"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 58 · Letting Life Be Uneventful\n\nMain copy (exact):\n\nToday is about uneventful days.\n\nDays without drama.\n\nWithout intensity.\n\nWithout emotional peaks.\n\nThese days are not a problem.\n\nThey are a sign that life is stabilizing.\n\nToday is about letting life stay ordinary.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "WHY UNEVENTFUL CAN FEEL UNCOMFORTABLE (CONTEXT)",
-            "body": "Screen title: When calm feels unfamiliar\n\nMain copy (exact):\n\nWhen life used to revolve around habits or urgency, quiet days can feel strange.\n\nThe mind may look for:\n\nStimulation\nDistraction\nSomething to fix\n\nUneventful days don’t mean something is missing.\n\nThey mean pressure has lifted.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nPrevents boredom-triggered relapse\n\nNormalizes neutral days\nReduces the need to “add excitement”"
-          },
-          {
-            "title": "WHAT STABILITY LOOKS LIKE DAY-TO-DAY (GUIDANCE)",
-            "body": "Screen title: Stability is often uneventful\n\nMain copy (exact):\n\nStable life often looks like:\n\nPredictable routines\nNeutral emotions\nFewer highs and lows\nLess self-monitoring\nMore focus on everyday tasks\n\nThis is not stagnation.\n\nThis is regulation.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GUIDED NEUTRAL PRESENCE PRACTICE (PRIMARY EXPERIENCE)",
-            "body": "Screen title: Resting in the ordinary\n\nInstruction text (above audio):\n\nThis short guide helps you stay present during an uneventful moment.\n\nAUDIO SCRIPT (Word-for-Word, ~2 minutes)\n\nDay 58 – Living Without Inner\nConflict (7-Minute Guided Meditation)\n\nFind a comfortable place to sit. There is nothing you need to fight right now.\nJust a few quiet minutes to settle. If it feels okay, gently close your eyes. Or\nsoften your gaze. Take one slow breath in... And let it go naturally. No need to\nadjust your breathing. Just notice it. In... And out... Today is about inner\nconflict. Not eliminating parts of yourself. Not battling habits. Just reducing\nfriction. Let your breath continue at its natural pace. Sometimes conflict\nappears as tension. One part of you wants one thing. Another part wants\nsomething else. Notice if that feels familiar. Take a slow breath in... And\ngently out. Inner conflict often tightens the body. Clenched jaw. Rigid\nshoulders. Restless breath. Bring your attention to those areas. Allow them to\nsoften slightly. Without forcing. In... And out...\n\nNow imagine a recent moment when you felt torn. An urge. A decision. A reaction.\nNotice how it felt internally. Was there pressure? Resistance? Self-criticism?\nStay with that memory gently. Now imagine the same moment again. But instead of\nfighting the urge or criticizing yourself, imagine observing both sides calmly.\nOne side wanting relief. Another wanting steadiness. Just noticing both. In...\nAnd out... Notice how conflict softens when observation replaces resistance. You\ndo not need to silence one part. You do not need to overpower another. Awareness\ncreates balance. Bring your attention back to your body. Notice your breathing.\nSteady. Even. Unforced. Breathing does not argue with itself. It flows.\n\nNow imagine a situation later today where inner conflict might arise. Picture\nyourself pausing. Acknowledging both impulses. And responding calmly. In... And\nout... Notice how that feels. Less dramatic. More grounded. Living without inner\nconflict does not mean no urges. It means less internal fighting. If your mind\nsays, “But I still feel conflict,” notice that thought gently. And return to the\nbreath. Conflict reduces gradually. Through repetition. Through steady\nawareness. Stay here quietly for a few breaths. In... And out... You do not need\nto battle yourself. You can guide yourself calmly. Take one final slow breath\nin... And a steady breath out. Notice the room around you. The surface beneath\nyou. The quiet of this moment. Less inner conflict creates more stability.\n\nAnd today, you practiced calm balance. When you’re ready, gently open your eyes.\nReturn to your day. You do not need to fight yourself. Steadiness is enough."
-          },
-          {
-            "title": "TODAY’S PRACTICE (TEXT)",
-            "body": "Screen title: Today’s practice\n\nMain copy (exact):\n\nToday, allow parts of your day to remain uneventful.\n\nDon’t fill the space.\n\nDon’t create urgency.\n\nLet ordinary moments pass without interruption.\n\nSecondary text (small):\n\nUneventful days are healthy.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nHow did uneventful moments feel today?\n\nOptional follow-ups (collapsed):\n\nComfortable or restless?\nDid you try to add stimulation?\nDid calm settle on its own?\n\nHelper text (small):\n\nOne sentence is enough — or skip.\n\nCTA buttons:\n\n_Save & Continue_\n\n_Skip for Today_"
-          },
-          {
-            "title": "STABILITY REFRAME (TEXT)",
-            "body": "Screen title: Ordinary is a foundation\n\nMain copy (exact):\n\nA steady life isn’t dramatic.\n\nIt’s predictable.\n\nRepetitive.\n\nUneventful.\n\nFrom that foundation, meaningful moments arise naturally.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough for today\n\nMain copy (exact):\n\nYou allowed life to be uneventful today.\n\nThat comfort supports long-term stability.\n\nOrdinary moments are doing their work.\n\nSecondary text:\n\nCalm is sustainable.\n\nCTA:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nLogs “allowed uneventful moments” (yes / no / not sure)\nNo streaks\nNo performance metrics\nUsed later for:\n\n```\no Stability baseline insights\n```\n\n```\no Long-term readiness summaries\n```\n\nSAFETY & COMPLIANCE CHECK\n\nDay 58 avoids:\n\n“Life should be exciting” messaging\n\nEmotional suppression\n\nTherapy framing\n\nFear of boredom\n\nDay 58 supports:\n\nPsychological safety\n\nNervous system regulation\n\nApp Store compliance\n\nCORE MESSAGE OF DAY 58\n\nA stable life doesn’t need to be exciting to be meaningful.\n\nDAY 59 – LONG-TERM STABILITY\n\n(Stability Phase · Full Depth · Program Wrap-Up)\n\nFocus: Carrying stability forward Core Skill: Living without active\nrecovery focus Goal: Help users trust themselves beyond the program\n\nTotal time: 6 – 8 minutes Tone: Grounded, reassuring, complete (not\ncelebratory)"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 59 · Long-Term Stability\n\nMain copy (exact):\n\nToday is not a finish line.\n\nIt’s a settling point.\n\nLong-term stability doesn’t feel dramatic.\n\nIt feels livable.\n\nToday is about recognizing that life can continue without ongoing effort,\ntracking, or constant support.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "WHAT LONG-TERM STABILITY REALLY IS (CONTEXT)",
-            "body": "Screen title: Stability beyond the program\n\nMain copy (exact):\n\nLong-term stability means:\n\nYou don’t organize life around habits\nUrges don’t dictate decisions\nStress doesn’t demand escape\nThoughts don’t require engagement\n\nIt doesn’t mean perfection.\n\nIt means confidence in your ability to respond without panic or force.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nPrevents “What now?” anxiety\nAvoids false graduation pressure\nSets realistic expectations"
-          },
-          {
-            "title": "WHAT YOU’VE ACTUALLY BUILT (GUIDANCE)",
-            "body": "Screen title: What remains with you\n\nMain copy (exact):\n\nOver time, you’ve practiced:\n\nPausing instead of reacting\nContinuing after slips\nLetting urges and thoughts pass\nTrusting low-effort days\nLiving without constant reference\n\nThese are not techniques you need to remember.\n\nThey’re patterns your system already knows.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GUIDED INTEGRATION PRACTICE (PRIMARY EXPERIENCE)",
-            "body": "Screen title: Trusting what’s already here\n\nInstruction text (above audio):\n\nThis final guide helps you rest in what you’ve built — without needing to hold\nit.\n\nAUDIO SCRIPT (Word-for-Word, ~2 minutes)\n\nDay 59 – Stability Without Effort (7-Minute Guided Meditation) Find a\ncomfortable place to sit. There is nothing you need to maintain right now. Just\na few quiet minutes to settle. If it feels okay, gently close your eyes. Or\nsoften your gaze. Take one slow breath in... And let it go naturally. No need to\nadjust your breathing. Just notice it. In... And out... Over the past weeks,\nyou’ve practiced awareness. Pausing. Observing. Returning. Today is about\nnoticing how effort changes over time. Let your breath continue at its natural\npace. Think back to the early days. When pausing required intention. When\nnoticing felt deliberate. Now reflect gently. Does awareness feel slightly more\nnatural? Even occasionally? Take a slow breath in...\n\nAnd gently out. Stability begins with effort. But over time, effort softens.\nWhat was once conscious can become familiar. Bring your attention to your\nbreath. Notice how it continues without effort. You do not force it. You allow\nit. In... And out... Imagine responding to a familiar urge. Not with tension.\nNot with strain. Just with steady presence. Picture it happening calmly. Without\ndramatic effort. Notice how that feels. Sustainable. Balanced. Quiet. Stability\nwithout effort does not mean no awareness. It means awareness feels natural.\nBring your attention to your posture. Supported. Balanced. Unforced. Even\nsitting upright does not require tension. If your mind says, “I still have to\ntry,”\n\nnotice that thought gently. And return to your breath. Effort gradually\ntransforms into habit. Habit gradually transforms into identity. And identity\nfeels natural. Stay here quietly for a few breaths. In... And out... Now imagine\nmoving through your day without constantly checking yourself. Without pushing.\nJust responding steadily when needed. Awareness available. But relaxed. In...\nAnd out... Notice how that image feels. Less intense. More grounded. More\nsustainable. Take one final slow breath in... And a steady breath out. Notice\nthe room around you. The surface beneath you. The calm of this moment. Stability\ndoes not need strain. It grows lighter over time. And you are practicing that\nlightness. When you’re ready, gently open your eyes. Return to your day.\n\nSteady awareness can feel natural. And that is enough."
-          },
-          {
-            "title": "TODAY’S PRACTICE (TEXT)",
-            "body": "Screen title: Today’s practice\n\nMain copy (exact):\n\nToday, don’t practice anything.\n\nJust live your day as you normally would.\n\nIf support is needed, it’s available.\n\nIf not, that’s okay too.\n\nSecondary text (small):\n\nStability doesn’t need daily attention.\n\nCTA: _Continue_"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nWhat feels different now compared to when you began?\n\nOptional follow-ups (collapsed):\n\nWhat feels less important?\nWhat feels easier?\nWhat feels more stable?\n\nHelper text (small):\n\nOne sentence is enough — or skip.\n\nCTA buttons:\n\n_Save & Continue_\n\n_Skip for Today_"
-          },
-          {
-            "title": "MOVING FORWARD (TEXT)",
-            "body": "Screen title: Moving forward from here\n\nMain copy (exact):\n\nFrom here, life continues without a program guiding each step.\n\nSupport remains available — but it no longer needs to be central.\n\nYou don’t need to “stay in recovery.”\n\nYou’re simply living.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "FINAL CLOSE (CALM, NON-FINAL)",
-            "body": "Screen title: That’s enough\n\nMain copy (exact):\n\nLong-term stability doesn’t announce itself.\n\nIt shows up as ordinary life continuing without struggle.\n\nYou don’t need to hold onto this program for what you’ve built to remain.\n\nYou’re ready to keep living.\n\nSecondary text:\n\nStability carries itself.\n\nCTA:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nMarks Core Program Complete\nNo “graduation” badge\nNo pressure to upgrade or continue\nUsed later for:\n\n```\no Long-term confidence summaries\n```\n\n```\no Optional check-ins or reflections\n```\n\nSAFETY & COMPLIANCE CHECK\n\nDay 59 avoids:\n\nCure or completion claims\n\nAbstinence guarantees\n\nTherapy framing\n\nEmotional dependency\n\nDay 59 supports:\n\nAutonomy\n\nPsychological safety\n\nApp Store compliance\n\nCORE MESSAGE OF DAY 59\n\nStability doesn’t need to be maintained.\n\nIt continues when life is allowed to move on."
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
           }
         ],
         "audio": {
@@ -3014,10 +1695,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "Find a\ncomfortable place to sit. There is nothing you need to prepare for right now.\nJust a few quiet minutes to settle. If it feels okay, gently close your eyes. Or\nsoften your gaze. Take one slow breath in... And let it go naturally. No need to\nadjust your breathing. Just notice it. In... And out... Today is about staying\nsteady around others. Not isolating yourself. Not changing who you are.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "Find a\ncomfortable place to sit. There is nothing you need to prepare for right now.\nJust a few quiet minutes to settle. If it feels okay, gently close your eyes. Or\nsoften your gaze. Take one slow breath in... And let it go naturally. No need to\nadjust your breathing. Just notice it. In... And out... Today is about staying\nsteady around others. Not isolating yourself. Not changing who you are.",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "Find a\ncomfortable place to sit. There is nothing you need to prepare for right now.\nJust a few quiet minutes to settle. If it feels okay, gently close your eyes. Or\nsoften your gaze. Take one slow breath in... And let it go naturally. No need to\nadjust your breathing. Just notice it. In... And out... Today is about staying\nsteady around others. Not isolating yourself. Not changing who you are."
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-050.mp3",
           "durationSeconds": 420,
@@ -3031,10 +1721,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "Find a\ncomfortable place to sit. There is nothing unexpected happening right now. Just\na few quiet minutes to settle. If it feels okay, gently close your eyes. Or\nsoften your gaze. Take one slow breath in... And let it go naturally. No need to\nadjust your breathing. Just notice it. In... And out... Today is about the\nunexpected. Moments that interrupt plans.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "Find a\ncomfortable place to sit. There is nothing unexpected happening right now. Just\na few quiet minutes to settle. If it feels okay, gently close your eyes. Or\nsoften your gaze. Take one slow breath in... And let it go naturally. No need to\nadjust your breathing. Just notice it. In... And out... Today is about the\nunexpected. Moments that interrupt plans.",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "Find a\ncomfortable place to sit. There is nothing unexpected happening right now. Just\na few quiet minutes to settle. If it feels okay, gently close your eyes. Or\nsoften your gaze. Take one slow breath in... And let it go naturally. No need to\nadjust your breathing. Just notice it. In... And out... Today is about the\nunexpected. Moments that interrupt plans."
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-051.mp3",
           "durationSeconds": 420,
@@ -3048,10 +1747,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "Find a comfortable place to\nsit. There is nothing you need to manage right now. Just a few quiet minutes to\nsettle. If it feels okay, gently close your eyes. Or soften your gaze. Take one\nslow breath in... And let it go naturally. No need to adjust your breathing.\nJust notice it. In... And out... Today is about control. Not eliminating\nresponsibility. Not becoming passive. Just noticing where tension appears. Let\nyour breath continue at its natural pace. Gently ask yourself: Where do I try to\ncontrol too tightly?",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "Find a comfortable place to\nsit. There is nothing you need to manage right now. Just a few quiet minutes to\nsettle. If it feels okay, gently close your eyes. Or soften your gaze. Take one\nslow breath in... And let it go naturally. No need to adjust your breathing.\nJust notice it. In... And out... Today is about control. Not eliminating\nresponsibility. Not becoming passive. Just noticing where tension appears. Let\nyour breath continue at its natural pace. Gently ask yourself: Where do I try to\ncontrol too tightly?",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "Find a comfortable place to\nsit. There is nothing you need to manage right now. Just a few quiet minutes to\nsettle. If it feels okay, gently close your eyes. Or soften your gaze. Take one\nslow breath in... And let it go naturally. No need to adjust your breathing.\nJust notice it. In... And out... Today is about control. Not eliminating\nresponsibility. Not becoming passive. Just noticing where tension appears. Let\nyour breath continue at its natural pace. Gently ask yourself: Where do I try to\ncontrol too tightly?"
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-052.mp3",
           "durationSeconds": 420,
@@ -3065,10 +1773,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "A guided reflection designed to slow the urge-response loop.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "A guided reflection designed to slow the urge-response loop.",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "A guided reflection designed to slow the urge-response loop."
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-053.mp3",
           "durationSeconds": 420,
@@ -3082,10 +1799,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "A guided reflection designed to slow the urge-response loop.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "A guided reflection designed to slow the urge-response loop.",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "A guided reflection designed to slow the urge-response loop."
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-054.mp3",
           "durationSeconds": 420,
@@ -3099,10 +1825,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "A guided reflection designed to slow the urge-response loop.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "A guided reflection designed to slow the urge-response loop.",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "A guided reflection designed to slow the urge-response loop."
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-055.mp3",
           "durationSeconds": 420,
@@ -3116,10 +1851,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "Find a comfortable\nplace to sit. There is nothing you need to improve. Nothing you need to analyze.\nJust a few quiet minutes to settle. If it feels okay, gently close your eyes. Or\nsoften your gaze. Take one slow breath in... And let it go naturally. No need to\nchange your breathing.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "Find a comfortable\nplace to sit. There is nothing you need to improve. Nothing you need to analyze.\nJust a few quiet minutes to settle. If it feels okay, gently close your eyes. Or\nsoften your gaze. Take one slow breath in... And let it go naturally. No need to\nchange your breathing.",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "Find a comfortable\nplace to sit. There is nothing you need to improve. Nothing you need to analyze.\nJust a few quiet minutes to settle. If it feels okay, gently close your eyes. Or\nsoften your gaze. Take one slow breath in... And let it go naturally. No need to\nchange your breathing."
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-056.mp3",
           "durationSeconds": 420,
@@ -3133,10 +1877,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "Find a comfortable place to\nsit. There is nothing you need to prove. Just a few quiet minutes to settle. If\nit feels okay, gently close your eyes. Or soften your gaze. Take one slow breath\nin... And let it go naturally. No need to adjust your breathing. Just notice it.\nIn... And out... Today is about confidence. Not loud confidence. Not dramatic\ncertainty. Just natural steadiness. Let your breath continue at its natural\npace. Over the past weeks, you have practiced awareness. You have paused.\nObserved. Returned. That repetition builds quiet reliability. Take a slow breath\nin... And gently out. Natural confidence does not feel tense. It does not feel\nforced. It feels relaxed.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "Find a comfortable place to\nsit. There is nothing you need to prove. Just a few quiet minutes to settle. If\nit feels okay, gently close your eyes. Or soften your gaze. Take one slow breath\nin... And let it go naturally. No need to adjust your breathing. Just notice it.\nIn... And out... Today is about confidence. Not loud confidence. Not dramatic\ncertainty. Just natural steadiness. Let your breath continue at its natural\npace. Over the past weeks, you have practiced awareness. You have paused.\nObserved. Returned. That repetition builds quiet reliability. Take a slow breath\nin... And gently out. Natural confidence does not feel tense. It does not feel\nforced. It feels relaxed.",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "Find a comfortable place to\nsit. There is nothing you need to prove. Just a few quiet minutes to settle. If\nit feels okay, gently close your eyes. Or soften your gaze. Take one slow breath\nin... And let it go naturally. No need to adjust your breathing. Just notice it.\nIn... And out... Today is about confidence. Not loud confidence. Not dramatic\ncertainty. Just natural steadiness. Let your breath continue at its natural\npace. Over the past weeks, you have practiced awareness. You have paused.\nObserved. Returned. That repetition builds quiet reliability. Take a slow breath\nin... And gently out. Natural confidence does not feel tense. It does not feel\nforced. It feels relaxed."
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-057.mp3",
           "durationSeconds": 420,
@@ -3150,10 +1903,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "A guided reflection designed to slow the urge-response loop.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "A guided reflection designed to slow the urge-response loop.",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "A guided reflection designed to slow the urge-response loop."
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-058.mp3",
           "durationSeconds": 420,
@@ -3167,10 +1929,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "Find a\ncomfortable place to sit. There is nothing you need to maintain right now. Just\na few quiet minutes to settle. If it feels okay, gently close your eyes. Or\nsoften your gaze. Take one slow breath in... And let it go naturally. No need to\nadjust your breathing. Just notice it. In... And out... Over the past weeks,\nyou’ve practiced awareness. Pausing. Observing. Returning. Today is about\nnoticing how effort changes over time. Let your breath continue at its natural\npace. Think back to the early days. When pausing required intention. When\nnoticing felt deliberate. Now reflect gently. Does awareness feel slightly more\nnatural? Even occasionally? Take a slow breath in...",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "Find a\ncomfortable place to sit. There is nothing you need to maintain right now. Just\na few quiet minutes to settle. If it feels okay, gently close your eyes. Or\nsoften your gaze. Take one slow breath in... And let it go naturally. No need to\nadjust your breathing. Just notice it. In... And out... Over the past weeks,\nyou’ve practiced awareness. Pausing. Observing. Returning. Today is about\nnoticing how effort changes over time. Let your breath continue at its natural\npace. Think back to the early days. When pausing required intention. When\nnoticing felt deliberate. Now reflect gently. Does awareness feel slightly more\nnatural? Even occasionally? Take a slow breath in...",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "Find a\ncomfortable place to sit. There is nothing you need to maintain right now. Just\na few quiet minutes to settle. If it feels okay, gently close your eyes. Or\nsoften your gaze. Take one slow breath in... And let it go naturally. No need to\nadjust your breathing. Just notice it. In... And out... Over the past weeks,\nyou’ve practiced awareness. Pausing. Observing. Returning. Today is about\nnoticing how effort changes over time. Let your breath continue at its natural\npace. Think back to the early days. When pausing required intention. When\nnoticing felt deliberate. Now reflect gently. Does awareness feel slightly more\nnatural? Even occasionally? Take a slow breath in..."
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-059.mp3",
           "durationSeconds": 420,
@@ -3180,765 +1951,21 @@ export const GENERATED_PROGRAMS = {
       {
         "programSlug": "ninety_day_transform",
         "dayNumber": 60,
-        "title": "Day 60",
+        "title": "Consolidation & Pause",
         "subtitle": null,
-        "summary": "(Full Depth · Integration Day)",
+        "summary": "A guided reflection designed to slow the urge-response loop.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
+        "focus": "A guided reflection designed to slow the urge-response loop.",
         "sections": [
           {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 60 · Pausing Before the Next Phase\n\nMain copy (exact):\n\nToday is a pause.\n\nNot a pause from progress — a pause to let progress settle.\n\nOver the past weeks, you’ve built awareness, pauses, routines, and steadiness.\n\nToday is about recognizing that foundation before moving forward.\n\nCTA:\n\n_Continue_\n\nUX notes\n\nNo celebratory language\nNo “milestone” graphics\n\nCalm spacing, neutral tone"
+            "title": "Today’s Focus",
+            "body": "A guided reflection designed to slow the urge-response loop."
           },
           {
-            "title": "WHAT YOU’VE BUILT (CONTEXT)",
-            "body": "Screen title: What’s already in place\n\nMain copy (exact):\n\nYou may not feel dramatically different — and that’s normal.\n\nStability often feels quiet.\n\nWhat you’ve built includes:\n\nEarlier noticing\nSlower reactions\nLess urgency\nGentler recovery\nMore choice\n\nThese changes don’t shout.\n\nThey stay.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nPrevents “nothing happened” thinking\nReframes subtle progress as real progress\nPrepares user emotionally for confidence phase"
-          },
-          {
-            "title": "GUIDED AUDIO (PRIMARY)",
-            "body": "Screen title: Letting progress settle\n\nAUDIO SCRIPT (Word-for-Word, ~4 minutes)\n\nDay 60 – Two-Month\nReflection (7-Minute Guided Meditation) Find a comfortable place to sit. There\nis nothing you need to measure. Nothing you need to prove. Just a few quiet\nminutes to reflect gently. If it feels okay, close your eyes. Or soften your\ngaze. Take one slow breath in... And let it go naturally. No need to adjust the\nrhythm. Just notice it. In... And out... It has been several weeks of steady\nawareness. Not dramatic effort. Not intense control. Just repetition. Today is\nabout noticing depth. Let your breath continue at its natural pace. Gently think\nback to the earlier days. When noticing required more effort. When pauses felt\ndeliberate. Now reflect softly. Does awareness feel more familiar? More\naccessible? Even occasionally? Take a slow breath in... And gently out. Notice\nhow urges feel now.\n\nAre they less surprising? More recognizable? Even if they still appear? Clarity\nreduces confusion. And reduced confusion builds calm. Now reflect on emotional\nsteadiness. Does discomfort feel slightly more manageable? Not eliminated. Just\nclearer? Stay with that thought gently. In... And out... Two months of\nrepetition creates depth. Depth does not feel loud. It feels grounded. Bring\nyour attention back to your body. Notice your breathing. Steady. Reliable.\nNotice your posture. Balanced. Supported. Even this stillness shows continuity.\nYou have been returning. Again and again. Stay here for a few breaths. In... And\nout... If your mind begins evaluating — “I should be further,” notice that\nthought gently.\n\nAnd return to the breath. This is not a point of measurement. It is a point of\nintegration. Now gently ask yourself: What feels more natural than before? What\nrequires less effort? It may be small. That is enough. Change deepens gradually.\nWithout announcement. Without drama. Take one final slow breath in... And a\nsteady breath out. Notice the room around you. The surface beneath you. The\nquiet of this moment. Two months of awareness builds familiarity. Familiarity\nbuilds stability. And stability deepens over time. When you’re ready, gently\nopen your eyes. Return to your day. You are not finishing. You are deepening.\nAnd that is enough."
-          },
-          {
-            "title": "INTEGRATION PRACTICE (TEXT-ONLY)",
-            "body": "Screen title: Noticing without effort\n\nMain copy (exact):\n\nToday, notice how you move through the day without trying to manage anything.\n\nPay attention to:\n\nHow you respond\nHow quickly things pass\nHow you recover\n\nThere’s nothing to fix.\n\nHelper text (small):\n\nThis is observation only.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Primary prompt (exact):\n\nWhat feels more settled now than before?\n\nOptional follow-ups (collapsed):\n\nWhat feels less urgent?\nWhat feels more familiar or steady?\nWhat feels easier without effort?\n\nHelper text:\n\nA few words are enough — or skip this entirely.\n\nCTA buttons: Save & Continue | Skip for Today"
-          },
-          {
-            "title": "TRANSITION TO CONFIDENCE PHASE",
-            "body": "Screen title: Moving forward\n\nMain copy (exact):\n\nThe next phase will focus on confidence — not confidence that everything is\nsolved, but confidence that you can handle moments as they arise.\n\nYou’re not starting something new.\n\nYou’re building on what’s already there.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Main copy (exact):\n\nYou don’t need to push progress forward.\n\nIt’s already moving with you.\n\nTomorrow, you’ll begin noticing how much steadier you already are.\n\nSecondary text:\n\nPause completed.\n\nCTA:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nDay 60 marked as integration day\nNo metrics, no streaks\nNo routine prompts\nPrepares confidence-phase insights\nNo notifications triggered\n\nSAFETY & COMPLIANCE CHECK\n\nDay 60 avoids:\n\nAchievement framing\n\n“You’ve completed X%”\n\nPerformance pressure\n\nTherapy language\n\nDay 60 supports:\n\nIntegration\n\nEmotional regulation\n\nAutonomy\n\nApp Store compliance\n\nCORE MESSAGE OF DAY 60\n\nProgress that lasts doesn’t rush.\n\nIt settles.\n\nDays 61–70: Confidence Building\n\nRecall past wins\nPractice responding without the app sometimes\nJournal: “What shows I’m steadier?”\n\nDAY 61 – RECOGNIZING STEADINESS\n\n(Confidence Building Phase · Full Depth · Phase Opening)\n\nFocus: Confidence through evidence, not emotion Core Skill: Seeing\nstability clearly Goal: Help users _recognize_ confidence instead of chasing\nit\n\nTotal time: 6 – 8 minutes Tone: Grounded, affirming, realistic"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 61 · Recognizing Steadiness\n\nMain copy (exact):\n\nToday begins a new phase — confidence building.\n\nNot confidence that feels loud.\n\nNot confidence that needs motivation.\n\nBut confidence that comes from steadiness over time.\n\nToday is about noticing what’s already working.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "WHY CONFIDENCE CAN FEEL SUBTLE (CONTEXT)",
-            "body": "Screen title: Why confidence doesn’t always feel strong\n\nMain copy (exact):\n\nMany people expect confidence to feel powerful or exciting.\n\nIn reality, lasting confidence often feels quiet.\n\nIt shows up as:\n\nLess doubt\nLess urgency\nLess fear of setbacks\n\nToday is about recognizing that kind of confidence.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nPrevents “I don’t feel confident enough” thinking\nReframes confidence as functional, not emotional\n\nGrounds users in reality"
-          },
-          {
-            "title": "EVIDENCE OF STEADINESS (GUIDANCE)",
-            "body": "Screen title: Signs confidence is already present\n\nMain copy (exact):\n\nConfidence may already exist if:\n\nYou recover faster after urges\nSlips don’t derail your day\nYou think less about habits\nStress doesn’t escalate as quickly\nYou trust yourself more than before\n\nThese aren’t small changes.\n\nThey’re foundations.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GUIDED RECOGNITION PRACTICE (PRIMARY EXPERIENCE)",
-            "body": "Screen title: Noticing what’s steady\n\nInstruction text (above audio):\n\nThis short guide helps you recognize confidence without trying to create it.\n\nAUDIO SCRIPT (Word-for-Word, ~2 minutes)\n\nDay 61 – Integration Into Daily Life (7-Minute Guided\nMeditation) Find a comfortable place to sit. There is nothing you need to\nprepare for. Just a few quiet minutes to settle. If it feels okay, gently close\nyour eyes.\n\nOr soften your gaze. Take one slow breath in... And let it go naturally. No need\nto adjust your breathing. Just notice it. In... And out... Over the past weeks,\nyou’ve practiced awareness in focused moments. Today is about integration. Not\nadding something new. Just blending what you’ve practiced into ordinary life.\nLet your breath continue at its natural pace. Think about a normal part of your\nday. Waking up. Walking. Working. Eating. Talking. Simple, everyday actions. Now\nimagine bringing calm awareness into one of those moments. Not intensely. Not\nanalytically. Just gently present. In... And out... Notice how ordinary that\nfeels. Integration does not require special conditions. It happens in regular\nmoments. Bring your attention to your body right now. Feel the support beneath\nyou. Your breathing steady.\n\nYour posture balanced. This same steadiness can exist while moving. While\nspeaking. While working. Now imagine a small pause during your day. Before\nopening a door. Before answering a message. Before standing up. Picture yourself\ntaking one steady breath. In... And out... That is integration. Not separate\nfrom life. Part of it. Awareness does not need a meditation cushion. It travels\nwith you. If your mind says, “I can’t stay aware all day,” notice that thought\ngently. And return to the breath. Integration is not constant attention. It is\noccasional return. Stay here quietly for a few breaths. In... And out... Now\nimagine finishing your day calmly. Not perfectly. Not flawlessly. Just having\nreturned to awareness a few times. That is enough. Long-term stability grows\nfrom integration.\n\nNot intensity. Not isolation. Bring your attention back to the simplicity of\nbreath. In... And out... Awareness woven into ordinary life becomes sustainable.\nTake one final slow breath in... And a steady breath out. Notice the room around\nyou. The surface beneath you. The quiet of this moment. Integration is gentle.\nAnd you are practicing it. When you’re ready, gently open your eyes. Return to\nyour day. Carry steadiness with you. That is enough."
-          },
-          {
-            "title": "TODAY’S PRACTICE (TEXT)",
-            "body": "Screen title: Today’s practice\n\nMain copy (exact):\n\nToday, notice moments where:\n\nYou handled something calmly\nYou didn’t overthink\nYou trusted yourself\n\nNo need to record them.\n\nJust notice.\n\nSecondary text (small):\n\nRecognition builds confidence.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nWhat shows you’re steadier than before?\n\nOptional follow-ups (collapsed):\n\nWhat feels less reactive?\nWhat feels more automatic?\nWhat worries you less?\n\nHelper text (small):\n\nOne sentence is enough — or skip.\n\nCTA buttons:\n\n_Save & Continue_\n\n_Skip for Today_"
-          },
-          {
-            "title": "CONFIDENCE REFRAME (TEXT)",
-            "body": "Screen title: Confidence is functional\n\nMain copy (exact):\n\nConfidence doesn’t mean you’ll never struggle again.\n\nIt means you trust your ability to respond.\n\nThat trust is already forming.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough for today\n\nMain copy (exact):\n\nYou recognized steadiness today.\n\nThat awareness strengthens confidence naturally.\n\nYou don’t need to feel confident for confidence to be present.\n\nSecondary text:\n\nSteadiness builds trust.\n\nCTA:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nMarks Confidence Phase started\nLogs “recognized steadiness” (yes / no / not sure)\nNo streak pressure\nUsed later for:\n\n```\no Confidence trend insights\n```\n\n```\no Readiness indicators\n```\n\nSAFETY & COMPLIANCE CHECK\n\nDay 61 avoids:\n\nOverconfidence messaging\n\nOutcome guarantees\n\nTherapy framing\n\nPerformance pressure\n\nDay 61 supports: Psychological safety\n\nRealistic confidence\n\nApp Store compliance\n\nCORE MESSAGE OF DAY 61\n\nConfidence grows when steadiness is noticed — not when it’s forced.\n\nDAY 62 – REMEMBERING PAST WINS\n\n(Confidence Building Phase · Full Depth)\n\nFocus: Grounded confidence Core Skill: Recalling evidence of capability\nGoal: Strengthen self-trust through lived experience\n\nTotal time: 6 – 8 minutes Tone: Affirming, realistic, steady"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 62 · Remembering Past Wins\n\nMain copy (exact):\n\nToday is about remembering wins.\n\nNot dramatic wins.\n\nNot perfect days.\n\nBut real moments where you handled things better than you used to.\n\nThese moments matter.\n\nThey show what you’re capable of.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "WHY WINS ARE EASY TO FORGET (CONTEXT)",
-            "body": "Screen title: Why progress gets overlooked\n\nMain copy (exact):\n\nThe mind is quick to notice what goes wrong.\n\nIt’s slower to register what goes right.\n\nAs stability grows, progress can feel ordinary.\n\nToday is about slowing down enough to see what you’ve already done well.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nPrevents confidence erosion\nCounters negativity bias\nKeeps reflection grounded"
-          },
-          {
-            "title": "WHAT COUNTS AS A “WIN” (GUIDANCE)",
-            "body": "Screen title: Wins don’t have to be big\n\nMain copy (exact):\n\nWins can include:\n\nPausing instead of reacting\nRecovering quickly after a slip\nNot acting on an urge\nLetting a thought pass\nContinuing your day calmly\n\nWins are moments where you responded differently — not moments where nothing\nhappened.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GUIDED RECALL PRACTICE (PRIMARY EXPERIENCE)",
-            "body": "Screen title: Remembering what worked\n\nInstruction text (above audio):\n\nThis short guide helps you recall past wins without pressure or exaggeration.\n\nAUDIO SCRIPT (Word-for-Word, ~2 minutes)\n\nDay 62 – Living Calmly\nWithout Tracking (7-Minute Guided Meditation) Find a comfortable place to sit.\nThere is nothing you need to evaluate right now. Just a few quiet minutes to\nsettle. If it feels okay, gently close your eyes. Or soften your gaze. Take one\nslow breath in... And let it go naturally. No need to adjust your breathing.\nJust notice it. In... And out...\n\nToday is about relaxing the need to track progress. Not removing awareness. Just\nreleasing constant measurement. Let your breath continue at its natural pace.\nOver time, we sometimes begin checking ourselves: “How am I doing?” “Am I\nimproving?” “Is this working?” Notice if that feels familiar. Take a slow breath\nin... And gently out. Tracking can create subtle pressure. Even when intentions\nare good. Now imagine setting aside measurement. Just for this moment. No score.\nNo evaluation. Just presence. In... And out... Notice how that feels. Lighter.\nQuieter. More natural. Bring your attention to your body. Feel your back\nsupported. Your feet on the ground. Your hands resting. You are here. That is\nenough. Now imagine moving through your day\n\nwithout constantly checking your progress. Not ignoring awareness. Just allowing\nit to appear naturally. If something needs attention, you will notice. If not,\nyou continue calmly. In... And out... Notice how that feels in your body. Less\ntension. Less urgency. More steadiness. Living calmly does not require\nmonitoring. It requires familiarity. And familiarity has already been building.\nIf your mind says, “What if I lose progress?” notice that thought gently. And\nreturn to your breath. Stability does not depend on constant checking. It grows\nthrough repetition. Stay here quietly for a few breaths. In... And out... Now\nimagine ending your day without reviewing every moment. Just acknowledging that\nyou were present when needed. That is enough. Bring your attention back to your\nbreath.\n\nSimple. Steady. Reliable. Take one final slow breath in... And a steady breath\nout. Notice the room around you. The surface beneath you. The quiet of this\nmoment. You do not need to measure stability for it to exist. It can remain\nquietly. And you are learning to trust that. When you’re ready, gently open your\neyes. Return to your day. Calm does not need tracking. Steadiness can simply\ncontinue. And that is enough."
-          },
-          {
-            "title": "TODAY’S PRACTICE (TEXT)",
-            "body": "Screen title: Today’s practice\n\nMain copy (exact):\n\nToday, notice one past win — recent or older.\n\nDon’t analyze it.\n\nDon’t compare it.\n\nJust let it remind you that steadiness is possible.\n\nSecondary text (small):\n\nEvidence builds trust.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nWhat past moment shows you can handle challenges?\n\nOptional follow-ups (collapsed):\n\nWhat felt different then?\nWhat helped you respond calmly?\nWhat did you learn about yourself?\n\nHelper text (small):\n\nOne sentence is enough — or skip.\n\nCTA buttons: _Save & Continue_\n\n_Skip for Today_"
-          },
-          {
-            "title": "CONFIDENCE REFRAME (TEXT)",
-            "body": "Screen title: Confidence is evidence-based\n\nMain copy (exact):\n\nConfidence doesn’t come from believing you’ll succeed.\n\nIt comes from knowing you’ve succeeded before.\n\nPast wins don’t guarantee outcomes — they show capability.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough for today\n\nMain copy (exact):\n\nYou acknowledged past wins today.\n\nThat recognition strengthens confidence quietly.\n\nYou don’t need to replay success to trust it.\n\nSecondary text:\n\nExperience builds assurance.\n\nCTA:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nLogs “remembered past win” (yes / no / not sure)\nNo streaks\nNo performance metrics\nUsed later for:\n\n```\no Confidence reinforcement insights\n```\n\n```\no Self-trust indicators\n```\n\nSAFETY & COMPLIANCE CHECK\n\nDay 62 avoids:\n\nOverconfidence claims\n\nOutcome guarantees\n\nTherapy framing\n\nForced positivity\n\nDay 62 supports:\n\nPsychological safety\n\nGrounded confidence\n\nApp Store compliance\n\nCORE MESSAGE OF DAY 62\n\nConfidence grows when past capability is remembered.\n\nDAY 63 – RESPONDING WITHOUT THE APP\n\n(Confidence Building Phase · Full Depth)\n\nFocus: Internalized skills Core Skill: Self-guided response Goal:\nBuild confidence in responding without external prompts\n\nTotal time: 6 – 8 minutes Tone: Empowering, calm, non-detaching"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 63 · Responding Without the App\n\nMain copy (exact):\n\nToday is about responding without opening the app.\n\nThis doesn’t mean support is being removed.\n\nIt means support is now inside you.\n\nToday is about noticing what you already know how to do.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "WHY THIS STEP MATTERS (CONTEXT)",
-            "body": "Screen title: Independence supports confidence\n\nMain copy (exact):\n\nEarly change benefits from reminders and guidance.\n\nOver time, those responses become internal.\n\nResponding without the app shows that skills are integrating naturally.\n\nYou’re not leaving support — you’re carrying it with you.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nReduces app dependency\nReinforces autonomy\nPrevents anxiety around “doing it alone”"
-          },
-          {
-            "title": "WHAT “RESPONDING WITHOUT THE APP” LOOKS LIKE (GUIDANCE)",
-            "body": "Screen title: This isn’t all-or-nothing\n\nMain copy (exact):\n\nResponding without the app can be:\n\nPausing briefly\nLetting an urge pass\nShifting attention naturally\nContinuing your day calmly\n\nIt doesn’t mean ignoring difficulty.\n\nIt means trusting yourself to handle small moments on your own.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GUIDED CONFIDENCE PRACTICE (PRIMARY EXPERIENCE)",
-            "body": "Screen title: Trusting your response\n\nInstruction text (above audio):\n\nThis short guide helps you recognize your ability to respond independently.\n\nAUDIO SCRIPT (Word-for-Word, ~2 minutes)\n\nDay 63 – Living With Quiet Certainty (7-Minute\nGuided Meditation) Find a comfortable place to sit. There is nothing you need\nto confirm right now. Just a few quiet minutes to settle. If it feels okay,\ngently close your eyes. Or soften your gaze. Take one slow breath in... And let\nit go naturally. No need to adjust your breathing. Just notice it. In... And\nout... Today is about certainty.\n\nNot loud certainty. Not dramatic confidence. Just quiet knowing. Let your breath\ncontinue at its natural pace. Over the past weeks, you have repeated awareness.\nYou have paused. Observed. Returned. That repetition builds familiarity. And\nfamiliarity builds certainty. Take a slow breath in... And gently out. Quiet\ncertainty does not argue. It does not rush. It does not seek validation. It\nsimply remains steady. Bring your attention to your body. Notice your posture.\nBalanced. Supported. Your breathing steady. Certainty often feels like this.\nCalm. Grounded. Unforced. Now imagine a situation where you once felt unsure.\nPicture yourself responding steadily. Not perfectly. Just calmly. In... And\nout...\n\nNotice how that feels. Less doubt. Less urgency. More clarity. Certainty grows\nwhen repetition reduces confusion. You no longer need to debate every response.\nAwareness has become familiar. If your mind says, “I still feel uncertain\nsometimes,” notice that thought gently. And return to your breath. Certainty\ndoes not mean absence of doubt. It means doubt does not control you. Stay here\nquietly for a few breaths. In... And out... Now imagine moving through your day\nwith this quiet steadiness. Not announcing change. Not proving anything. Just\nresponding calmly when needed. In... And out... Notice how sustainable that\nfeels. Quiet certainty lasts longer than intense motivation. Bring your\nattention back to your breath. Simple. Reliable. Steady. Take one final slow\nbreath in... And a steady breath out.\n\nNotice the room around you. The surface beneath you. The calm of this moment.\nCertainty does not need volume. It grows quietly. And you are living it. When\nyou’re ready, gently open your eyes. Return to your day. Steady knowing is\nenough. And that is what you are building."
-          },
-          {
-            "title": "TODAY’S PRACTICE (TEXT)",
-            "body": "Screen title: Today’s practice\n\nMain copy (exact):\n\nToday, if a small urge or stress appears:\n\nPause briefly\nLet it pass\nContinue without opening the app\n\nIf support is needed later, it’s still available.\n\nSecondary text (small):\n\nIndependence grows gradually.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nWhat did you handle on your own today?\n\nOptional follow-ups (collapsed):\n\nWhat helped you respond calmly?\nHow did it feel to trust yourself?\nDid anything surprise you?\n\nHelper text (small):\n\nOne sentence is enough — or skip.\n\nCTA buttons:\n\n_Save & Continue_\n\n_Skip for Today_"
-          },
-          {
-            "title": "CONFIDENCE REFRAME (TEXT)",
-            "body": "Screen title: Support doesn’t disappear\n\nMain copy (exact):\n\nResponding independently doesn’t mean support is gone.\n\nIt means support is no longer required for every moment.\n\nThat flexibility is confidence in action.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough for today\n\nMain copy (exact):\n\nYou trusted yourself without opening the app today.\n\nThat trust strengthens confidence naturally.\n\nSupport is available — but not required.\n\nSecondary text:\n\nSelf-trust is forming.\n\nCTA:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nLogs “responded without app” (yes / no / not sure)\nNo streaks\nNo performance scoring\nUsed later for:\n\n```\no Autonomy indicators\n```\n\n```\no Confidence readiness insights\n```\n\nSAFETY & COMPLIANCE CHECK\n\nDay 63 avoids:\n\nForced independence\n\nRemoval of support\n\nTherapy framing\n\nShame for using the app\n\nDay 63 supports:\n\nPsychological safety\n\nAutonomy\n\nApp Store compliance\n\nCORE MESSAGE OF DAY 63\n\nYou don’t need guidance for every moment anymore.\n\nDAY 64 – TRUSTING YOURSELF IN NEW SITUATIONS\n\n(Confidence Building Phase · Full Depth)\n\nFocus: Confidence in unfamiliar contexts Core Skill: Generalizing\nsteadiness Goal: Help users trust themselves outside known environments\n\nTotal time: 6 – 8 minutes Tone: Reassuring, expansive, grounded"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 64 · Trusting Yourself in New Situations\n\nMain copy (exact):\n\nToday is about new situations.\n\nNew places.\n\nNew people.\n\nNew routines.\n\nConfidence isn’t tested only where you’ve been before.\n\nToday is about trusting that steadiness travels with you.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "WHY NEW SITUATIONS CAN TRIGGER DOUBT (CONTEXT)",
-            "body": "Screen title: Why unfamiliar moments feel risky\n\nMain copy (exact):\n\nWhen situations change, the mind may ask:\n\n“What if this is harder?”\n\n“What if old habits return?”\n“What if I’m not ready?”\n\nThese questions are normal.\n\nThey don’t mean you’re unprepared.\n\nThey mean you’re entering something unfamiliar.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nNormalizes anticipatory anxiety\nPrevents avoidance\nEncourages confidence transfer"
-          },
-          {
-            "title": "HOW CONFIDENCE TRANSFERS (GUIDANCE)",
-            "body": "Screen title: Steadiness isn’t situational\n\nMain copy (exact):\n\nThe skills you’ve practiced:\n\nPausing\nLetting urges pass\nResponding calmly\nContinuing after uncertainty\n\nThese don’t belong to one place or routine.\n\nThey belong to you.\n\nNew situations don’t remove them.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GUIDED TRUST PRACTICE (PRIMARY EXPERIENCE)",
-            "body": "Screen title: Carrying steadiness forward\n\nInstruction text (above audio):\n\nThis short guide helps you trust yourself as you enter something new.\n\nAUDIO SCRIPT (Word-for-Word, ~2 minutes)\n\nDay 64 – Stability During Emotional\nWaves (7-Minute Guided Meditation) Find a comfortable place to sit. There is\nnothing you need to calm right now. Just a few quiet minutes to settle. If it\nfeels okay, gently close your eyes. Or soften your gaze. Take one slow breath\nin... And let it go naturally. No need to adjust your breathing. Just notice it.\nIn... And out... Today is about emotional waves. Not removing them. Not\ncontrolling them. Just staying steady while they move. Let your breath continue\nat its natural pace. Think about a recent emotional moment. It may have been\nfrustration. Restlessness.\n\nDisappointment. Or even excitement. Notice how it rose. How it moved through\nyour body. Stay with that memory gently. In... And out... Emotions often feel\nlike waves. They build. Peak. Shift. And eventually settle. Now imagine that\nsame emotion rising again. But this time, you remain grounded. Feel your feet on\nthe ground. Your back supported. Your breath steady. In... And out... Notice how\nsteadiness feels beneath the wave. The emotion may move. But your awareness\nremains. Stability does not mean feeling nothing. It means not being carried\naway. Bring your attention to your breathing again. Slow. Even. Natural. Now\nimagine a strong emotion appearing later today. Picture yourself noticing it.\nAllowing it.\n\nBut not reacting immediately. One steady breath. In... And out... Notice how\nthat creates space. Emotions are temporary. Awareness remains consistent. If\nyour mind says, “This emotion is too strong,” notice that thought gently. And\nreturn to the breath. Waves may feel powerful. But they still move. You do not\nneed to suppress emotion. You do not need to exaggerate it. You can allow it to\npass through. Stay here quietly for a few breaths. In... And out... Now imagine\nthe wave settling. Returning to neutral. Just as naturally as it rose. Notice\nhow the body feels when calm returns. Balanced. Grounded. Stable. Take one final\nslow breath in... And a steady breath out. Notice the room around you. The\nsurface beneath you. The quiet of this moment.\n\nEmotions will continue to rise and fall. And you can remain steady beneath them.\nToday, you practiced that steadiness. When you’re ready, gently open your eyes.\nReturn to your day. Waves move. Stability remains. And that is enough."
-          },
-          {
-            "title": "TODAY’S PRACTICE (TEXT)",
-            "body": "Screen title: Today’s practice\n\nMain copy (exact):\n\nToday, enter a new or slightly unfamiliar situation without preparing\nexcessively.\n\nLet yourself respond naturally.\n\nTrust that steadiness will show up when needed.\n\nSecondary text (small):\n\nConfidence adapts.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nHow did you respond in a new situation today?\n\nOptional follow-ups (collapsed):\n\nWhat surprised you?\nDid steadiness appear naturally?\nDid anything feel easier than expected?\n\nHelper text (small):\n\nOne sentence is enough — or skip.\n\nCTA buttons: _Save & Continue_\n\n_Skip for Today_"
-          },
-          {
-            "title": "CONFIDENCE REFRAME (TEXT)",
-            "body": "Screen title: You don’t reset in new places\n\nMain copy (exact):\n\nNew situations don’t erase progress.\n\nYou don’t start over each time something changes.\n\nConfidence moves with you — quietly, reliably.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough for today\n\nMain copy (exact):\n\nYou trusted yourself in something new today.\n\nThat trust strengthens confidence broadly.\n\nYou’re learning that steadiness isn’t fragile.\n\nSecondary text:\n\nConfidence travels.\n\nCTA:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nLogs “trusted self in new situation” (yes / no / not sure)\nNo streak pressure\nNo performance scoring\nUsed later for:\n\n```\no Adaptability insights\n```\n\n```\no Confidence generalization indicators\n```\n\nSAFETY & COMPLIANCE CHECK\n\nDay 64 avoids:\n\nExposure pressure\n\nRisk escalation\n\nTherapy framing\n\n“Prove yourself” messaging\n\nDay 64 supports:\n\nPsychological safety\n\nAutonomy\n\nApp Store compliance\n\nCORE MESSAGE OF DAY 64\n\nConfidence isn’t tied to familiar ground.\n\nDAY 65 – STAYING STEADY WITHOUT PLANNING AHEAD\n\n(Confidence Building Phase · Full Depth)\n\nFocus: Trusting spontaneous response Core Skill: Letting go of\npre-planning Goal: Reduce anxiety-driven preparation and future scanning\n\nTotal time: 6 – 8 minutes Tone: Calm, freeing, confidence-building"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 65 · Staying Steady Without Planning Ahead\n\nMain copy (exact):\n\nToday is about planning.\n\nOr rather — not planning.\n\nPlanning can feel protective.\n\nBut long-term stability doesn’t require rehearsing every possible situation.\n\nToday is about trusting your ability to respond as life unfolds.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "WHY PLANNING CAN BECOME A CRUTCH (CONTEXT)",
-            "body": "Screen title: When planning creates pressure\n\nMain copy (exact):\n\nEarly change often benefits from structure and planning.\n\nOver time, planning can shift into:\n\nScanning for risk\nRehearsing responses\nTrying to prevent discomfort\n\nThis keeps attention in the future.\n\nToday is about letting the future arrive on its own.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nReduces anticipatory anxiety\nPrevents hyper-vigilance\nEncourages present-moment trust"
-          },
-          {
-            "title": "WHAT STEADINESS LOOKS LIKE WITHOUT A PLAN (GUIDANCE)",
-            "body": "Screen title: Responding in real time\n\nMain copy (exact):\n\nSteadiness without planning looks like:\n\nMeeting situations as they arise\nPausing briefly when needed\nLetting urges or stress pass\nContinuing without rehearsal\n\nYou don’t need a script.\n\nYou’ve practiced responding — not predicting.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GUIDED TRUST PRACTICE (PRIMARY EXPERIENCE)",
-            "body": "Screen title: Letting the day unfold\n\nInstruction text (above audio):\n\nThis short guide helps you release the need to prepare ahead.\n\nAUDIO SCRIPT (Word-for-Word, ~2 minutes)\n\nDay 65\n– Effortless Awareness in Motion (7-Minute Guided Meditation) Find a\ncomfortable place to sit. There is nowhere you need to rush to right now. Just a\nfew quiet minutes to settle. If it feels okay, gently close your eyes. Or soften\nyour gaze. Take one slow breath in... And let it go naturally. No need to adjust\nthe rhythm. Just notice it. In... And out... Today is about awareness while\nmoving. Not just in stillness. Not just during meditation. But in ordinary\nmotion. Let your breath continue at its natural pace. Notice how your body feels\nright now. Supported. Balanced. Steady. Now gently imagine standing up.\n\nWalking. Reaching for something. Simple movements. Picture yourself staying\nlightly aware. Not intensely focused. Just present. In... And out... Awareness\ndoes not need to freeze the moment. It can move with you. Bring your attention\nto the subtle movement of your breath. Even while sitting still, there is\nmotion. Expansion. Release. Awareness is already present within movement. Now\nimagine a normal activity later today. Walking to another room. Driving. Typing.\nSpeaking. Picture yourself remaining gently aware. Not monitoring. Not\nanalyzing. Just present enough to notice. In... And out... Notice how natural\nthat feels. Effortless awareness is light. It does not strain. It does not\nexhaust. It accompanies action quietly.\n\nIf your mind says, “I can’t stay aware while busy,” notice that thought gently.\nAnd return to the breath. You do not need constant awareness. Only occasional\nreturn. Movement does not remove steadiness. It tests it gently. And steadiness\ncan remain. Stay here quietly for a few breaths. In... And out... Now imagine\nresponding calmly in motion. A steady breath before answering. A grounded\nposture while walking. A relaxed tone while speaking. Small signs of\nintegration. In... And out... Effortless awareness feels simple. Unforced.\nSustainable. Take one final slow breath in... And a steady breath out. Notice\nthe room around you. The surface beneath you. The calm within movement.\nAwareness does not require stillness. It can travel with you. And today, you\npracticed that. When you’re ready,\n\ngently open your eyes. Return to your day. Move steadily. Remain aware. That is\nenough."
-          },
-          {
-            "title": "TODAY’S PRACTICE (TEXT)",
-            "body": "Screen title: Today’s practice\n\nMain copy (exact):\n\nToday, notice when you start planning how to handle something.\n\nInstead of rehearsing, let the moment come.\n\nRespond only if needed — not in advance.\n\nSecondary text (small):\n\nReadiness doesn’t require rehearsal.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nWhat changed when you didn’t plan ahead today?\n\nOptional follow-ups (collapsed):\n\nDid anxiety reduce?\nDid responses come naturally?\nWas the situation easier than expected?\n\nHelper text (small):\n\nOne sentence is enough — or skip.\n\nCTA buttons:\n\n_Save & Continue_\n\n_Skip for Today_"
-          },
-          {
-            "title": "CONFIDENCE REFRAME (TEXT)",
-            "body": "Screen title: Planning isn’t protection\n\nMain copy (exact):\n\nPlanning ahead isn’t what keeps you steady.\n\nYour ability to pause, notice, and respond does that.\n\nYou already have what you need.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough for today\n\nMain copy (exact):\n\nYou allowed the day to unfold without rehearsal today.\n\nThat trust strengthens confidence naturally.\n\nYou don’t need to anticipate life.\n\nSecondary text:\n\nSteadiness meets the moment.\n\nCTA:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nLogs “responded without planning” (yes / no / not sure)\nNo streak pressure\nNo performance scoring\nUsed later for:\n\n```\no Reduced anxiety indicators\n```\n\n```\no Confidence independence insights\n```\n\nSAFETY & COMPLIANCE CHECK\n\nDay 65 avoids:\n\n“Stop planning entirely” commands\n\nRisk exposure framing\n\nTherapy claims\n\nPressure to be spontaneous\n\nDay 65 supports:\n\nPsychological safety\n\nPresent-moment trust\n\nApp Store compliance\n\nCORE MESSAGE OF DAY 65\n\nYou don’t need to plan to stay steady.\n\nDAY 66 – HANDLING UNEXPECTED CHALLENGES CALMLY\n\n(Confidence Building Phase · Full Depth)\n\nFocus: Responding to surprise without escalation Core Skill: Flexible\ncalm Goal: Prevent unexpected events from triggering old reactions\n\nTotal time: 6 – 8 minutes Tone: Grounded, reassuring, steady"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 66 · Handling Unexpected Challenges Calmly\n\nMain copy (exact):\n\nToday is about surprises.\n\nPlans change.\n\nThings go wrong.\n\nUnexpected moments happen.\n\nLong-term confidence isn’t about preventing challenges — it’s about responding\ncalmly when they appear.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "WHY SURPRISE CAN FEEL THREATENING (CONTEXT)",
-            "body": "Screen title: When things don’t go as planned\n\nMain copy (exact):\n\nUnexpected challenges can trigger urgency.\n\nThe mind may react with:\n\n“This is bad”\n“I can’t handle this”\n“I need relief now”\n\nThese reactions are learned.\n\nToday is about letting surprises stay manageable.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nNormalizes sudden stress\nPrevents catastrophizing\nBuilds resilience"
-          },
-          {
-            "title": "WHAT CALM RESPONSE REALLY MEANS (GUIDANCE)",
-            "body": "Screen title: Calm doesn’t mean passive\n\nMain copy (exact):\n\nHandling challenges calmly doesn’t mean:\n\nLiking what happened\nDoing nothing\nPretending it’s fine\n\nIt means:\n\nPausing before reacting\nStaying connected to the moment\nResponding step by step\nLetting intensity settle naturally\n\nCalm allows clearer action.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GUIDED CALM-IN-CHAOS PRACTICE (PRIMARY EXPERIENCE)",
-            "body": "Screen title: Finding steadiness in the unexpected\n\nInstruction text (above audio):\n\nThis short guide helps you stay steady when something unexpected occurs.\n\nAUDIO SCRIPT (Word-for-Word, ~2 minutes)\n\nDay 66 – Living Without Urgency (7-Minute Guided Meditation) Find a\ncomfortable place to sit. There is nothing you need to finish right now. Just a\nfew quiet minutes to settle. If it feels okay, gently close your eyes. Or soften\nyour gaze. Take one slow breath in... And let it go naturally. No need to adjust\nyour breathing. Just notice it. In... And out... Today is about urgency. Not\nremoving responsibility. Not slowing your life completely. Just noticing\ninternal rush. Let your breath continue at its natural pace. Think about a\nrecent moment when you felt hurried. Even if there was no real emergency. Notice\nhow your body responded. Was your breath shorter? Your shoulders tighter? Your\nthoughts faster? Stay with that memory gently. In...\n\nAnd out... Urgency often begins internally. Even when the situation is ordinary.\nNow imagine that same moment again. But this time, imagine slowing your breath\nslightly. In... And out... Notice how one steady breath changes the rhythm. Even\nslightly. Living without urgency does not mean moving slowly. It means not\ntightening unnecessarily. Bring your attention to your body right now. Notice\nyour jaw. Let it soften. Notice your shoulders. Allow them to drop slightly.\nNotice your breathing. Natural. Unforced. Stay here for a few breaths. In... And\nout... Now imagine a moment later today when something feels rushed. Before\nreacting, picture yourself taking one steady breath. Not delaying action. Just\nremoving tension. In...\n\nAnd out... Notice how that feels. Calmer. More grounded. More clear. Urgency\nnarrows attention. Calm widens it. If your mind says, “I need urgency to\nfunction,” notice that thought gently. And return to your breath. Action can\nhappen without strain. Movement can happen without panic. Stay here quietly for\na few breaths. In... And out... You do not need internal rush to move forward.\nYou can act steadily. Speak calmly. Respond clearly. Take one final slow breath\nin... And a steady breath out. Notice the room around you. The surface beneath\nyou. The quiet steadiness of this moment. Urgency may arise. And you can soften\naround it. Living without unnecessary rush builds stability. And today, you\npracticed that. When you’re ready, gently open your eyes.\n\nReturn to your day. Move steadily. Breathe steadily. That is enough."
-          },
-          {
-            "title": "TODAY’S PRACTICE (TEXT)",
-            "body": "Screen title: Today’s practice\n\nMain copy (exact):\n\nToday, if something unexpected happens:\n\nPause briefly\nLet the first reaction soften\nRespond only to what’s needed now\n\nYou don’t need to regain control immediately.\n\nSecondary text (small):\n\nCalm creates options.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nHow did you respond to something unexpected today?\n\nOptional follow-ups (collapsed):\n\nDid you pause before reacting?\nDid calm return faster?\nDid you trust yourself more?\n\nHelper text (small):\n\nOne sentence is enough — or skip.\n\nCTA buttons: _Save & Continue_\n\n_Skip for Today_"
-          },
-          {
-            "title": "CONFIDENCE REFRAME (TEXT)",
-            "body": "Screen title: Confidence adapts\n\nMain copy (exact):\n\nConfidence doesn’t require predictable conditions.\n\nIt adapts.\n\nWhen surprises arise, your ability to respond calmly is already there.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough for today\n\nMain copy (exact):\n\nYou handled uncertainty without escalating today.\n\nThat flexibility strengthens confidence deeply.\n\nYou don’t need certainty to remain steady.\n\nSecondary text:\n\nCalm is adaptable.\n\nCTA:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nLogs “handled unexpected challenge calmly” (yes / no / not sure)\nNo streak pressure\nNo performance scoring\nUsed later for:\n\n```\no Resilience indicators\n```\n\n```\no Confidence durability insights\n```\n\nSAFETY & COMPLIANCE CHECK\n\nDay 66 avoids:\n\n“Always stay calm” messaging\n\nEmotional suppression\n\nTherapy framing\n\nCrisis minimization\n\nDay 66 supports:\n\nPsychological safety\n\nRealistic resilience\n\nApp Store compliance\n\nCORE MESSAGE OF DAY 66\n\nCalm doesn’t come from things going right — it comes from responding well when\nthey don’t.\n\nDAY 67 – TRUSTING YOURSELF AFTER SMALL SLIPS\n\n(Confidence Building Phase · Full Depth)\n\nFocus: Resilience after imperfection Core Skill: Self-trust following\nminor setbacks Goal: Prevent slips from turning into loss of confidence or\nescalation\n\nTotal time: 6 – 8 minutes Tone: Compassionate, steady, reassuring"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 67 · Trusting Yourself After Small Slips\n\nMain copy (exact):\n\nToday is about slips.\n\nSmall ones.\n\nMissed pauses.\n\nMoments that didn’t go as planned.\n\nSlips don’t erase confidence.\n\nThey reveal how you respond afterward.\n\nToday is about trusting yourself even when things aren’t perfect.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "WHY SLIPS CAN FEEL DISCOURAGING (CONTEXT)",
-            "body": "Screen title: When imperfection feels threatening\n\nMain copy (exact):\n\nAfter building steadiness, even a small slip can feel alarming.\n\nThe mind may say:\n\n“I messed up”\n“I should know better”\n“What if this gets worse?”\n\nThese reactions are learned — not accurate.\n\nToday is about seeing slips without fear.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nPrevents all-or-nothing thinking\nReduces shame response\nStops escalation loops"
-          },
-          {
-            "title": "WHAT A SLIP REALLY MEANS (GUIDANCE)",
-            "body": "Screen title: Slips are not reversals\n\nMain copy (exact):\n\nA small slip does not mean:\n\nProgress is lost\nConfidence is gone\nOld patterns are returning\n\nIt means:\n\nYou noticed afterward\nYou recovered more quickly\nYou didn’t escalate\nYou continued your day\n\nThese are signs of strength.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GUIDED SELF-TRUST PRACTICE (PRIMARY EXPERIENCE)",
-            "body": "Screen title: Returning to steadiness\n\nInstruction text (above audio):\n\nThis short guide helps you trust yourself after a small misstep.\n\nAUDIO SCRIPT (Word-for-Word, ~2 minutes)\n\nDay 67 –\nCalm Consistency (7-Minute Guided Meditation) Find a comfortable place to sit.\nThere is nothing you need to maintain forcefully. Just a few quiet minutes to\nsettle. If it feels okay, gently close your eyes. Or soften your gaze. Take one\nslow breath in... And let it go naturally. No need to adjust the rhythm. Just\nnotice it. In... And out... Today is about consistency. Not intense effort. Not\nrigid discipline. Just steady continuation. Let your breath continue at its\nnatural pace. Over the past weeks, you have returned to awareness again and\nagain. Some days felt steady. Some days felt distracted. And still, you\nreturned. That is consistency. Take a slow breath in... And gently out.\nConsistency does not require perfection. It requires willingness to come back.\nNow imagine a day when awareness felt natural.\n\nPicture yourself pausing calmly. Responding steadily. Notice how that felt.\nSimple. Balanced. Sustainable. In... And out... Now imagine a day that felt less\nsteady. Perhaps you reacted automatically. Perhaps you forgot to pause. And yet,\nhere you are again. Returning. That is also consistency. Bring your attention\nback to your body. Notice your posture. Supported. Balanced. Notice your\nbreathing. Steady. Reliable. Breath does not rush. It does not force. It simply\ncontinues. Calm consistency feels similar. Now imagine moving through your day\nwithout pressure to be perfect. Just remembering to return occasionally. One\npause. One steady breath. One balanced response.\n\nIn... And out... Notice how that feels. Less tense. More sustainable. If your\nmind says, “I need to be more consistent,” notice that thought gently. And\nreturn to your breath. Consistency built through pressure rarely lasts.\nConsistency built through calm repetition does. Stay here quietly for a few\nbreaths. In... And out... You do not need intensity to continue. You need\nsteadiness. And steadiness grows through calm return. Take one final slow breath\nin... And a steady breath out. Notice the room around you. The surface beneath\nyou. The quiet of this moment. Calm consistency builds long-term stability. And\nyou are practicing it. When you’re ready, gently open your eyes. Return to your\nday. Continue steadily. That is enough."
-          },
-          {
-            "title": "TODAY’S PRACTICE (TEXT)",
-            "body": "Screen title: Today’s practice\n\nMain copy (exact):\n\nToday, if a small slip happens:\n\nDon’t judge it\nDon’t magnify it\nDon’t restart anything\n\nContinue calmly from where you are.\n\nSecondary text (small):\n\nRecovery lives in continuation.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nHow did you respond after a small slip?\n\nOptional follow-ups (collapsed):\n\nDid you recover faster than before?\nDid you avoid escalation?\nDid you treat yourself with calm?\n\nHelper text (small):\n\nOne sentence is enough — or skip.\n\nCTA buttons:\n\n_Save & Continue_\n\n_Skip for Today_"
-          },
-          {
-            "title": "CONFIDENCE REFRAME (TEXT)",
-            "body": "Screen title: Confidence survives imperfection\n\nMain copy (exact):\n\nConfidence doesn’t come from never slipping.\n\nIt comes from trusting your ability to recover.\n\nSmall slips don’t undo progress.\n\nThey prove it.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough for today\n\nMain copy (exact):\n\nYou trusted yourself even after imperfection today.\n\nThat trust strengthens confidence deeply.\n\nYou don’t need to be flawless to be steady.\n\nSecondary text:\n\nRecovery continues.\n\nCTA:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nLogs “trusted self after slip” (yes / no / not sure)\nNo streak break\nNo penalty logic\nUsed later for:\n\n```\no Relapse-prevention resilience insights\n```\n\n```\no Long-term confidence indicators\n```\n\nSAFETY & COMPLIANCE CHECK\n\nDay 67 avoids: Shame language\n\nReset-or-fail framing\n\nTherapy claims\n\nAbstinence pressure\n\nDay 67 supports:\n\nPsychological safety\n\nSelf-compassion\n\nApp Store compliance\n\nCORE MESSAGE OF DAY 67\n\nConfidence is proven by recovery — not perfection.\n\nDAY 68 – LIVING WITHOUT SELF-CHECKING\n\n(Confidence Building Phase · Full Depth)\n\nFocus: Reducing self-monitoring Core Skill: Letting attention rest\noutward Goal: Prevent subtle anxiety loops created by constant internal\nchecking\n\nTotal time: 6 – 8 minutes Tone: Light, freeing, steady"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 68 · Living Without Self-Checking\n\nMain copy (exact):\n\nToday is about checking in — and then letting go.\n\nChecking thoughts. Checking urges. Checking confidence.\n\nThese checks can quietly keep attention stuck inward.\n\nToday is about letting life take the focus back.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "WHY SELF-CHECKING STICKS AROUND (CONTEXT)",
-            "body": "Screen title: When checking becomes a habit\n\nMain copy (exact):\n\nSelf-checking often begins as a helpful tool.\n\nOver time, it can become:\n\n“How am I doing right now?”\n“Do I feel steady enough?”\n“Is this urge a problem?”\n\nThese checks aren’t harmful — but they can keep the mind busy.\n\nToday is about easing out of them.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nReduces subtle anxiety\nPrevents over-monitoring\nEncourages outward focus"
-          },
-          {
-            "title": "WHAT LIFE LOOKS LIKE WITHOUT CHECKING (GUIDANCE)",
-            "body": "Screen title: Attention returns to living\n\nMain copy (exact):\n\nWhen self-checking reduces:\n\nThoughts come and go unnoticed\nUrges fade without analysis\nConfidence doesn’t need confirmation\nAttention shifts to tasks, people, moments\n\nThis isn’t avoidance.\n\nIt’s trust becoming automatic.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GUIDED RELEASE PRACTICE (PRIMARY EXPERIENCE)",
-            "body": "Screen title: Letting attention move outward\n\nInstruction text (above audio):\n\nThis short guide helps you release the habit of checking in on yourself.\n\nAUDIO SCRIPT (Word-for-Word, ~2 minutes)\n\nDay 68 – Stability Without Effortful\nControl (7-Minute Guided Meditation) Find a comfortable place to sit.\n\nThere is nothing you need to manage tightly right now. Just a few quiet minutes\nto settle. If it feels okay, gently close your eyes. Or soften your gaze. Take\none slow breath in... And let it go naturally. No need to adjust the rhythm.\nJust notice it. In... And out... Today is about relaxing effort. Not removing\nawareness. Just softening control. Let your breath continue at its natural pace.\nOver time, it is common to hold progress tightly. To grip stability. To monitor\nresponses carefully. Notice if that feels familiar. Take a slow breath in... And\ngently out. Control often shows up in the body. Tight shoulders. Clenched jaw.\nShallow breath. Bring attention there now. Allow those areas to soften slightly.\nWithout forcing. In... And out... Stability does not require tension. It grows\nstronger when relaxed.\n\nNow imagine a situation later today where you normally try to control your\nresponse. Picture yourself staying aware without gripping the moment. Breathing\ncalmly. Allowing space. In... And out... Notice how that feels. Less rigid. More\nnatural. More sustainable. Effortful control can create exhaustion. Relaxed\nawareness creates steadiness. Bring your attention back to your breathing.\nNotice how it continues on its own. You are not controlling each inhale. Not\nmanaging each exhale. And yet, it remains steady. Stability can feel like that.\nUnforced. Reliable. Stay here quietly for a few breaths. In... And out... If\nyour mind says, “If I don’t control it, I’ll lose it,” notice that thought\ngently. And return to the breath. Stability built through repetition does not\ndisappear easily.\n\nIt becomes familiar. Now imagine responding calmly without tension. Not\nsuppressing anything. Not forcing change. Just allowing awareness to guide you.\nIn... And out... Notice how that feels. Balanced. Grounded. Light. Take one\nfinal slow breath in... And a steady breath out. Notice the room around you. The\nsurface beneath you. The quiet of this moment. Stability does not need tight\ncontrol. It thrives in relaxed steadiness. And today, you practiced that. When\nyou’re ready, gently open your eyes. Return to your day. Release the grip. Keep\nthe awareness. That is enough."
-          },
-          {
-            "title": "TODAY’S PRACTICE (TEXT)",
-            "body": "Screen title: Today’s practice\n\nMain copy (exact):\n\nToday, notice moments when you check how you’re doing.\n\nInstead of answering the question, let it drop.\n\nReturn attention to what you’re doing.\n\nSecondary text (small):\n\nYou don’t need to confirm steadiness.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nWhat changed when you stopped checking in on yourself?\n\nOptional follow-ups (collapsed):\n\nDid attention feel freer?\nDid calm last longer?\nDid anything important get missed?\n\nHelper text (small):\n\nOne sentence is enough — or skip.\n\nCTA buttons:\n\n_Save & Continue_\n\n_Skip for Today_"
-          },
-          {
-            "title": "CONFIDENCE REFRAME (TEXT)",
-            "body": "Screen title: Stability doesn’t need observation\n\nMain copy (exact):\n\nYou don’t need to watch stability for it to continue.\n\nWhat’s integrated carries itself.\n\nAttention belongs back in your life.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough for today\n\nMain copy (exact):\n\nYou lived with less self-checking today.\n\nThat freedom supports lasting confidence.\n\nLife doesn’t need monitoring to move forward.\n\nSecondary text:\n\nTrust feels lighter.\n\nCTA: _Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nLogs “reduced self-checking” (yes / no / not sure)\nNo streak impact\nNo alerts or flags\nUsed later for:\n\n```\no Confidence independence insights\n```\n\n```\no Reduced anxiety indicators\n```\n\nSAFETY & COMPLIANCE CHECK\n\nDay 68 avoids:\n\nSuppression of awareness\n\nForced disengagement\n\nTherapy framing\n\n“Stop checking” commands\n\nDay 68 supports:\n\nPsychological safety\n\nAutonomy\n\nApp Store compliance\n\nCORE MESSAGE OF DAY 68\n\nStability continues when attention returns to living.\n\nDAY 69 – TRUSTING LONG GAPS WITHOUT ATTENTION\n\n(Confidence Building Phase · Full Depth)\n\nFocus: Confidence across time Core Skill: Trusting continuity without\nmonitoring Goal: Help users feel safe during long periods of non-attention\n\nTotal time: 6 – 8 minutes Tone: Settled, reassuring, expansive"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 69 · Trusting Long Gaps Without Attention\n\nMain copy (exact):\n\nToday is about time.\n\nLong stretches of it.\n\nHours. Days. Moments where recovery doesn’t cross your mind.\n\nThese gaps don’t mean something is being ignored.\n\nThey mean life has taken the lead again.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "WHY GAPS CAN FEEL UNSETTLING (CONTEXT)",
-            "body": "Screen title: When forgetting feels risky\n\nMain copy (exact):\n\nAfter spending time focused on change, long gaps can feel unfamiliar.\n\nThe mind may ask:\n\n“Should I be checking in?”\n“Am I staying aware enough?”\n“What if I miss something?”\n\nThese questions don’t mean danger.\n\nThey mean attention is no longer needed as often.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nPrevents relapse-by-vigilance\nNormalizes forgetting\n\nReframes absence of focus as health"
-          },
-          {
-            "title": "WHAT LONG-TERM STABILITY LOOKS LIKE (GUIDANCE)",
-            "body": "Screen title: Stability doesn’t need reminders\n\nMain copy (exact):\n\nIn long-term stability:\n\nUrges fade without notice\nThoughts pass untracked\nDays unfold without reflection\nAttention stays with life\n\nThis doesn’t mean awareness is gone.\n\nIt means it’s no longer required to stay present.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GUIDED TRUST-IN-TIME PRACTICE (PRIMARY EXPERIENCE)",
-            "body": "Screen title: Letting time pass safely\n\nInstruction text (above audio):\n\nThis short guide helps you trust long gaps without checking in.\n\nAUDIO SCRIPT (Word-for-Word, ~2 minutes)\n\nDay 69 – Living With Quiet Strength (7-Minute\nGuided Meditation) Find a comfortable place to sit. There is nothing you need\nto prove right now. Just a few quiet minutes to settle. If it feels okay, gently\nclose your eyes.\n\nOr soften your gaze. Take one slow breath in... And let it go naturally. No need\nto adjust the rhythm. Just notice it. In... And out... Today is about strength.\nNot loud strength. Not dramatic power. Just quiet steadiness. Let your breath\ncontinue at its natural pace. Over the past weeks, you have practiced awareness.\nYou have returned again and again. Even when it felt subtle. That repetition\nbuilds strength. Take a slow breath in... And gently out. Quiet strength does\nnot announce itself. It does not compete. It remains grounded. Bring your\nattention to your posture. Notice how your body supports itself. Balanced.\nStable. There is strength in simply sitting upright. Without strain. Now imagine\na recent challenge. Something that once felt overwhelming. Picture yourself\nresponding with calm. Not perfectly.\n\nJust steadily. In... And out... Notice how that feels. Less reactive. More\ngrounded. Strength often feels like stability. Not intensity. Now imagine a\nmoment later today when something feels difficult. Picture yourself staying\ncentered. Breathing once before responding. Allowing space instead of reacting.\nIn... And out... Notice how that feels. Firm. Balanced. Unforced. If your mind\nsays, “I don’t always feel strong,” notice that thought gently. And return to\nthe breath. Strength does not mean constant confidence. It means returning when\nneeded. Stay here quietly for a few breaths. In... And out... Quiet strength is\nsteady under pressure. Calm during emotion. Balanced during uncertainty.\n\nYou do not need to display it. You only need to live it. Bring your attention\nback to your breathing. Steady. Reliable. Unforced. Take one final slow breath\nin... And a steady breath out. Notice the room around you. The surface beneath\nyou. The calm of this moment. Strength does not need volume. It grows quietly.\nAnd you are living it. When you’re ready, gently open your eyes. Return to your\nday. Quiet strength is enough. And it is already present."
-          },
-          {
-            "title": "TODAY’S PRACTICE (TEXT)",
-            "body": "Screen title: Today’s practice\n\nMain copy (exact):\n\nToday, allow long gaps without checking your progress.\n\nIf hours pass without thinking about habits, let them pass.\n\nTrust what doesn’t require attention.\n\nSecondary text (small):\n\nGaps are a sign of freedom.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nHow did it feel to let time pass without checking in?\n\nOptional follow-ups (collapsed):\n\nWas there relief?\nWas there discomfort?\nDid anything actually require attention?\n\nHelper text (small):\n\nOne sentence is enough — or skip.\n\nCTA buttons:\n\n_Save & Continue_\n\n_Skip for Today_"
-          },
-          {
-            "title": "CONFIDENCE REFRAME (TEXT)",
-            "body": "Screen title: Time doesn’t weaken stability\n\nMain copy (exact):\n\nStability doesn’t fade when it’s not watched.\n\nWhat’s integrated becomes part of how you live.\n\nLong gaps are proof of trust.\n\nCTA: _Continue_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough for today\n\nMain copy (exact):\n\nYou trusted long gaps without attention today.\n\nThat trust completes the confidence arc.\n\nLife can continue without checking back.\n\nSecondary text:\n\nFreedom expands with time.\n\nCTA:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nLogs “trusted long gap” (yes / no / not sure)\nNo reminders triggered\nNo streaks\nUsed later for:\n\n```\no Long-term independence indicators\n```\n\n```\no Confidence completion summaries\n```\n\nSAFETY & COMPLIANCE CHECK\n\nDay 69 avoids:\n\n“You’re cured” framing\n\nDetachment pressure\n\nTherapy claims\n\nRisk minimization\n\nDay 69 supports:\n\nPsychological safety\n\nAutonomy\n\nApp Store compliance\n\nCORE MESSAGE OF DAY 69\n\nWhen recovery stops needing attention, life has reclaimed the space.\n\nDAY 70 – QUIET CONFIDENCE\n\n(Confidence Phase · Final Wrap-Up · Full Depth)\n\nFocus: Integrated confidence Core Skill: Trusting what no longer needs\nattention Goal: Close the program without creating dependence or fear of\n“ending”\n\nTotal time: 6 – 8 minutes Tone: Settled, respectful, complete (not\ncelebratory)"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 70 · Quiet Confidence\n\nMain copy (exact):\n\nToday marks the end of guided confidence building.\n\nNot because support disappears — but because confidence no longer needs\nguidance.\n\nQuiet confidence doesn’t announce itself.\n\nIt simply lives underneath your day.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "WHAT QUIET CONFIDENCE IS (CONTEXT)",
-            "body": "Screen title: Confidence without noise\n\nMain copy (exact):\n\nQuiet confidence looks like:\n\nLess checking\nLess reassurance\nLess reaction\nLess effort\n\nIt doesn’t feel dramatic.\n\nIt feels normal.\n\nThat normality is the strongest form of confidence.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nPrevents “Why don’t I feel more?” doubt\nReframes subtlety as success\nGrounds users in reality"
-          },
-          {
-            "title": "WHAT HAS CHANGED (GUIDANCE)",
-            "body": "Screen title: What’s different now\n\nMain copy (exact):\n\nYou may notice:\n\nUrges no longer demand attention\nThoughts don’t pull you in\nStress resolves more easily\nSlips don’t spiral\nLife occupies more space\n\nThese changes didn’t come from force.\n\nThey came from consistency.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "FINAL GUIDED SETTLING (PRIMARY EXPERIENCE)",
-            "body": "Screen title: Letting confidence rest\n\nInstruction text (above audio):\n\nThis final guide helps you settle into what no longer needs managing.\n\nAUDIO SCRIPT (Word-for-Word, ~2 minutes)\n\nDay 70 – Stability\nin Ordinary Days (7-Minute Guided Meditation) Find a comfortable place to sit.\nThere is nothing special about this moment. And that is okay. Just a few quiet\nminutes to settle. If it feels okay, gently close your eyes. Or soften your\ngaze. Take one slow breath in... And let it go naturally. No need to adjust the\nrhythm. Just notice it. In...\n\nAnd out... Today is about ordinary days. Not intense challenges. Not major\nmilestones. Just normal moments. Let your breath continue at its natural pace.\nSometimes growth feels dramatic. But often, it becomes visible in quiet\nroutines. Think about a normal part of your day. Waking up. Working. Walking.\nTalking. Simple things. Now imagine moving through one of those moments with\nsteadiness. Not effort. Not intensity. Just calm presence. In... And out...\nNotice how natural that feels. Stability is not only for difficult situations.\nIt exists in simple ones too. Bring your attention to your body right now. Your\nposture. Balanced. Your breathing. Steady. This is an ordinary moment. And you\nare present.\n\nThat is stability. Now imagine a completely normal day ahead. Nothing dramatic\nhappens. No big emotional waves. Just routine. Picture yourself moving through\nit calmly. Responding steadily. Pausing occasionally. In... And out... Notice\nhow that feels. Grounded. Sustainable. Real. Stability becomes long-lasting when\nit lives in ordinary life. Not just during intense moments. If your mind says,\n“Nothing feels different,” notice that thought gently. And return to the breath.\nSubtle steadiness often replaces drama. And that is a sign of integration. Stay\nhere quietly for a few breaths. In... And out... Now imagine ending your day\nwithout evaluating it. Just recognizing you moved steadily through it. That is\nenough. Bring your attention back to your breathing.\n\nSimple. Reliable. Unforced. Take one final slow breath in... And a steady breath\nout. Notice the room around you. The surface beneath you. The quiet of this\nordinary moment. Stability in ordinary days is what lasts. And you are\npracticing it. When you’re ready, gently open your eyes. Return to your day.\nNothing dramatic required. Steady is enough."
-          },
-          {
-            "title": "TODAY’S PRACTICE (TEXT)",
-            "body": "Screen title: Today’s practice\n\nMain copy (exact):\n\nToday, don’t practice anything.\n\nJust live.\n\nIf challenges arise, respond naturally.\n\nIf nothing arises, that’s okay too.\n\nSecondary text (small):\n\nConfidence doesn’t need daily attention.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nWhat feels quietly different now?\n\nOptional follow-ups (collapsed):\n\nWhat takes less effort?\nWhat feels less important?\nWhat feels more natural?\n\nHelper text (small):\n\nOne sentence is enough — or skip.\n\nCTA buttons:\n\n_Save & Finish_\n\n_Skip_"
-          },
-          {
-            "title": "MOVING FORWARD (TEXT)",
-            "body": "Screen title: From here on\n\nMain copy (exact):\n\nFrom here, life continues without a daily program.\n\nSupport remains available — but it no longer needs to be central.\n\nYou don’t need to “maintain” confidence.\n\nWhat’s integrated carries itself forward.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "FINAL CLOSE (CALM, NON-FINAL)",
-            "body": "Screen title: That’s enough\n\nMain copy (exact):\n\nQuiet confidence doesn’t need a finish line.\n\nIt shows up as ordinary days lived without struggle.\n\nYou don’t need to hold onto this program for what you’ve built to remain.\n\nLife is ready to take the lead again.\n\nSecondary text:\n\nConfidence continues quietly.\n\nCTA:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nMarks Confidence Phase Complete\nNo “graduation” badge\nNo forced next step\nProgram shifts to:\n\n```\no Optional check-ins\n```\n\n```\no Long-term insights\n```\n\n```\no Coach-on-demand (if enabled)\n```\n\nSAFETY & COMPLIANCE CHECK\n\nDay 70 avoids:\n\nCure or permanence claims\n\nAbstinence guarantees\n\nEmotional dependency\n\nTherapy framing\n\nDay 70 supports:\n\nAutonomy\n\nPsychological safety\n\nApp Store compliance\n\nCORE MESSAGE OF DAY 70\n\nConfidence doesn’t need attention to continue.\n\nWhen life feels normal again, the work is already done.\n\nDAY 71 – LIVING WITHOUT A PROGRAM\n\n(Post-Program · Full Depth)\n\nFocus: Life beyond structure Core Skill: Trusting self-direction\nGoal: Prevent “What now?” anxiety and reduce reliance on daily guidance\n\nTotal time: 4 – 6 minutes Tone: Light, respectful, spacious"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 71 · Living Without a Program\n\nMain copy (exact):\n\nToday is different.\n\nThere’s no new lesson.\n\nNo phase to complete.\n\nNo direction to follow.\n\nToday is about noticing that life can continue without a program guiding it.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "NORMALIZING THE SHIFT (CONTEXT)",
-            "body": "Screen title: When structure steps back\n\nMain copy (exact):\n\nAfter following guidance for a while, the absence of structure can feel\nnoticeable.\n\nYou might wonder:\n\n“Should I be doing something?”\n“Am I missing a step?”\n“Is this enough?”\n\nThese questions are normal.\n\nThey don’t mean something is wrong.\n\nThey mean responsibility has returned to you.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nPrevents post-program anxiety\nNormalizes uncertainty\nReinforces autonomy"
-          },
-          {
-            "title": "WHAT CONTINUES WITHOUT A PROGRAM (GUIDANCE)",
-            "body": "Screen title: What doesn’t disappear\n\nMain copy (exact):\n\nEven without a program:\n\nYou still pause naturally\nUrges still pass\nThoughts still lose momentum\nStress still settles\nConfidence still operates quietly\n\nThese didn’t come from daily instruction.\n\nThey came from repetition and time.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GUIDED SETTLING PRACTICE (PRIMARY EXPERIENCE)",
-            "body": "Screen title: Letting structure fall away\n\nInstruction text (above audio):\n\nThis short guide helps you rest without guidance.\n\nAUDIO SCRIPT (Word-for-Word, ~2 minutes)\n\nDay 71 – Long-Term Identity\nStability (7-Minute Guided Meditation) Find a comfortable place to sit. There\nis nothing you need to become right now. Just a few quiet minutes to settle. If\nit feels okay, gently close your eyes. Or soften your gaze. Take one slow breath\nin... And let it go naturally. No need to adjust the rhythm. Just notice it.\nIn... And out... Over the past weeks, you have practiced awareness consistently.\nNot dramatically. Not loudly.\n\nJust steadily. Today is about identity. Not announcing change. Not declaring a\nnew version of yourself. Just noticing what feels stable. Let your breath\ncontinue at its natural pace. Think about the person you were when you began.\nNotice how reactions felt then. How pauses felt. How awareness felt. Now gently\nreflect. What feels more natural now? Even slightly? Take a slow breath in...\nAnd gently out. Identity does not shift through words. It shifts through\nrepetition. Each calm response. Each steady pause. Each return to awareness. Now\nimagine facing a familiar situation. Picture yourself responding calmly. Without\nforcing. Without effortful control. Just naturally steady. In... And out...\nNotice how that feels. Less debate. Less inner conflict. More familiarity.\n\nLong-term identity stability feels ordinary. Not dramatic. Not intense. Just\nconsistent. Bring your attention back to your posture. Balanced. Supported.\nSteady. Even the way you sit reflects identity. Grounded. Calm. Present. Stay\nhere for a few breaths. In... And out... If your mind says, “I’m still the same\nperson,” notice that thought gently. And return to the breath. Sameness and\ngrowth can coexist. Subtle shifts are often invisible while happening. Now\nimagine living your day without thinking about change. Just responding steadily.\nThat is identity integration. Not effortful. Not monitored. Just lived. Take one\nfinal slow breath in... And a steady breath out. Notice the room around you.\n\nThe surface beneath you. The quiet steadiness of this moment. Identity is not\nsomething you announce. It is something you live repeatedly. And you are living\nit. When you’re ready, gently open your eyes. Return to your day. Steady\nidentity grows quietly. And that is enough."
-          },
-          {
-            "title": "TODAY’S PRACTICE (TEXT)",
-            "body": "Screen title: Today’s practice\n\nMain copy (exact):\n\nToday, live your day without checking for guidance.\n\nNo lesson.\n\nNo reflection required.\n\nIf support is needed, it’s available.\n\nIf not, that’s okay.\n\nSecondary text (small):\n\nSelf-direction is active now.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nWhat was it like to move through today without a program?\n\nOptional follow-ups (collapsed):\n\nDid anything feel missing?\nDid anything feel freeing?\nDid life simply continue?\n\nHelper text (small):\n\nOne sentence is enough — or skip.\n\nCTA buttons: _Save_\n\n_Skip_"
-          },
-          {
-            "title": "POST-PROGRAM REFRAME (TEXT)",
-            "body": "Screen title: Guidance becomes optional\n\nMain copy (exact):\n\nPrograms help build patterns.\n\nLife uses them.\n\nYou don’t need to replace one structure with another.\n\nYou’re allowed to live without scaffolding.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough for today\n\nMain copy (exact):\n\nYou lived without guidance today.\n\nThat’s not absence — it’s integration.\n\nSupport remains available.\n\nBut life is capable of carrying itself.\n\nSecondary text:\n\nFreedom is quiet.\n\nCTA:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nMarks Post-Program Mode Active\nDaily modules become optional\nApp shifts to:\n\n```\no On-demand tools\n```\n\n```\no Optional reflections\n```\n\n```\no Coach support (if enabled)\n```\n\nNo streaks, no reminders by default\n\nSAFETY & COMPLIANCE CHECK\n\nDay 71 avoids:\n\n“You’re on your own” framing\n\nRemoval of support\n\nCure claims\n\nEmotional dependency\n\nDay 71 supports:\n\nAutonomy\n\nPsychological safety\n\nApp Store compliance\n\nCORE MESSAGE OF DAY 71\n\nYou don’t need guidance to continue living well.\n\nDAY 72 – LETTING LIFE LEAD\n\n(Post-Program · Full Depth)\n\nFocus: Following life instead of structure Core Skill: Trusting natural\npriorities Goal: Reduce the urge to replace the program with another system\n\nTotal time: 4 – 6 minutes Tone: Spacious, grounding, quietly empowering"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 72 · Letting Life Lead\n\nMain copy (exact):\n\nYesterday, structure stepped back.\n\nToday, life steps forward.\n\nYou don’t need a plan, a phase, or a task.\n\nToday is about letting ordinary life guide your attention.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "WHY PEOPLE TRY TO REPLACE THE PROGRAM (CONTEXT)",
-            "body": "Screen title: When guidance ends, the mind looks for more\n\nMain copy (exact):\n\nAfter a structured journey, the mind may search for:\n\nA new routine\nAnother program\nA different rule\n\nThis doesn’t mean something is missing.\n\nIt means structure was familiar.\n\nToday is about letting life become the guide.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nPrevents program-hopping\nReduces dependency on systems\nNormalizes the urge for direction"
-          },
-          {
-            "title": "WHAT “LETTING LIFE LEAD” LOOKS LIKE (GUIDANCE)",
-            "body": "Screen title: Life already gives signals\n\nMain copy (exact):\n\nLife leads through:\n\nWhat needs your attention\nWho you connect with\nTasks that naturally arise\nRest when you’re tired\nMovement when you’re ready\n\nYou don’t need to organize this.\n\nIt happens on its own when attention is free.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GUIDED FOLLOWING PRACTICE (PRIMARY EXPERIENCE)",
-            "body": "Screen title: Letting the next thing be enough\n\nInstruction text (above audio):\n\nThis short guide helps you follow life without directing it.\n\nAUDIO SCRIPT (Word-for-Word, ~2 minutes)\n\nDay 72 – Independence From Old\nPatterns (7-Minute Guided Meditation) Find a comfortable place to sit. There\nis nothing you need to fight right now. Just a few quiet minutes to settle. If\nit feels okay, gently close your eyes. Or soften your gaze. Take one slow breath\nin... And let it go naturally. No need to adjust the rhythm. Just notice it.\nIn... And out... Today is about independence. Not dramatic change. Not cutting\naway parts of yourself. Just noticing distance from old patterns. Let your\nbreath continue at its natural pace. Think about an old automatic reaction.\nSomething that once felt immediate. Urgent. Unavoidable.\n\nBring it gently to mind. Notice how it used to feel in your body. The speed. The\ntension. The pull. Stay with that memory softly. In... And out... Now reflect on\nhow that pattern feels today. Is it slightly more recognizable? Slightly less\nsurprising? Even slightly slower? Independence does not mean disappearance. It\nmeans space. Take a slow breath in... And gently out. Space between impulse and\nresponse creates freedom. Now imagine that old pattern appearing again. Picture\nyourself noticing it. Not judging it. Not fighting it. Just recognizing it\nearly. In... And out... Notice how that feels. More awareness. Less urgency.\nThat is independence growing. Old patterns often lose strength when they lose\nurgency.\n\nBring your attention back to your body. Feel your feet grounded. Your back\nsupported. Your breath steady. You are not pulled automatically. You are\nchoosing. Stay here for a few breaths. In... And out... If your mind says, “What\nif old patterns return?” notice that thought gently. And return to the breath.\nIndependence is not about erasing the past. It is about responding differently.\nNow imagine moving through your day without being directed by old habits. Not\nperfectly. Just steadily. One calm response at a time. In... And out... Notice\nhow natural that feels. Quiet. Balanced. Real. Independence often feels subtle.\nIt does not announce itself. It simply exists as space. Take one final slow\nbreath in... And a steady breath out.\n\nNotice the room around you. The surface beneath you. The quiet of this moment.\nOld patterns may still appear. But they no longer define you. Awareness creates\nindependence. And you are practicing it. When you’re ready, gently open your\neyes. Return to your day. Steady space is freedom. And that is enough."
-          },
-          {
-            "title": "TODAY’S PRACTICE (TEXT)",
-            "body": "Screen title: Today’s practice\n\nMain copy (exact):\n\nToday, don’t structure your day around improvement.\n\nLet life decide:\n\nWhat comes next\nWhat matters\nWhat can wait\n\nFollow one moment at a time.\n\nSecondary text (small):\n\nLife provides direction naturally.\n\nCTA: _Continue_"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nWhat happened when you let life lead today?\n\nOptional follow-ups (collapsed):\n\nDid anything feel easier?\nDid you stop over-directing?\nDid life feel simpler?\n\nHelper text (small):\n\nOne sentence is enough — or skip.\n\nCTA buttons:\n\n_Save_\n\n_Skip_"
-          },
-          {
-            "title": "POST-PROGRAM REFRAME (TEXT)",
-            "body": "Screen title: You don’t need replacement structure\n\nMain copy (exact):\n\nYou don’t need another program to replace this one.\n\nThe goal was never more structure.\n\nThe goal was freedom to live without it.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough for today\n\nMain copy (exact):\n\nYou let life lead today.\n\nThat’s not passive — it’s responsive.\n\nYou’re not drifting.\n\nYou’re living.\n\nSecondary text:\n\nLife knows the way.\n\nCTA:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nContinues Post-Program Mode\nNo prompts for “next steps”\nNo nudges to upgrade or restart\nApp remains available as:\n\n```\no Optional support\n```\n\n```\no Reference tools\n```\n\n```\no Coach access (if enabled)\n```\n\nSAFETY & COMPLIANCE CHECK\n\nDay 72 avoids:\n\nDirection withdrawal framing\n\nPressure to self-optimize\n\nTherapy language\n\nDependency creation\n\nDay 72 supports:\n\nAutonomy\n\nPsychological safety\n\nApp Store compliance\n\nCORE MESSAGE OF DAY 72\n\nYou don’t need to steer life.\n\nYou only need to let it move.\n\nDAY 73 – TRUSTING ORDINARY DAYS\n\n(Post-Program · Full Depth)\n\nFocus: Stability in normal life Core Skill: Valuing uneventful days\nGoal: Prevent the need for intensity, milestones, or emotional highs\n\nTotal time: 4 – 6 minutes Tone: Grounded, normalizing, quietly affirming"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 73 · Trusting Ordinary Days\n\nMain copy (exact):\n\nToday is about ordinary days.\n\nDays without insight. Days without struggle. Days without progress to measure.\n\nThese days can feel easy to overlook.\n\nToday is about recognizing that ordinary days are where stability lives.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "WHY ORDINARY CAN FEEL UNSATISFYING (CONTEXT)",
-            "body": "Screen title: When “nothing happening” feels strange\n\nMain copy (exact):\n\nDuring change, intensity can feel meaningful.\n\nStrong urges. Big insights. Clear milestones.\n\nWhen those fade, the mind may ask:\n\n“Am I still progressing?”\n“Should something be happening?”\n\nToday is about answering those questions calmly.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nPrevents self-doubt during calm phases\nStops chasing intensity\nNormalizes stability"
-          },
-          {
-            "title": "WHAT ORDINARY DAYS ACTUALLY MEAN (GUIDANCE)",
-            "body": "Screen title: Calm is not stagnation\n\nMain copy (exact):\n\nOrdinary days often include:\n\nLess thinking about habits\nFewer emotional spikes\nMore attention on life\nLess need for reassurance\n\nThis isn’t a pause in progress.\n\nIt’s progress no longer needing attention.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GUIDED NORMALIZATION PRACTICE (PRIMARY EXPERIENCE)",
-            "body": "Screen title: Letting ordinary be enough\n\nInstruction text (above audio):\n\nThis short guide helps you trust days that feel uneventful.\n\nAUDIO SCRIPT (Word-for-Word, ~2 minutes)\n\nDay 73\n– Stability Without Fear (7-Minute Guided Meditation) Find a comfortable place\nto sit. There is nothing you need to guard against right now. Just a few quiet\nminutes to settle. If it feels okay, gently close your eyes. Or soften your\ngaze. Take one slow breath in... And let it go naturally. No need to adjust the\nrhythm. Just notice it. In... And out... Today is about stability without fear.\nNot ignoring risk. Not pretending nothing ever happens. Just removing tension\nfrom the future. Let your breath continue at its natural pace. Sometimes fear\nwhispers quietly: “What if I slip?”\n\n“What if I lose progress?” Notice if that voice feels familiar. Just observe it.\nTake a slow breath in... And gently out. Fear often tightens the body. Notice\nyour shoulders. Your jaw. Your chest. Allow them to soften slightly. In... And\nout... Stability built through repetition does not disappear easily. It becomes\npart of you. Now imagine an old pattern briefly appearing. Instead of panic,\nimagine recognition. Calm awareness. A steady breath. In... And out... Notice\nhow that feels. Less dramatic. More grounded. Fear often exaggerates\npossibilities. Awareness keeps things steady. You do not need to predict the\nfuture. You only need to respond calmly in the present. Bring your attention\nback to your body. Feel the support beneath you.\n\nYour breathing steady. Your posture balanced. This steadiness exists now. Stay\nhere for a few breaths. In... And out... If your mind says, “I must stay alert\nall the time,” notice that thought gently. And return to the breath. Constant\nvigilance creates tension. Calm awareness creates resilience. Now imagine moving\nthrough your day without fear of losing stability. Just responding when needed.\nNot anticipating problems. Not rehearsing mistakes. Just living steadily. In...\nAnd out... Notice how natural that feels. Stability becomes stronger when it is\nnot driven by fear. Take one final slow breath in... And a steady breath out.\nNotice the room around you. The surface beneath you. The quiet of this moment.\nYou do not need fear to remain steady. Awareness is enough. And you have been\npracticing it.\n\nWhen you’re ready, gently open your eyes. Return to your day. Stability without\nfear is sustainable. And that is enough."
-          },
-          {
-            "title": "TODAY’S PRACTICE (TEXT)",
-            "body": "Screen title: Today’s practice\n\nMain copy (exact):\n\nToday, allow the day to be uneventful.\n\nDon’t search for progress.\n\nDon’t create meaning.\n\nLet normal life be enough.\n\nSecondary text (small):\n\nStability feels ordinary.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nWhat did you notice about an ordinary moment today?\n\nOptional follow-ups (collapsed):\n\nDid anything feel calmer?\nDid you stop checking for change?\nDid the day pass easily?\n\nHelper text (small):\n\nOne sentence is enough — or skip.\n\nCTA buttons:\n\n_Save_\n\n_Skip_"
-          },
-          {
-            "title": "POST-PROGRAM REFRAME (TEXT)",
-            "body": "Screen title: You don’t need momentum\n\nMain copy (exact):\n\nChange doesn’t require momentum once it’s integrated.\n\nOrdinary days are not a loss of progress.\n\nThey are proof that effort is no longer needed.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough for today\n\nMain copy (exact):\n\nYou trusted an ordinary day today.\n\nThat trust supports long-term stability.\n\nNothing special needs to happen next.\n\nSecondary text:\n\nOrdinary is stable.\n\nCTA:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nContinues Post-Program Mode\nNo alerts or nudges\nNo progress indicators\nUsed later for:\n\n```\no Long-term stability insights\n```\n\n```\no Reduced intensity dependency metrics\n```\n\nSAFETY & COMPLIANCE CHECK\n\nDay 73 avoids:\n\n“Stay motivated” language\n\nGrowth pressure\n\nTherapy framing\n\nOutcome claims\n\nDay 73 supports:\n\nPsychological safety\n\nAutonomy\n\nApp Store compliance\n\nCORE MESSAGE OF DAY 73\n\nWhen life feels ordinary again, change has settled in.\n\nDAY 74 – LETTING MOTIVATION FLUCTUATE\n\n(Post-Program · Full Depth)\n\nFocus: Freedom from motivation pressure Core Skill: Trusting stability\non low-motivation days Goal: Prevent relapse driven by “I don’t feel\nmotivated” thinking\n\nTotal time: 4 – 6 minutes Tone: Reassuring, normalizing, steady"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 74 · Letting Motivation Fluctuate\n\nMain copy (exact):\n\nToday is about motivation.\n\nHigh motivation. Low motivation. No motivation at all.\n\nMotivation comes and goes.\n\nStability doesn’t depend on it.\n\nToday is about letting motivation move naturally without making it mean\nanything.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "WHY MOTIVATION GETS OVERRATED (CONTEXT)",
-            "body": "Screen title: When motivation feels necessary\n\nMain copy (exact):\n\nEarly change often feels driven by motivation.\n\nOver time, expecting motivation can create pressure:\n\n“Why don’t I feel driven today?”\n“Am I slipping?”\n“Should I be doing more?”\n\nThese questions don’t signal danger.\n\nThey signal a misunderstanding of how stability works.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nPrevents panic on low-energy days\nStops motivation chasing\nReduces self-criticism"
-          },
-          {
-            "title": "HOW STABILITY ACTUALLY FUNCTIONS (GUIDANCE)",
-            "body": "Screen title: Stability runs without motivation\n\nMain copy (exact):\n\nLong-term stability is supported by:\n\nHabits that don’t require effort\nResponses that happen automatically\nDecisions that don’t feel dramatic\n\nMotivation may add energy — but it’s not required for steadiness to continue.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GUIDED ACCEPTANCE PRACTICE (PRIMARY EXPERIENCE)",
-            "body": "Screen title: Allowing motivation to rise and fall\n\nInstruction text (above audio):\n\nThis short guide helps you allow motivation to fluctuate without reacting to it.\n\nAUDIO SCRIPT (Word-for-Word, ~2 minutes)\n\nDay 74 – Self-Trust Without\nMonitoring (7-Minute Guided Meditation) Find a comfortable place to sit. There\nis nothing you need to verify right now. Just a few quiet minutes to settle. If\nit feels okay, gently close your eyes. Or soften your gaze. Take one slow breath\nin... And let it go naturally. No need to adjust the rhythm. Just notice it.\nIn... And out... Today is about self-trust. Not loud confidence. Not constant\nchecking. Just quiet reliability. Let your breath continue at its natural pace.\nOver time, it’s common to monitor yourself closely. Watching every thought.\nEvery urge. Every reaction. Notice if that feels familiar. Take a slow breath\nin... And gently out. Monitoring can create subtle tension. Even when progress\nis real.\n\nNow imagine relaxing that effort slightly. Not losing awareness. Just softening\nthe need to supervise yourself. In... And out... Notice how that feels in your\nbody. Lighter. Less tight. More natural. Bring your attention to your posture.\nBalanced. Supported. You are sitting without forcing balance. Self-trust can\nfeel like that. Steady without strain. Now imagine a situation later today where\nawareness will be useful. Instead of preparing intensely, picture yourself\ntrusting your practice. Responding calmly when needed. In... And out... Notice\nhow that feels. Less anxious. More grounded. Self-trust grows through\nrepetition. You have paused many times. You have responded steadily many times.\nThat repetition builds reliability. If your mind says, “What if I forget?”\n\nnotice that thought gently. And return to the breath. Even if you forget\nbriefly, you know how to return. That is self-trust. Stay here quietly for a few\nbreaths. In... And out... You do not need constant supervision to remain steady.\nYou can allow awareness to arise naturally. Now imagine moving through your day\nwithout checking your progress. Without evaluating every response. Just living\nsteadily. In... And out... Notice how sustainable that feels. Quiet. Balanced.\nReal. Take one final slow breath in... And a steady breath out. Notice the room\naround you. The surface beneath you. The quiet of this moment. Self-trust does\nnot need monitoring. It grows from familiarity. And familiarity is already\npresent. When you’re ready, gently open your eyes. Return to your day.\n\nTrust your steadiness. That is enough."
-          },
-          {
-            "title": "TODAY’S PRACTICE (TEXT)",
-            "body": "Screen title: Today’s practice\n\nMain copy (exact):\n\nToday, allow motivation to be whatever it is.\n\nIf energy is low, don’t compensate.\n\nIf motivation is high, don’t cling to it.\n\nLet behavior remain simple and steady.\n\nSecondary text (small):\n\nStability doesn’t need fuel.\n\nCTA: _Continue_"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nWhat changed when you stopped judging your motivation today?\n\nOptional follow-ups (collapsed):\n\nDid pressure reduce?\nDid steadiness continue anyway?\nDid motivation matter less?\n\nHelper text (small):\n\nOne sentence is enough — or skip.\n\nCTA buttons:\n\n_Save_\n\n_Skip_"
-          },
-          {
-            "title": "POST-PROGRAM REFRAME (TEXT)",
-            "body": "Screen title: Motivation is optional\n\nMain copy (exact):\n\nMotivation is not a requirement for living well.\n\nWhen life is stable, action continues even when motivation dips.\n\nThat’s not weakness.\n\nThat’s integration.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough for today\n\nMain copy (exact):\n\nYou allowed motivation to fluctuate today.\n\nThat acceptance supports long-term steadiness.\n\nNothing needs to be pushed.\n\nSecondary text:\n\nStability is independent.\n\nCTA:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nContinues Post-Program Mode\nNo motivation tracking\nNo energy scoring\nUsed later for:\n\n```\no Burnout prevention insights\n```\n\n```\no Low-pressure stability metrics\n```\n\nSAFETY & COMPLIANCE CHECK\n\nDay 74 avoids:\n\n“Stay motivated” messaging\n\nHustle or discipline framing\n\nTherapy claims\n\nPerformance pressure\n\nDay 74 supports:\n\nPsychological safety\n\nAutonomy\n\nApp Store compliance\n\nCORE MESSAGE OF DAY 74\n\nMotivation may rise and fall — stability remains.\n\nDAY 75 – TRUSTING LOW-ENERGY DAYS\n\n(Post-Program · Full Depth)\n\nFocus: Stability during low energy Core Skill: Letting energy fluctuate\nwithout compensating Goal: Prevent relapse driven by fatigue, boredom, or\n“off” days\n\nTotal time: 4 – 6 minutes Tone: Gentle, validating, calming"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 75 · Trusting Low-Energy Days\n\nMain copy (exact):\n\nToday is about low energy.\n\nTired days. Slower days. Days where everything feels muted.\n\nLow energy doesn’t mean something is wrong.\n\nToday is about trusting that steadiness remains even when energy dips.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "WHY LOW ENERGY CAN FEEL DANGEROUS (CONTEXT)",
-            "body": "Screen title: When tiredness gets misread\n\nMain copy (exact):\n\nLow energy can sometimes trigger worry:\n\n“I feel off today”\n“Is this a setback?”\n“Should I do something to fix this?”\n\nThese thoughts are understandable.\n\nBut low energy is part of being human — not a sign of instability.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nPrevents panic-driven coping\nReduces urge to escape fatigue\nNormalizes natural fluctuations"
-          },
-          {
-            "title": "WHAT STEADINESS LOOKS LIKE ON LOW-ENERGY DAYS (GUIDANCE)",
-            "body": "Screen title: Stability doesn’t require energy\n\nMain copy (exact):\n\nOn low-energy days, stability may look like:\n\nDoing less — not nothing\nMoving more slowly\nLetting tasks wait\nResting without guilt\n\nYou don’t need to compensate for low energy.\n\nStability adjusts — it doesn’t break.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GUIDED GENTLE ACCEPTANCE PRACTICE (PRIMARY EXPERIENCE)",
-            "body": "Screen title: Letting low energy be okay\n\nInstruction text (above audio):\n\nThis short guide helps you allow low energy without reacting to it.\n\nAUDIO SCRIPT (Word-for-Word, ~2 minutes)\n\nDay 75 – Living With Calm Independence\n(7-Minute Guided Meditation) Find a comfortable place to sit. There is nothing\nyou need to prove to anyone right now. Just a few quiet minutes to settle. If it\nfeels okay, gently close your eyes. Or soften your gaze. Take one slow breath\nin... And let it go naturally. No need to adjust the rhythm. Just notice it.\nIn... And out... Today is about independence. Not distance from others. Not\nisolation. Just steady self-reliance. Let your breath continue at its natural\npace. Over the past weeks, you’ve practiced awareness. You’ve returned to\nsteadiness again and again. That repetition builds independence. Not dramatic.\nNot loud. Just reliable. Take a slow breath in... And gently out. Calm\nindependence feels grounded. It does not rush for approval. It does not fear\nstanding alone. It simply responds steadily.\n\nBring your attention to your posture. Balanced. Supported. Even sitting here,\nyou support yourself. Now imagine a situation where you once relied heavily on\nexternal reassurance. Picture yourself responding calmly instead. Trusting your\nawareness. Trusting your steadiness. In... And out... Notice how that feels.\nLess anxious. More stable. Calm independence does not reject support. It simply\ndoes not depend on constant validation. Now imagine moving through your day\nwithout seeking confirmation for every choice. Not rigid. Not detached. Just\nsteady. In... And out... Notice how that feels in your body. Relaxed. Centered.\nBalanced. If your mind says, “What if I need reassurance?” notice that thought\ngently. And return to the breath. Needing connection is human.\n\nCalm independence simply means you can remain steady within yourself. Stay here\nquietly for a few breaths. In... And out... You are not cutting ties with the\nworld. You are strengthening your center within it. Now imagine ending your day\ncalmly. Not checking for approval. Not measuring progress. Just recognizing you\nmoved steadily. That is independence. Take one final slow breath in... And a\nsteady breath out. Notice the room around you. The surface beneath you. The\nquiet of this moment. Calm independence is quiet strength. And you are living\nit. When you’re ready, gently open your eyes. Return to your day. Stand steady\nwithin yourself. That is enough."
-          },
-          {
-            "title": "TODAY’S PRACTICE (TEXT)",
-            "body": "Screen title: Today’s practice\n\nMain copy (exact):\n\nToday, let your energy level set the pace.\n\nDon’t speed it up.\n\nDon’t judge it.\n\nRespond gently to what the day allows.\n\nSecondary text (small):\n\nLow energy is not a problem.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nWhat changed when you stopped resisting low energy today?\n\nOptional follow-ups (collapsed):\n\nDid pressure reduce?\n\nDid urges lose intensity?\nDid rest feel safer?\n\nHelper text (small):\n\nOne sentence is enough — or skip.\n\nCTA buttons: _Save_\n\n_Skip_"
-          },
-          {
-            "title": "POST-PROGRAM REFRAME (TEXT)",
-            "body": "Screen title: Energy doesn’t define readiness\n\nMain copy (exact):\n\nYou don’t need high energy to live steadily.\n\nLow-energy days don’t undo progress.\n\nThey’re part of a sustainable life.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough for today\n\nMain copy (exact):\n\nYou trusted a low-energy day today.\n\nThat trust supports long-term balance.\n\nNothing needs to be fixed.\n\nSecondary text:\n\nRest is stability.\n\nCTA:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nContinues Post-Program Mode\nNo energy or mood scoring\nNo compensatory suggestions\nUsed later for:\n\n```\no Burnout prevention insights\n```\n\n```\no Fatigue-trigger awareness (non-alarming)\n```\n\nSAFETY & COMPLIANCE CHECK\n\nDay 75 avoids:\n\n“Push through” language\n\nProductivity pressure\n\nTherapy framing\n\nEnergy optimization claims\n\nDay 75 supports:\n\nPsychological safety\n\nSelf-compassion\n\nApp Store compliance\n\nCORE MESSAGE OF DAY 75\n\nLow energy doesn’t threaten stability — it invites gentleness.\n\nDAY 76 – LETTING LIFE BE UNEVENTFUL\n\n(Post-Program · Full Depth)\n\nFocus: Comfort with neutrality Core Skill: Allowing calm without seeking\nstimulation Goal: Prevent relapse driven by boredom, restlessness, or the\nneed to “feel something”\n\nTotal time: 4 – 6 minutes Tone: Spacious, reassuring, deeply settling"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 76 · Letting Life Be Uneventful\n\nMain copy (exact):\n\nToday is about uneventful days.\n\nNo highs. No lows. No story to tell.\n\nThese days can feel strange if you’re used to intensity.\n\nToday is about letting calm neutrality be enough.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "WHY UNEVENTFUL CAN FEEL UNCOMFORTABLE (CONTEXT)",
-            "body": "Screen title: When calm feels unfamiliar\n\nMain copy (exact):\n\nWhen life becomes steady, the mind may look for stimulation:\n\n“This feels dull”\n“Is something missing?”\n“Should I be more excited?”\n\nThese thoughts don’t mean something is wrong.\n\nThey mean intensity is no longer running the system.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nPrevents boredom-driven relapse\nNormalizes neutrality\nBreaks the addiction–intensity link"
-          },
-          {
-            "title": "WHAT UNEVENTFUL LIFE ACTUALLY MEANS (GUIDANCE)",
-            "body": "Screen title: Neutral is stable\n\nMain copy (exact):\n\nUneventful days often include:\n\nFewer emotional swings\nLess internal commentary\n\nMore quiet focus\nLess urgency to escape\n\nThis isn’t emptiness.\n\nIt’s nervous system balance.\n\nIt’s life no longer demanding relief.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GUIDED NEUTRALITY PRACTICE (PRIMARY EXPERIENCE)",
-            "body": "Screen title: Resting in the uneventful\n\nInstruction text (above audio):\n\nThis short guide helps you feel safe in calm neutrality.\n\nAUDIO SCRIPT (Word-for-Word, ~2 minutes)\n\nDay 76 – Stability Without Overthinking\n(7-Minute Guided Meditation) Find a comfortable place to sit. There is nothing\nyou need to solve right now. Just a few quiet minutes to settle. If it feels\nokay, gently close your eyes. Or soften your gaze. Take one slow breath in...\n\nAnd let it go naturally. No need to adjust the rhythm. Just notice it. In... And\nout... Today is about thinking clearly. Not stopping thoughts. Not forcing\nsilence. Just reducing unnecessary loops. Let your breath continue at its\nnatural pace. Notice your thoughts right now. Are they moving quickly? Slowly?\nJumping between ideas? Just observe. Take a slow breath in... And gently out.\nOverthinking often feels tight. Repetitive. Circular. Notice if your body\nresponds to thinking. Is your jaw tense? Your forehead tight? Your shoulders\nraised? Allow those areas to soften slightly. In... And out... Now imagine a\nrecent moment when your mind kept replaying something. A decision. A worry.\n\nAn urge. Notice how it felt in your body. Now imagine stepping slightly back\nfrom that loop. Watching the thought instead of entering it. In... And out...\nNotice how that creates space. Space reduces intensity. Overthinking often comes\nfrom trying to control uncertainty. But stability does not require constant\nanalysis. Bring your attention back to your breath. Simple. Steady. Present. One\ninhale. One exhale. Now imagine a situation later today where your mind might\nbegin looping. Picture yourself noticing it. Taking one breath. And choosing not\nto follow every thought. In... And out... Notice how that feels. Calmer.\nClearer. More grounded. Thinking is natural. But not every thought requires\nattention. If your mind says, “But I need to figure this out,”\n\nnotice that thought gently. And return to the breath. Clarity often appears when\npressure softens. Stay here quietly for a few breaths. In... And out... You do\nnot need to eliminate thinking. You only need to simplify it. One breath at a\ntime. One steady response at a time. Take one final slow breath in... And a\nsteady breath out. Notice the room around you. The surface beneath you. The\nquiet clarity of this moment. Stability without overthinking feels light. And\nyou are practicing it. When you’re ready, gently open your eyes. Return to your\nday. Think simply. Respond steadily. That is enough."
-          },
-          {
-            "title": "TODAY’S PRACTICE (TEXT)",
-            "body": "Screen title: Today’s practice\n\nMain copy (exact):\n\nToday, allow the day to be uneventful.\n\nDon’t add stimulation.\n\nDon’t search for feeling.\n\nLet calm be enough.\n\nSecondary text (small):\n\nPeace doesn’t need intensity.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nWhat did you notice when you stopped expecting something to happen?\n\nOptional follow-ups (collapsed):\n\nDid calm deepen?\nDid restlessness pass?\nDid life feel safer?\n\nHelper text (small):\n\nOne sentence is enough — or skip.\n\nCTA buttons:\n\n_Save_\n\n_Skip_"
-          },
-          {
-            "title": "POST-PROGRAM REFRAME (TEXT)",
-            "body": "Screen title: Uneventful is healthy\n\nMain copy (exact):\n\nMany people confuse peace with boredom.\n\nIn reality, uneventful days mean the system no longer needs relief.\n\nThat’s not loss.\n\nThat’s freedom.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough for today\n\nMain copy (exact):\n\nYou allowed life to be uneventful today.\n\nThat comfort supports long-term stability.\n\nNothing needs to happen next.\n\nSecondary text:\n\nCalm is complete.\n\nCTA:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nContinues Post-Program Mode\nNo engagement prompts\nNo stimulation suggestions\nUsed later for:\n\n```\no Boredom resilience insights\n```\n\n```\no Nervous system settling indicators\n```\n\nSAFETY & COMPLIANCE CHECK\n\nDay 76 avoids:\n\n“Find excitement” framing\n\nProductivity or joy pressure\n\nTherapy language\n\nEmotional flattening claims\n\nDay 76 supports:\n\nPsychological safety\n\nNervous system regulation\n\nApp Store compliance\n\nCORE MESSAGE OF DAY 76\n\nWhen life no longer needs to feel like something, freedom has arrived.\n\nDAY 77 – TRUSTING QUIET WEEKS\n\n(Post-Program · Full Depth)\n\nFocus: Stability across time Core Skill: Trusting long stretches of\nnormalcy Goal: Prevent anxiety when weeks pass without reflection or effort\n\nTotal time: 4 – 6 minutes Tone: Settled, reassuring, expansive"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 77 · Trusting Quiet Weeks\n\nMain copy (exact):\n\nToday is about quiet weeks.\n\nWeeks without struggle. Weeks without insight. Weeks without effort.\n\nWhen days string together calmly, the mind may wonder if something is being\nmissed.\n\nToday is about trusting that quiet weeks are a sign of stability.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "WHY QUIET WEEKS CAN FEEL UNSETTLING (CONTEXT)",
-            "body": "Screen title: When nothing happening feels strange\n\nMain copy (exact):\n\nDuring periods of change, effort feels meaningful.\n\nWhen effort fades, the mind may ask:\n\n“Should I check in?”\n“Am I staying aware enough?”\n“What if something builds unnoticed?”\n\nThese thoughts don’t signal danger.\n\nThey signal that attention is no longer required every day.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nPrevents over-monitoring relapse\nNormalizes long calm stretches\nBuilds time-based trust"
-          },
-          {
-            "title": "WHAT QUIET WEEKS REALLY MEAN (GUIDANCE)",
-            "body": "Screen title: Time without effort is healthy\n\nMain copy (exact):\n\nQuiet weeks often include:\n\nLess self-focus\nMore engagement with life\nFewer emotional spikes\nLess need for reassurance\n\nThis doesn’t mean awareness is gone.\n\nIt means awareness no longer needs to work.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GUIDED TIME-TRUST PRACTICE (PRIMARY EXPERIENCE)",
-            "body": "Screen title: Letting weeks pass safely\n\nInstruction text (above audio):\n\nThis short guide helps you trust long stretches without attention.\n\nAUDIO SCRIPT (Word-for-Word, ~2 minutes)\n\nDay 77 – Living With\nEmotional Balance (7-Minute Guided Meditation) Find a comfortable place to\nsit. There is nothing you need to regulate right now. Just a few quiet minutes\nto settle. If it feels okay, gently close your eyes. Or soften your gaze. Take\none slow breath in... And let it go naturally.\n\nNo need to adjust the rhythm. Just notice it. In... And out... Today is about\nemotional balance. Not suppressing emotion. Not exaggerating it. Just staying\nsteady while feelings move. Let your breath continue at its natural pace. Think\nabout a recent emotional shift. Maybe irritation. Excitement. Disappointment.\nRelief. Notice how it rose. How it felt in your body. Stay with that memory\nsoftly. In... And out... Emotions are natural. They move like weather. Some days\ncalm. Some days intense. Balance does not mean no weather. It means not being\nswept away. Bring your attention to your body. Notice your chest rising and\nfalling. Your shoulders supported. Your feet grounded. Even when emotion moves,\nyour body can remain steady.\n\nNow imagine an emotional wave appearing later today. Picture yourself noticing\nit early. Feeling it. But not reacting immediately. One breath. In... And out...\nNotice how that breath creates space. Space creates balance. Balance reduces\nurgency. You do not need to silence emotion. You do not need to amplify it. You\ncan allow it to pass through. If your mind says, “This feeling is too strong,”\nnotice that thought gently. And return to the breath. Strong feelings can still\nmove. They are temporary. Stay here quietly for a few breaths. In... And out...\nNow imagine ending your day having felt emotions without being controlled by\nthem. Not perfectly. Just steadily. That is emotional balance. Bring your\nattention back to your breath. Steady. Reliable.\n\nUnforced. Take one final slow breath in... And a steady breath out. Notice the\nroom around you. The surface beneath you. The quiet steadiness beneath emotion.\nEmotional balance grows through awareness. And you are living it. When you’re\nready, gently open your eyes. Return to your day. Feel fully. Remain steady.\nThat is enough."
-          },
-          {
-            "title": "TODAY’S PRACTICE (TEXT)",
-            "body": "Screen title: Today’s practice\n\nMain copy (exact):\n\nToday, allow the week to remain quiet.\n\nDon’t add reflection.\n\nDon’t search for growth.\n\nLet time move forward without supervision.\n\nSecondary text (small):\n\nQuiet weeks are strong weeks.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nWhat did you notice when you trusted a quiet stretch of time?\n\nOptional follow-ups (collapsed):\n\nDid anxiety decrease?\nDid life feel fuller?\nDid time feel safer?\n\nHelper text (small):\n\nOne sentence is enough — or skip.\n\nCTA buttons: _Save_\n\n_Skip_"
-          },
-          {
-            "title": "POST-PROGRAM REFRAME (TEXT)",
-            "body": "Screen title: Time doesn’t need management\n\nMain copy (exact):\n\nStability doesn’t require daily attention.\n\nWhen weeks pass quietly, nothing is being lost.\n\nSomething is being gained: freedom from monitoring.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough for today\n\nMain copy (exact):\n\nYou trusted quiet weeks today.\n\nThat trust supports lasting stability.\n\nLife can unfold without supervision.\n\nSecondary text:\n\nTime is safe.\n\nCTA:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nContinues Post-Program Mode\nNo weekly reminders triggered\n\nNo reflection nudges\nUsed later for:\n\n```\no Long-term independence indicators\n```\n\n```\no Reduced vigilance patterns\n```\n\nSAFETY & COMPLIANCE CHECK\n\nDay 77 avoids:\n\n“Stay alert” language\n\nGrowth pressure\n\nTherapy framing\n\nFear-based reminders\n\nDay 77 supports:\n\nPsychological safety\n\nAutonomy\n\nApp Store compliance\n\nCORE MESSAGE OF DAY 77\n\nWhen weeks pass quietly, life has taken the lead.\n\nDAY 78 – LIVING WITHOUT A NARRATIVE\n\n(Post-Program · Full Depth)\n\nFocus: Freedom from self-storytelling Core Skill: Letting identity\nsettle naturally Goal: Reduce over-meaning, identity fixation, and “recovery\nidentity” attachment\n\nTotal time: 4 – 6 minutes Tone: Spacious, clarifying, quietly liberating"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 78 · Living Without a Narrative\n\nMain copy (exact):\n\nToday is about stories.\n\nStories about progress. Stories about recovery. Stories about who you are now.\n\nThese stories can feel helpful — until they become something you have to\nmaintain.\n\nToday is about letting the story dissolve so life can speak for itself.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "WHY NARRATIVES STICK AROUND (CONTEXT)",
-            "body": "Screen title: When stories become identity\n\nMain copy (exact):\n\nThe mind likes explanation.\n\nIt creates narratives such as:\n\n“I’m someone in recovery”\n“I’ve changed because...”\n“This is who I am now”\n\nThese stories aren’t wrong.\n\nBut when clung to, they can keep attention inward.\n\nToday is about loosening the grip.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nPrevents identity fixation\nReduces pressure to “live up to” a story\nEncourages natural self-trust"
-          },
-          {
-            "title": "WHAT LIFE LOOKS LIKE WITHOUT A STORY (GUIDANCE)",
-            "body": "Screen title: Action replaces narrative\n\nMain copy (exact):\n\nWithout a narrative:\n\nYou don’t explain yourself internally\nYou don’t measure who you are\n\nYou don’t track “how far you’ve come”\nYou respond naturally to life\n\nChange doesn’t need explanation.\n\nIt shows up in how you live.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GUIDED RELEASE PRACTICE (PRIMARY EXPERIENCE)",
-            "body": "Screen title: Letting the story fall away\n\nInstruction text (above audio):\n\nThis short guide helps you rest without explaining yourself.\n\nAUDIO SCRIPT (Word-for-Word, ~2 minutes)\n\nDay 78 – Effortless Calm Under Pressure (7-Minute Guided\nMeditation) Find a comfortable place to sit. There is nothing demanding your\nattention right now. Just a few quiet minutes to settle. If it feels okay,\ngently close your eyes. Or soften your gaze. Take one slow breath in... And let\nit go naturally. No need to adjust the rhythm. Just notice it. In... And out...\nToday is about calm under pressure. Not forcing calm. Not suppressing reaction.\nJust remaining steady when intensity rises. Let your breath continue at its\nnatural pace.\n\nThink about a recent moment of pressure. A deadline. A difficult conversation.\nAn unexpected situation. Notice how your body reacted. Was there tightness?\nFaster breathing? Narrow focus? Stay with that memory gently. In... And out...\nPressure often accelerates the system. But calm can remain underneath it. Now\nimagine that same situation again. This time, picture yourself taking one steady\nbreath. In... And out... Notice how one breath changes the rhythm. Even\nslightly. Effortless calm does not eliminate pressure. It softens the reaction\nto it. Bring your attention back to your body. Feel your feet on the ground.\nYour back supported. Your breathing steady. Even imagining pressure, your body\ncan stay grounded. Stay here for a few breaths. In... And out... Now imagine a\nsituation later today\n\nwhere pressure might appear. Picture yourself noticing it early. Not panicking.\nNot tightening. Just breathing once. Responding steadily. In... And out...\nNotice how natural that feels. Less dramatic. More balanced. Effortless calm\ngrows through repetition. You have practiced steadiness many times. It is\nbecoming familiar. If your mind says, “I won’t stay calm in real pressure,”\nnotice that thought gently. And return to the breath. Calm does not require\nperfection. It requires return. Stay here quietly for a few breaths. In... And\nout... Pressure rises. Pressure shifts. Pressure settles. Awareness remains.\nTake one final slow breath in... And a steady breath out. Notice the room around\nyou. The surface beneath you.\n\nThe quiet strength of this moment. Calm under pressure can feel natural. And you\nare learning that. When you’re ready, gently open your eyes. Return to your day.\nPressure may come. Calm can remain. That is enough."
-          },
-          {
-            "title": "TODAY’S PRACTICE (TEXT)",
-            "body": "Screen title: Today’s practice\n\nMain copy (exact):\n\nToday, notice moments where you explain yourself internally.\n\nWhen that happens, let the explanation go.\n\nReturn to what you’re doing — no story required.\n\nSecondary text (small):\n\nYou don’t need a narrative to live well.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nWhat changed when you stopped telling a story about yourself today?\n\nOptional follow-ups (collapsed):\n\nDid things feel lighter?\nDid action replace explanation?\nDid attention move outward?\n\nHelper text (small):\n\nOne sentence is enough — or skip.\n\nCTA buttons:\n\n_Save_\n\n_Skip_"
-          },
-          {
-            "title": "POST-PROGRAM REFRAME (TEXT)",
-            "body": "Screen title: Identity settles on its own\n\nMain copy (exact):\n\nYou don’t need to define who you are now.\n\nIdentity settles naturally when attention returns to life.\n\nStories fade.\n\nLiving remains.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough for today\n\nMain copy (exact):\n\nYou lived without narration today.\n\nThat simplicity supports lasting freedom.\n\nYou don’t need a story to continue.\n\nSecondary text:\n\nLife speaks through living.\n\nCTA:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nContinues Post-Program Mode\nNo identity labels shown\nNo progress summaries\nUsed later for:\n\n```\no Reduced rumination indicators\n```\n\n```\no Identity flexibility insights\n```\n\nSAFETY & COMPLIANCE CHECK\n\nDay 78 avoids:\n\nIdentity replacement\n\n“New you” framing\n\nTherapy language\n\nExistential pressure\n\nDay 78 supports:\n\nPsychological safety\n\nAutonomy\n\nApp Store compliance\n\nCORE MESSAGE OF DAY 78\n\nYou don’t need a story about change — living is the evidence.\n\nDAY 79 – TRUSTING IDENTITY WITHOUT LABELS\n\n(Post-Program · Full Depth)\n\nFocus: Identity without definition Core Skill: Living without\nself-labeling Goal: Prevent subtle pressure to “be” something or maintain an\nidentity\n\nTotal time: 4 – 6 minutes Tone: Grounded, freeing, quietly affirming"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 79 · Trusting Identity Without Labels\n\nMain copy (exact):\n\nToday is about labels.\n\nLabels like:\n\n“Someone in recovery”\n“Ex-smoker”\n“Non-drinker”\n“Strong now”\n\nLabels can feel helpful — until they become something you have to protect.\n\nToday is about trusting who you are without naming it.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "WHY LABELS CAN CREATE PRESSURE (CONTEXT)",
-            "body": "Screen title: When identity becomes effort\n\nMain copy (exact):\n\nLabels can quietly create pressure:\n\n“I have to live up to this”\n“I can’t slip or I lose this”\n“This defines me now”\n\nEven positive labels can become something to defend.\n\nToday is about letting identity stay flexible and light.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nPrevents identity-based shame\nReduces fear of “losing progress”\nEncourages natural self-trust"
-          },
-          {
-            "title": "WHAT LIFE LOOKS LIKE WITHOUT LABELS (GUIDANCE)",
-            "body": "Screen title: Action replaces identity\n\nMain copy (exact):\n\nWithout labels:\n\nYou don’t monitor who you are\nYou don’t protect an image\nYou don’t fear contradiction\nYou respond naturally\n\nIdentity doesn’t need definition.\n\nIt shows up in how you live — not what you call yourself.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GUIDED RELEASE PRACTICE (PRIMARY EXPERIENCE)",
-            "body": "Screen title: Letting labels fall away\n\nInstruction text (above audio):\n\nThis short guide helps you rest without defining yourself.\n\nAUDIO SCRIPT (Word-for-Word, ~2 minutes)\n\nDay 79 – Living Without\nInternal Resistance (7-Minute Guided Meditation) Find a comfortable place to\nsit. There is nothing you need to push against right now. Just a few quiet\nminutes to settle. If it feels okay, gently close your eyes. Or soften your\ngaze. Take one slow breath in... And let it go naturally. No need to adjust the\nrhythm. Just notice it. In... And out... Today is about internal resistance. Not\neliminating effort. Not becoming passive. Just softening tension inside. Let\nyour breath continue at its natural pace. Notice if there is any subtle\ntightness in your body. A slight clench. A guarded feeling. A mental push\nagainst something. Just observe.\n\nTake a slow breath in... And gently out. Resistance often feels like tightening.\nTrying to control. Trying to prevent. Trying to force. Bring your attention to\nyour shoulders. Allow them to drop slightly. Notice your jaw. Let it soften.\nIn... And out... Now imagine a recent moment when you felt inner resistance.\nMaybe toward a task. An emotion. An urge. Notice how it felt. Was there\npressure? Frustration? Tension? Stay with that memory gently. Now imagine that\nsame situation again. But instead of pushing against it, imagine breathing once.\nAllowing the moment to exist. In... And out... Notice how resistance softens\nwhen you allow space. You are not giving up. You are reducing friction.\n\nFriction creates strain. Space creates steadiness. Bring your attention back to\nyour breathing. Simple. Steady. Unforced. Now imagine a situation later today\nwhere resistance might appear. Picture yourself noticing it. Not fighting it.\nNot indulging it. Just observing it. Breathing once. In... And out... Notice how\nthat feels. Lighter. Calmer. More balanced. Living without internal resistance\ndoes not mean no challenges. It means fewer internal battles. If your mind says,\n“I have to push through,” notice that thought gently. And return to the breath.\nSteady action does not require tension. Stay here quietly for a few breaths.\nIn... And out... You do not need to struggle internally to move forward.\n\nYou can respond calmly. Act steadily. Remain balanced. Take one final slow\nbreath in... And a steady breath out. Notice the room around you. The surface\nbeneath you. The quiet ease of this moment. Less resistance creates more\nstability. And you are practicing that. When you’re ready, gently open your\neyes. Return to your day. Release internal friction. Keep steady movement. That\nis enough."
-          },
-          {
-            "title": "TODAY’S PRACTICE (TEXT)",
-            "body": "Screen title: Today’s practice\n\nMain copy (exact):\n\nToday, notice when you label yourself.\n\nWhen that happens, let the label drop.\n\nContinue with what you’re doing — no identity required.\n\nSecondary text (small):\n\nYou don’t need a label to live well.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nWhat changed when you stopped labeling yourself today?\n\nOptional follow-ups (collapsed):\n\nDid things feel lighter?\nDid pressure reduce?\nDid action feel more natural?\n\nHelper text (small):\n\nOne sentence is enough — or skip.\n\nCTA buttons: _Save_\n\n_Skip_"
-          },
-          {
-            "title": "POST-PROGRAM REFRAME (TEXT)",
-            "body": "Screen title: Identity doesn’t need defense\n\nMain copy (exact):\n\nYou don’t need an identity to protect.\n\nWhen labels fall away, life becomes simpler.\n\nYou’re free to respond as needed — without explanation.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough for today\n\nMain copy (exact):\n\nYou lived without labels today.\n\nThat freedom supports lasting ease.\n\nYou don’t need to define yourself to continue.\n\nSecondary text:\n\nLiving is enough.\n\nCTA:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nContinues Post-Program Mode\nNo identity badges\nNo labels shown in UI\nUsed later for:\n\n```\no Reduced self-concept rigidity\n```\n\n```\no Long-term autonomy indicators\n```\n\nSAFETY & COMPLIANCE CHECK\n\nDay 79 avoids:\n\nIdentity replacement\n\n“New self” framing\n\nTherapy language\n\nRole pressure\n\nDay 79 supports:\n\nPsychological safety\n\nAutonomy\n\nApp Store compliance\n\nCORE MESSAGE OF DAY 79\n\nYou don’t need a label to live steadily — life already knows who you are.\n\nDAY 80 – LIVING WITHOUT SELF-DEFINITION\n\n(Final Integration Day · Full Depth)\n\nFocus: Complete release of identity work Core Skill: Living without\nself-concept management Goal: End the journey without creating a “final\nversion” of the user\n\nTotal time: 4 – 6 minutes Tone: Spacious, respectful, complete (not\nemotional, not celebratory)"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 80 · Living Without Self-Definition\n\nMain copy (exact):\n\nToday is the final day of guided integration.\n\nNot because something is finished — but because nothing needs to be defined\nanymore.\n\nYou don’t need to decide who you are now.\n\nYou’re free to live without explanation.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "WHY SELF-DEFINITION CAN BECOME A BURDEN (CONTEXT)",
-            "body": "Screen title: When definition becomes effort\n\nMain copy (exact):\n\nEven positive self-definitions can quietly create pressure:\n\n“This is who I am now”\n“I have to stay this way”\n“I can’t contradict this version”\n\nOver time, identity management becomes work.\n\nToday is about letting that work end.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nPrevents “final identity” fixation\nRemoves pressure to maintain progress\nEnds the journey without replacement rules"
-          },
-          {
-            "title": "WHAT LIFE LOOKS LIKE WITHOUT SELF-DEFINITION (GUIDANCE)",
-            "body": "Screen title: Living without description\n\nMain copy (exact):\n\nWithout self-definition:\n\nYou don’t explain yourself internally\nYou don’t track who you are\nYou don’t protect a version of yourself\nYou respond naturally to life\n\nThis isn’t emptiness.\n\nIt’s flexibility.\n\nIt’s freedom to change without needing permission.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "FINAL GUIDED RELEASE (PRIMARY EXPERIENCE)",
-            "body": "Screen title: Letting identity dissolve\n\nInstruction text (above audio):\n\nThis final guide helps you rest without defining yourself.\n\nAUDIO SCRIPT (Word-for-Word, ~2 minutes)\n\nDay 80 – Stability Without Doubt (7-Minute Guided Meditation)\nFind a comfortable place to sit. There is nothing you need to convince yourself\nof right now. Just a few quiet minutes to settle. If it feels okay, gently close\nyour eyes. Or soften your gaze. Take one slow breath in... And let it go\nnaturally. No need to adjust the rhythm. Just notice it. In... And out... Today\nis about doubt. Not removing it completely. Not silencing it.\n\nJust remaining steady when it appears. Let your breath continue at its natural\npace. Notice if there is any small doubt in your mind. About progress. About the\nfuture. About yourself. You do not need to analyze it. Just observe it. Take a\nslow breath in... And gently out. Doubt often creates subtle tension. A\ntightening in the chest. A slight restlessness. Bring attention to your body.\nAllow it to soften. In... And out... Now imagine a recent moment when doubt\nappeared. Notice how it felt. Did it slow you down? Create hesitation? Generate\nextra thinking? Stay with that memory gently. Now imagine that same moment\nagain. But instead of engaging the doubt, imagine noticing it and breathing\nonce. In... And out... Notice how steadiness remains, even while doubt exists.\nStability does not require perfect certainty.\n\nIt requires calm response. Bring your attention back to your breath. Steady.\nReliable. Unforced. Breathing continues whether doubt is present or not. Now\nimagine moving through your day with small moments of doubt appearing. Instead\nof reacting, you observe. You breathe. You continue steadily. In... And out...\nNotice how that feels. Less dramatic. More grounded. Doubt becomes lighter when\nit is not amplified. If your mind says, “I shouldn’t feel doubt,” notice that\nthought gently. And return to the breath. Doubt is natural. Instability is\noptional. Stay here quietly for a few breaths. In... And out... You do not need\nto eliminate every question. You only need to remain steady while questions\nexist. Take one final slow breath in...\n\nAnd a steady breath out. Notice the room around you. The surface beneath you.\nThe quiet stability of this moment. Doubt may visit. Steadiness can stay. And\nthat is enough. When you’re ready, gently open your eyes. Return to your day.\nContinue calmly. That is enough."
-          },
-          {
-            "title": "TODAY’S PRACTICE (TEXT)",
-            "body": "Screen title: Today’s practice\n\nMain copy (exact):\n\nToday, don’t define yourself.\n\nDon’t decide who you are.\n\nDon’t evaluate your journey.\n\nJust live the day as it unfolds.\n\nSecondary text (small):\n\nNo definition required.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "REFLECTION / JOURNAL (OPTIONAL, FINAL)",
-            "body": "Screen title: Reflection (Optional)\n\nPrimary prompt (exact):\n\nWhat did it feel like to live without defining yourself?\n\nHelper text (small):\n\nWriting is optional. Silence is enough.\n\nCTA buttons:\n\n_Save_\n\n_Skip_"
-          },
-          {
-            "title": "FINAL REFRAME (TEXT)",
-            "body": "Screen title: Nothing needs to replace this\n\nMain copy (exact):\n\nYou don’t need another program.\n\nYou don’t need another framework.\n\nYou don’t need to “continue the work.”\n\nWhat mattered has already integrated.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "FINAL CLOSE (VERY QUIET)",
-            "body": "Screen title: That’s enough\n\nMain copy (exact):\n\nThere is nothing to carry forward from this journey.\n\nNo role. No identity. No obligation.\n\nLife is ready to be lived — without reference to this program.\n\nYou can go on without holding anything.\n\nSecondary text:\n\nLiving doesn’t need explanation.\n\nCTA:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nMarks Program Fully Complete\nApp enters Life-First Mode\nDefault behavior:\n\n```\no No daily content\n```\n\n```\no No reminders\n```\n\n```\no No identity badges\n```\n\nApp becomes:\n\n```\no Optional support\n```\n\n```\no Quiet tool\n```\n\n```\no On-demand only\n```\n\nSAFETY & COMPLIANCE CHECK\n\nDay 80 avoids: Cure or permanence claims\n\nIdentity replacement\n\nEmotional dependency\n\n“You are healed” language\n\nDay 80 supports:\n\nAutonomy\n\nPsychological safety\n\nApp Store compliance\n\nEthical completion\n\nCORE MESSAGE OF DAY 80\n\nYou don’t need to define yourself to live well.\n\nLife doesn’t require a description.\n\nDAY 81 – RETURNING FULLY TO LIFE\n\n(Beyond the Journey · Full Depth)\n\nFocus: Life-first orientation Core Skill: Living without reference to\nthe journey Goal: Confirm that attention belongs back in daily life, not\nself-work\n\nTotal time: 3 – 5 minutes Tone: Ordinary, affirming, quietly complete"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 81 · Returning Fully to Life\n\nMain copy (exact):\n\nToday isn’t part of a program.\n\nIt’s part of life.\n\nThere’s no lesson to learn and nothing to integrate.\n\nToday simply confirms that attention belongs back where living happens.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "WHAT “RETURNING TO LIFE” MEANS (CONTEXT)",
-            "body": "Screen title: Life becomes primary again\n\nMain copy (exact):\n\nReturning to life doesn’t mean forgetting what you’ve learned.\n\nIt means:\n\nYou don’t reference the journey\nYou don’t check how you’re doing\nYou don’t frame days as progress\n\nLife becomes primary again — not improvement.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nPrevents lingering self-focus\nReinforces autonomy\nConfirms completion without ceremony"
-          },
-          {
-            "title": "WHAT CONTINUES WITHOUT ATTENTION (GUIDANCE)",
-            "body": "Screen title: Nothing disappears\n\nMain copy (exact):\n\nWithout attention:\n\nCalm still arises\nPauses still happen\nChoices still come naturally\nLife still unfolds\n\nWhat mattered didn’t require supervision.\n\nIt integrated.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "VERY SHORT SETTLING PRACTICE (PRIMARY EXPERIENCE)",
-            "body": "Screen title: Being where you are\n\nInstruction text (above audio):\n\nThis brief guide brings attention back to ordinary life.\n\nAUDIO SCRIPT (Word-for-Word, ~60–90 seconds)\n\nDay 81 – Living With Inner Clarity (7-Minute\nGuided Meditation) Find a comfortable place to sit. There is nothing you need\nto figure out right now. Just a few quiet minutes to settle. If it feels okay,\ngently close your eyes. Or soften your gaze. Take one slow breath in... And let\nit go naturally. No need to adjust the rhythm. Just notice it. In... And out...\nToday is about clarity. Not dramatic insight. Not perfect certainty. Just mental\nsimplicity. Let your breath continue at its natural pace. Notice your thoughts\nright now. Are they quiet?\n\nBusy? Neutral? Just observe without judgment. Take a slow breath in... And\ngently out. Clarity often appears when we stop chasing answers. When we soften\nmental noise. Bring your attention to your breathing. Simple. Even.\nUncomplicated. Now imagine a recent moment when you felt confused or uncertain.\nNotice how your mind moved. Fast? Repetitive? Narrow? Stay with that memory\ngently. Now imagine stepping back slightly. Watching the thoughts instead of\nentering them. In... And out... Notice how space creates clarity. Clarity does\nnot require solving everything. It requires reducing mental pressure. Bring\nattention to your body. Notice your shoulders. Your jaw. Your chest. Allow them\nto soften. Physical relaxation supports mental clarity. Stay here for a few\nbreaths.\n\nIn... And out... Now imagine moving through your day without trying to analyze\nevery detail. Just responding calmly. Making simple decisions. Trusting steady\nawareness. In... And out... Notice how that feels. Less crowded. More grounded.\nMore open. If your mind says, “I need clearer answers,” notice that thought\ngently. And return to the breath. Clarity often arrives gradually. Not\ndramatically. Not loudly. Stay here quietly for a few breaths. In... And out...\nYou do not need complete certainty to move forward. You need calm awareness. And\nthat is already present. Take one final slow breath in... And a steady breath\nout. Notice the room around you. The surface beneath you. The quiet simplicity\nof this moment.\n\nClarity grows when noise softens. And you are practicing that. When you’re\nready, gently open your eyes. Return to your day. Respond simply. Move steadily.\nThat is enough."
-          },
-          {
-            "title": "TODAY’S PRACTICE (TEXT)",
-            "body": "Screen title: Today’s practice\n\nMain copy (exact):\n\nToday, don’t reference the journey.\n\nDon’t measure how far you’ve come.\n\nDon’t ask what comes next.\n\nJust live the day as it presents itself.\n\nSecondary text (small):\n\nLife doesn’t need reflection.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "OPTIONAL NOTE (VERY LIGHT)",
-            "body": "Screen title: If you notice the app\n\nMain copy (exact):\n\nIf you notice yourself opening the app out of habit, that’s okay.\n\nYou don’t need to do anything here.\n\nYou can close it and return to your day.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough\n\nMain copy (exact):\n\nYou’ve returned fully to life.\n\nThere’s nothing to maintain.\n\nNothing to continue.\n\nLiving is already underway.\n\nSecondary text:\n\nLife is the practice.\n\nCTA:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nApp remains in Life-First Mode\nNo new content unlocked\nNo nudges or reminders\nApp functions as:\n\n```\no Optional reference\n```\n\n```\no Quiet support\n```\n\n```\no Not a destination\n```\n\nSAFETY & COMPLIANCE CHECK\n\nDay 81 avoids:\n\nProgram replacement\n\nEmotional closure dependency\n\n“You’ve arrived” claims\n\nGrowth pressure\n\nDay 81 supports: Autonomy\n\nPsychological safety\n\nApp Store compliance\n\nEthical disengagement\n\nCORE MESSAGE OF DAY 81\n\nWhen attention returns to life, the journey has done its job.\n\nDAY 82 – LIVING WITHOUT REFERENCE\n\n(Beyond the Journey · Full Depth)\n\nFocus: Life without comparison Core Skill: Non-referential living\nGoal: Release the habit of mentally referencing “before,” “after,” or the\nprogram\n\nTotal time: 3 – 5 minutes Tone: Spacious, neutral, freeing"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 82 · Living Without Reference\n\nMain copy (exact):\n\nToday is about reference.\n\nNot referencing the past.\n\nNot referencing the journey.\n\nNot referencing who you were or who you think you are now.\n\nToday is about living without comparison.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "WHY REFERENCE CAN LINGER (CONTEXT)",
-            "body": "Screen title: When reference becomes habit\n\nMain copy (exact):\n\nAfter change, the mind may still reference:\n\n“I used to be like this”\n“Before the program...”\n“Compared to earlier...”\n\nThese references aren’t harmful.\n\nBut they quietly keep attention in reflection instead of living.\n\nToday is about letting that habit soften.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nPrevents subtle attachment to identity change\nEnds comparison loops\nReturns attention fully to the present"
-          },
-          {
-            "title": "WHAT LIFE LOOKS LIKE WITHOUT REFERENCE (GUIDANCE)",
-            "body": "Screen title: This moment doesn’t need context\n\nMain copy (exact):\n\nWithout reference:\n\nYou meet moments directly\nYou don’t compare today to yesterday\nYou don’t measure distance traveled\nYou respond without commentary\n\nLife doesn’t require a background story.\n\nIt happens right here.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "VERY SHORT SETTLING PRACTICE (PRIMARY EXPERIENCE)",
-            "body": "Screen title: Meeting the moment directly\n\nInstruction text (above audio):\n\nThis brief guide helps attention rest without reference.\n\nAUDIO SCRIPT (Word-for-Word, ~60–90 seconds)\n\nDay 82 – Stability Through Simplicity (7-Minute Guided\nMeditation) Find a comfortable place to sit. There is nothing you need to\norganize right now. Just a few quiet minutes to settle. If it feels okay, gently\nclose your eyes. Or soften your gaze. Take one slow breath in... And let it go\nnaturally. No need to adjust the rhythm. Just notice it. In... And out... Today\nis about simplicity. Not reducing your entire life. Just reducing internal\ncomplexity. Let your breath continue at its natural pace. Notice how simple\nbreathing is. Inhale. Exhale. No strategy. No analysis. Just rhythm. Take a slow\nbreath in...\n\nAnd gently out. Sometimes instability grows from complexity. Too many thoughts.\nToo many scenarios. Too many internal conversations. Notice if your mind feels\nlayered. If so, gently step back. Bring attention to one simple anchor: the\nbreath. In... And out... Simplicity creates space. Space supports stability. Now\nimagine a situation that usually feels complicated. A decision. An interaction.\nAn internal debate. Picture simplifying it. One steady response. One clear step.\nNot solving everything. Just the next steady action. In... And out... Notice how\nthat feels. Less heavy. More manageable. Bring attention to your body. Feel your\nback supported. Your feet grounded. Your shoulders relaxed.\n\nPhysical simplicity supports mental clarity. Stay here quietly for a few\nbreaths. In... And out... If your mind says, “But it’s more complicated than\nthat,” notice that thought gently. And return to the breath. Complexity may\nexist. But your response can remain simple. Steady. Balanced. Now imagine moving\nthrough your day with less internal commentary. Less analysis. More calm\nresponse. In... And out... Notice how sustainable that feels. Simplicity does\nnot reduce intelligence. It reduces unnecessary strain. Take one final slow\nbreath in... And a steady breath out. Notice the room around you. The surface\nbeneath you. The quiet simplicity of this moment. Stability grows stronger when\nlife feels simpler internally. And you are practicing that. When you’re ready,\ngently open your eyes.\n\nReturn to your day. Keep it simple. Stay steady. That is enough."
-          },
-          {
-            "title": "TODAY’S PRACTICE (TEXT)",
-            "body": "Screen title: Today’s practice\n\nMain copy (exact):\n\nToday, notice when you compare:\n\nTo the past\nTo the journey\nTo who you think you were\n\nWhen that happens, let the reference go.\n\nReturn to what’s happening now.\n\nSecondary text (small):\n\nThe present is complete.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "OPTIONAL NOTE (VERY LIGHT)",
-            "body": "Screen title: If comparison appears\n\nMain copy (exact):\n\nComparison may still arise.\n\nYou don’t need to stop it.\n\nJust don’t follow it.\n\nAttention belongs with what’s happening now.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough\n\nMain copy (exact):\n\nYou lived without reference today.\n\nThat simplicity supports ease and freedom.\n\nNothing else is needed.\n\nSecondary text:\n\nThis moment is enough.\n\nCTA:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nContinues Life-First Mode\nNo metrics, no logs\nNo progress indicators\nApp remains optional and ignorable\n\nSAFETY & COMPLIANCE CHECK\n\nDay 82 avoids:\n\n“You’ve transcended” framing\n\nIdentity claims\n\nTherapy language\n\nExistential pressure\n\nDay 82 supports:\n\nPsychological safety\n\nAutonomy\n\nApp Store compliance\n\nEthical disengagement\n\nCORE MESSAGE OF DAY 82\n\nLife doesn’t need reference points to continue.\n\nDAY 83 – LETTING TIME PASS UNNOTICED\n\n(Beyond the Journey · Full Depth)\n\nFocus: Ease with unmarked time Core Skill: Releasing time awareness as a\nmeasure Goal: End day-counting, anniversary checking, and “how long has it\nbeen?” thinking\n\nTotal time: 3 – 5 minutes Tone: Soft, spacious, almost invisible"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 83 · Letting Time Pass Unnoticed\n\nMain copy (exact):\n\nToday is about time.\n\nNot tracking it.\n\nNot counting it.\n\nNot marking how long something has been true.\n\nToday is about letting time pass quietly — without noticing.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "WHY TIME AWARENESS CAN LINGER (CONTEXT)",
-            "body": "Screen title: When time becomes a measure\n\nMain copy (exact):\n\nAfter change, the mind may still count:\n\nDays since something changed\n\nWeeks of being “steady”\nTime since the last urge\n\nThis counting isn’t harmful.\n\nBut it keeps attention tied to maintenance.\n\nToday is about letting time move without measurement.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nEnds anniversary anxiety\nPrevents pressure around milestones\nAllows natural forgetting"
-          },
-          {
-            "title": "WHAT IT MEANS WHEN TIME PASSES UNNOTICED (GUIDANCE)",
-            "body": "Screen title: Time fades when life fills the space\n\nMain copy (exact):\n\nWhen time passes unnoticed:\n\nYou’re engaged with life\nDays blend naturally\nYou don’t check how long it’s been\nNothing needs marking\n\nThis isn’t loss of awareness.\n\nIt’s awareness no longer needing effort.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "VERY SHORT SETTLING PRACTICE (PRIMARY EXPERIENCE)",
-            "body": "Screen title: Letting time move quietly\n\nInstruction text (above audio):\n\nThis brief guide helps you rest without tracking time.\n\nAUDIO SCRIPT (Word-for-Word, ~60–90 seconds)\n\nDay 83 –\nLiving With Steady Confidence (7-Minute Guided Meditation) Find a comfortable\nplace to sit. There is nothing you need to prove right now. Just a few quiet\nminutes to settle. If it feels okay, gently close your eyes. Or soften your\ngaze. Take one slow breath in... And let it go naturally. No need to adjust the\nrhythm. Just notice it. In... And out... Today is about steady confidence. Not\nemotional confidence. Not excitement. Just calm reliability. Let your breath\ncontinue at its natural pace. Over the past weeks, you have practiced awareness\nrepeatedly. You have returned to steadiness again and again. That repetition\nbuilds confidence quietly. Take a slow breath in... And gently out. Steady\nconfidence does not fluctuate with mood. It does not depend on praise. It does\nnot require intensity. It feels grounded. Bring your attention to your posture.\n\nBalanced. Supported. Stable. Even sitting here reflects quiet confidence. Now\nimagine a situation where you once doubted yourself. Picture yourself responding\nsteadily. Not dramatically. Just calmly. In... And out... Notice how that feels.\nLess reactive. More grounded. Confidence grows from familiarity. You are\nfamiliar with returning to awareness. That familiarity reduces hesitation. If\nyour mind says, “I don’t always feel confident,” notice that thought gently. And\nreturn to the breath. Confidence does not mean constant certainty. It means\nsteady response. Stay here quietly for a few breaths. In... And out... Now\nimagine moving through your day without seeking reassurance. Without\noveranalyzing your decisions. Just responding calmly when needed. In... And\nout...\n\nNotice how sustainable that feels. Steady confidence lasts longer than emotional\nhighs. Bring your attention back to your breathing. Simple. Reliable. Unforced.\nTake one final slow breath in... And a steady breath out. Notice the room around\nyou. The surface beneath you. The quiet steadiness of this moment. Confidence\ndoes not need volume. It grows through repetition. And you are living it. When\nyou’re ready, gently open your eyes. Return to your day. Remain steady. That is\nenough."
-          },
-          {
-            "title": "TODAY’S PRACTICE (TEXT)",
-            "body": "Screen title: Today’s practice\n\nMain copy (exact):\n\nToday, notice when you think: “How long has it been?”\n\nWhen that happens, let the question go unanswered.\n\nReturn to what you’re doing.\n\nTime doesn’t need attention.\n\nSecondary text (small):\n\nLife doesn’t run on counters.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "OPTIONAL NOTE (VERY LIGHT)",
-            "body": "Screen title: If time awareness appears\n\nMain copy (exact):\n\nAwareness of time may still arise.\n\nYou don’t need to stop it.\n\nJust don’t follow it.\n\nLet time pass without commentary.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough\n\nMain copy (exact):\n\nYou let time pass without noticing today.\n\nThat quiet supports deep freedom.\n\nNothing needs to be marked.\n\nSecondary text:\n\nTime is free.\n\nCTA:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nContinues Life-First Mode\nNo day counts shown\nNo anniversary reminders\nApp becomes increasingly ignorable\n\nSAFETY & COMPLIANCE CHECK\n\nDay 83 avoids:\n\n“Timelines” or guarantees\n\nCure framing\n\nIdentity anchoring\n\nExistential claims\n\nDay 83 supports:\n\nPsychological safety\n\nAutonomy\n\nApp Store compliance\n\nEthical disengagement\n\nCORE MESSAGE OF DAY 83\n\nWhen time passes unnoticed, life has fully taken over."
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
           }
         ],
         "audio": {
@@ -3954,10 +1981,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "A guided reflection designed to slow the urge-response loop.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "A guided reflection designed to slow the urge-response loop.",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "A guided reflection designed to slow the urge-response loop."
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-061.mp3",
           "durationSeconds": 420,
@@ -3971,10 +2007,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "A guided reflection designed to slow the urge-response loop.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "A guided reflection designed to slow the urge-response loop.",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "A guided reflection designed to slow the urge-response loop."
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-062.mp3",
           "durationSeconds": 420,
@@ -3988,10 +2033,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "A guided reflection designed to slow the urge-response loop.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "A guided reflection designed to slow the urge-response loop.",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "A guided reflection designed to slow the urge-response loop."
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-063.mp3",
           "durationSeconds": 420,
@@ -4005,10 +2059,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "A guided reflection designed to slow the urge-response loop.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "A guided reflection designed to slow the urge-response loop.",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "A guided reflection designed to slow the urge-response loop."
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-064.mp3",
           "durationSeconds": 420,
@@ -4022,10 +2085,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "Find a\ncomfortable place to sit. There is nowhere you need to rush to right now. Just a\nfew quiet minutes to settle. If it feels okay, gently close your eyes. Or soften\nyour gaze. Take one slow breath in... And let it go naturally. No need to adjust\nthe rhythm. Just notice it. In... And out... Today is about awareness while\nmoving. Not just in stillness. Not just during meditation. But in ordinary\nmotion. Let your breath continue at its natural pace. Notice how your body feels\nright now. Supported. Balanced. Steady. Now gently imagine standing up.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "Find a\ncomfortable place to sit. There is nowhere you need to rush to right now. Just a\nfew quiet minutes to settle. If it feels okay, gently close your eyes. Or soften\nyour gaze. Take one slow breath in... And let it go naturally. No need to adjust\nthe rhythm. Just notice it. In... And out... Today is about awareness while\nmoving. Not just in stillness. Not just during meditation. But in ordinary\nmotion. Let your breath continue at its natural pace. Notice how your body feels\nright now. Supported. Balanced. Steady. Now gently imagine standing up.",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "Find a\ncomfortable place to sit. There is nowhere you need to rush to right now. Just a\nfew quiet minutes to settle. If it feels okay, gently close your eyes. Or soften\nyour gaze. Take one slow breath in... And let it go naturally. No need to adjust\nthe rhythm. Just notice it. In... And out... Today is about awareness while\nmoving. Not just in stillness. Not just during meditation. But in ordinary\nmotion. Let your breath continue at its natural pace. Notice how your body feels\nright now. Supported. Balanced. Steady. Now gently imagine standing up."
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-065.mp3",
           "durationSeconds": 420,
@@ -4039,10 +2111,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "Find a\ncomfortable place to sit. There is nothing you need to finish right now. Just a\nfew quiet minutes to settle. If it feels okay, gently close your eyes. Or soften\nyour gaze. Take one slow breath in... And let it go naturally. No need to adjust\nyour breathing. Just notice it. In... And out... Today is about urgency. Not\nremoving responsibility. Not slowing your life completely. Just noticing\ninternal rush. Let your breath continue at its natural pace. Think about a\nrecent moment when you felt hurried. Even if there was no real emergency. Notice\nhow your body responded. Was your breath shorter? Your shoulders tighter? Your\nthoughts faster? Stay with that memory gently. In...",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "Find a\ncomfortable place to sit. There is nothing you need to finish right now. Just a\nfew quiet minutes to settle. If it feels okay, gently close your eyes. Or soften\nyour gaze. Take one slow breath in... And let it go naturally. No need to adjust\nyour breathing. Just notice it. In... And out... Today is about urgency. Not\nremoving responsibility. Not slowing your life completely. Just noticing\ninternal rush. Let your breath continue at its natural pace. Think about a\nrecent moment when you felt hurried. Even if there was no real emergency. Notice\nhow your body responded. Was your breath shorter? Your shoulders tighter? Your\nthoughts faster? Stay with that memory gently. In...",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "Find a\ncomfortable place to sit. There is nothing you need to finish right now. Just a\nfew quiet minutes to settle. If it feels okay, gently close your eyes. Or soften\nyour gaze. Take one slow breath in... And let it go naturally. No need to adjust\nyour breathing. Just notice it. In... And out... Today is about urgency. Not\nremoving responsibility. Not slowing your life completely. Just noticing\ninternal rush. Let your breath continue at its natural pace. Think about a\nrecent moment when you felt hurried. Even if there was no real emergency. Notice\nhow your body responded. Was your breath shorter? Your shoulders tighter? Your\nthoughts faster? Stay with that memory gently. In..."
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-066.mp3",
           "durationSeconds": 420,
@@ -4056,10 +2137,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "Find a comfortable place to sit.\nThere is nothing you need to maintain forcefully. Just a few quiet minutes to\nsettle. If it feels okay, gently close your eyes. Or soften your gaze. Take one\nslow breath in... And let it go naturally. No need to adjust the rhythm. Just\nnotice it. In... And out... Today is about consistency. Not intense effort. Not\nrigid discipline. Just steady continuation. Let your breath continue at its\nnatural pace. Over the past weeks, you have returned to awareness again and\nagain. Some days felt steady. Some days felt distracted. And still, you\nreturned. That is consistency. Take a slow breath in... And gently out.\nConsistency does not require perfection. It requires willingness to come back.\nNow imagine a day when awareness felt natural.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "Find a comfortable place to sit.\nThere is nothing you need to maintain forcefully. Just a few quiet minutes to\nsettle. If it feels okay, gently close your eyes. Or soften your gaze. Take one\nslow breath in... And let it go naturally. No need to adjust the rhythm. Just\nnotice it. In... And out... Today is about consistency. Not intense effort. Not\nrigid discipline. Just steady continuation. Let your breath continue at its\nnatural pace. Over the past weeks, you have returned to awareness again and\nagain. Some days felt steady. Some days felt distracted. And still, you\nreturned. That is consistency. Take a slow breath in... And gently out.\nConsistency does not require perfection. It requires willingness to come back.\nNow imagine a day when awareness felt natural.",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "Find a comfortable place to sit.\nThere is nothing you need to maintain forcefully. Just a few quiet minutes to\nsettle. If it feels okay, gently close your eyes. Or soften your gaze. Take one\nslow breath in... And let it go naturally. No need to adjust the rhythm. Just\nnotice it. In... And out... Today is about consistency. Not intense effort. Not\nrigid discipline. Just steady continuation. Let your breath continue at its\nnatural pace. Over the past weeks, you have returned to awareness again and\nagain. Some days felt steady. Some days felt distracted. And still, you\nreturned. That is consistency. Take a slow breath in... And gently out.\nConsistency does not require perfection. It requires willingness to come back.\nNow imagine a day when awareness felt natural."
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-067.mp3",
           "durationSeconds": 420,
@@ -4073,10 +2163,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "A guided reflection designed to slow the urge-response loop.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "A guided reflection designed to slow the urge-response loop.",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "A guided reflection designed to slow the urge-response loop."
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-068.mp3",
           "durationSeconds": 420,
@@ -4090,10 +2189,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "A guided reflection designed to slow the urge-response loop.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "A guided reflection designed to slow the urge-response loop.",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "A guided reflection designed to slow the urge-response loop."
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-069.mp3",
           "durationSeconds": 420,
@@ -4107,10 +2215,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "A guided reflection designed to slow the urge-response loop.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "A guided reflection designed to slow the urge-response loop.",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "A guided reflection designed to slow the urge-response loop."
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-070.mp3",
           "durationSeconds": 420,
@@ -4124,10 +2241,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "A guided reflection designed to slow the urge-response loop.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "A guided reflection designed to slow the urge-response loop.",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "A guided reflection designed to slow the urge-response loop."
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-071.mp3",
           "durationSeconds": 420,
@@ -4141,10 +2267,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "A guided reflection designed to slow the urge-response loop.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "A guided reflection designed to slow the urge-response loop.",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "A guided reflection designed to slow the urge-response loop."
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-072.mp3",
           "durationSeconds": 420,
@@ -4158,10 +2293,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "Find a comfortable place\nto sit. There is nothing you need to guard against right now. Just a few quiet\nminutes to settle. If it feels okay, gently close your eyes. Or soften your\ngaze. Take one slow breath in... And let it go naturally. No need to adjust the\nrhythm. Just notice it. In... And out... Today is about stability without fear.\nNot ignoring risk. Not pretending nothing ever happens. Just removing tension\nfrom the future. Let your breath continue at its natural pace. Sometimes fear\nwhispers quietly: “What if I slip?”",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "Find a comfortable place\nto sit. There is nothing you need to guard against right now. Just a few quiet\nminutes to settle. If it feels okay, gently close your eyes. Or soften your\ngaze. Take one slow breath in... And let it go naturally. No need to adjust the\nrhythm. Just notice it. In... And out... Today is about stability without fear.\nNot ignoring risk. Not pretending nothing ever happens. Just removing tension\nfrom the future. Let your breath continue at its natural pace. Sometimes fear\nwhispers quietly: “What if I slip?”",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "Find a comfortable place\nto sit. There is nothing you need to guard against right now. Just a few quiet\nminutes to settle. If it feels okay, gently close your eyes. Or soften your\ngaze. Take one slow breath in... And let it go naturally. No need to adjust the\nrhythm. Just notice it. In... And out... Today is about stability without fear.\nNot ignoring risk. Not pretending nothing ever happens. Just removing tension\nfrom the future. Let your breath continue at its natural pace. Sometimes fear\nwhispers quietly: “What if I slip?”"
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-073.mp3",
           "durationSeconds": 420,
@@ -4175,10 +2319,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "A guided reflection designed to slow the urge-response loop.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "A guided reflection designed to slow the urge-response loop.",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "A guided reflection designed to slow the urge-response loop."
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-074.mp3",
           "durationSeconds": 420,
@@ -4192,10 +2345,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "A guided reflection designed to slow the urge-response loop.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "A guided reflection designed to slow the urge-response loop.",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "A guided reflection designed to slow the urge-response loop."
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-075.mp3",
           "durationSeconds": 420,
@@ -4209,10 +2371,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "A guided reflection designed to slow the urge-response loop.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "A guided reflection designed to slow the urge-response loop.",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "A guided reflection designed to slow the urge-response loop."
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-076.mp3",
           "durationSeconds": 420,
@@ -4226,10 +2397,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "A guided reflection designed to slow the urge-response loop.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "A guided reflection designed to slow the urge-response loop.",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "A guided reflection designed to slow the urge-response loop."
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-077.mp3",
           "durationSeconds": 420,
@@ -4243,10 +2423,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "A guided reflection designed to slow the urge-response loop.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "A guided reflection designed to slow the urge-response loop.",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "A guided reflection designed to slow the urge-response loop."
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-078.mp3",
           "durationSeconds": 420,
@@ -4260,10 +2449,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "A guided reflection designed to slow the urge-response loop.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "A guided reflection designed to slow the urge-response loop.",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "A guided reflection designed to slow the urge-response loop."
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-079.mp3",
           "durationSeconds": 420,
@@ -4277,10 +2475,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "Find a comfortable place to sit. There is nothing you need to convince yourself\nof right now. Just a few quiet minutes to settle. If it feels okay, gently close\nyour eyes. Or soften your gaze. Take one slow breath in... And let it go\nnaturally. No need to adjust the rhythm. Just notice it. In... And out... Today\nis about doubt. Not removing it completely. Not silencing it.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "Find a comfortable place to sit. There is nothing you need to convince yourself\nof right now. Just a few quiet minutes to settle. If it feels okay, gently close\nyour eyes. Or soften your gaze. Take one slow breath in... And let it go\nnaturally. No need to adjust the rhythm. Just notice it. In... And out... Today\nis about doubt. Not removing it completely. Not silencing it.",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "Find a comfortable place to sit. There is nothing you need to convince yourself\nof right now. Just a few quiet minutes to settle. If it feels okay, gently close\nyour eyes. Or soften your gaze. Take one slow breath in... And let it go\nnaturally. No need to adjust the rhythm. Just notice it. In... And out... Today\nis about doubt. Not removing it completely. Not silencing it."
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-080.mp3",
           "durationSeconds": 420,
@@ -4294,10 +2501,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "A guided reflection designed to slow the urge-response loop.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "A guided reflection designed to slow the urge-response loop.",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "A guided reflection designed to slow the urge-response loop."
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-081.mp3",
           "durationSeconds": 420,
@@ -4311,10 +2527,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "A guided reflection designed to slow the urge-response loop.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "A guided reflection designed to slow the urge-response loop.",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "A guided reflection designed to slow the urge-response loop."
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-082.mp3",
           "durationSeconds": 420,
@@ -4328,10 +2553,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "Find a comfortable\nplace to sit. There is nothing you need to prove right now. Just a few quiet\nminutes to settle. If it feels okay, gently close your eyes. Or soften your\ngaze. Take one slow breath in... And let it go naturally. No need to adjust the\nrhythm. Just notice it. In... And out... Today is about steady confidence. Not\nemotional confidence. Not excitement. Just calm reliability. Let your breath\ncontinue at its natural pace. Over the past weeks, you have practiced awareness\nrepeatedly. You have returned to steadiness again and again. That repetition\nbuilds confidence quietly. Take a slow breath in... And gently out. Steady\nconfidence does not fluctuate with mood. It does not depend on praise. It does\nnot require intensity. It feels grounded. Bring your attention to your posture.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "Find a comfortable\nplace to sit. There is nothing you need to prove right now. Just a few quiet\nminutes to settle. If it feels okay, gently close your eyes. Or soften your\ngaze. Take one slow breath in... And let it go naturally. No need to adjust the\nrhythm. Just notice it. In... And out... Today is about steady confidence. Not\nemotional confidence. Not excitement. Just calm reliability. Let your breath\ncontinue at its natural pace. Over the past weeks, you have practiced awareness\nrepeatedly. You have returned to steadiness again and again. That repetition\nbuilds confidence quietly. Take a slow breath in... And gently out. Steady\nconfidence does not fluctuate with mood. It does not depend on praise. It does\nnot require intensity. It feels grounded. Bring your attention to your posture.",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "Find a comfortable\nplace to sit. There is nothing you need to prove right now. Just a few quiet\nminutes to settle. If it feels okay, gently close your eyes. Or soften your\ngaze. Take one slow breath in... And let it go naturally. No need to adjust the\nrhythm. Just notice it. In... And out... Today is about steady confidence. Not\nemotional confidence. Not excitement. Just calm reliability. Let your breath\ncontinue at its natural pace. Over the past weeks, you have practiced awareness\nrepeatedly. You have returned to steadiness again and again. That repetition\nbuilds confidence quietly. Take a slow breath in... And gently out. Steady\nconfidence does not fluctuate with mood. It does not depend on praise. It does\nnot require intensity. It feels grounded. Bring your attention to your posture."
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-083.mp3",
           "durationSeconds": 420,
@@ -4341,69 +2575,21 @@ export const GENERATED_PROGRAMS = {
       {
         "programSlug": "ninety_day_transform",
         "dayNumber": 84,
-        "title": "Day 84",
+        "title": "Living Without Self-observation",
         "subtitle": null,
-        "summary": "(Beyond the Journey · Full Depth)",
+        "summary": "A guided reflection designed to slow the urge-response loop.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
+        "focus": "A guided reflection designed to slow the urge-response loop.",
         "sections": [
           {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 84 · Living Without Self-Observation\n\nMain copy (exact):\n\nToday is about observation.\n\nNot observing thoughts.\n\nNot observing urges.\n\nNot observing yourself living.\n\nToday is about letting experience happen on its own — without watching it.\n\nCTA:\n\n_Continue_"
+            "title": "Today’s Focus",
+            "body": "A guided reflection designed to slow the urge-response loop."
           },
           {
-            "title": "WHY SELF-OBSERVATION CAN LINGER (CONTEXT)",
-            "body": "Screen title: When watching becomes a habit\n\nMain copy (exact):\n\nDuring change, observing yourself can be useful.\n\nOver time, it can turn into:\n\n“How am I feeling right now?”\n“Is this okay?”\n“Am I staying steady?”\n\nThis watching isn’t dangerous — but it keeps attention split.\n\nToday is about letting experience be whole again.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nPrevents hyper-self-awareness\nReduces anxiety loops\nReturns attention fully to life"
-          },
-          {
-            "title": "WHAT LIFE LOOKS LIKE WITHOUT SELF-OBSERVATION (GUIDANCE)",
-            "body": "Screen title: Experience doesn’t need a witness\n\nMain copy (exact):\n\nWithout self-observation:\n\nFeelings rise and pass naturally\nThoughts don’t require checking\nActions happen without commentary\nAttention stays with what’s happening\n\nYou don’t disappear.\n\nYou simply stop watching yourself live.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "VERY SHORT SETTLING PRACTICE (PRIMARY EXPERIENCE)",
-            "body": "Screen title: Letting experience happen\n\nInstruction text (above audio):\n\nThis brief guide helps attention rest without observing itself.\n\nAUDIO SCRIPT (Word-for-Word, ~60–90 seconds)\n\nDay 84 – Stability Without External Validation (7-Minute Guided\nMeditation) Find a comfortable place to sit. There is nothing you need to\nreceive from anyone right now. Just a few quiet minutes to settle. If it feels\nokay, gently close your eyes. Or soften your gaze. Take one slow breath in...\nAnd let it go naturally. No need to adjust the rhythm. Just notice it. In... And\nout...\n\nToday is about stability from within. Not rejecting others. Not disconnecting\nfrom the world. Just remaining steady without needing constant approval. Let\nyour breath continue at its natural pace. Think about a recent moment when you\nsought reassurance. Feedback. Recognition. Agreement. Notice how it felt in your\nbody. Was there tension? Anticipation? Subtle pressure? Stay with that memory\ngently. In... And out... External validation can feel comforting. But stability\ndoes not require it. Now imagine the same situation again. This time, picture\nyourself responding calmly. Trusting your awareness. Accepting your own steady\nresponse. In... And out... Notice how that feels. Less dependent. More grounded.\nStability from within feels quiet. It does not need applause. It does not\nrequire confirmation. Bring your attention to your posture.\n\nBalanced. Supported. Notice how your body holds itself upright without asking\npermission. That is internal steadiness. Stay here for a few breaths. In... And\nout... If your mind says, “What if others disagree?” notice that thought gently.\nAnd return to the breath. Disagreement does not remove your steadiness. Approval\ndoes not create it. Now imagine moving through your day without checking for\nvalidation. Responding calmly. Speaking clearly. Remaining steady whether\npraised or not. In... And out... Notice how sustainable that feels. Less\nanxious. More balanced. Stability without external validation is independence\nwith connection. Not isolation. Not detachment. Just internal grounding. Take\none final slow breath in... And a steady breath out.\n\nNotice the room around you. The surface beneath you. The quiet steadiness of\nthis moment. You can remain stable without constant reassurance. And you are\npracticing that. When you’re ready, gently open your eyes. Return to your day.\nStand steady within yourself. That is enough."
-          },
-          {
-            "title": "TODAY’S PRACTICE (TEXT)",
-            "body": "Screen title: Today’s practice\n\nMain copy (exact):\n\nToday, notice when you observe yourself:\n\nChecking feelings\nMonitoring steadiness\nWatching reactions\n\nWhen that happens, gently return attention to the activity itself.\n\nNo observation needed.\n\nSecondary text (small):\n\nLiving doesn’t need supervision.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "OPTIONAL NOTE (VERY LIGHT)",
-            "body": "Screen title: If self-observation appears\n\nMain copy (exact):\n\nSelf-observation may still arise.\n\nYou don’t need to stop it.\n\nJust don’t stay there.\n\nLet attention return to what you’re doing.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough\n\nMain copy (exact):\n\nYou lived without watching yourself today.\n\nThat ease supports deep freedom.\n\nExperience doesn’t need an observer.\n\nSecondary text:\n\nLife lives itself.\n\nCTA:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nContinues Life-First Mode\nNo check-ins\nNo awareness prompts\nApp remains optional and unobtrusive\n\nSAFETY & COMPLIANCE CHECK\n\nDay 84 avoids:\n\nDissociation framing\n\n“Stop awareness” commands\n\nTherapy language\n\nExistential claims\n\nDay 84 supports:\n\nPsychological safety\n\nPresent-moment living\n\nApp Store compliance\n\nEthical disengagement\n\nCORE MESSAGE OF DAY 84\n\nLife doesn’t need to be watched to be lived well.\n\nDAY 85 – TRUSTING LIFE WITHOUT CHECK-INS\n\n(Beyond the Journey · Full Depth)\n\nFocus: Living without confirmation Core Skill: Letting go of “am I\nokay?” checks Goal: End the reflex to seek reassurance, logging, or internal\nvalidation\n\nTotal time: 3 – 5 minutes Tone: Calm, ordinary, quietly confident"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 85 · Trusting Life Without Check-Ins\n\nMain copy (exact):\n\nToday is about check-ins.\n\nChecking how you feel. Checking if you’re okay. Checking if you’re on track.\n\nThese checks once helped.\n\nToday is about noticing they’re no longer needed.\n\nLife can continue without confirmation.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "WHY CHECK-INS CAN LINGER (CONTEXT)",
-            "body": "Screen title: When reassurance becomes habit\n\nMain copy (exact):\n\nDuring change, check-ins provide safety.\n\nOver time, they can turn into:\n\n“Am I still okay?”\n“Should I log this?”\n“Do I need support right now?”\n\nThese questions aren’t wrong.\n\nThey’re just no longer necessary for stability to continue.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nReduces reassurance-seeking loops\nPrevents dependency on tracking\nSignals readiness for independence"
-          },
-          {
-            "title": "WHAT LIFE LOOKS LIKE WITHOUT CHECK-INS (GUIDANCE)",
-            "body": "Screen title: Stability doesn’t ask questions\n\nMain copy (exact):\n\nWithout check-ins:\n\nFeelings pass without evaluation\nDays move forward unmeasured\nCalm doesn’t need confirmation\nAttention stays with life\n\nYou don’t lose awareness.\n\nYou gain freedom from unnecessary checking.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "VERY SHORT SETTLING PRACTICE (PRIMARY EXPERIENCE)",
-            "body": "Screen title: Letting life continue\n\nInstruction text (above audio):\n\nThis brief guide helps you rest without checking in.\n\nAUDIO SCRIPT (Word-for-Word, ~60–90 seconds)\n\nDay 85 – Living With Complete\nInternal Stability (7-Minute Guided Meditation) Find a comfortable place to\nsit. There is nothing you need to strengthen right now. Just a few quiet minutes\nto settle. If it feels okay, gently close your eyes. Or soften your gaze. Take\none slow breath in... And let it go naturally. No need to adjust the rhythm.\nJust notice it. In... And out... Today is about internal stability. Not building\nsomething new. Not improving yourself. Just recognizing what feels steady. Let\nyour breath continue at its natural pace. Over the past weeks, you have\npracticed returning. Returning to breath. Returning to awareness.\n\nReturning to steadiness. That repetition creates internal grounding. Take a slow\nbreath in... And gently out. Internal stability does not feel dramatic. It feels\nsimple. Balanced. Calm. Bring your attention to your body. Notice your feet on\nthe ground. Your back supported. Your breathing steady. This is stability. Not\nloud. Not intense. Just present. Now imagine a situation that once disrupted\nyou. Picture yourself responding calmly. Without overthinking. Without emotional\nescalation. Just steady. In... And out... Notice how natural that feels. Less\nreactive. More grounded. Internal stability means you do not need constant\nadjustment. You remain centered even when things shift. If your mind says, “Am I\nreally stable?” notice that thought gently.\n\nAnd return to the breath. Stability does not require constant confirmation. It\nexists quietly. Stay here for a few breaths. In... And out... Now imagine moving\nthrough your day with this grounded feeling. Responding steadily. Speaking\ncalmly. Acting without internal rush. In... And out... Notice how sustainable\nthat feels. Internal stability supports long-term balance. It does not depend on\nperfect conditions. Bring your attention back to your breathing. Simple.\nReliable. Unforced. Take one final slow breath in... And a steady breath out.\nNotice the room around you. The surface beneath you. The quiet steadiness of\nthis moment. Internal stability is not an achievement. It is a pattern you now\nlive. And that is enough. When you’re ready, gently open your eyes. Return to\nyour day.\n\nRemain steady. That is enough."
-          },
-          {
-            "title": "TODAY’S PRACTICE (TEXT)",
-            "body": "Screen title: Today’s practice\n\nMain copy (exact):\n\nToday, notice when you want to check in on yourself.\n\nWhen that happens, don’t answer the question.\n\nLet life continue without confirmation.\n\nSecondary text (small):\n\nYou don’t need to verify stability.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "OPTIONAL NOTE (VERY LIGHT)",
-            "body": "Screen title: If the urge to check appears\n\nMain copy (exact):\n\nThe urge to check may still arise.\n\nYou don’t need to stop it.\n\nJust don’t act on it.\n\nTrust that life is already moving forward.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough\n\nMain copy (exact):\n\nYou trusted life without checking in today.\n\nThat trust supports deep independence.\n\nNothing needs to be confirmed.\n\nSecondary text:\n\nLife continues on its own.\n\nCTA:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nContinues Life-First Mode\nNo check-in prompts\nNo reassurance nudges\nApp remains fully optional\n\nSAFETY & COMPLIANCE CHECK\n\nDay 85 avoids:\n\n“You’ll never need support again” claims\n\nSuppression of awareness\n\nTherapy or cure language\n\nPressure to disengage\n\nDay 85 supports:\n\nPsychological safety\n\nAutonomy\n\nApp Store compliance\n\nEthical disengagement\n\nCORE MESSAGE OF DAY 85\n\nLife doesn’t need to be checked on to keep going."
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
           }
         ],
         "audio": {
@@ -4419,10 +2605,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "A guided reflection designed to slow the urge-response loop.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "A guided reflection designed to slow the urge-response loop.",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "A guided reflection designed to slow the urge-response loop."
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-085.mp3",
           "durationSeconds": 420,
@@ -4432,125 +2627,21 @@ export const GENERATED_PROGRAMS = {
       {
         "programSlug": "ninety_day_transform",
         "dayNumber": 86,
-        "title": "Day 86",
+        "title": "Letting The App Fade",
         "subtitle": null,
-        "summary": "(Beyond the Journey · Full Depth)",
+        "summary": "A guided reflection designed to slow the urge-response loop.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
+        "focus": "A guided reflection designed to slow the urge-response loop.",
         "sections": [
           {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 86 · Letting the App Fade\n\nMain copy (exact):\n\nToday is about this app.\n\nNot using it. Not opening it. Not relying on it.\n\nThis doesn’t mean the app failed.\n\nIt means it worked.\n\nToday is about letting support step fully into the background.\n\nCTA:\n\n_Continue_"
+            "title": "Today’s Focus",
+            "body": "A guided reflection designed to slow the urge-response loop."
           },
           {
-            "title": "WHY LETTING THE APP FADE CAN FEEL STRANGE (CONTEXT)",
-            "body": "Screen title: When support becomes familiar\n\nMain copy (exact):\n\nThis app once provided:\n\nStructure\nGuidance\nReassurance\n\nOver time, those functions moved inside you.\n\nIt can feel unusual to no longer reference something that once mattered.\n\nThat feeling is a sign of completion — not loss.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nPrevents guilt about disengaging\nReframes fading as success\nEnds dependency gently"
-          },
-          {
-            "title": "WHAT FADING ACTUALLY MEANS (GUIDANCE)",
-            "body": "Screen title: Support doesn’t disappear\n\nMain copy (exact):\n\nLetting the app fade means:\n\nYou don’t check it daily\nYou don’t look for direction\nYou don’t need reminders\n\nIt doesn’t mean:\n\nSupport is gone\nYou’re on your own\nYou can’t return if needed\n\nThe app remains — it just isn’t central anymore.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "VERY SHORT SETTLING PRACTICE (PRIMARY EXPERIENCE)",
-            "body": "Screen title: Letting support rest\n\nInstruction text (above audio):\n\nThis brief guide helps you feel okay not opening the app.\n\nAUDIO SCRIPT (Word-for-Word, ~45–60 seconds)\n\nDay 86 – Living Without Internal Pressure\n(7-Minute Guided Meditation) Find a comfortable place to sit. There is nothing\nyou need to achieve right now. Just a few quiet minutes to settle. If it feels\nokay, gently close your eyes. Or soften your gaze. Take one slow breath in...\nAnd let it go naturally. No need to adjust the rhythm. Just notice it. In... And\nout... Today is about internal pressure. Not responsibilities. Not external\nexpectations. Just the pressure you may place on yourself. Let your breath\ncontinue at its natural pace. Notice if there is any subtle sense of demand\ninside. A voice that says: “Do better.” “Move faster.” “Be more.” You do not\nneed to argue with it. Just observe. Take a slow breath in... And gently out.\nInternal pressure often shows up physically. Tight shoulders. A clenched jaw.\n\nShallow breathing. Bring your attention there. Allow those areas to soften\nslightly. In... And out... Now imagine a recent moment when you felt internal\npressure. Perhaps no one else was pushing you. But you were pushing yourself.\nNotice how it felt. Was there tension? Impatience? Restlessness? Stay with that\nmemory gently. Now imagine that same situation again. But instead of pushing,\nyou respond steadily. Calmly. Without harsh self-demand. In... And out... Notice\nhow that feels. Lighter. More grounded. Living without internal pressure does\nnot mean losing discipline. It means replacing strain with steadiness. Bring\nyour attention back to your breathing. Breath does not rush itself. It does not\ncriticize itself. It continues naturally.\n\nStay here for a few breaths. In... And out... If your mind says, “If I don’t\npush, I won’t progress,” notice that thought gently. And return to the breath.\nProgress built on strain is fragile. Progress built on calm repetition lasts.\nNow imagine moving through your day without internal urgency. Responding\nsteadily. Taking action without tension. In... And out... Notice how sustainable\nthat feels. Internal pressure reduces clarity. Calm steadiness supports it. Take\none final slow breath in... And a steady breath out. Notice the room around you.\nThe surface beneath you. The quiet ease of this moment. You do not need pressure\nto remain steady. Awareness is enough. When you’re ready, gently open your eyes.\nReturn to your day. Act calmly. Move steadily. That is enough."
-          },
-          {
-            "title": "TODAY’S PRACTICE (TEXT)",
-            "body": "Screen title: Today’s practice\n\nMain copy (exact):\n\nToday, allow yourself not to open the app.\n\nIf you do open it out of habit, that’s okay.\n\nNothing needs to be done here.\n\nClose it gently and return to your day.\n\nSecondary text (small):\n\nSupport has already integrated.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "OPTIONAL NOTE (VERY LIGHT)",
-            "body": "Screen title: If you feel resistance\n\nMain copy (exact):\n\nFeeling resistance to letting go doesn’t mean dependence.\n\nIt means something mattered.\n\nYou don’t need to force distance.\n\nLet fading happen naturally.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GENTLE CLOSE",
-            "body": "Screen title: That’s enough\n\nMain copy (exact):\n\nYou allowed the app to fade today.\n\nThat ease supports lasting independence.\n\nLife no longer needs a container.\n\nSecondary text:\n\nSupport lives inside you.\n\nCTA:\n\n_Go to Today_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nApp enters Silent Mode by default\nNo notifications unless user opts in\nNo streaks, no prompts\nApp remains available as:\n\n```\no Emergency support (if enabled)\n```\n\n```\no Coach access (optional)\n```\n\n```\no Reference only\n```\n\nSAFETY & COMPLIANCE CHECK\n\nDay 86 avoids:\n\nForced disengagement\n\n“You don’t need help” claims\n\nTherapy or cure language\n\nGuilt-based messaging\n\nDay 86 supports:\n\nPsychological safety\n\nAutonomy\n\nApp Store compliance\n\nEthical completion\n\nCORE MESSAGE OF DAY 86\n\nWhen support fades naturally, independence has arrived.\n\nDAY 87 – TRUSTING LIFE WITHOUT SUPPORT\n\n(Final Optional Closure · Full Depth)\n\nFocus: Complete self-trust Core Skill: Living without leaning on\nsystems, tools, or reassurance Goal: End the journey without replacing\nsupport with another structure\n\nTotal time: 2 – 4 minutes Tone: Quiet, respectful, complete"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 87 · Trusting Life Without Support\n\nMain copy (exact):\n\nToday is about support.\n\nNot needing it. Not rejecting it. Not replacing it.\n\nSimply trusting that life continues without leaning.\n\nThis isn’t strength.\n\nIt’s normal.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "WHAT “WITHOUT SUPPORT” REALLY MEANS (CONTEXT)",
-            "body": "Screen title: Support was a phase\n\nMain copy (exact):\n\nTrusting life without support doesn’t mean:\n\nYou can never ask for help\nYou should do everything alone\nSupport is wrong\n\nIt means:\n\nSupport is no longer central\n\nYou don’t look for guidance\nYou don’t need reassurance\n\nSupport did its job.\n\nIt doesn’t need to stay active.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nPrevents misinterpretation as isolation\nAvoids shame around needing help later\nFrames support as transitional, not permanent"
-          },
-          {
-            "title": "WHAT LIFE LOOKS LIKE WITHOUT SUPPORT (GUIDANCE)",
-            "body": "Screen title: Life carries itself\n\nMain copy (exact):\n\nWithout active support:\n\nYou respond naturally to situations\nYou don’t check for correctness\nYou don’t look for permission\nYou trust your responses\n\nThis isn’t confidence.\n\nIt’s familiarity with living.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "FINAL VERY SHORT PRACTICE (PRIMARY EXPERIENCE)",
-            "body": "Screen title: Letting life carry itself\n\nInstruction text (above audio):\n\nThis brief guide marks the end of guided support.\n\nAUDIO SCRIPT (Word-for-Word, ~45–60 seconds)\n\nDay 87 – Living With Complete Self-Trust (7-Minute Guided Meditation) Find a\ncomfortable place to sit. There is nothing you need to prove to yourself right\nnow. Just a few quiet minutes to settle. If it feels okay, gently close your\neyes. Or soften your gaze. Take one slow breath in... And let it go naturally.\nNo need to adjust the rhythm. Just notice it. In... And out... Today is about\nself-trust. Not dramatic belief. Not bold declarations. Just quiet reliability.\nLet your breath continue at its natural pace. Over the past weeks, you have\npracticed steady awareness. You have returned after distraction. You have\nresponded calmly in many small moments. That repetition builds trust. Take a\nslow breath in... And gently out. Self-trust feels calm. It does not argue. It\ndoes not demand proof. It simply knows you can return. Bring your attention to\nyour posture. Balanced. Supported. Your body holds itself upright without doubt.\n\nNow imagine a moment in the future where an old pattern briefly appears. Picture\nyourself noticing it calmly. Breathing once. Responding steadily. In... And\nout... Notice how that feels. Not tense. Not fearful. Just grounded. Complete\nself-trust does not mean perfection. It means confidence in your ability to\nrespond. If your mind says, “What if I make a mistake?” notice that thought\ngently. And return to the breath. Mistakes do not erase self-trust. Return\nstrengthens it. Stay here quietly for a few breaths. In... And out... Now\nimagine moving through your day without checking yourself constantly. Without\ndoubting each decision. Just responding steadily. That is self-trust in action.\nIn... And out... Notice how natural that feels. Less anxious.\n\nMore centered. Self-trust grows quietly. Through repetition. Through awareness.\nThrough return. Bring your attention back to your breathing. Simple. Reliable.\nUnforced. Take one final slow breath in... And a steady breath out. Notice the\nroom around you. The surface beneath you. The quiet steadiness of this moment.\nYou can trust your ability to return. And that is enough. When you’re ready,\ngently open your eyes. Return to your day. Live steadily. Trust calmly. That is\nenough."
-          },
-          {
-            "title": "TODAY’S PRACTICE (TEXT)",
-            "body": "Screen title: Today’s practice\n\nMain copy (exact):\n\nToday, don’t seek support.\n\nDon’t look for reassurance.\n\nDon’t ask if you’re doing it right.\n\nLet life respond to itself.\n\nSecondary text (small):\n\nNothing is missing.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "IMPORTANT CLARIFICATION (VERY CALM)",
-            "body": "Screen title: Support remains available\n\nMain copy (exact):\n\nTrusting life without support does not remove support.\n\nYou can return if you need to.\n\nYou can ask for help.\n\nNothing has been closed.\n\nSupport is simply no longer required.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "FINAL CLOSE (NO CALL TO ACTION)",
-            "body": "Screen title: That’s enough\n\nMain copy (exact):\n\nThere is nothing to continue from here.\n\nNo habit to maintain.\n\nNo identity to protect.\n\nNo system to follow.\n\nLife is already underway — without reference to this app.\n\nYou can close this and continue living.\n\nSecondary text (very small):\n\nLiving doesn’t need support.\n\n_(No CTA button — screen fades)_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nApp enters Dormant Mode\nNo future content scheduled\nNo notifications\nApp becomes:\n\n```\no Optional reference only\n```\n\n```\no Silent unless opened intentionally\n```\n\n```\no Not part of daily life\n```\n\nSAFETY & COMPLIANCE CHECK\n\nDay 87 avoids:\n\n“You’ll never need help again”\n\nAnti-support messaging\n\nTherapy or cure claims\n\nEmotional dependency\n\nDay 87 supports:\n\nPsychological safety\n\nAutonomy\n\nApp Store compliance\n\nEthical disengagement\n\nCORE MESSAGE OF DAY 87\n\nSupport was a bridge — not a destination.\n\nLife continues without holding on.\n\nDAY 88 – LIVING WITHOUT RETURN\n\n(True Final Settling · Full Depth)\n\nFocus: Completion without revisiting Core Skill: Trusting non-recurrence\nGoal: End the “just in case I need to come back” mindset\n\nTotal time: 2 – 3 minutes Tone: Neutral, ordinary, final without\nceremony"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 88 · Living Without Return\n\nMain copy (exact):\n\nToday is about return.\n\nNot returning to the app. Not returning to the journey. Not returning to check\nif anything changed.\n\nThis isn’t a decision.\n\nIt’s a natural result of life moving forward.\n\nToday is about trusting that nothing needs revisiting.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "WHY THE IDEA OF RETURN CAN LINGER (CONTEXT)",
-            "body": "Screen title: When “just in case” remains\n\nMain copy (exact):\n\nSometimes the mind keeps a quiet backup plan:\n\n“If things get hard, I’ll return”\n“If I feel unsure, I’ll check again”\n“If something shifts, I’ll reopen this”\n\nThis isn’t fear.\n\nIt’s habit.\n\nToday is about letting life move without keeping a reference point.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nPrevents cyclical dependency\nEnds “maintenance thinking”\nAllows true forward motion"
-          },
-          {
-            "title": "WHAT LIFE LOOKS LIKE WITHOUT RETURN (GUIDANCE)",
-            "body": "Screen title: Forward doesn’t need a back button\n\nMain copy (exact):\n\nLiving without return means:\n\nYou trust today to handle itself\nYou don’t store backups\nYou don’t keep a mental bookmark\nYou respond directly to life\n\nThis doesn’t remove options.\n\nIt removes the need to plan for reversal.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "FINAL MICRO PRACTICE (PRIMARY EXPERIENCE)",
-            "body": "Screen title: Letting the path close behind you\n\nInstruction text (above audio):\n\nThis final moment marks the end of guided reference.\n\nAUDIO SCRIPT (Word-for-Word, ~30–45 seconds)\n\nDay 88 – Living With Full Internal Freedom (7-Minute Guided\nMeditation) Find a comfortable place to sit. There is nothing holding you in\nthis moment. Just a few quiet minutes to settle. If it feels okay, gently close\nyour eyes. Or soften your gaze. Take one slow breath in... And let it go\nnaturally. No need to adjust the rhythm.\n\nJust notice it. In... And out... Today is about internal freedom. Not dramatic\nchange. Not breaking away from everything. Just space inside. Let your breath\ncontinue at its natural pace. Internal freedom often feels simple. A little more\nspace between thought and reaction. A little more room between urge and\nresponse. Notice that space right now. Between inhale... And exhale. In... And\nout... Freedom is not loud. It does not need announcement. It feels like less\ntension. Less urgency. Less internal pressure. Bring your attention to your\nbody. Notice your shoulders. Soft. Your jaw. Relaxed. Your breathing. Steady.\nNow imagine a situation where you once felt pulled strongly by habit. Picture\nyourself now. Aware.\n\nNot rushed. Not controlled. Just steady. In... And out... Notice how that feels.\nMore choice. More space. More calm. Internal freedom does not mean no urges. It\nmeans not being directed by them automatically. If your mind says, “Am I really\nfree?” notice that thought gently. And return to the breath. Freedom grows\ngradually. Through awareness. Through repetition. Through steadiness. Stay here\nquietly for a few breaths. In... And out... Now imagine moving through your day\nwith this quiet space inside. Responding calmly. Choosing deliberately. Not\nreacting automatically. In... And out... Notice how natural that feels. Freedom\ndoes not require intensity.\n\nIt requires space. Bring your attention back to your breathing. Simple. Open.\nUnforced. Take one final slow breath in... And a steady breath out. Notice the\nroom around you. The surface beneath you. The quiet spaciousness of this moment.\nInternal freedom feels steady. And you are living it. When you’re ready, gently\nopen your eyes. Return to your day. Move freely. Remain steady. That is enough."
-          },
-          {
-            "title": "TODAY’S PRACTICE (TEXT)",
-            "body": "Screen title: Today’s practice\n\nMain copy (exact):\n\nToday, don’t plan a return.\n\nDon’t imagine needing this again.\n\nDon’t hold a safety copy.\n\nLet life continue without a reference point.\n\nSecondary text (small):\n\nForward is enough.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "IMPORTANT CLARIFICATION (VERY QUIET)",
-            "body": "Screen title: Nothing is closed\n\nMain copy (exact):\n\nLiving without return doesn’t close doors.\n\nHelp is still available.\n\nSupport still exists.\n\nThis is not a rule.\n\nIt’s simply trust replacing preparation.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "FINAL CLOSE (NO CTA)",
-            "body": "Screen title: That’s all\n\nMain copy (exact):\n\nThere is nowhere you need to return to.\n\nNo system to revisit.\n\nNo progress to maintain.\n\nLife continues without loops.\n\nYou can let this fade completely.\n\n_(Screen fades. No buttons.)_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nApp enters Archive State\nNo content progression\nNo reminders ever\nApp exists only as:\n\n```\no A past chapter\n```\n\n```\no Not an active resource\n```\n\nSAFETY & COMPLIANCE CHECK\n\nDay 88 avoids:\n\n“You’re cured” language\n\nPermanent claims\n\nAnti-support framing\n\nEmotional finality pressure\n\nDay 88 supports:\n\nPsychological safety\n\nAutonomy\n\nApp Store compliance\n\nEthical non-return framing\n\nCORE MESSAGE OF DAY 88\n\nWhen nothing needs returning to, life has fully taken over.\n\nDAY 89 – LETTING LIFE CONTINUE WITHOUT MEANING\n\n(Post-Completion · Full Depth)\n\nFocus: Freedom from meaning-making Core Skill: Allowing life to be\nordinary without interpretation Goal: End the habit of asking “What does\nthis mean?” about calm or stability\n\nTotal time: 2 – 3 minutes Tone: Neutral, plain, grounding"
-          },
-          {
-            "title": "DAY INTRO (TEXT)",
-            "body": "Screen title: Day 89 · Letting Life Continue Without Meaning\n\nMain copy (exact):\n\nToday is about meaning.\n\nNot finding it.\n\nNot assigning it.\n\nNot asking what something represents.\n\nToday is about letting life continue exactly as it is — without interpretation.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "WHY MEANING-MAKING CAN LINGER (CONTEXT)",
-            "body": "Screen title: When calm gets analyzed\n\nMain copy (exact):\n\nWhen life becomes steady, the mind may ask:\n\n“What does this calm mean?”\n\n“Is this the new normal?”\n“Did something important happen?”\n\nThese questions aren’t harmful.\n\nThey’re habits.\n\nToday is about letting calm exist without explanation.\n\nCTA:\n\n_Continue_\n\nWhy this screen matters\n\nPrevents over-interpretation of stability\nReduces pressure to preserve calm\nKeeps life ordinary and flexible"
-          },
-          {
-            "title": "WHAT LIFE LOOKS LIKE WITHOUT MEANING (GUIDANCE)",
-            "body": "Screen title: Ordinary is complete\n\nMain copy (exact):\n\nWithout meaning-making:\n\nCalm is just calm\nGood days aren’t symbols\nQuiet doesn’t need purpose\nLife doesn’t need a takeaway\n\nThis isn’t emptiness.\n\nIt’s simplicity.\n\nLife doesn’t require interpretation to continue.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "FINAL MICRO PRACTICE (PRIMARY EXPERIENCE)",
-            "body": "Screen title: Letting things be as they are\n\nInstruction text (above audio):\n\nThis brief guide helps you rest without interpretation.\n\nAUDIO SCRIPT (Word-for-Word, ~30–45 seconds)\n\nDay 89 – Living With Complete Integration (7-Minute Guided Meditation) Find\na comfortable place to sit. There is nothing you need to combine or complete\nright now. Just a few quiet minutes to settle. If it feels okay, gently close\nyour eyes. Or soften your gaze. Take one slow breath in... And let it go\nnaturally. No need to adjust the rhythm. Just notice it. In... And out... Today\nis about integration.\n\nNot building something new. Not finishing something dramatic. Just recognizing\nwhat has blended naturally. Let your breath continue at its natural pace. Over\ntime, awareness can feel separate from life. Something you “practice.” Something\nyou “apply.” Now notice how it feels today. Does awareness feel more natural?\nLess forced? Less separate? Take a slow breath in... And gently out. Integration\nmeans steadiness is no longer an effort. It becomes part of how you move. Bring\nyour attention to your body. Feel your posture. Balanced. Supported. Notice how\nbreathing happens without instruction. That is integration. No effort required.\nNow imagine a normal day ahead. No special focus. No monitoring. Just living.\nPicture yourself responding steadily without thinking about it. In... And out...\nNotice how that feels. Ordinary.\n\nCalm. Sustainable. Integration does not feel intense. It feels simple. If your\nmind says, “Is this really integrated?” notice that thought gently. And return\nto the breath. Integration is not a dramatic shift. It is repetition becoming\nnatural. Stay here quietly for a few breaths. In... And out... Now imagine an\nunexpected moment arising. Notice yourself responding calmly. Without internal\nconflict. Without heavy effort. That is integration in motion. Bring your\nattention back to your breathing. Steady. Reliable. Unforced. Take one final\nslow breath in... And a steady breath out. Notice the room around you. The\nsurface beneath you. The quiet steadiness of this moment. Awareness and action\nare no longer separate. They move together. And that is enough. When you’re\nready,\n\ngently open your eyes. Return to your day. Live steadily. Naturally. That is\nenough."
-          },
-          {
-            "title": "TODAY’S PRACTICE (TEXT)",
-            "body": "Screen title: Today’s practice\n\nMain copy (exact):\n\nToday, notice when you ask: “What does this mean?”\n\nWhen that happens, let the question drop.\n\nReturn to what you’re doing.\n\nMeaning is optional.\n\nSecondary text (small):\n\nLife doesn’t need commentary.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "IMPORTANT CLARIFICATION (VERY QUIET)",
-            "body": "Screen title: Nothing is being dismissed\n\nMain copy (exact):\n\nLetting go of meaning doesn’t erase experience.\n\nIt simply stops turning life into something to understand.\n\nUnderstanding isn’t required for living well.\n\nCTA:\n\n_Continue_"
-          },
-          {
-            "title": "GENTLE CLOSE (NO CTA)",
-            "body": "Screen title: That’s enough\n\nMain copy (exact):\n\nNothing needs to be learned from this day.\n\nNothing needs to be remembered.\n\nLife continues without interpretation.\n\nYou can let this pass like any other day.\n\n_(Screen fades. No buttons.)_\n\nBACKGROUND LOGIC (INVISIBLE)\n\nApp remains in Archive / Silent State\nNo logs, no reflections prompted\nNo follow-up content scheduled\n\nSAFETY & COMPLIANCE CHECK\n\nDay 89 avoids:\n\nExistential conclusions\n\n“This is enlightenment” framing\n\nTherapy or cure language\n\nEmotional closure pressure\n\nDay 89 supports:\n\nPsychological safety\n\nCognitive ease\n\nApp Store compliance\n\nEthical non-attachment\n\nCORE MESSAGE OF DAY 89\n\nLife doesn’t need to mean anything to be lived fully."
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
           }
         ],
         "audio": {
@@ -4566,10 +2657,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "Find a\ncomfortable place to sit. There is nothing you need to prove to yourself right\nnow. Just a few quiet minutes to settle. If it feels okay, gently close your\neyes. Or soften your gaze. Take one slow breath in... And let it go naturally.\nNo need to adjust the rhythm. Just notice it. In... And out... Today is about\nself-trust. Not dramatic belief. Not bold declarations. Just quiet reliability.\nLet your breath continue at its natural pace. Over the past weeks, you have\npracticed steady awareness. You have returned after distraction. You have\nresponded calmly in many small moments. That repetition builds trust. Take a\nslow breath in... And gently out. Self-trust feels calm. It does not argue. It\ndoes not demand proof. It simply knows you can return. Bring your attention to\nyour posture. Balanced. Supported. Your body holds itself upright without doubt.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "Find a\ncomfortable place to sit. There is nothing you need to prove to yourself right\nnow. Just a few quiet minutes to settle. If it feels okay, gently close your\neyes. Or soften your gaze. Take one slow breath in... And let it go naturally.\nNo need to adjust the rhythm. Just notice it. In... And out... Today is about\nself-trust. Not dramatic belief. Not bold declarations. Just quiet reliability.\nLet your breath continue at its natural pace. Over the past weeks, you have\npracticed steady awareness. You have returned after distraction. You have\nresponded calmly in many small moments. That repetition builds trust. Take a\nslow breath in... And gently out. Self-trust feels calm. It does not argue. It\ndoes not demand proof. It simply knows you can return. Bring your attention to\nyour posture. Balanced. Supported. Your body holds itself upright without doubt.",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "Find a\ncomfortable place to sit. There is nothing you need to prove to yourself right\nnow. Just a few quiet minutes to settle. If it feels okay, gently close your\neyes. Or soften your gaze. Take one slow breath in... And let it go naturally.\nNo need to adjust the rhythm. Just notice it. In... And out... Today is about\nself-trust. Not dramatic belief. Not bold declarations. Just quiet reliability.\nLet your breath continue at its natural pace. Over the past weeks, you have\npracticed steady awareness. You have returned after distraction. You have\nresponded calmly in many small moments. That repetition builds trust. Take a\nslow breath in... And gently out. Self-trust feels calm. It does not argue. It\ndoes not demand proof. It simply knows you can return. Bring your attention to\nyour posture. Balanced. Supported. Your body holds itself upright without doubt."
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-087.mp3",
           "durationSeconds": 420,
@@ -4583,10 +2683,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "A guided reflection designed to slow the urge-response loop.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "A guided reflection designed to slow the urge-response loop.",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "A guided reflection designed to slow the urge-response loop."
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-088.mp3",
           "durationSeconds": 420,
@@ -4600,10 +2709,19 @@ export const GENERATED_PROGRAMS = {
         "subtitle": null,
         "summary": "A guided reflection designed to slow the urge-response loop.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
-        "sections": [],
+        "focus": "A guided reflection designed to slow the urge-response loop.",
+        "sections": [
+          {
+            "title": "Today’s Focus",
+            "body": "A guided reflection designed to slow the urge-response loop."
+          },
+          {
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
+          }
+        ],
         "audio": {
           "storagePath": "ninety-day/day-089.mp3",
           "durationSeconds": 420,
@@ -4613,29 +2731,21 @@ export const GENERATED_PROGRAMS = {
       {
         "programSlug": "ninety_day_transform",
         "dayNumber": 90,
-        "title": "Day 90",
+        "title": "Letting Life Be Enough",
         "subtitle": null,
-        "summary": "(Final · Ultra-Minimal)",
+        "summary": "A guided reflection designed to slow the urge-response loop.",
         "prompt": null,
-        "close": null,
+        "close": "Awareness grows quietly over time.",
         "estimatedMinutes": 7,
-        "focus": null,
+        "focus": "A guided reflection designed to slow the urge-response loop.",
         "sections": [
           {
-            "title": "TITLE",
-            "body": "Day 90 · Letting Life Be Enough"
+            "title": "Today’s Focus",
+            "body": "A guided reflection designed to slow the urge-response loop."
           },
           {
-            "title": "SINGLE STATEMENT",
-            "body": "Nothing needs to be added.\n\nNothing needs to be removed.\n\nLife, as it is, is enough."
-          },
-          {
-            "title": "BRIEF PAUSE (OPTIONAL AUDIO OR SILENCE)",
-            "body": "Instruction (small text):\n\nPause for a moment.\n\n_(10–15 seconds of silence, or no audio at all.)_"
-          },
-          {
-            "title": "FINAL LINE",
-            "body": "You can close this and continue your day.\n\n_(No CTA button. Screen fades.)_\n\nAPP BEHAVIOR (INVISIBLE)\n\nNo next day\nNo reminders\nNo summaries\nNo prompts\nApp remains silent and optional\n\nFINAL MESSAGE\n\nLife doesn’t need support.\n\nIt doesn’t need meaning.\n\nIt doesn’t need continuation.\n\nIt’s already enough."
+            "title": "Today’s Practice",
+            "body": "Follow today’s guidance with gentle consistency and no pressure to do it perfectly."
           }
         ],
         "audio": {

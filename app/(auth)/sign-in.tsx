@@ -6,10 +6,13 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+
+const LAST_SIGN_IN_PROVIDER_KEY = 'auth:last-sign-in-provider';
 
 const signInSchema = z.object({
     email: z.string().email('Please enter a valid email'),
@@ -43,6 +46,7 @@ export default function SignIn() {
             setCanResendVerification(false);
 
             if (sessionData.user) {
+                await AsyncStorage.setItem(LAST_SIGN_IN_PROVIDER_KEY, 'email');
                 // Root layout guard handles post-login routing (tabs/paywall/personalization).
                 return;
             }

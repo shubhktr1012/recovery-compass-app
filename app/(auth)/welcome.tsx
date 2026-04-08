@@ -26,6 +26,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type AuthMode = 'default' | 'signIn';
 type OAuthProvider = 'google' | 'apple';
+type LastSignInProvider = 'email' | 'google' | 'apple';
 
 const APPEAR_DURATION = 560;
 const DISAPPEAR_DURATION = 760;
@@ -34,6 +35,8 @@ const BUTTON_ROW_GAP = 16;
 const REVEAL_TRAVEL = 14;
 const authModeEasing = Easing.bezier(0.22, 1, 0.36, 1);
 const OAUTH_LINK_NOTICE_PREFIX = 'auth:linked-provider-notice';
+const LAST_SIGN_IN_PROVIDER_KEY = 'auth:last-sign-in-provider';
+const SESSION_EXPIRED_NOTICE_KEY = 'auth:session-expired-notice';
 const flatButtonStyle = {
     shadowColor: 'transparent',
     shadowOpacity: 0,
@@ -53,6 +56,8 @@ export default function WelcomeScreen() {
     const insets = useSafeAreaInsets();
     const [authMode, setAuthMode] = useState<AuthMode>('default');
     const [authProviderLoading, setAuthProviderLoading] = useState<'google' | 'apple' | null>(null);
+    const [lastSignInProvider, setLastSignInProvider] = useState<LastSignInProvider | null>(null);
+    const [sessionExpiredNotice, setSessionExpiredNotice] = useState<string | null>(null);
     const progress = useSharedValue(0);
     const isIOS = Platform.OS === 'ios';
     const { signInWithGoogleIdToken, signInWithAppleIdToken } = useAuth();
@@ -108,12 +113,57 @@ export default function WelcomeScreen() {
         );
     };
 
+    const persistLastSignInProvider = async (provider: LastSignInProvider) => {
+        try {
+            await AsyncStorage.setItem(LAST_SIGN_IN_PROVIDER_KEY, provider);
+            setLastSignInProvider(provider);
+        } catch (error) {
+            console.warn('Failed to persist last sign-in provider', error);
+        }
+    };
+
     useEffect(() => {
         progress.value = withTiming(authMode === 'signIn' ? 1 : 0, {
             duration: authMode === 'signIn' ? APPEAR_DURATION : DISAPPEAR_DURATION,
             easing: authModeEasing,
         });
     }, [authMode, progress]);
+
+    useEffect(() => {
+        let isMounted = true;
+
+        const loadWelcomeState = async () => {
+            try {
+                const [storedProvider, expiredNotice] = await Promise.all([
+                    AsyncStorage.getItem(LAST_SIGN_IN_PROVIDER_KEY),
+                    AsyncStorage.getItem(SESSION_EXPIRED_NOTICE_KEY),
+                ]);
+
+                if (
+                    isMounted &&
+                    (storedProvider === 'email' || storedProvider === 'google' || storedProvider === 'apple')
+                ) {
+                    setLastSignInProvider(storedProvider);
+                }
+
+                if (isMounted && expiredNotice === '1') {
+                    setSessionExpiredNotice('Your session expired. Please sign in again.');
+                }
+
+                if (expiredNotice) {
+                    await AsyncStorage.removeItem(SESSION_EXPIRED_NOTICE_KEY);
+                }
+            } catch (error) {
+                console.warn('Failed to read welcome screen state', error);
+            }
+        };
+
+        void loadWelcomeState();
+
+        return () => {
+            isMounted = false;
+        };
+    }, []);
 
     useEffect(() => {
         let isMounted = true;
@@ -162,6 +212,7 @@ export default function WelcomeScreen() {
                 if (error) {
                     throw error;
                 }
+                await persistLastSignInProvider('google');
                 await maybeShowLinkedProviderInfo(user, 'google');
             } catch (error: any) {
                 if (isMounted) {
@@ -269,6 +320,7 @@ export default function WelcomeScreen() {
 
             const { error, user } = await signInWithAppleIdToken(credential.identityToken, rawNonce);
             if (error) throw error;
+            await persistLastSignInProvider('apple');
             await maybeShowLinkedProviderInfo(user, 'apple');
         } catch (error: any) {
             if (error?.code === 'ERR_REQUEST_CANCELED') {
@@ -366,7 +418,25 @@ export default function WelcomeScreen() {
                         </ThemedText>.
                     </ThemedText>
 
-                    <View style={styles.buttonContainer}>
+                        <View style={styles.buttonContainer}>
+                        {sessionExpiredNotice ? (
+                            <ThemedText style={styles.sessionExpiredHint}>
+                                {sessionExpiredNotice}
+                            </ThemedText>
+                        ) : null}
+
+                        {authMode === 'signIn' && lastSignInProvider ? (
+                            <ThemedText style={styles.lastProviderHint}>
+                                You signed in using{' '}
+                                {lastSignInProvider === 'email'
+                                    ? 'Email'
+                                    : lastSignInProvider === 'google'
+                                      ? 'Google'
+                                      : 'Apple'}{' '}
+                                the last time.
+                            </ThemedText>
+                        ) : null}
+
                         <View style={styles.morphRow}>
                             <Animated.View
                                 style={[styles.overlayButton, createAccountStyle]}
@@ -514,6 +584,20 @@ const styles = StyleSheet.create({
     },
     buttonContainer: {
         width: '100%',
+    },
+    sessionExpiredHint: {
+        fontSize: 13,
+        fontFamily: 'Satoshi-Medium',
+        color: AppColors.forest,
+        textAlign: 'center',
+        marginBottom: 10,
+    },
+    lastProviderHint: {
+        fontSize: 13,
+        fontFamily: 'Satoshi-Medium',
+        color: AppColors.iconMuted,
+        textAlign: 'center',
+        marginBottom: 14,
     },
     morphRow: {
         position: 'relative',

@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Alert, ScrollView, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import Purchases, { PurchasesPackage } from 'react-native-purchases';
 
@@ -37,6 +38,7 @@ function getRecommendedPrograms(programSlug: ProgramSlug | null | undefined): Pr
 
 export default function Paywall() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { access, profile, refreshAccess, setProgramAccess } = useProfile();
   const [loading, setLoading] = useState(false);
   const [packages, setPackages] = useState<PurchasesPackage[]>([]);
@@ -75,6 +77,7 @@ export default function Paywall() {
   useEffect(() => {
     const getOfferings = async () => {
       try {
+        await refreshAccess();
         const offerings = await Purchases.getOfferings();
         const currentOffering = offerings.current ?? null;
 
@@ -93,7 +96,7 @@ export default function Paywall() {
     };
 
     void getOfferings();
-  }, []);
+  }, [refreshAccess]);
 
   const isUpgradeFlow =
     access.ownedProgram === 'six_day_reset' &&
@@ -191,7 +194,10 @@ export default function Paywall() {
 
         if (restoredProgram) {
           await setProgramAccess(restoredProgram);
-          Alert.alert('Success', `Your ${getDisplayNameForProgram(restoredProgram)} is now unlocked.`);
+          Alert.alert(
+            'Already Unlocked',
+            `This account already owns ${getDisplayNameForProgram(restoredProgram)}. Access has been restored.`
+          );
           router.replace('/(tabs)/program');
           return;
         }
@@ -265,8 +271,15 @@ export default function Paywall() {
   return (
     <SafeAreaView className="flex-1 bg-surface">
       <StatusBar style="dark" />
-      <ScrollView contentContainerClassName="p-6 pb-20">
-        <View className="items-center mb-10 mt-4">
+      <ScrollView
+        contentContainerStyle={{
+          paddingLeft: 24,
+          paddingRight: 24,
+          paddingTop: 16,
+          paddingBottom: Math.max(insets.bottom, 20) + 20,
+        }}
+      >
+        <View className="items-center mb-10">
           <Text className="font-erode-bold text-3xl text-forest text-center mb-2">{headerTitle}</Text>
           <Text className="font-satoshi text-gray-500 text-center text-lg">{headerBody}</Text>
         </View>
@@ -276,7 +289,9 @@ export default function Paywall() {
         ) : eligiblePackages.length === 0 ? (
           <View className="items-center mt-10">
             <Text className="font-satoshi border border-dashed border-gray-300 p-4 rounded-xl text-gray-500 text-center">
-              No eligible purchases are available for this account right now. This usually means this account already owns the highest available program path.
+              {access.ownedProgram && !isUpgradeFlow
+                ? 'This account already has access to an unlocked Recovery Compass program. Open Program or use a fresh test account to verify a first-time purchase flow.'
+                : 'No eligible purchases are available for this account right now. This usually means this account already owns the highest available program path.'}
             </Text>
           </View>
         ) : (
@@ -295,13 +310,6 @@ export default function Paywall() {
                   <Text className={`font-erode-bold text-2xl ${isPrimary ? 'text-white' : 'text-forest'}`}>
                     {getPackageDisplayName(pack)}
                   </Text>
-                  {isPrimary ? (
-                    <View className="bg-white/20 px-3 py-1 rounded-full">
-                      <Text className="text-white font-satoshi-bold text-xs uppercase">
-                        {eligiblePackages.length === 1 ? 'Recommended' : 'Best Value'}
-                      </Text>
-                    </View>
-                  ) : null}
                 </View>
 
                 <Text className={`font-satoshi mb-6 leading-6 ${isPrimary ? 'text-gray-300' : 'text-gray-500'}`}>

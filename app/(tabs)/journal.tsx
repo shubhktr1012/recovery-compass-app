@@ -97,7 +97,7 @@ export default function JournalScreen() {
       <StatusBar style="dark" />
       <ScrollView contentContainerClassName="p-6 pb-32">
         <View className="mb-8">
-          <Text className="font-erode-bold text-4xl text-forest mb-2">Journal</Text>
+          <Text className="font-erode-bold text-4xl text-forest mb-2">My Journal</Text>
           <Text className="font-satoshi text-base text-gray-500">Capture cravings, mood, and progress each day.</Text>
         </View>
 

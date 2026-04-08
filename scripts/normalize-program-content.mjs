@@ -277,11 +277,137 @@ function parseMeditationDayScripts(rawText) {
   return scripts;
 }
 
+function stripCurlyQuotes(value = '') {
+  return cleanText(String(value).replace(/^[“"]+|[”"]+$/g, ''));
+}
+
+function firstParagraphText(value = '') {
+  const [firstParagraph = ''] = cleanText(String(value)).split('\n\n');
+  return cleanText(firstParagraph);
+}
+
+function extractLabeledBlockValue(block, label, nextLabels = []) {
+  const lookahead = nextLabels.length
+    ? `(?=${nextLabels.map((nextLabel) => `\\*\\*${nextLabel}:\\*\\*`).join('|')}|$)`
+    : '$';
+  const regex = new RegExp(`\\*\\*${label}:\\*\\*\\s+([\\s\\S]*?)${lookahead}`, 'i');
+  const match = block.match(regex);
+  if (!match) return '';
+  return cleanText(stripMarkdown(match[1]));
+}
+
+function parseNinetyDaySummaries(rawText) {
+  const sourceText = normalizeSourceText(rawText);
+  const summaryHeadingRegex =
+    /^\*\*Day\s+(\d+)\s*[—–-]\s*(.+?)\*\*\s*$([\s\S]*?)(?=^##\s*DAY\s+\1\b)/gim;
+  const summaries = new Map();
+
+  for (const match of sourceText.matchAll(summaryHeadingRegex)) {
+    const dayNumber = Number(match[1]);
+    if (!Number.isInteger(dayNumber) || dayNumber <= 0) continue;
+
+    const summaryBlock = match[3] ?? '';
+    summaries.set(dayNumber, {
+      dayNumber,
+      title: normalizeDayTitle(stripMarkdown(match[2]), dayNumber),
+      focus: firstParagraphText(
+        extractLabeledBlockValue(summaryBlock, 'Focus', ['Exercise', 'Journal', 'Close'])
+      ),
+      exercise: firstParagraphText(
+        extractLabeledBlockValue(summaryBlock, 'Exercise', ['Journal', 'Close'])
+      ),
+      prompt: stripCurlyQuotes(
+        firstParagraphText(extractLabeledBlockValue(summaryBlock, 'Journal', ['Close']))
+      ),
+      close: stripCurlyQuotes(firstParagraphText(extractLabeledBlockValue(summaryBlock, 'Close'))),
+    });
+  }
+
+  return summaries;
+}
+
 function buildSupplementMeditationDayBlock(entry) {
   return {
     dayNumber: entry.dayNumber,
     dayTitle: entry.dayTitle,
     body: cleanText(`Goal: ${entry.dayTitle}\n\nStep 1 — Guided Meditation\n${entry.scriptText}`),
+  };
+}
+
+function toSentenceInstructions(value, fallback) {
+  const lines = splitParagraphLines(value)
+    .flatMap((line) => line.split(/(?<=[.!?])\s+(?=[A-Z0-9“"])/))
+    .map((line) => cleanText(line))
+    .filter(Boolean);
+
+  if (lines.length > 0) {
+    return lines.slice(0, 4);
+  }
+
+  return [fallback];
+}
+
+function buildNinetyDaySummaryDay(dayNumber, dayTitle, summaryEntry) {
+  const focus =
+    cleanText(summaryEntry?.focus ?? '') ||
+    `Move through Day ${dayNumber} with calm, steady awareness.`;
+  const exercise =
+    cleanText(summaryEntry?.exercise ?? '') ||
+    'Follow today’s guidance with gentle consistency and no pressure to do it perfectly.';
+  const prompt =
+    cleanText(summaryEntry?.prompt ?? '') ||
+    `What stood out for you on Day ${dayNumber}?`;
+  const close =
+    cleanText(summaryEntry?.close ?? '') ||
+    'Awareness grows quietly over time.';
+
+  return {
+    dayNumber,
+    dayTitle,
+    estimatedMinutes: 7,
+    cards: [
+      {
+        type: 'intro',
+        dayNumber,
+        dayTitle,
+        goal: focus,
+        estimatedMinutes: 7,
+      },
+      {
+        type: 'lesson',
+        title: "Today's Focus",
+        paragraphs: [focus],
+        highlight: exercise,
+      },
+      {
+        type: 'audio',
+        title: 'Guided Audio',
+        description: 'Listen whenever you are ready for today’s guided reflection.',
+        audioStoragePath: `ninety-day/day-${String(dayNumber).padStart(3, '0')}.mp3`,
+        durationSeconds: 420,
+      },
+      {
+        type: 'action_step',
+        stepNumber: 1,
+        title: "Today's Practice",
+        instructions: toSentenceInstructions(
+          exercise,
+          'Follow today’s guidance with gentle consistency.'
+        ),
+        whyThisWorks: focus,
+      },
+      {
+        type: 'journal',
+        prompt,
+        helperText: 'A few honest words are enough.',
+        followUpPrompt: 'What do you want to remember tomorrow?',
+      },
+      {
+        type: 'close',
+        message: close,
+        secondaryMessage: 'Return tomorrow when you feel ready.',
+      },
+    ],
   };
 }
 
@@ -742,26 +868,35 @@ async function normalizeGenericProgram(rawText) {
 
 async function normalizeNinetyDayProgram(rawText) {
   const dayBlocks = parseDayBlocksGeneric(rawText);
-  const mergedDayBlocks = new Map(dayBlocks.map((block) => [block.dayNumber, block]));
-
+  const dayTitles = new Map(dayBlocks.map((block) => [block.dayNumber, block.dayTitle]));
+  const summaries = parseNinetyDaySummaries(rawText);
+  const transcriptEntries = new Map();
   const supplementPath = SUPPLEMENT_FILES.ninety_day_transform;
   if (supplementPath) {
     try {
       const supplementRaw = await readFile(supplementPath, 'utf8');
       const supplementEntries = parseMeditationDayScripts(supplementRaw);
       for (const entry of supplementEntries) {
-        if (!mergedDayBlocks.has(entry.dayNumber)) {
-          mergedDayBlocks.set(entry.dayNumber, buildSupplementMeditationDayBlock(entry));
-        }
+        transcriptEntries.set(entry.dayNumber, entry);
       }
     } catch {
       // Keep primary source output when supplementary script file is unavailable.
     }
   }
 
-  return [...mergedDayBlocks.values()]
-    .sort((left, right) => left.dayNumber - right.dayNumber)
-    .map(buildGenericDay);
+  const days = [];
+  for (let dayNumber = 1; dayNumber <= PROGRAM_TOTAL_DAYS.ninety_day_transform; dayNumber += 1) {
+    const summaryEntry = summaries.get(dayNumber);
+    const transcriptEntry = transcriptEntries.get(dayNumber);
+    const dayTitle = normalizeDayTitle(
+      summaryEntry?.title ?? dayTitles.get(dayNumber) ?? transcriptEntry?.dayTitle ?? `Day ${dayNumber}`,
+      dayNumber
+    );
+
+    days.push(buildNinetyDaySummaryDay(dayNumber, dayTitle, summaryEntry));
+  }
+
+  return days;
 }
 
 const NORMALIZERS = {

@@ -125,14 +125,14 @@ export default function TabLayout() {
       <Tabs.Screen
         name="journal"
         options={{
-          title: 'Journal',
+          title: 'My Journal',
           tabBarIcon: ({ focused }) => <TabIcon focused={focused} name="book.fill" />,
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
-          title: 'Profile',
+          title: 'Account',
           tabBarIcon: ({ focused }) => <TabIcon focused={focused} name="person.fill" />,
         }}
       />

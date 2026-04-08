@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
+
 import Purchases from 'react-native-purchases';
 import * as Linking from 'expo-linking';
 import { supabase } from '../lib/supabase';
@@ -38,6 +39,22 @@ export const useAuth = () => useContext(AuthContext);
 
 const publicEnvState = getPublicEnvState();
 const { supabaseAnonKey, supabaseUrl } = getPublicEnv();
+const SESSION_EXPIRED_NOTICE_KEY = 'auth:session-expired-notice';
+
+function isStaleRefreshTokenError(error: unknown) {
+  if (!error || typeof error !== 'object') {
+    return false;
+  }
+
+  const code = 'code' in error && typeof error.code === 'string' ? error.code : null;
+  const message = 'message' in error && typeof error.message === 'string' ? error.message.toLowerCase() : '';
+
+  return (
+    code === 'refresh_token_not_found' ||
+    code === 'refresh_token_already_used' ||
+    (message.includes('invalid refresh token') && message.includes('refresh token not found'))
+  );
+}
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [session, setSession] = useState<Session | null>(null);
@@ -87,7 +104,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         const {
           data: { session: initialSession },
+          error: sessionError,
         } = await supabase.auth.getSession();
+
+        if (sessionError) {
+          if (isStaleRefreshTokenError(sessionError)) {
+            await AsyncStorage.setItem(SESSION_EXPIRED_NOTICE_KEY, '1');
+
+            try {
+              await supabase.auth.signOut({ scope: 'local' });
+            } catch (localSignOutError) {
+              console.warn('Failed to clear stale Supabase session locally', localSignOutError);
+            }
+
+            await clearLocalSessionState();
+            return;
+          }
+
+          throw sessionError;
+        }
 
         if (!isMounted) return;
 

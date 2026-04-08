@@ -10,6 +10,7 @@ import { ProfileProvider, UserProfile, useProfile } from '../providers/profile';
 import { AppQueryProvider } from '../providers/query';
 import Purchases, { LOG_LEVEL } from 'react-native-purchases';
 import { LogBox, Platform, Text, View } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { AppErrorBoundary } from '@/components/AppErrorBoundary';
 import { getPublicEnvState } from '@/lib/env';
 import { installGlobalErrorHandler } from '@/lib/monitoring';
@@ -63,6 +64,7 @@ function NavigationGate({
         const inPaywall = (segments[0] as string) === 'paywall';
         const inDayDetail = (segments[0] as string) === 'day-detail';
         const inResetPassword = inAuthGroup && (segments[1] as string) === 'reset-password';
+        const inAccountStack = (segments[0] as string) === 'account';
 
         const checkRouting = async () => {
             try {
@@ -86,7 +88,7 @@ function NavigationGate({
           if (!inPaywall) {
             target = '/paywall' as Href;
           }
-        } else if (!inTabsGroup && !inDayDetail) {
+        } else if (!inTabsGroup && !inDayDetail && !inAccountStack) {
           target = '/(tabs)' as Href;
         }
 
@@ -195,6 +197,7 @@ function RootLayoutContent() {
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="(auth)" />
+        <Stack.Screen name="account" />
         <Stack.Screen name="day-detail" />
         <Stack.Screen name="paywall" options={{ presentation: 'fullScreenModal', gestureEnabled: false }} />
         <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
@@ -232,19 +235,21 @@ export default function RootLayout() {
   }
 
   return (
-    <AppQueryProvider>
-      <AuthProvider>
-        <ProfileProvider>
-          <AppErrorBoundary
-            key={boundaryResetCount}
-            onReset={() => setBoundaryResetCount((count) => count + 1)}
-            resetKeys={[boundaryResetCount]}
-          >
-            <RootLayoutContent key={`root-layout-${boundaryResetCount}`} />
-            <StatusBar style="auto" />
-          </AppErrorBoundary>
-        </ProfileProvider>
-      </AuthProvider>
-    </AppQueryProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <AppQueryProvider>
+        <AuthProvider>
+          <ProfileProvider>
+            <AppErrorBoundary
+              key={boundaryResetCount}
+              onReset={() => setBoundaryResetCount((count) => count + 1)}
+              resetKeys={[boundaryResetCount]}
+            >
+              <RootLayoutContent key={`root-layout-${boundaryResetCount}`} />
+              <StatusBar style="auto" />
+            </AppErrorBoundary>
+          </ProfileProvider>
+        </AuthProvider>
+      </AppQueryProvider>
+    </GestureHandlerRootView>
   );
 }

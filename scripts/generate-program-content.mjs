@@ -9,18 +9,21 @@ const sixDaySourcePath = path.join(
   repoRoot,
   'documents',
   'Sent By Anjan',
+  'program_content',
   '🧭 RECOVERY COMPASS 6 DAYS PROGRAM.md'
 );
 const ninetyDaySourcePath = path.join(
   repoRoot,
   'documents',
   'Sent By Anjan',
+  'program_content',
   '🧭 RECOVERY COMPASS 90-days Program.md'
 );
 const transcriptSourcePath = path.join(
   repoRoot,
   'documents',
   'Sent By Anjan',
+  'program_content',
   'meditation script 90days file.md'
 );
 const outputPath = path.join(repoRoot, 'app', 'lib', 'programs', 'generated.ts');
@@ -151,24 +154,56 @@ function parseTranscriptMap(content) {
   return transcripts;
 }
 
+function stripCurlyQuotes(value = '') {
+  return cleanText(String(value).replace(/^[“"]+|[”"]+$/g, ''));
+}
+
+function firstParagraphText(value = '') {
+  const [firstParagraph = ''] = cleanText(String(value)).split('\n\n');
+  return cleanText(firstParagraph);
+}
+
+function extractLabeledBlockValue(block, label, nextLabels = []) {
+  const lookahead = nextLabels.length
+    ? `(?=${nextLabels.map((nextLabel) => `\\*\\*${nextLabel}:\\*\\*`).join('|')}|$)`
+    : '$';
+  const regex = new RegExp(`\\*\\*${label}:\\*\\*\\s+([\\s\\S]*?)${lookahead}`, 'i');
+  const match = block.match(regex);
+  if (!match) return '';
+  return cleanText(stripMarkdown(match[1]));
+}
+
 function parseNinetyDaySummaries(content) {
-  const summaryRegex =
-    /\*\*Day (\d+)\s+[–-]\s+(.+?)\*\*\n\n\*\*Focus:\*\*\s+(.+?)\s+\*\*Exercise:\*\*\s+(.+?)\s+\*\*Journal:\*\*\s+“(.+?)”\s+\*\*Close:\*\*\s+“(.+?)”/g;
+  const summaryHeadingRegex =
+    /^\*\*Day\s+(\d+)\s+[–-]\s+(.+?)\*\*\s*$([\s\S]*?)(?=^##\s*DAY\s+\1\b)/gim;
   const summaries = new Map();
 
-  for (const match of content.matchAll(summaryRegex)) {
+  for (const match of content.matchAll(summaryHeadingRegex)) {
     const dayNumber = Number(match[1]);
+    const summaryBlock = match[3] ?? '';
     summaries.set(dayNumber, {
       dayNumber,
       title: stripMarkdown(match[2]),
-      focus: cleanText(match[3]),
-      exercise: cleanText(match[4]),
-      prompt: cleanText(match[5]),
-      close: cleanText(match[6]),
+      focus: firstParagraphText(
+        extractLabeledBlockValue(summaryBlock, 'Focus', ['Exercise', 'Journal', 'Close'])
+      ),
+      exercise: firstParagraphText(
+        extractLabeledBlockValue(summaryBlock, 'Exercise', ['Journal', 'Close'])
+      ),
+      prompt: stripCurlyQuotes(
+        firstParagraphText(extractLabeledBlockValue(summaryBlock, 'Journal', ['Close']))
+      ),
+      close: stripCurlyQuotes(firstParagraphText(extractLabeledBlockValue(summaryBlock, 'Close'))),
     });
   }
 
   return summaries;
+}
+
+function toInstructionParagraph(value, fallback) {
+  const cleaned = stripMarkdown(value ?? '');
+  if (cleaned) return cleaned;
+  return fallback;
 }
 
 function parseNinetyDayDetails(content) {
@@ -224,46 +259,42 @@ function buildNinetyDay(content, transcriptContent) {
   for (let dayNumber = 1; dayNumber <= 90; dayNumber += 1) {
     const summaryEntry = summaries.get(dayNumber);
     const detailEntry = details.get(dayNumber);
-    const fallbackTitle = summaryEntry?.title ?? `Day ${dayNumber}`;
-    const summary =
-      detailEntry?.summary ??
-      summaryEntry?.focus ??
-      (transcriptMap.get(dayNumber)
+    const fallbackTitle = summaryEntry?.title ?? detailEntry?.title ?? `Day ${dayNumber}`;
+    const focus = toInstructionParagraph(
+      summaryEntry?.focus,
+      transcriptMap.get(dayNumber)
         ? firstParagraph(transcriptMap.get(dayNumber))
-        : 'A guided reflection designed to slow the urge-response loop.');
-    const sections =
-      detailEntry?.sections ??
-      [
-        summaryEntry?.focus
-          ? {
-              title: 'Daily Focus',
-              body: summaryEntry.focus,
-            }
-          : null,
-        summaryEntry?.exercise
-          ? {
-              title: 'Today’s Practice',
-              body: summaryEntry.exercise,
-            }
-          : null,
-        summaryEntry?.close
-          ? {
-              title: 'Gentle Close',
-              body: summaryEntry.close,
-            }
-          : null,
-      ].filter(Boolean);
+        : 'A guided reflection designed to slow the urge-response loop.'
+    );
+    const exercise = toInstructionParagraph(
+      summaryEntry?.exercise,
+      'Follow today’s guidance with gentle consistency and no pressure to do it perfectly.'
+    );
+    const close = toInstructionParagraph(
+      summaryEntry?.close,
+      'Awareness grows quietly over time.'
+    );
+    const sections = [
+      {
+        title: 'Today’s Focus',
+        body: focus,
+      },
+      {
+        title: 'Today’s Practice',
+        body: exercise,
+      },
+    ];
 
     days.push({
       programSlug: 'ninety_day_transform',
       dayNumber,
       title: fallbackTitle,
       subtitle: null,
-      summary,
+      summary: focus,
       prompt: summaryEntry?.prompt ?? null,
-      close: summaryEntry?.close ?? null,
+      close,
       estimatedMinutes: 7,
-      focus: summaryEntry?.focus ?? null,
+      focus,
       sections,
       audio: {
         storagePath: `ninety-day/day-${String(dayNumber).padStart(3, '0')}.mp3`,

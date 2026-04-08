@@ -11,6 +11,8 @@ import {
   ProgramSlug,
 } from '@/lib/programs/types';
 import { AccessService } from '@/lib/access/service';
+import { decode } from 'base64-arraybuffer';
+import * as FileSystem from 'expo-file-system/legacy';
 
 export interface UserProfile {
   active_program?: string | null;
@@ -22,6 +24,8 @@ export interface UserProfile {
   updated_at: string;
   expo_push_token?: string | null;
   push_opt_in?: boolean;
+  display_name?: string | null;
+  avatar_url?: string | null;
 }
 
 interface ProfileContextType {
@@ -35,11 +39,44 @@ interface ProfileContextType {
   refreshProfile: () => Promise<void>;
   setProgramAccess: (program: ProgramSlug | null) => Promise<void>;
   completeProgramDay: (program: ProgramSlug, dayNumber: number) => Promise<void>;
+  updateProfile: (fields: { display_name?: string | null }) => Promise<void>;
+  uploadAvatar: (imageUri: string) => Promise<string | null>;
 }
 
 const PROFILE_COLUMNS =
-  'id, email, onboarding_complete, recommended_program, created_at, updated_at, active_program, expo_push_token, push_opt_in';
+  'id, email, onboarding_complete, recommended_program, created_at, updated_at, active_program, expo_push_token, push_opt_in, display_name, avatar_url';
 export const PROFILE_QUERY_KEY = (userId: string | null) => ['profile', userId];
+const PROFILE_IMAGE_BUCKET = 'profile-images';
+const PROFILE_IMAGE_SIGNED_URL_TTL_SECONDS = 60 * 60 * 24 * 7;
+
+function isAbsoluteUrl(value: string) {
+  return /^https?:\/\//i.test(value);
+}
+
+async function resolveAvatarDisplayUrl(avatarValue: string | null | undefined, cacheBustKey?: number) {
+  if (!avatarValue) {
+    return null;
+  }
+
+  if (isAbsoluteUrl(avatarValue)) {
+    if (!cacheBustKey) {
+      return avatarValue;
+    }
+
+    const separator = avatarValue.includes('?') ? '&' : '?';
+    return `${avatarValue}${separator}t=${cacheBustKey}`;
+  }
+
+  const { data, error } = await supabase.storage
+    .from(PROFILE_IMAGE_BUCKET)
+    .createSignedUrl(avatarValue, PROFILE_IMAGE_SIGNED_URL_TTL_SECONDS);
+
+  if (error || !data?.signedUrl) {
+    throw error ?? new Error('Avatar URL could not be created.');
+  }
+
+  return cacheBustKey ? `${data.signedUrl}&t=${cacheBustKey}` : data.signedUrl;
+}
 
 const ProfileContext = createContext<ProfileContextType>({
   profile: null,
@@ -70,6 +107,8 @@ const ProfileContext = createContext<ProfileContextType>({
   refreshProfile: async () => { },
   setProgramAccess: async () => { },
   completeProgramDay: async () => { },
+  updateProfile: async () => { },
+  uploadAvatar: async () => null,
 });
 
 const fetchProfileFromApi = async (userId: string) => {
@@ -83,7 +122,18 @@ const fetchProfileFromApi = async (userId: string) => {
     throw error;
   }
 
-  return data as UserProfile | null;
+  const profile = data as UserProfile | null;
+
+  if (profile?.avatar_url) {
+    try {
+      profile.avatar_url = await resolveAvatarDisplayUrl(profile.avatar_url);
+    } catch (avatarError) {
+      console.error('Failed to resolve avatar URL', avatarError);
+      profile.avatar_url = null;
+    }
+  }
+
+  return profile;
 };
 
 export const useProfile = () => useContext(ProfileContext);
@@ -224,9 +274,12 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
   }, [access, userId]);
 
   const syncProfileActiveProgram = useCallback(
-    async (snapshot: Pick<ProgramAccessSnapshot, 'ownedProgram' | 'source'>) => {
+    async (
+      snapshot: Pick<ProgramAccessSnapshot, 'ownedProgram' | 'source'>,
+      options?: { allowLocal?: boolean }
+    ) => {
       if (!userId) return;
-      if (snapshot.source === 'local') return;
+      if (snapshot.source === 'local' && !options?.allowLocal) return;
 
       const nextProgram = snapshot.ownedProgram;
 
@@ -282,7 +335,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         AccessService.saveAccessSnapshot(nextSnapshot),
         AccessService.saveProgressRecord(nextProgress),
         AccessService.syncStateToSupabase(userId, nextSnapshot, nextProgress),
-        syncProfileActiveProgram(nextSnapshot),
+        syncProfileActiveProgram(nextSnapshot, { allowLocal: true }),
       ]);
 
       setAccess(nextSnapshot);
@@ -474,6 +527,74 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   }, [pushError]);
 
+  const updateProfile = useCallback(
+    async (fields: { display_name?: string | null }) => {
+      if (!userId) return;
+
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          ...fields,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', userId);
+
+      if (error) throw error;
+
+      queryClient.setQueryData<UserProfile | null>(
+        PROFILE_QUERY_KEY(userId),
+        (current) =>
+          current
+            ? { ...current, ...fields, updated_at: new Date().toISOString() }
+            : current
+      );
+    },
+    [queryClient, userId]
+  );
+
+  const uploadAvatar = useCallback(
+    async (imageUri: string): Promise<string | null> => {
+      if (!userId) return null;
+
+      const fileExt = imageUri.split('.').pop()?.toLowerCase() ?? 'jpg';
+      const filePath = `${userId}/avatar.${fileExt}`;
+      const mimeType = fileExt === 'png' ? 'image/png' : fileExt === 'webp' ? 'image/webp' : 'image/jpeg';
+
+      const base64 = await FileSystem.readAsStringAsync(imageUri, {
+        encoding: 'base64',
+      });
+
+      const { error: uploadError } = await supabase.storage
+        .from(PROFILE_IMAGE_BUCKET)
+        .upload(filePath, decode(base64), {
+          contentType: mimeType,
+          upsert: true,
+        });
+
+      if (uploadError) throw uploadError;
+
+      const avatarUrl = await resolveAvatarDisplayUrl(filePath, Date.now());
+
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ avatar_url: filePath, updated_at: new Date().toISOString() })
+        .eq('id', userId);
+
+      if (updateError) throw updateError;
+
+      queryClient.setQueryData<UserProfile | null>(
+        PROFILE_QUERY_KEY(userId),
+        (current) =>
+          current
+            ? { ...current, avatar_url: avatarUrl, updated_at: new Date().toISOString() }
+            : current
+      );
+
+      return avatarUrl;
+    },
+    [queryClient, userId]
+  );
+
   const value = useMemo(
     () => ({
       profile: profileQuery.data ?? null,
@@ -486,6 +607,8 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
       refreshProfile,
       setProgramAccess,
       completeProgramDay,
+      updateProfile,
+      uploadAvatar,
     }),
     [
       access,
@@ -496,6 +619,8 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
       refreshAccess,
       refreshProfile,
       setProgramAccess,
+      updateProfile,
+      uploadAvatar,
       userId,
       isAccessLoading,
     ]

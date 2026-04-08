@@ -1,25 +1,43 @@
-import React, { useMemo, useState } from 'react';
-import { Alert, ScrollView, Text, View } from 'react-native';
+import React, { useMemo, useRef, useState } from 'react';
+import {
+  Dimensions,
+  Image,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { PROGRAM_METADATA } from '@/content/programs/metadata';
 import { useAuth } from '@/providers/auth';
 import { useOnboardingResponse } from '@/hooks/useOnboardingResponse';
 import { formatInr, getOnboardingProjection } from '@/lib/onboarding-metrics';
 import { useProfile } from '@/providers/profile';
-import { Button } from '@/components/ui/Button';
-import Purchases from 'react-native-purchases';
+import { EditProfileSheet } from '@/components/account/EditProfileSheet';
 import type { ProgramSlug } from '@/types/content';
 
-export default function ProfileScreen() {
+const SCREEN_WIDTH = Dimensions.get('window').width;
+const STAT_CARD_WIDTH = SCREEN_WIDTH - 48; // p-6 on both sides
+
+interface StatCard {
+  label: string;
+  value: string | number;
+  subtitle: string;
+  icon: keyof typeof Ionicons.glyphMap;
+}
+
+export default function AccountScreen() {
   const router = useRouter();
-  const { deleteAccount, user, signOut } = useAuth();
-  const { access, profile, progress, refreshAccess } = useProfile();
+  const { user } = useAuth();
+  const { access, profile, progress } = useProfile();
   const onboardingQuery = useOnboardingResponse();
-  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
-  const [isSigningOut, setIsSigningOut] = useState(false);
-  const [isRestoring, setIsRestoring] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [activeStatIndex, setActiveStatIndex] = useState(0);
 
   const stats = useMemo(() => {
     const projection = getOnboardingProjection(onboardingQuery.data ?? null);
@@ -29,209 +47,227 @@ export default function ProfileScreen() {
 
     return {
       avoidedUnits90Days: projection.avoidedUnits90Days,
-      dailyAmount: projection.dailyAmount,
-      dailyCost: projection.dailyCost,
       joinedDays,
-      monthlySpend: projection.monthlySpend,
       projectedSavings90Days: projection.projectedSavings90Days,
-      targetSelection: projection.targetSelection,
-      yearlySpend: projection.yearlySpend,
     };
   }, [onboardingQuery.data, profile?.created_at]);
 
-  const unitsLabel = stats.targetSelection === 'Quit Alcohol'
-    ? 'Daily drinks'
-    : stats.targetSelection === 'Quit Smoking'
-      ? 'Daily cigarettes'
-      : 'Daily vices';
-
-  const handleSignOut = async () => {
-    try {
-      setIsSigningOut(true);
-      await signOut();
-    } catch (error: any) {
-      Alert.alert('Sign out failed', error?.message ?? 'Please try again.');
-    } finally {
-      setIsSigningOut(false);
-    }
-  };
-
-  const handleRestorePurchases = async () => {
-    try {
-      setIsRestoring(true);
-      await Purchases.restorePurchases();
-      await refreshAccess();
-      Alert.alert('Restore complete', 'Your purchases have been refreshed.');
-    } catch (error: any) {
-      Alert.alert('Restore failed', error?.message ?? 'Please try again.');
-    } finally {
-      setIsRestoring(false);
-    }
-  };
-
-  const performDeleteAccount = async () => {
-    try {
-      setIsDeletingAccount(true);
-      await deleteAccount();
-      Alert.alert('Account deleted', 'Your Recovery Compass account and app data have been permanently deleted.');
-    } catch (error: any) {
-      Alert.alert('Delete account failed', error?.message ?? 'Please try again.');
-    } finally {
-      setIsDeletingAccount(false);
-    }
-  };
-
-  const handleDeleteAccount = () => {
-    Alert.alert(
-      'Delete account?',
-      'This starts permanent account deletion. You will lose access to your Recovery Compass data on this device.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Continue',
-          style: 'destructive',
-          onPress: () => {
-            Alert.alert(
-              'This cannot be undone',
-              'Deleting your account permanently removes your profile, onboarding answers, journal entries, and program progress.',
-              [
-                { text: 'Keep Account', style: 'cancel' },
-                {
-                  text: 'Delete Account',
-                  style: 'destructive',
-                  onPress: () => {
-                    void performDeleteAccount();
-                  },
-                },
-              ]
-            );
-          },
-        },
-      ]
-    );
-  };
-
   const activeProgram = access.ownedProgram ? PROGRAM_METADATA[access.ownedProgram as ProgramSlug] : null;
+
+  // Derive display name with fallbacks
+  const displayName = profile?.display_name
+    || onboardingQuery.data?.full_name?.trim().split(/\s+/)[0]
+    || user?.email?.split('@')[0]
+    || 'Your Account';
+
+  const avatarUrl = profile?.avatar_url ?? null;
+  const emailDisplay = user?.email ?? 'Signed in';
+
+  // Featured stat cards
+  const statCards: StatCard[] = useMemo(() => {
+    const cards: StatCard[] = [
+      {
+        label: 'Days in Motion',
+        value: stats.joinedDays,
+        subtitle: 'since you started your journey',
+        icon: 'flame-outline',
+      },
+      {
+        label: 'Projected 90-Day Savings',
+        value: formatInr(stats.projectedSavings90Days),
+        subtitle: 'based on your daily spend',
+        icon: 'wallet-outline',
+      },
+      {
+        label: '90-Day Units Avoided',
+        value: stats.avoidedUnits90Days,
+        subtitle: 'if you stay on track',
+        icon: 'shield-checkmark-outline',
+      },
+    ];
+
+    if (activeProgram && progress) {
+      cards.push({
+        label: 'Program Progress',
+        value: `${progress.completedDays.length}/${activeProgram.totalDays}`,
+        subtitle: `days completed in ${activeProgram.name}`,
+        icon: 'checkmark-circle-outline',
+      });
+    }
+
+    return cards;
+  }, [stats, activeProgram, progress]);
+
+  const handleStatScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const index = Math.round(event.nativeEvent.contentOffset.x / STAT_CARD_WIDTH);
+    setActiveStatIndex(Math.max(0, Math.min(index, statCards.length - 1)));
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-surface">
       <StatusBar style="dark" />
-      <ScrollView contentContainerClassName="p-6 pb-32">
-        <View className="mb-8">
-          <Text className="font-erode-bold text-4xl text-forest mb-2">Profile</Text>
-          <Text className="font-satoshi text-base text-gray-500">
-            {user?.email ?? 'Signed in'}
-          </Text>
+      <ScrollView contentContainerClassName="pb-32">
+        {/* ─── Header ─── */}
+        <View className="flex-row items-center justify-between px-6 pt-4 pb-2">
+          <Text className="font-erode-bold text-3xl text-forest">Account</Text>
+          <TouchableOpacity
+            onPress={() => router.push('/account/settings')}
+            className="w-10 h-10 rounded-full bg-white border border-gray-200 items-center justify-center"
+            activeOpacity={0.7}
+          >
+            <Ionicons name="settings-outline" size={20} color="#06290C" />
+          </TouchableOpacity>
         </View>
 
-        <View className="rounded-3xl bg-forest p-5 mb-6">
-          <Text className="font-satoshi-bold text-white/80 text-xs uppercase mb-3">Projection Overview</Text>
-          <View className="flex-row justify-between">
-            <View>
-              <Text className="font-erode-bold text-white text-3xl">{stats.joinedDays}</Text>
-              <Text className="font-satoshi text-white/80 text-sm">Days in motion</Text>
-            </View>
-            <View>
-              <Text className="font-erode-bold text-white text-3xl">{stats.avoidedUnits90Days}</Text>
-              <Text className="font-satoshi text-white/80 text-sm">90-day units avoided</Text>
+        {/* ─── Identity Block ─── */}
+        <View className="px-6 pt-4 pb-6">
+          <View className="flex-row items-center">
+            {/* Avatar */}
+            <TouchableOpacity
+              onPress={() => setIsEditOpen(true)}
+              activeOpacity={0.8}
+            >
+              <View className="w-20 h-20 rounded-full overflow-hidden bg-sage items-center justify-center border-2 border-forest/10">
+                {avatarUrl ? (
+                  <Image
+                    source={{ uri: avatarUrl }}
+                    className="w-full h-full"
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <Text className="font-erode-bold text-3xl text-forest/30">
+                    {displayName.charAt(0).toUpperCase()}
+                  </Text>
+                )}
+              </View>
+            </TouchableOpacity>
+
+            {/* Name & Email */}
+            <View className="ml-4 flex-1">
+              <Text className="font-erode-bold text-2xl text-forest leading-8" numberOfLines={1}>
+                {displayName}
+              </Text>
+              <Text className="font-satoshi text-sm text-gray-500 mt-0.5" numberOfLines={1}>
+                {emailDisplay}
+              </Text>
             </View>
           </View>
-          <View className="mt-4 border-t border-white/20 pt-3">
-            <Text className="font-satoshi text-white/80 text-sm">Projected 90-day savings</Text>
-            <Text className="font-erode-semibold text-white text-2xl">{formatInr(stats.projectedSavings90Days)}</Text>
+
+          {/* Edit Profile CTA */}
+          <TouchableOpacity
+            onPress={() => setIsEditOpen(true)}
+            className="mt-4 flex-row items-center justify-center py-2.5 rounded-full border border-gray-200 bg-white"
+            activeOpacity={0.7}
+          >
+            <Ionicons name="create-outline" size={16} color="#06290C" />
+            <Text className="font-satoshi-medium text-sm text-forest ml-1.5">Edit Profile</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* ─── Active Program Block ─── */}
+        <View className="px-6 mb-5">
+          <View className="rounded-3xl bg-white border border-gray-200 p-5">
+            <Text className="font-satoshi-bold text-xs uppercase text-gray-400 tracking-wider mb-2">
+              Active Program
+            </Text>
+            {activeProgram ? (
+              <>
+                <Text className="font-erode-semibold text-xl text-forest">
+                  {activeProgram.name}
+                </Text>
+                <Text className="font-satoshi text-sm text-gray-500 mt-1">
+                  Day {progress?.completedDays.length ?? 0} of {activeProgram.totalDays}
+                  {access.completionState === 'completed' ? ' · Completed' : ''}
+                </Text>
+              </>
+            ) : (
+              <Text className="font-satoshi text-base text-gray-400 italic">
+                No active program yet
+              </Text>
+            )}
           </View>
         </View>
 
-        <View className="rounded-3xl bg-white border border-gray-200 p-5 mb-6">
-          <Text className="font-erode-semibold text-2xl text-forest mb-2">Questionnaire Snapshot</Text>
-          <Text className="font-satoshi text-gray-600 mb-1">
-            Joined: {profile?.created_at ? new Date(profile.created_at).toLocaleDateString() : 'Unknown'}
-          </Text>
-          <Text className="font-satoshi text-gray-600 mb-1">
-            Target: {onboardingQuery.data?.target_selection ?? 'Not set'}
-          </Text>
-          <Text className="font-satoshi text-gray-600">
-            Triggers: {onboardingQuery.data?.triggers?.length ? onboardingQuery.data.triggers.join(', ') : 'Not set'}
-          </Text>
+        {/* ─── Featured Stat Card (swipeable) ─── */}
+        <View className="mb-2">
+          <ScrollView
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            onMomentumScrollEnd={handleStatScroll}
+            decelerationRate="fast"
+            snapToInterval={STAT_CARD_WIDTH}
+            snapToAlignment="start"
+            contentContainerStyle={{ paddingHorizontal: 24 }}
+          >
+            {statCards.map((card, index) => (
+              <View
+                key={card.label}
+                className="rounded-3xl bg-forest p-6"
+                style={{
+                  width: STAT_CARD_WIDTH,
+                  marginRight: index < statCards.length - 1 ? 12 : 0,
+                }}
+              >
+                <View className="flex-row items-center mb-3">
+                  <View className="w-9 h-9 rounded-full bg-white/15 items-center justify-center mr-2.5">
+                    <Ionicons name={card.icon} size={18} color="rgba(255,255,255,0.9)" />
+                  </View>
+                  <Text className="font-satoshi-bold text-white/70 text-xs uppercase tracking-wider">
+                    {card.label}
+                  </Text>
+                </View>
+                <Text className="font-erode-bold text-white text-4xl mb-1">
+                  {card.value}
+                </Text>
+                <Text className="font-satoshi text-white/60 text-sm">
+                  {card.subtitle}
+                </Text>
+              </View>
+            ))}
+          </ScrollView>
+
+          {/* Pagination dots */}
+          {statCards.length > 1 && (
+            <View className="flex-row items-center justify-center mt-3 gap-1.5">
+              {statCards.map((_, index) => (
+                <View
+                  key={index}
+                  className={`rounded-full ${index === activeStatIndex ? 'bg-forest w-5 h-1.5' : 'bg-gray-300 w-1.5 h-1.5'}`}
+                />
+              ))}
+            </View>
+          )}
         </View>
 
-        <View className="rounded-3xl bg-white border border-gray-200 p-5 mb-6">
-          <Text className="font-erode-semibold text-2xl text-forest mb-2">Daily Reality</Text>
-          <Text className="font-satoshi text-gray-600 mb-1">
-            {unitsLabel}: {stats.dailyAmount || 'Not set'}
-          </Text>
-          <Text className="font-satoshi text-gray-600 mb-1">
-            Daily spend: {stats.dailyCost ? formatInr(stats.dailyCost) : 'Not set'}
-          </Text>
-          <Text className="font-satoshi text-gray-600 mb-1">
-            Monthly spend: {stats.monthlySpend ? formatInr(stats.monthlySpend) : 'Not set'}
-          </Text>
-          <Text className="font-satoshi text-gray-600">
-            Yearly spend: {stats.yearlySpend ? formatInr(stats.yearlySpend) : 'Not set'}
-          </Text>
+        {/* ─── View Statistics CTA ─── */}
+        <View className="px-6 mt-3 mb-5">
+          <TouchableOpacity
+            onPress={() => router.push('/account/statistics')}
+            className="flex-row items-center justify-between py-4 px-5 rounded-2xl bg-white border border-gray-200"
+            activeOpacity={0.7}
+          >
+            <View className="flex-row items-center">
+              <Ionicons name="stats-chart-outline" size={20} color="#06290C" />
+              <Text className="font-satoshi-medium text-base text-forest ml-2">View All Statistics</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color="rgba(5, 41, 12, 0.4)" />
+          </TouchableOpacity>
         </View>
 
-        <View className="rounded-3xl bg-sage border border-gray-200 p-5 mb-8">
-          <Text className="font-erode-semibold text-2xl text-forest mb-2">Why You Started</Text>
-          <Text className="font-satoshi text-gray-700 leading-7">
-            {onboardingQuery.data?.primary_goal ?? 'Finish onboarding to generate your personal reason and projection.'}
-          </Text>
+        {/* ─── Why You Started ─── */}
+        <View className="px-6 mb-6">
+          <View className="rounded-3xl bg-sage/60 border border-forest/5 p-6">
+            <Text className="font-erode-semibold text-lg text-forest mb-2">Why You Started</Text>
+            <Text className="font-satoshi text-gray-700 leading-7 text-base">
+              {onboardingQuery.data?.primary_goal ?? 'Finish onboarding to generate your personal reason and projection.'}
+            </Text>
+          </View>
         </View>
-
-        <View className="rounded-3xl bg-white border border-gray-200 p-5 mb-8">
-          <Text className="font-erode-semibold text-2xl text-forest mb-2">Access Status</Text>
-          <Text className="font-satoshi text-gray-600 mb-4">
-            {activeProgram
-              ? `Current program: ${activeProgram.name}`
-              : 'No program is currently unlocked on this account.'}
-          </Text>
-          <Text className="font-satoshi text-gray-600 mb-1">
-            State: {access.purchaseState.replace(/_/g, ' ')}
-          </Text>
-          <Text className="font-satoshi text-gray-600 mb-4">
-            Progress: {progress?.completedDays.length ?? 0}/{activeProgram?.totalDays ?? 0} days completed
-          </Text>
-          <Text className="font-satoshi text-gray-600 mb-4">
-            Manage purchases from the App Store or Play Store account that was used to buy the program.
-          </Text>
-          <Button
-            label="Restore Purchases"
-            variant="outline"
-            onPress={() => void handleRestorePurchases()}
-            loading={isRestoring}
-          />
-          {access.ownedProgram === 'six_day_reset' &&
-          (access.purchaseState === 'owned_completed' || access.purchaseState === 'owned_archived') ? (
-            <Button
-              label="View Upgrade Options"
-              variant="ghost"
-              className="mt-3"
-              onPress={() => router.push('/paywall')}
-            />
-          ) : null}
-        </View>
-
-        <View className="rounded-3xl bg-white border border-red-200 p-5 mb-6">
-          <Text className="font-erode-semibold text-2xl text-forest mb-2">Delete Account</Text>
-          <Text className="font-satoshi text-gray-600 leading-7 mb-4">
-            Permanently delete your Recovery Compass account, questionnaire data, journal entries, and program progress. This action cannot be undone.
-          </Text>
-          <Button
-            label="Delete Account"
-            variant="destructive"
-            onPress={handleDeleteAccount}
-            loading={isDeletingAccount}
-          />
-        </View>
-
-        <Button
-          label="Sign Out"
-          variant="outline"
-          onPress={handleSignOut}
-          loading={isSigningOut}
-          size="lg"
-        />
       </ScrollView>
+
+      {/* Edit Profile Bottom Sheet */}
+      <EditProfileSheet isOpen={isEditOpen} onClose={() => setIsEditOpen(false)} />
     </SafeAreaView>
   );
 }
