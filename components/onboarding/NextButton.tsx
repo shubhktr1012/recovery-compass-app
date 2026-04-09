@@ -18,14 +18,13 @@ interface NextButtonProps {
 export const NextButton: React.FC<NextButtonProps> = ({ scrollTo, currentIndex, totalSlides }) => {
     const isLastSlide = currentIndex === totalSlides - 1;
 
-    // Animation specific
-    const width = useSharedValue(60);
+    const width = useSharedValue(174);
 
     useEffect(() => {
         if (isLastSlide) {
-            width.value = withSpring(160, { damping: 12 });
+            width.value = withSpring(194, { damping: 14 });
         } else {
-            width.value = withSpring(60, { damping: 12 });
+            width.value = withSpring(174, { damping: 14 });
         }
     }, [isLastSlide, width]);
 
@@ -37,17 +36,17 @@ export const NextButton: React.FC<NextButtonProps> = ({ scrollTo, currentIndex, 
 
     const animatedTextStyle = useAnimatedStyle(() => {
         return {
-            opacity: isLastSlide ? withTiming(1) : withTiming(0),
-            transform: [{ translateX: isLastSlide ? withTiming(0) : withTiming(20) }]
+            opacity: withTiming(1),
+            transform: [{ translateX: withTiming(0) }]
         };
     });
 
     const animatedIconStyle = useAnimatedStyle(() => {
         return {
-            opacity: isLastSlide ? withTiming(0) : withTiming(1),
-            transform: [{ scale: isLastSlide ? withTiming(0) : withTiming(1) }]
-        }
-    })
+            opacity: withTiming(1),
+            transform: [{ translateX: isLastSlide ? withTiming(2) : withTiming(0) }]
+        };
+    });
 
     return (
         <View className="items-center justify-center">
@@ -57,17 +56,18 @@ export const NextButton: React.FC<NextButtonProps> = ({ scrollTo, currentIndex, 
             >
                 <Animated.View
                     style={[animatedContainerStyle]}
-                    className="h-[60px] bg-primary rounded-full items-center justify-center flex-row overflow-hidden relative"
+                    className="h-[56px] flex-row items-center justify-between overflow-hidden rounded-full border border-[#193126] bg-[#173428] px-4.5"
                 >
-                    {/* Icon for non-last slides */}
-                    <Animated.View style={[animatedIconStyle, { position: 'absolute' }]}>
-                        <Feather name="arrow-right" size={24} color="white" />
+                    <Animated.View style={[animatedTextStyle, { flexDirection: 'row', alignItems: 'center', gap: 8 }]}>
+                        <Text className="font-satoshi-bold text-[14px] tracking-[0.2px] text-[#F5F0E4]">
+                            {isLastSlide ? 'Begin your plan' : 'Continue'}
+                        </Text>
                     </Animated.View>
 
-                    {/* Text for last slide */}
-                    <Animated.View style={[animatedTextStyle, { flexDirection: 'row', alignItems: 'center' }]}>
-                        <Text className="text-white font-sans font-bold text-lg mr-2">Get Started</Text>
-                        <Feather name="check" size={20} color="white" />
+                    <Animated.View style={[animatedIconStyle]}>
+                        <View className="h-9 w-9 items-center justify-center rounded-full bg-[#F5F2E9]">
+                            <Feather name={isLastSlide ? 'check' : 'arrow-right'} size={16} color="#173428" />
+                        </View>
                     </Animated.View>
                 </Animated.View>
             </TouchableOpacity>

@@ -4,6 +4,8 @@ import { StatusBar } from 'expo-status-bar';
 import { BlurView } from 'expo-blur';
 import { Href, useLocalSearchParams, useRouter } from 'expo-router';
 import PagerView from 'react-native-pager-view';
+import { useFocusEffect } from '@react-navigation/native';
+import { useQueryClient } from '@tanstack/react-query';
 import Animated, {
   Extrapolation,
   FadeInDown,
@@ -14,11 +16,12 @@ import Animated, {
 import type { SharedValue } from 'react-native-reanimated';
 import { Pressable, Text, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { CardRenderer } from '@/components/cards/CardRenderer';
 import { Button } from '@/components/ui/Button';
 import { useDay, useProgram } from '@/content';
+import { programDayQueryKey, programQueryKey } from '@/hooks/contentQueryUtils';
 import type { DayContent, ProgramSlug } from '@/types/content';
 
 const PROGRAM_SLUGS: ProgramSlug[] = [
@@ -146,6 +149,7 @@ function SwipeDeckCard({
 
 export default function DayDetailScreen() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const pagerRef = useRef<PagerView>(null);
   const params = useLocalSearchParams<{ dayNumber?: string | string[]; programSlug?: string | string[] }>();
   const { height: viewportHeight } = useWindowDimensions();
@@ -170,6 +174,16 @@ export default function DayDetailScreen() {
 
     return getProgressStorageKey(programSlug, normalizedDayNumber);
   }, [normalizedDayNumber, programSlug]);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!programSlug || !normalizedDayNumber) return;
+      void queryClient.invalidateQueries({ queryKey: programQueryKey(programSlug) });
+      void queryClient.invalidateQueries({
+        queryKey: programDayQueryKey(programSlug, normalizedDayNumber),
+      });
+    }, [normalizedDayNumber, programSlug, queryClient])
+  );
 
   useEffect(() => {
     if (!dayContent || !storageKey) {

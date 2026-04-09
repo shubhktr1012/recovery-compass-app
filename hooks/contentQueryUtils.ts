@@ -12,7 +12,7 @@ import { PROGRAM_METADATA } from '@/content/programs/metadata';
 import { ContentRepository } from '@/content/repository';
 import type { QueryClient } from '@tanstack/react-query';
 
-export const CONTENT_QUERY_STALE_TIME = 30 * 60 * 1000;
+export const CONTENT_QUERY_STALE_TIME = 60 * 1000;
 export const CONTENT_QUERY_GC_TIME = 24 * 60 * 60 * 1000;
 
 export const PROGRAMS_QUERY_KEY = ['programs'] as const;

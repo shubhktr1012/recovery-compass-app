@@ -12,6 +12,15 @@ import type {
   SelectionOption,
 } from '@/lib/onboarding.types';
 
+export interface OnboardingDraftPayload {
+  version: 'onboarding_redesign_v1_draft';
+  status: 'draft';
+  currentStepId: string;
+  currentStepIndex: number;
+  updatedAt: string;
+  answers: OnboardingAnswers;
+}
+
 function getOptionLabel(options: SelectionOption[] | undefined, value: string | null | undefined) {
   if (!options || !value) return null;
   return options.find((option) => option.id === value)?.label ?? value;
@@ -45,6 +54,80 @@ function toNumericValue(value: string | string[] | undefined) {
 
   const numericValue = Number(value);
   return Number.isFinite(numericValue) ? numericValue : null;
+}
+
+export function hasMeaningfulOnboardingDraft(answers: OnboardingAnswers) {
+  return Boolean(
+    answers.name.trim() ||
+      answers.age.trim() ||
+      answers.gender ||
+      answers.path ||
+      answers.selfSelectJourney ||
+      answers.guidedMainIssue ||
+      Object.keys(answers.questionValues).length > 0
+  );
+}
+
+export async function loadOnboardingDraft(userId: string) {
+  const supabaseAny = supabase as any;
+  const { data, error } = await supabaseAny
+    .from('profiles')
+    .select('onboarding_complete, questionnaire_answers')
+    .eq('id', userId)
+    .maybeSingle();
+
+  if (error) {
+    throw error;
+  }
+
+  if (!data || data.onboarding_complete) {
+    return null;
+  }
+
+  const draft = data.questionnaire_answers as OnboardingDraftPayload | null;
+  if (!draft || draft.status !== 'draft' || draft.version !== 'onboarding_redesign_v1_draft') {
+    return null;
+  }
+
+  return draft;
+}
+
+export async function saveOnboardingDraft(args: {
+  answers: OnboardingAnswers;
+  currentStepId: string;
+  currentStepIndex: number;
+  email: string | null | undefined;
+  userId: string;
+}) {
+  const { answers, currentStepId, currentStepIndex, email, userId } = args;
+  const updatedAt = new Date().toISOString();
+  const draftPayload: OnboardingDraftPayload = {
+    version: 'onboarding_redesign_v1_draft',
+    status: 'draft',
+    currentStepId,
+    currentStepIndex,
+    updatedAt,
+    answers,
+  };
+
+  const supabaseAny = supabase as any;
+  const { error } = await supabaseAny.from('profiles').upsert(
+    {
+      id: userId,
+      email: email ?? null,
+      onboarding_complete: false,
+      questionnaire_completed: false,
+      questionnaire_answers: draftPayload,
+      updated_at: updatedAt,
+    },
+    { onConflict: 'id' }
+  );
+
+  if (error) {
+    throw error;
+  }
+
+  return draftPayload;
 }
 
 export async function saveOnboardingQuestionnaire(args: {

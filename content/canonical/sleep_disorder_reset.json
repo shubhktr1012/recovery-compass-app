@@ -2,27 +2,27 @@
   "slug": "sleep_disorder_reset",
   "totalDays": 21,
   "sourcePath": "documents/Sent By Anjan/program_content/sleep disorder 21 days reset .md",
-  "generatedAt": "2026-04-03T14:36:04.422Z",
+  "generatedAt": "2026-04-08T20:34:51.072Z",
   "days": [
     {
       "dayNumber": 1,
       "dayTitle": "Reset the Body Clock",
-      "estimatedMinutes": 24,
+      "estimatedMinutes": 13,
       "cards": [
         {
           "type": "intro",
           "dayNumber": 1,
           "dayTitle": "Reset the Body Clock",
-          "goal": "Complete Day 1 with steady, consistent action.",
-          "estimatedMinutes": 24
+          "goal": "Start resetting the body clock and nervous system so the brain begins recognizing the signals for sleep. Tonight’s sleep may not be perfect yet, but the body has already begun the reset process.",
+          "estimatedMinutes": 13
         },
         {
           "type": "lesson",
           "title": "Today's Focus",
           "paragraphs": [
-            "Complete Day 1 with steady, consistent action."
+            "Start resetting the body clock and nervous system so the brain begins recognizing the signals for sleep. Tonight’s sleep may not be perfect yet, but the body has already begun the reset process."
           ],
-          "highlight": "Consistency compounds into long-term change."
+          "highlight": "Stay consistent and let the routine do the work."
         },
         {
           "type": "action_step",
@@ -34,13 +34,9 @@
             "Do not wear sunglasses.",
             "Face the direction of the sky (not directly at the sun).",
             "Stay outside for 10–20 minutes.",
-            "If sunlight is weak, increase exposure to 20–30 minutes.",
-            "Why this works",
-            "Morning sunlight resets the brain’s circadian clock, which tells your body when to release melatonin",
-            "at night.",
-            "Without this signal, the brain stays confused about when to sleep."
+            "If sunlight is weak, increase exposure to 20–30 minutes."
           ],
-          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+          "whyThisWorks": "Morning sunlight resets the brain’s circadian clock, which tells your body when to release melatonin at night. Without this signal, the brain stays confused about when to sleep."
         },
         {
           "type": "breathing_exercise",
@@ -85,12 +81,6 @@
               "instructions": [
                 "Perform with steady breathing and controlled pacing."
               ]
-            },
-            {
-              "name": "Movement Early In The Day Helps Build Sleep Pressure, Which Makes You Naturally Tired At Night.",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
             }
           ]
         },
@@ -101,14 +91,13 @@
           "instructions": [
             "Today follow this rule strictly:",
             "No caffeine after 2 PM",
-            "This includes:",
             "coffee",
             "tea",
             "energy drinks",
             "pre-workout drinks",
             "Caffeine stays in the body 6–8 hours, often silently disturbing sleep."
           ],
-          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+          "whyThisWorks": "Small consistent actions reinforce stability and support restful sleep."
         },
         {
           "type": "mindfulness_exercise",
@@ -135,7 +124,6 @@
           "title": "Body Temperature Sleep Trick",
           "steps": [
             "Take a warm shower 60–90 minutes before sleep.",
-            "Why this works",
             "After the shower, your body temperature drops, which triggers natural sleepiness.",
             "This trick is commonly used in sleep clinics."
           ],
@@ -155,18 +143,20 @@
             "The sky above you is clear and peaceful.",
             "The water is still and quiet.",
             "Focus on the scene while breathing slowly.",
-            "If thoughts appear, gently return to the calm image.",
-            "Day 1 Sleep Trick – The “Heavy Eyes” Method",
+            "If thoughts appear, gently return to the calm image."
+          ],
+          "completionMessage": "Stay with the practice until your body and mind feel steadier."
+        },
+        {
+          "type": "mindfulness_exercise",
+          "title": "The “Heavy Eyes” Method",
+          "steps": [
             "When your eyes are closed in bed:",
             "Keep your eyes closed.",
             "Look slightly upward behind your eyelids.",
             "Let your eyes become heavy.",
             "This mimics the natural eye position that occurs right before sleep, helping the brain enter sleep",
-            "mode faster.",
-            "Day 1 Goal",
-            "Start resetting the body clock and nervous system so the brain begins recognizing the signals for",
-            "sleep.",
-            "Tonight’s sleep may not be perfect yet, but the body has already begun the reset process."
+            "mode faster."
           ],
           "completionMessage": "Stay with the practice until your body and mind feel steadier."
         },
@@ -186,22 +176,22 @@
     {
       "dayNumber": 2,
       "dayTitle": "Reducing Mental Stimulation",
-      "estimatedMinutes": 24,
+      "estimatedMinutes": 13,
       "cards": [
         {
           "type": "intro",
           "dayNumber": 2,
           "dayTitle": "Reducing Mental Stimulation",
-          "goal": "Complete Day 2 with steady, consistent action.",
-          "estimatedMinutes": 24
+          "goal": "Reduce mental stimulation and racing thoughts at night while strengthening the sleep routine. By repeating the same steps from Day 1 and adding this new technique, the brain slowly begins to associate the routine with sleep.",
+          "estimatedMinutes": 13
         },
         {
           "type": "lesson",
           "title": "Today's Focus",
           "paragraphs": [
-            "Complete Day 2 with steady, consistent action."
+            "Reduce mental stimulation and racing thoughts at night while strengthening the sleep routine. By repeating the same steps from Day 1 and adding this new technique, the brain slowly begins to associate the routine with sleep."
           ],
-          "highlight": "Consistency compounds into long-term change."
+          "highlight": "Stay consistent and let the routine do the work."
         },
         {
           "type": "action_step",
@@ -213,13 +203,9 @@
             "Do not wear sunglasses.",
             "Face the direction of the sky (not directly at the sun).",
             "Stay outside for 10–20 minutes.",
-            "If sunlight is weak, increase exposure to 20–30 minutes.",
-            "Why this works",
-            "Morning sunlight resets the brain’s circadian clock, helping the body release melatonin naturally at",
-            "night.",
-            "Without this signal, the brain stays confused about when to sleep."
+            "If sunlight is weak, increase exposure to 20–30 minutes."
           ],
-          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+          "whyThisWorks": "Morning sunlight resets the brain’s circadian clock, helping the body release melatonin naturally at night. Without this signal, the brain stays confused about when to sleep."
         },
         {
           "type": "breathing_exercise",
@@ -264,12 +250,6 @@
               "instructions": [
                 "Perform with steady breathing and controlled pacing."
               ]
-            },
-            {
-              "name": "Movement Early In The Day Builds Sleep Pressure, Which Helps The Body Feel Naturally Tired At Night.",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
             }
           ]
         },
@@ -280,14 +260,13 @@
           "instructions": [
             "Today follow this rule strictly:",
             "No caffeine after 2 PM",
-            "This includes:",
             "coffee",
             "tea",
             "energy drinks",
             "pre-workout drinks",
             "Caffeine can remain in the body 6–8 hours, which can silently disturb sleep."
           ],
-          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+          "whyThisWorks": "Small consistent actions reinforce stability and support restful sleep."
         },
         {
           "type": "mindfulness_exercise",
@@ -314,89 +293,37 @@
           "title": "Body Temperature Sleep Trick",
           "steps": [
             "Take a warm shower 60–90 minutes before sleep.",
-            "Why this works",
             "After the shower, your body temperature drops, which naturally triggers sleepiness.",
             "This change signals the brain that nighttime has arrived."
           ],
           "completionMessage": "Stay with the practice until your body and mind feel steadier."
         },
         {
-          "type": "exercise_routine",
+          "type": "mindfulness_exercise",
           "title": "The Military Sleep Method (fast Sleep Technique)",
-          "exercises": [
-            {
-              "name": "Once In Bed, Do This:",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Relax Your Forehead",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Relax Jaw And Tongue",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Drop Shoulders Completely",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Slowly Breathe Out",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Then Imagine A Calm Scene:",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "You Are Lying On A Quiet Beach At Sunset.",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "You Can Hear Gentle Waves And Feel A Cool Breeze.",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Keep Breathing Slowly While Focusing On The Scene.",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Day 2 Sleep Trick – The Cognitive Shuffle",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "If Your Mind Keeps Thinking When Trying To Sleep, Use This Technique.",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "In Your Mind, Start Naming Random Neutral Objects.",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            }
-          ]
+          "steps": [
+            "Once in bed, do this:",
+            "Relax your forehead",
+            "Relax jaw and tongue",
+            "Drop shoulders completely",
+            "Slowly breathe out",
+            "Then imagine a calm scene:",
+            "You are lying on a quiet beach at sunset.",
+            "You can hear gentle waves and feel a cool breeze.",
+            "Keep breathing slowly while focusing on the scene."
+          ],
+          "completionMessage": "Stay with the practice until your body and mind feel steadier."
+        },
+        {
+          "type": "mindfulness_exercise",
+          "title": "The Cognitive Shuffle",
+          "steps": [
+            "If your mind keeps thinking when trying to sleep, use this technique.",
+            "In your mind, start naming random neutral objects.",
+            "This technique distracts the brain from problem-solving mode, which keeps people awake.",
+            "The mind becomes bored and begins transitioning into sleep mode."
+          ],
+          "completionMessage": "Stay with the practice until your body and mind feel steadier."
         },
         {
           "type": "journal",
@@ -414,88 +341,36 @@
     {
       "dayNumber": 3,
       "dayTitle": "Stabilizing Night Sleep",
-      "estimatedMinutes": 25,
+      "estimatedMinutes": 14,
       "cards": [
         {
           "type": "intro",
           "dayNumber": 3,
           "dayTitle": "Stabilizing Night Sleep",
-          "goal": "Complete Day 3 with steady, consistent action.",
-          "estimatedMinutes": 25
+          "goal": "Reduce the effort and pressure around sleep, allowing the body to fall asleep more naturally.",
+          "estimatedMinutes": 14
         },
         {
           "type": "lesson",
           "title": "Today's Focus",
           "paragraphs": [
-            "Complete Day 3 with steady, consistent action."
+            "Reduce the effort and pressure around sleep, allowing the body to fall asleep more naturally."
           ],
-          "highlight": "Consistency compounds into long-term change."
+          "highlight": "falling asleep faster"
         },
         {
-          "type": "exercise_routine",
+          "type": "action_step",
+          "stepNumber": 1,
           "title": "Morning Sunlight Exposure (10–20 Minutes)",
-          "exercises": [
-            {
-              "name": "Within 30 Minutes Of Waking, Go Outside And Expose Your Eyes To Natural Daylight.",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Step Outside Your Home, Balcony, Or Street.",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Do Not Wear Sunglasses.",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Face The Direction Of The Sky (not Directly At The Sun).",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Stay Outside For 10–20 Minutes.",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Try To Walk Slowly While Getting Sunlight. Movement Strengthens The Signal To Your Body Clock.",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Why This Works",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Morning Sunlight Resets The Brain’s Circadian Rhythm, Helping The Body Release Melatonin Naturally",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "At Night.",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Without This Signal, Sleep Timing Becomes Irregular.",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            }
-          ]
+          "instructions": [
+            "Within 30 minutes of waking, go outside and expose your eyes to natural daylight.",
+            "Step outside your home, balcony, or street.",
+            "Do not wear sunglasses.",
+            "Face the direction of the sky (not directly at the sun).",
+            "Stay outside for 10–20 minutes.",
+            "Try to walk slowly while getting sunlight. Movement strengthens the signal to your body clock."
+          ],
+          "whyThisWorks": "Morning sunlight resets the brain’s circadian rhythm, helping the body release melatonin naturally at night. Without this signal, sleep timing becomes irregular."
         },
         {
           "type": "breathing_exercise",
@@ -540,30 +415,23 @@
               "instructions": [
                 "Perform with steady breathing and controlled pacing."
               ]
-            },
-            {
-              "name": "Morning Movement Increases Sleep Pressure, Which Helps You Feel Naturally Sleepy Later At Night.",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
             }
           ]
         },
         {
           "type": "action_step",
-          "stepNumber": 1,
+          "stepNumber": 2,
           "title": "Caffeine Control Rule",
           "instructions": [
             "Follow this rule strictly:",
             "No caffeine after 2 PM",
-            "This includes:",
             "coffee",
             "tea",
             "energy drinks",
             "pre-workout drinks",
             "Caffeine can remain in the body 6–8 hours and delay sleep onset."
           ],
-          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+          "whyThisWorks": "Small consistent actions reinforce stability and support restful sleep."
         },
         {
           "type": "mindfulness_exercise",
@@ -590,7 +458,6 @@
           "title": "Body Temperature Sleep Trick",
           "steps": [
             "Take a warm shower 60–90 minutes before sleep.",
-            "Why this works",
             "After the shower, your body temperature drops slightly.",
             "This drop triggers the brain to start producing melatonin, making you feel sleepy."
           ],
@@ -609,23 +476,20 @@
             "You are lying in a quiet forest under a clear night sky.",
             "The air is cool and peaceful.",
             "Everything around you is still.",
-            "Focus on this scene while breathing slowly.",
-            "Day 3 Sleep Trick – The Reverse Blinking Technique",
+            "Focus on this scene while breathing slowly."
+          ],
+          "completionMessage": "Stay with the practice until your body and mind feel steadier."
+        },
+        {
+          "type": "mindfulness_exercise",
+          "title": "The Reverse Blinking Technique",
+          "steps": [
             "This trick helps people who try too hard to fall asleep.",
             "When lying in bed:",
             "Close your eyes.",
             "Open them gently for 1–2 seconds.",
             "Close them again.",
-            "Repeat this 5–10 times slowly.",
-            "Why this works",
-            "Trying to sleep often creates performance pressure, which keeps the brain alert.",
-            "Reverse blinking removes that pressure and relaxes the brain, making sleep happen naturally.",
-            "Day 3 Goal",
-            "Reduce the effort and pressure around sleep, allowing the body to fall asleep more naturally.",
-            "By Day 3, many people begin noticing:",
-            "falling asleep faster",
-            "less racing thoughts",
-            "deeper relaxation before sleep"
+            "Repeat this 5–10 times slowly."
           ],
           "completionMessage": "Stay with the practice until your body and mind feel steadier."
         },
@@ -638,29 +502,29 @@
         {
           "type": "close",
           "message": "Day 3 is complete.",
-          "secondaryMessage": "You reinforced stabilizing night sleep today."
+          "secondaryMessage": "falling asleep faster"
         }
       ]
     },
     {
       "dayNumber": 4,
       "dayTitle": "Reducing Night Awakenings",
-      "estimatedMinutes": 25,
+      "estimatedMinutes": 14,
       "cards": [
         {
           "type": "intro",
           "dayNumber": 4,
           "dayTitle": "Reducing Night Awakenings",
-          "goal": "Complete Day 4 with steady, consistent action.",
-          "estimatedMinutes": 25
+          "goal": "Improve sleep continuity and reduce middle-of-the-night awakenings.",
+          "estimatedMinutes": 14
         },
         {
           "type": "lesson",
           "title": "Today's Focus",
           "paragraphs": [
-            "Complete Day 4 with steady, consistent action."
+            "Improve sleep continuity and reduce middle-of-the-night awakenings."
           ],
-          "highlight": "Consistency compounds into long-term change."
+          "highlight": "fewer night wake-ups"
         },
         {
           "type": "action_step",
@@ -673,12 +537,9 @@
             "Face the direction of the sky (not directly at the sun).",
             "Stay outside for 10–20 minutes.",
             "Try to expose your eyes to full outdoor daylight, not through a window, because glass blocks part of",
-            "the light signal that helps regulate your body clock.",
-            "Why this works",
-            "Morning sunlight resets the brain’s circadian rhythm, helping your body release melatonin at night",
-            "and improve sleep timing."
+            "the light signal that helps regulate your body clock."
           ],
-          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+          "whyThisWorks": "Morning sunlight resets the brain’s circadian rhythm, helping your body release melatonin at night and improve sleep timing."
         },
         {
           "type": "breathing_exercise",
@@ -723,12 +584,6 @@
               "instructions": [
                 "Perform with steady breathing and controlled pacing."
               ]
-            },
-            {
-              "name": "Movement Early In The Day Increases Sleep Pressure, Which Helps You Sleep More Deeply At Night.",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
             }
           ]
         },
@@ -739,14 +594,13 @@
           "instructions": [
             "Follow this rule strictly:",
             "No caffeine after 2 PM",
-            "This includes:",
             "coffee",
             "tea",
             "energy drinks",
             "pre-workout drinks",
             "Caffeine can remain active in the body 6–8 hours, disturbing sleep cycles."
           ],
-          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+          "whyThisWorks": "Small consistent actions reinforce stability and support restful sleep."
         },
         {
           "type": "mindfulness_exercise",
@@ -773,7 +627,6 @@
           "title": "Body Temperature Sleep Trick",
           "steps": [
             "Take a warm shower 60–90 minutes before sleep.",
-            "Why this works",
             "After the shower, the body experiences a natural drop in temperature, which signals the brain that it",
             "is time to sleep."
           ],
@@ -792,23 +645,20 @@
             "You are lying in a quiet field under a clear starry sky.",
             "The night air is calm and peaceful.",
             "Everything around you feels safe and quiet.",
-            "Focus on the scene while breathing slowly.",
-            "Day 4 Sleep Trick – The “15-Minute Reset Rule”",
+            "Focus on the scene while breathing slowly."
+          ],
+          "completionMessage": "Stay with the practice until your body and mind feel steadier."
+        },
+        {
+          "type": "mindfulness_exercise",
+          "title": "The “15-Minute Reset Rule”",
+          "steps": [
             "If you wake up during the night and cannot fall asleep within about 15 minutes, do this:",
             "Get out of bed quietly.",
             "Go to a dimly lit room.",
             "Sit or read something calm (no phone or bright screens).",
             "Stay there for 5–10 minutes.",
-            "Return to bed when you feel sleepy.",
-            "Why this works",
-            "Staying awake in bed can train the brain to associate the bed with frustration and wakefulness.",
-            "This reset teaches the brain that the bed is only for sleep.",
-            "Day 4 Goal",
-            "Improve sleep continuity and reduce middle-of-the-night awakenings.",
-            "By Day 4 many people begin noticing:",
-            "fewer night wake-ups",
-            "faster return to sleep",
-            "deeper relaxation before bed"
+            "Return to bed when you feel sleepy."
           ],
           "completionMessage": "Stay with the practice until your body and mind feel steadier."
         },
@@ -821,89 +671,43 @@
         {
           "type": "close",
           "message": "Day 4 is complete.",
-          "secondaryMessage": "You reinforced reducing night awakenings today."
+          "secondaryMessage": "fewer night wake-ups"
         }
       ]
     },
     {
       "dayNumber": 5,
       "dayTitle": "Improving Deep Sleep Quality",
-      "estimatedMinutes": 26,
+      "estimatedMinutes": 15,
       "cards": [
         {
           "type": "intro",
           "dayNumber": 5,
           "dayTitle": "Improving Deep Sleep Quality",
-          "goal": "Complete Day 5 with steady, consistent action.",
-          "estimatedMinutes": 26
+          "goal": "Improve deep sleep quality and physical relaxation so the body can enter deeper restorative sleep cycles.",
+          "estimatedMinutes": 15
         },
         {
           "type": "lesson",
           "title": "Today's Focus",
           "paragraphs": [
-            "Complete Day 5 with steady, consistent action."
+            "Improve deep sleep quality and physical relaxation so the body can enter deeper restorative sleep cycles."
           ],
-          "highlight": "Consistency compounds into long-term change."
+          "highlight": "falling asleep faster"
         },
         {
-          "type": "exercise_routine",
+          "type": "action_step",
+          "stepNumber": 1,
           "title": "Morning Sunlight Exposure (10–20 Minutes)",
-          "exercises": [
-            {
-              "name": "Within 30 Minutes Of Waking, Go Outside And Expose Your Eyes To Natural Daylight.",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Step Outside Your Home, Balcony, Or Street.",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Do Not Wear Sunglasses.",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Face The Direction Of The Sky (not Directly At The Sun).",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Stay Outside For 10–20 Minutes.",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Combine Sunlight Exposure With A Short Walk To Strengthen The Signal To Your Body Clock.",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Why This Works",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Morning Sunlight Resets The Brain’s Circadian Rhythm, Helping The Body Release Melatonin Naturally",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "At Night.",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            }
-          ]
+          "instructions": [
+            "Within 30 minutes of waking, go outside and expose your eyes to natural daylight.",
+            "Step outside your home, balcony, or street.",
+            "Do not wear sunglasses.",
+            "Face the direction of the sky (not directly at the sun).",
+            "Stay outside for 10–20 minutes.",
+            "Combine sunlight exposure with a short walk to strengthen the signal to your body clock."
+          ],
+          "whyThisWorks": "Morning sunlight resets the brain’s circadian rhythm, helping the body release melatonin naturally at night."
         },
         {
           "type": "breathing_exercise",
@@ -948,30 +752,23 @@
               "instructions": [
                 "Perform with steady breathing and controlled pacing."
               ]
-            },
-            {
-              "name": "Morning Movement Increases Sleep Pressure, Which Helps Your Body Fall Asleep Naturally At Night.",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
             }
           ]
         },
         {
           "type": "action_step",
-          "stepNumber": 1,
+          "stepNumber": 2,
           "title": "Caffeine Control Rule",
           "instructions": [
             "Follow this rule strictly:",
             "No caffeine after 2 PM",
-            "This includes:",
             "coffee",
             "tea",
             "energy drinks",
             "pre-workout drinks",
             "Caffeine can remain active in the body 6–8 hours, affecting deep sleep cycles."
           ],
-          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+          "whyThisWorks": "Small consistent actions reinforce stability and support restful sleep."
         },
         {
           "type": "mindfulness_exercise",
@@ -998,7 +795,6 @@
           "title": "Body Temperature Sleep Trick",
           "steps": [
             "Take a warm shower 60–90 minutes before sleep.",
-            "Why this works",
             "After the shower, your body temperature drops slightly.",
             "This temperature drop signals the brain to prepare for sleep and melatonin release."
           ],
@@ -1017,24 +813,19 @@
             "You are lying in a quiet cabin during gentle rain.",
             "You can hear the soft sound of rain on the roof.",
             "Everything around you feels calm and safe.",
-            "Focus on the sound and scene while breathing slowly.",
-            "Day 5 Sleep Trick – The “Feet Warmth Trick”",
+            "Focus on the sound and scene while breathing slowly."
+          ],
+          "completionMessage": "Stay with the practice until your body and mind feel steadier."
+        },
+        {
+          "type": "mindfulness_exercise",
+          "title": "The “Feet Warmth Trick”",
+          "steps": [
             "Cold feet can actually make it harder for the body to fall asleep.",
             "Before going to bed:",
             "wear light socks",
             "or",
-            "place a warm blanket over your feet",
-            "Why this works",
-            "Warming the feet helps blood vessels expand, which allows heat to leave the body.",
-            "This helps the body lower its core temperature, which naturally triggers sleep.",
-            "Many sleep studies show people fall asleep faster when their feet are warm.",
-            "Day 5 Goal",
-            "Improve deep sleep quality and physical relaxation so the body can enter deeper restorative sleep",
-            "cycles.",
-            "By Day 5 some people begin noticing:",
-            "falling asleep faster",
-            "deeper sleep",
-            "feeling more refreshed in the morning"
+            "place a warm blanket over your feet"
           ],
           "completionMessage": "Stay with the practice until your body and mind feel steadier."
         },
@@ -1047,29 +838,29 @@
         {
           "type": "close",
           "message": "Day 5 is complete.",
-          "secondaryMessage": "You reinforced improving deep sleep quality today."
+          "secondaryMessage": "falling asleep faster"
         }
       ]
     },
     {
       "dayNumber": 6,
       "dayTitle": "Quieting the Racing Mind",
-      "estimatedMinutes": 26,
+      "estimatedMinutes": 15,
       "cards": [
         {
           "type": "intro",
           "dayNumber": 6,
           "dayTitle": "Quieting the Racing Mind",
-          "goal": "Complete Day 6 with steady, consistent action.",
-          "estimatedMinutes": 26
+          "goal": "Reduce mental overload before bedtime, allowing the brain to relax and transition into sleep more easily.",
+          "estimatedMinutes": 15
         },
         {
           "type": "lesson",
           "title": "Today's Focus",
           "paragraphs": [
-            "Complete Day 6 with steady, consistent action."
+            "Reduce mental overload before bedtime, allowing the brain to relax and transition into sleep more easily."
           ],
-          "highlight": "Consistency compounds into long-term change."
+          "highlight": "quieter thoughts at night"
         },
         {
           "type": "action_step",
@@ -1081,12 +872,9 @@
             "Do not wear sunglasses.",
             "Face the direction of the sky (not directly at the sun).",
             "Stay outside for 10–20 minutes.",
-            "Try walking slowly while getting sunlight to strengthen your circadian rhythm signal.",
-            "Why this works",
-            "Morning sunlight resets the brain’s internal clock, helping your body release melatonin naturally at",
-            "night."
+            "Try walking slowly while getting sunlight to strengthen your circadian rhythm signal."
           ],
-          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+          "whyThisWorks": "Morning sunlight resets the brain’s internal clock, helping your body release melatonin naturally at night."
         },
         {
           "type": "breathing_exercise",
@@ -1131,12 +919,6 @@
               "instructions": [
                 "Perform with steady breathing and controlled pacing."
               ]
-            },
-            {
-              "name": "Movement Early In The Day Increases Sleep Pressure, Helping The Body Feel Naturally Tired At Night.",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
             }
           ]
         },
@@ -1147,14 +929,13 @@
           "instructions": [
             "Follow this rule strictly:",
             "No caffeine after 2 PM",
-            "This includes:",
             "coffee",
             "tea",
             "energy drinks",
             "pre-workout drinks",
             "Caffeine can stay in the body 6–8 hours, delaying sleep onset."
           ],
-          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+          "whyThisWorks": "Small consistent actions reinforce stability and support restful sleep."
         },
         {
           "type": "mindfulness_exercise",
@@ -1181,7 +962,6 @@
           "title": "Body Temperature Sleep Trick",
           "steps": [
             "Take a warm shower 60–90 minutes before sleep.",
-            "Why this works",
             "After the shower, your body temperature naturally drops, which signals the brain to prepare for",
             "sleep."
           ],
@@ -1200,27 +980,21 @@
             "You are lying in a quiet mountain valley at night.",
             "The air is cool and peaceful.",
             "Everything around you is still and calm.",
-            "Focus on the scene while breathing slowly.",
-            "Day 6 Sleep Trick – The “Brain Dump” Method",
+            "Focus on the scene while breathing slowly."
+          ],
+          "completionMessage": "Stay with the practice until your body and mind feel steadier."
+        },
+        {
+          "type": "mindfulness_exercise",
+          "title": "The “Brain Dump” Method",
+          "steps": [
             "Many people cannot sleep because the brain keeps thinking about tasks, worries, or tomorrow’s",
             "problems.",
             "About 30 minutes before bed, take a notebook and write down:",
             "everything on your mind",
             "tasks for tomorrow",
             "worries or thoughts",
-            "Do not organize it. Just empty your mind onto paper.",
-            "Why this works",
-            "The brain stays awake when it feels something important might be forgotten.",
-            "Writing things down tells the brain:",
-            "\"This is stored. I can relax now.\"",
-            "This often reduces racing thoughts dramatically at night.",
-            "Day 6 Goal",
-            "Reduce mental overload before bedtime, allowing the brain to relax and transition into sleep more",
-            "easily.",
-            "By Day 6 many people begin noticing:",
-            "quieter thoughts at night",
-            "less stress before sleep",
-            "falling asleep with less effort"
+            "Do not organize it. Just empty your mind onto paper."
           ],
           "completionMessage": "Stay with the practice until your body and mind feel steadier."
         },
@@ -1233,29 +1007,29 @@
         {
           "type": "close",
           "message": "Day 6 is complete.",
-          "secondaryMessage": "You reinforced quieting the racing mind today."
+          "secondaryMessage": "quieter thoughts at night"
         }
       ]
     },
     {
       "dayNumber": 7,
       "dayTitle": "Strengthening Natural Melatonin",
-      "estimatedMinutes": 27,
+      "estimatedMinutes": 16,
       "cards": [
         {
           "type": "intro",
           "dayNumber": 7,
           "dayTitle": "Strengthening Natural Melatonin",
-          "goal": "Complete Day 7 with steady, consistent action.",
-          "estimatedMinutes": 27
+          "goal": "Support the body’s natural melatonin cycle and strengthen the sleep routine developed during the first week.",
+          "estimatedMinutes": 16
         },
         {
           "type": "lesson",
           "title": "Today's Focus",
           "paragraphs": [
-            "Complete Day 7 with steady, consistent action."
+            "Support the body’s natural melatonin cycle and strengthen the sleep routine developed during the first week."
           ],
-          "highlight": "Consistency compounds into long-term change."
+          "highlight": "feeling sleepy earlier at night"
         },
         {
           "type": "action_step",
@@ -1268,12 +1042,9 @@
             "Face the direction of the sky (not directly at the sun).",
             "Stay outside for 10–20 minutes.",
             "If possible, expose your eyes to sunlight before looking at your phone. This gives a stronger signal to",
-            "your body clock.",
-            "Why this works",
-            "Morning sunlight resets the brain’s circadian rhythm, which controls the timing of melatonin release",
-            "at night."
+            "your body clock."
           ],
-          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+          "whyThisWorks": "Morning sunlight resets the brain’s circadian rhythm, which controls the timing of melatonin release at night."
         },
         {
           "type": "breathing_exercise",
@@ -1318,12 +1089,6 @@
               "instructions": [
                 "Perform with steady breathing and controlled pacing."
               ]
-            },
-            {
-              "name": "Movement Early In The Day Helps Build Sleep Pressure, Making Sleep Easier At Night.",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
             }
           ]
         },
@@ -1334,14 +1099,13 @@
           "instructions": [
             "Follow this rule strictly:",
             "No caffeine after 2 PM",
-            "This includes:",
             "coffee",
             "tea",
             "energy drinks",
             "pre-workout drinks",
             "Caffeine can remain active in the body 6–8 hours, delaying sleep."
           ],
-          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+          "whyThisWorks": "Small consistent actions reinforce stability and support restful sleep."
         },
         {
           "type": "mindfulness_exercise",
@@ -1368,89 +1132,39 @@
           "title": "Body Temperature Sleep Trick",
           "steps": [
             "Take a warm shower 60–90 minutes before sleep.",
-            "Why this works",
             "After the shower, the body experiences a natural drop in temperature, which signals the brain that it",
             "is time for sleep."
           ],
           "completionMessage": "Stay with the practice until your body and mind feel steadier."
         },
         {
-          "type": "exercise_routine",
+          "type": "mindfulness_exercise",
           "title": "The Military Sleep Method (fast Sleep Technique)",
-          "exercises": [
-            {
-              "name": "Once In Bed, Do This:",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Relax Your Forehead",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Relax Jaw And Tongue",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Drop Shoulders Completely",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Slowly Breathe Out",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Then Imagine A Calm Scene:",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "You Are Lying In A Quiet Meadow Under The Stars.",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "The Night Air Is Cool And Peaceful.",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Everything Around You Is Calm And Still.",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Focus On This Scene While Breathing Slowly.",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Day 7 Sleep Trick – The “dim Light Rule”",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "About 90 Minutes Before Sleep, Start Reducing Light Exposure In Your Environment.",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            }
-          ]
+          "steps": [
+            "Once in bed, do this:",
+            "Relax your forehead",
+            "Relax jaw and tongue",
+            "Drop shoulders completely",
+            "Slowly breathe out",
+            "Then imagine a calm scene:",
+            "You are lying in a quiet meadow under the stars.",
+            "The night air is cool and peaceful.",
+            "Everything around you is calm and still.",
+            "Focus on this scene while breathing slowly."
+          ],
+          "completionMessage": "Stay with the practice until your body and mind feel steadier."
+        },
+        {
+          "type": "mindfulness_exercise",
+          "title": "The “Dim Light Rule”",
+          "steps": [
+            "About 90 minutes before sleep, start reducing light exposure in your environment.",
+            "Turn off bright ceiling lights",
+            "Use warm or dim lighting",
+            "Reduce screen brightness",
+            "Avoid bright white lights"
+          ],
+          "completionMessage": "Stay with the practice until your body and mind feel steadier."
         },
         {
           "type": "journal",
@@ -1461,29 +1175,29 @@
         {
           "type": "close",
           "message": "Day 7 is complete.",
-          "secondaryMessage": "You reinforced strengthening natural melatonin today."
+          "secondaryMessage": "feeling sleepy earlier at night"
         }
       ]
     },
     {
       "dayNumber": 8,
       "dayTitle": "Strengthening Sleep Pressure",
-      "estimatedMinutes": 27,
+      "estimatedMinutes": 16,
       "cards": [
         {
           "type": "intro",
           "dayNumber": 8,
           "dayTitle": "Strengthening Sleep Pressure",
-          "goal": "Complete Day 8 with steady, consistent action.",
-          "estimatedMinutes": 27
+          "goal": "Increase sleep pressure through more physical movement while strengthening relaxation techniques before bed. By this stage many people begin noticing: stronger sleepiness at night deeper sleep cycles more consistent sleep timing",
+          "estimatedMinutes": 16
         },
         {
           "type": "lesson",
           "title": "Today's Focus",
           "paragraphs": [
-            "Complete Day 8 with steady, consistent action."
+            "Increase sleep pressure through more physical movement while strengthening relaxation techniques before bed. By this stage many people begin noticing: stronger sleepiness at night deeper sleep cycles more consistent sleep timing"
           ],
-          "highlight": "Consistency compounds into long-term change."
+          "highlight": "Stay consistent and let the routine do the work."
         },
         {
           "type": "action_step",
@@ -1495,12 +1209,9 @@
             "Do not wear sunglasses.",
             "Face the direction of the sky (not directly at the sun).",
             "Stay outside for 10–20 minutes.",
-            "If possible, combine sunlight exposure with walking for 10 minutes.",
-            "Why this works",
-            "Morning sunlight resets the brain’s circadian rhythm, helping your body release melatonin naturally",
-            "at night."
+            "If possible, combine sunlight exposure with walking for 10 minutes."
           ],
-          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+          "whyThisWorks": "Morning sunlight resets the brain’s circadian rhythm, helping your body release melatonin naturally at night."
         },
         {
           "type": "breathing_exercise",
@@ -1518,12 +1229,6 @@
           "exercises": [
             {
               "name": "Starting Today, Increase Movement To 15–20 Minutes.",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Exercise Routine",
               "instructions": [
                 "Perform with steady breathing and controlled pacing."
               ]
@@ -1597,14 +1302,13 @@
           "instructions": [
             "Follow this rule strictly:",
             "No caffeine after 2 PM",
-            "This includes:",
             "coffee",
             "tea",
             "energy drinks",
             "pre-workout drinks",
             "Caffeine can remain active in the body 6–8 hours and disturb sleep quality."
           ],
-          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+          "whyThisWorks": "Small consistent actions reinforce stability and support restful sleep."
         },
         {
           "type": "mindfulness_exercise",
@@ -1631,22 +1335,39 @@
           "title": "Body Temperature Sleep Trick",
           "steps": [
             "Take a warm shower 60–90 minutes before sleep.",
-            "Why this works",
             "After the shower, your body temperature drops slightly, which signals the brain that it is time for",
             "sleep."
           ],
           "completionMessage": "Stay with the practice until your body and mind feel steadier."
         },
         {
-          "type": "breathing_exercise",
+          "type": "mindfulness_exercise",
           "title": "The Military Sleep Method (fast Sleep Technique)",
-          "instructions": "Once in bed, do this: Relax your forehead Relax jaw and tongue Drop shoulders completely Slowly breathe out Then imagine a calm scene: You are lying in a quiet forest clearing at night. A gentle breeze moves through the trees. The air is calm and peaceful. Focus on the scene while breathing slowly. Day 8 Sleep Trick – The “4-7-8 Sleep Breathing” This breathing technique helps slow the nervous system and induce sleep. Inhale through your nose for 4 seconds Hold your breath for 7 seconds Slowly exhale through your mouth for 8 seconds Repeat 4–6 cycles. Why this works This breathing pattern: slows the heart rate relaxes the nervous system signals the brain to shift into sleep mode Many people feel noticeably calmer within a few minutes. Day 8 Goal Increase sleep pressure through more physical movement while strengthening relaxation techniques before bed. By this stage many people begin noticing: stronger sleepiness at night deeper sleep cycles more consistent sleep timing",
-          "pattern": {
-            "inhaleSeconds": 4,
-            "holdSeconds": 7,
-            "exhaleSeconds": 6
-          },
-          "cycles": 6
+          "steps": [
+            "Once in bed, do this:",
+            "Relax your forehead",
+            "Relax jaw and tongue",
+            "Drop shoulders completely",
+            "Slowly breathe out",
+            "Then imagine a calm scene:",
+            "You are lying in a quiet forest clearing at night.",
+            "A gentle breeze moves through the trees.",
+            "The air is calm and peaceful.",
+            "Focus on the scene while breathing slowly."
+          ],
+          "completionMessage": "Stay with the practice until your body and mind feel steadier."
+        },
+        {
+          "type": "mindfulness_exercise",
+          "title": "The “4-7-8 Sleep Breathing”",
+          "steps": [
+            "This breathing technique helps slow the nervous system and induce sleep.",
+            "Inhale through your nose for 4 seconds",
+            "Hold your breath for 7 seconds",
+            "Slowly exhale through your mouth for 8 seconds",
+            "Repeat 4–6 cycles."
+          ],
+          "completionMessage": "Stay with the practice until your body and mind feel steadier."
         },
         {
           "type": "journal",
@@ -1664,22 +1385,22 @@
     {
       "dayNumber": 9,
       "dayTitle": "Deepening Sleep Pressure",
-      "estimatedMinutes": 28,
+      "estimatedMinutes": 17,
       "cards": [
         {
           "type": "intro",
           "dayNumber": 9,
           "dayTitle": "Deepening Sleep Pressure",
-          "goal": "Complete Day 9 with steady, consistent action.",
-          "estimatedMinutes": 28
+          "goal": "Strengthen physical relaxation and sleep pressure, helping the body enter deeper sleep stages.",
+          "estimatedMinutes": 17
         },
         {
           "type": "lesson",
           "title": "Today's Focus",
           "paragraphs": [
-            "Complete Day 9 with steady, consistent action."
+            "Strengthen physical relaxation and sleep pressure, helping the body enter deeper sleep stages."
           ],
-          "highlight": "Consistency compounds into long-term change."
+          "highlight": "falling asleep faster"
         },
         {
           "type": "action_step",
@@ -1691,12 +1412,9 @@
             "Do not wear sunglasses.",
             "Face the direction of the sky (not directly at the sun).",
             "Stay outside for 10–20 minutes.",
-            "Combine sunlight exposure with light walking for at least 10 minutes.",
-            "Why this works",
-            "Morning sunlight resets the brain’s circadian rhythm, helping regulate the timing of melatonin",
-            "release at night."
+            "Combine sunlight exposure with light walking for at least 10 minutes."
           ],
-          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+          "whyThisWorks": "Morning sunlight resets the brain’s circadian rhythm, helping regulate the timing of melatonin release at night."
         },
         {
           "type": "breathing_exercise",
@@ -1714,12 +1432,6 @@
           "exercises": [
             {
               "name": "Increase Movement To About 20 Minutes.",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Exercise Routine",
               "instructions": [
                 "Perform with steady breathing and controlled pacing."
               ]
@@ -1793,14 +1505,13 @@
           "instructions": [
             "Follow this rule strictly:",
             "No caffeine after 2 PM",
-            "This includes:",
             "coffee",
             "tea",
             "energy drinks",
             "pre-workout drinks",
             "Caffeine can stay in the body 6–8 hours, interfering with sleep cycles."
           ],
-          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+          "whyThisWorks": "Small consistent actions reinforce stability and support restful sleep."
         },
         {
           "type": "mindfulness_exercise",
@@ -1827,7 +1538,6 @@
           "title": "Body Temperature Sleep Trick",
           "steps": [
             "Take a warm shower 60–90 minutes before sleep.",
-            "Why this works",
             "After the shower, the body temperature naturally drops, signaling the brain that it is time for sleep."
           ],
           "completionMessage": "Stay with the practice until your body and mind feel steadier."
@@ -1845,8 +1555,14 @@
             "You are lying in a quiet mountain cabin at night.",
             "Outside, gentle wind moves through the trees.",
             "Inside, everything feels warm and peaceful.",
-            "Focus on the calm scene while breathing slowly.",
-            "Day 9 Sleep Trick – The “Progressive Muscle Relaxation”",
+            "Focus on the calm scene while breathing slowly."
+          ],
+          "completionMessage": "Stay with the practice until your body and mind feel steadier."
+        },
+        {
+          "type": "mindfulness_exercise",
+          "title": "The “Progressive Muscle Relaxation”",
+          "steps": [
             "This technique helps release hidden tension stored in the body, which often prevents deep sleep.",
             "While lying in bed:",
             "Tighten your feet muscles for 5 seconds.",
@@ -1858,16 +1574,7 @@
             "arms",
             "shoulders",
             "face",
-            "Tighten each muscle group briefly, then release completely.",
-            "Why this works",
-            "Many people carry physical tension without realizing it.",
-            "Releasing this tension signals the brain that the body is safe and ready for sleep.",
-            "Day 9 Goal",
-            "Strengthen physical relaxation and sleep pressure, helping the body enter deeper sleep stages.",
-            "By Day 9 many people begin noticing:",
-            "falling asleep faster",
-            "fewer night awakenings",
-            "deeper relaxation before sleep"
+            "Tighten each muscle group briefly, then release completely."
           ],
           "completionMessage": "Stay with the practice until your body and mind feel steadier."
         },
@@ -1880,29 +1587,29 @@
         {
           "type": "close",
           "message": "Day 9 is complete.",
-          "secondaryMessage": "You reinforced deepening sleep pressure today."
+          "secondaryMessage": "falling asleep faster"
         }
       ]
     },
     {
       "dayNumber": 10,
       "dayTitle": "Strengthening the Sleep Routine",
-      "estimatedMinutes": 28,
+      "estimatedMinutes": 17,
       "cards": [
         {
           "type": "intro",
           "dayNumber": 10,
           "dayTitle": "Strengthening the Sleep Routine",
-          "goal": "Complete Day 10 with steady, consistent action.",
-          "estimatedMinutes": 28
+          "goal": "Strengthen the sleep routine and physical sleep pressure, while helping the mind disengage from thinking at night.",
+          "estimatedMinutes": 17
         },
         {
           "type": "lesson",
           "title": "Today's Focus",
           "paragraphs": [
-            "Complete Day 10 with steady, consistent action."
+            "Strengthen the sleep routine and physical sleep pressure, while helping the mind disengage from thinking at night."
           ],
-          "highlight": "Consistency compounds into long-term change."
+          "highlight": "stronger sleepiness at night"
         },
         {
           "type": "action_step",
@@ -1914,12 +1621,9 @@
             "Do not wear sunglasses.",
             "Face the direction of the sky (not directly at the sun).",
             "Stay outside for 10–20 minutes.",
-            "Try to combine sunlight with walking for at least 10 minutes.",
-            "Why this works",
-            "Morning sunlight resets the brain’s circadian rhythm, helping regulate the timing of melatonin",
-            "release at night."
+            "Try to combine sunlight with walking for at least 10 minutes."
           ],
-          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+          "whyThisWorks": "Morning sunlight resets the brain’s circadian rhythm, helping regulate the timing of melatonin release at night."
         },
         {
           "type": "breathing_exercise",
@@ -1937,12 +1641,6 @@
           "exercises": [
             {
               "name": "Total Movement Time: 20–25 Minutes",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Exercise Routine",
               "instructions": [
                 "Perform with steady breathing and controlled pacing."
               ]
@@ -2016,14 +1714,13 @@
           "instructions": [
             "Follow this rule strictly:",
             "No caffeine after 2 PM",
-            "This includes:",
             "coffee",
             "tea",
             "energy drinks",
             "pre-workout drinks",
             "Caffeine can remain in the body 6–8 hours, disturbing sleep cycles."
           ],
-          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+          "whyThisWorks": "Small consistent actions reinforce stability and support restful sleep."
         },
         {
           "type": "mindfulness_exercise",
@@ -2050,89 +1747,35 @@
           "title": "Body Temperature Sleep Trick",
           "steps": [
             "Take a warm shower 60–90 minutes before sleep.",
-            "Why this works",
             "After the shower, your body temperature drops slightly, which signals the brain that it is time to",
             "sleep."
           ],
           "completionMessage": "Stay with the practice until your body and mind feel steadier."
         },
         {
-          "type": "exercise_routine",
+          "type": "mindfulness_exercise",
           "title": "The Military Sleep Method (fast Sleep Technique)",
-          "exercises": [
-            {
-              "name": "Once In Bed, Do This:",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Relax Your Forehead",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Relax Jaw And Tongue",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Drop Shoulders Completely",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Slowly Breathe Out",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Then Imagine A Calm Scene:",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "You Are Lying Beside A Quiet River Under A Starry Sky.",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "You Hear Gentle Water Flowing And The Night Is Peaceful.",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Focus On The Calm Scene While Breathing Slowly.",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Day 10 Sleep Trick – The “mental Countdown”",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "This Trick Helps Interrupt Racing Thoughts.",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "While Lying In Bed, Slowly Count Backwards From 100.",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            }
-          ]
+          "steps": [
+            "Once in bed, do this:",
+            "Relax your forehead",
+            "Relax jaw and tongue",
+            "Drop shoulders completely",
+            "Slowly breathe out",
+            "Then imagine a calm scene:",
+            "You are lying beside a quiet river under a starry sky.",
+            "You hear gentle water flowing and the night is peaceful.",
+            "Focus on the calm scene while breathing slowly."
+          ],
+          "completionMessage": "Stay with the practice until your body and mind feel steadier."
+        },
+        {
+          "type": "mindfulness_exercise",
+          "title": "The “Mental Countdown”",
+          "steps": [
+            "This trick helps interrupt racing thoughts.",
+            "While lying in bed, slowly count backwards from 100."
+          ],
+          "completionMessage": "Stay with the practice until your body and mind feel steadier."
         },
         {
           "type": "journal",
@@ -2143,29 +1786,29 @@
         {
           "type": "close",
           "message": "Day 10 is complete.",
-          "secondaryMessage": "You reinforced strengthening the sleep routine today."
+          "secondaryMessage": "stronger sleepiness at night"
         }
       ]
     },
     {
       "dayNumber": 11,
       "dayTitle": "Stabilizing Deep Sleep",
-      "estimatedMinutes": 28,
+      "estimatedMinutes": 18,
       "cards": [
         {
           "type": "intro",
           "dayNumber": 11,
           "dayTitle": "Stabilizing Deep Sleep",
-          "goal": "Complete Day 11 with steady, consistent action.",
-          "estimatedMinutes": 28
+          "goal": "Improve sleep stability and circulation, helping the body stay asleep longer and enter deeper sleep cycles.",
+          "estimatedMinutes": 18
         },
         {
           "type": "lesson",
           "title": "Today's Focus",
           "paragraphs": [
-            "Complete Day 11 with steady, consistent action."
+            "Improve sleep stability and circulation, helping the body stay asleep longer and enter deeper sleep cycles."
           ],
-          "highlight": "Consistency compounds into long-term change."
+          "highlight": "fewer early morning awakenings"
         },
         {
           "type": "action_step",
@@ -2177,12 +1820,9 @@
             "Do not wear sunglasses.",
             "Face the direction of the sky (not directly at the sun).",
             "Stay outside for 10–20 minutes.",
-            "Combine sunlight exposure with 10 minutes of walking to strengthen your circadian rhythm.",
-            "Why this works",
-            "Morning sunlight resets the brain’s internal clock, helping regulate the timing of melatonin release",
-            "at night."
+            "Combine sunlight exposure with 10 minutes of walking to strengthen your circadian rhythm."
           ],
-          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+          "whyThisWorks": "Morning sunlight resets the brain’s internal clock, helping regulate the timing of melatonin release at night."
         },
         {
           "type": "breathing_exercise",
@@ -2200,12 +1840,6 @@
           "exercises": [
             {
               "name": "Total Movement Time: 25 Minutes",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Exercise Routine",
               "instructions": [
                 "Perform with steady breathing and controlled pacing."
               ]
@@ -2279,14 +1913,13 @@
           "instructions": [
             "Follow this rule strictly:",
             "No caffeine after 2 PM",
-            "This includes:",
             "coffee",
             "tea",
             "energy drinks",
             "pre-workout drinks",
             "Caffeine can remain active in the body 6–8 hours, affecting sleep cycles."
           ],
-          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+          "whyThisWorks": "Small consistent actions reinforce stability and support restful sleep."
         },
         {
           "type": "mindfulness_exercise",
@@ -2313,7 +1946,6 @@
           "title": "Body Temperature Sleep Trick",
           "steps": [
             "Take a warm shower 60–90 minutes before sleep.",
-            "Why this works",
             "After the shower, the body temperature naturally drops, signaling the brain to prepare for sleep."
           ],
           "completionMessage": "Stay with the practice until your body and mind feel steadier."
@@ -2330,25 +1962,20 @@
             "Then imagine a calm scene:",
             "You are lying in a quiet countryside field at night.",
             "The stars are bright above you and the air is peaceful.",
-            "Focus on the calm scene while breathing slowly.",
-            "Day 11 Sleep Trick – The “Leg Elevation Trick”",
+            "Focus on the calm scene while breathing slowly."
+          ],
+          "completionMessage": "Stay with the practice until your body and mind feel steadier."
+        },
+        {
+          "type": "mindfulness_exercise",
+          "title": "The “Leg Elevation Trick”",
+          "steps": [
             "This trick helps people who wake up too early in the morning or feel restless in bed.",
             "Before sleeping:",
             "Lie on your bed.",
             "Place your legs slightly elevated on a pillow.",
             "Keep them elevated for 5–10 minutes.",
-            "Then return to your normal sleeping position.",
-            "Why this works",
-            "Elevating the legs improves blood circulation and relaxation, which helps the body settle into deeper",
-            "sleep.",
-            "It also reduces physical restlessness that can disturb sleep during the night.",
-            "Day 11 Goal",
-            "Improve sleep stability and circulation, helping the body stay asleep longer and enter deeper sleep",
-            "cycles.",
-            "By Day 11 many people notice:",
-            "fewer early morning awakenings",
-            "deeper relaxation at night",
-            "more stable sleep patterns"
+            "Then return to your normal sleeping position."
           ],
           "completionMessage": "Stay with the practice until your body and mind feel steadier."
         },
@@ -2361,29 +1988,29 @@
         {
           "type": "close",
           "message": "Day 11 is complete.",
-          "secondaryMessage": "You reinforced stabilizing deep sleep today."
+          "secondaryMessage": "fewer early morning awakenings"
         }
       ]
     },
     {
       "dayNumber": 12,
       "dayTitle": "Releasing Hidden Stress",
-      "estimatedMinutes": 29,
+      "estimatedMinutes": 18,
       "cards": [
         {
           "type": "intro",
           "dayNumber": 12,
           "dayTitle": "Releasing Hidden Stress",
-          "goal": "Complete Day 12 with steady, consistent action.",
-          "estimatedMinutes": 29
+          "goal": "Reduce mental stress before sleep, allowing the brain to transition more easily into sleep.",
+          "estimatedMinutes": 18
         },
         {
           "type": "lesson",
           "title": "Today's Focus",
           "paragraphs": [
-            "Complete Day 12 with steady, consistent action."
+            "Reduce mental stress before sleep, allowing the brain to transition more easily into sleep."
           ],
-          "highlight": "Consistency compounds into long-term change."
+          "highlight": "calmer thoughts at night"
         },
         {
           "type": "action_step",
@@ -2395,11 +2022,9 @@
             "Do not wear sunglasses.",
             "Face the direction of the sky (not directly at the sun).",
             "Stay outside for 10–20 minutes.",
-            "Try walking slowly during sunlight exposure to strengthen your circadian rhythm signal.",
-            "Why this works",
-            "Morning sunlight resets the brain’s internal clock, helping regulate melatonin production at night."
+            "Try walking slowly during sunlight exposure to strengthen your circadian rhythm signal."
           ],
-          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+          "whyThisWorks": "Morning sunlight resets the brain’s internal clock, helping regulate melatonin production at night."
         },
         {
           "type": "breathing_exercise",
@@ -2417,12 +2042,6 @@
           "exercises": [
             {
               "name": "Total Movement Time: 25–30 Minutes",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Exercise Routine",
               "instructions": [
                 "Perform with steady breathing and controlled pacing."
               ]
@@ -2496,14 +2115,13 @@
           "instructions": [
             "Follow this rule strictly:",
             "No caffeine after 2 PM",
-            "This includes:",
             "coffee",
             "tea",
             "energy drinks",
             "pre-workout drinks",
             "Caffeine can remain active in the body 6–8 hours, disturbing sleep quality."
           ],
-          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+          "whyThisWorks": "Small consistent actions reinforce stability and support restful sleep."
         },
         {
           "type": "mindfulness_exercise",
@@ -2530,7 +2148,6 @@
           "title": "Body Temperature Sleep Trick",
           "steps": [
             "Take a warm shower 60–90 minutes before sleep.",
-            "Why this works",
             "After the shower, your body temperature drops slightly, which signals the brain that it is time to",
             "sleep."
           ],
@@ -2548,24 +2165,21 @@
             "Then imagine a calm scene:",
             "You are lying beside a quiet waterfall in a peaceful forest.",
             "The sound of water is gentle and calming.",
-            "Focus on the sound and the calm scene while breathing slowly.",
-            "Day 12 Sleep Trick – The “Gratitude Reset”",
+            "Focus on the sound and the calm scene while breathing slowly."
+          ],
+          "completionMessage": "Stay with the practice until your body and mind feel steadier."
+        },
+        {
+          "type": "mindfulness_exercise",
+          "title": "The “Gratitude Reset”",
+          "steps": [
             "Stress and negative thoughts often stay active in the brain before sleep.",
             "About 20–30 minutes before bed, write down 3 things you are grateful for today.",
             "They can be small things:",
             "a good conversation",
             "a nice meal",
             "a peaceful moment during the day",
-            "Take a moment to mentally relive each moment.",
-            "Why this works",
-            "Gratitude shifts the brain away from stress and problem-solving mode.",
-            "This activates emotional calm and prepares the brain for relaxed sleep.",
-            "Day 12 Goal",
-            "Reduce mental stress before sleep, allowing the brain to transition more easily into sleep.",
-            "By Day 12 many people begin noticing:",
-            "calmer thoughts at night",
-            "deeper emotional relaxation",
-            "smoother transition into sleep"
+            "Take a moment to mentally relive each moment."
           ],
           "completionMessage": "Stay with the practice until your body and mind feel steadier."
         },
@@ -2578,29 +2192,29 @@
         {
           "type": "close",
           "message": "Day 12 is complete.",
-          "secondaryMessage": "You reinforced releasing hidden stress today."
+          "secondaryMessage": "calmer thoughts at night"
         }
       ]
     },
     {
       "dayNumber": 13,
       "dayTitle": "Deep Body Relaxation",
-      "estimatedMinutes": 30,
+      "estimatedMinutes": 19,
       "cards": [
         {
           "type": "intro",
           "dayNumber": 13,
           "dayTitle": "Deep Body Relaxation",
-          "goal": "Complete Day 13 with steady, consistent action.",
-          "estimatedMinutes": 30
+          "goal": "Encourage deep physical relaxation and nervous system calm, helping the body transition more easily into deep sleep stages.",
+          "estimatedMinutes": 19
         },
         {
           "type": "lesson",
           "title": "Today's Focus",
           "paragraphs": [
-            "Complete Day 13 with steady, consistent action."
+            "Encourage deep physical relaxation and nervous system calm, helping the body transition more easily into deep sleep stages."
           ],
-          "highlight": "Consistency compounds into long-term change."
+          "highlight": "deeper sleep cycles"
         },
         {
           "type": "action_step",
@@ -2612,11 +2226,9 @@
             "Do not wear sunglasses.",
             "Face the direction of the sky (not directly at the sun).",
             "Stay outside for 10–20 minutes.",
-            "Try combining sunlight exposure with slow walking to strengthen your circadian rhythm.",
-            "Why this works",
-            "Morning sunlight resets the brain’s internal clock, helping regulate melatonin release at night."
+            "Try combining sunlight exposure with slow walking to strengthen your circadian rhythm."
           ],
-          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+          "whyThisWorks": "Morning sunlight resets the brain’s internal clock, helping regulate melatonin release at night."
         },
         {
           "type": "breathing_exercise",
@@ -2634,12 +2246,6 @@
           "exercises": [
             {
               "name": "Total Movement Time: 30 Minutes",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Exercise Routine",
               "instructions": [
                 "Perform with steady breathing and controlled pacing."
               ]
@@ -2713,14 +2319,13 @@
           "instructions": [
             "Follow this rule strictly:",
             "No caffeine after 2 PM",
-            "This includes:",
             "coffee",
             "tea",
             "energy drinks",
             "pre-workout drinks",
             "Caffeine can remain active in the body 6–8 hours, disturbing sleep."
           ],
-          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+          "whyThisWorks": "Small consistent actions reinforce stability and support restful sleep."
         },
         {
           "type": "mindfulness_exercise",
@@ -2747,7 +2352,6 @@
           "title": "Body Temperature Sleep Trick",
           "steps": [
             "Take a warm shower 60–90 minutes before sleep.",
-            "Why this works",
             "After the shower, your body temperature drops slightly, which signals the brain that it is time for",
             "sleep."
           ],
@@ -2765,25 +2369,20 @@
             "Then imagine a calm scene:",
             "You are lying beside a quiet lake surrounded by mountains.",
             "The water is still and the night sky is full of stars.",
-            "Focus on the calm scene while breathing slowly.",
-            "Day 13 Sleep Trick – The “Slow Blink Relaxation”",
+            "Focus on the calm scene while breathing slowly."
+          ],
+          "completionMessage": "Stay with the practice until your body and mind feel steadier."
+        },
+        {
+          "type": "mindfulness_exercise",
+          "title": "The “Slow Blink Relaxation”",
+          "steps": [
             "This trick helps relax the visual system and brain activity, which can keep people awake.",
             "While lying in bed:",
             "Close your eyes gently.",
             "Slowly open them halfway.",
             "Slowly close them again.",
-            "Repeat this 8–10 times slowly.",
-            "Why this works",
-            "Slow blinking relaxes the eye muscles and brain alertness system, helping the body transition into",
-            "sleep mode.",
-            "It mimics the natural blinking pattern that happens right before falling asleep.",
-            "Day 13 Goal",
-            "Encourage deep physical relaxation and nervous system calm, helping the body transition more",
-            "easily into deep sleep stages.",
-            "By Day 13 many people begin noticing:",
-            "deeper sleep cycles",
-            "less physical tension at night",
-            "feeling more refreshed in the morning"
+            "Repeat this 8–10 times slowly."
           ],
           "completionMessage": "Stay with the practice until your body and mind feel steadier."
         },
@@ -2796,29 +2395,29 @@
         {
           "type": "close",
           "message": "Day 13 is complete.",
-          "secondaryMessage": "You reinforced deep body relaxation today."
+          "secondaryMessage": "deeper sleep cycles"
         }
       ]
     },
     {
       "dayNumber": 14,
       "dayTitle": "Locking in the Sleep Rhythm",
-      "estimatedMinutes": 34,
+      "estimatedMinutes": 19,
       "cards": [
         {
           "type": "intro",
           "dayNumber": 14,
           "dayTitle": "Locking in the Sleep Rhythm",
-          "goal": "Complete Day 14 with steady, consistent action.",
-          "estimatedMinutes": 34
+          "goal": "Lock in a stable sleep rhythm and protect the brain from late-night stimulation.",
+          "estimatedMinutes": 19
         },
         {
           "type": "lesson",
           "title": "Today's Focus",
           "paragraphs": [
-            "Complete Day 14 with steady, consistent action."
+            "Lock in a stable sleep rhythm and protect the brain from late-night stimulation."
           ],
-          "highlight": "Consistency compounds into long-term change."
+          "highlight": "feeling sleepy earlier at night"
         },
         {
           "type": "action_step",
@@ -2830,11 +2429,9 @@
             "Do not wear sunglasses.",
             "Face the direction of the sky (not directly at the sun).",
             "Stay outside for 10–20 minutes.",
-            "Try to get sunlight before checking your phone. This strengthens the signal to your body clock.",
-            "Why this works",
-            "Morning sunlight resets the brain’s circadian rhythm, helping regulate melatonin release at night."
+            "Try to get sunlight before checking your phone. This strengthens the signal to your body clock."
           ],
-          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+          "whyThisWorks": "Morning sunlight resets the brain’s circadian rhythm, helping regulate melatonin release at night."
         },
         {
           "type": "breathing_exercise",
@@ -2852,12 +2449,6 @@
           "exercises": [
             {
               "name": "Total Movement Time: 30 Minutes",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Exercise Routine",
               "instructions": [
                 "Perform with steady breathing and controlled pacing."
               ]
@@ -2931,14 +2522,13 @@
           "instructions": [
             "Follow this rule strictly:",
             "No caffeine after 2 PM",
-            "This includes:",
             "coffee",
             "tea",
             "energy drinks",
             "pre-workout drinks",
             "Caffeine can remain active in the body 6–8 hours, disturbing sleep cycles."
           ],
-          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+          "whyThisWorks": "Small consistent actions reinforce stability and support restful sleep."
         },
         {
           "type": "mindfulness_exercise",
@@ -2965,7 +2555,6 @@
           "title": "Body Temperature Sleep Trick",
           "steps": [
             "Take a warm shower 60–90 minutes before sleep.",
-            "Why this works",
             "After the shower, the body temperature drops slightly, signaling the brain that it is time for sleep."
           ],
           "completionMessage": "Stay with the practice until your body and mind feel steadier."
@@ -2983,8 +2572,14 @@
             "You are lying on a quiet beach at night.",
             "You hear gentle waves and feel a cool breeze.",
             "The night feels calm and peaceful.",
-            "Focus on the calm scene while breathing slowly.",
-            "Day 14 Sleep Trick – The “Digital Sunset Rule”",
+            "Focus on the calm scene while breathing slowly."
+          ],
+          "completionMessage": "Stay with the practice until your body and mind feel steadier."
+        },
+        {
+          "type": "mindfulness_exercise",
+          "title": "The “Digital Sunset Rule”",
+          "steps": [
             "Screens are one of the biggest sleep disruptors.",
             "Create a digital sunset 90 minutes before bedtime.",
             "This means:",
@@ -2996,279 +2591,9 @@
             "reading",
             "stretching",
             "listening to calm audio",
-            "preparing for sleep",
-            "Why this works",
-            "Screens emit blue light, which blocks melatonin production.",
-            "Reducing screen exposure before sleep allows the brain to naturally prepare for sleep.",
-            "Day 14 Goal",
-            "Lock in a stable sleep rhythm and protect the brain from late-night stimulation.",
-            "By the end of Week 2 many people notice:",
-            "feeling sleepy earlier at night",
-            "deeper sleep cycles",
-            "more consistent sleep timing",
-            "Day 2 – Building Early Sleep Pressure"
+            "preparing for sleep"
           ],
           "completionMessage": "Stay with the practice until your body and mind feel steadier."
-        },
-        {
-          "type": "exercise_routine",
-          "title": "Morning Sunlight Exposure (10–20 Minutes)",
-          "exercises": [
-            {
-              "name": "Within 30 Minutes Of Waking, Go Outside And Expose Your Eyes To Natural Daylight.",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Step Outside Your Home, Balcony, Or Street.",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Do Not Wear Sunglasses.",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Face The Direction Of The Sky (not Directly At The Sun).",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Stay Outside For 10–20 Minutes.",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "If Possible, Walk Slowly While Getting Sunlight.",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Why This Works",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Morning Sunlight Resets The Brain’s Circadian Clock, Helping Regulate Melatonin Release At Night.",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            }
-          ]
-        },
-        {
-          "type": "breathing_exercise",
-          "title": "Hydration + Nervous System Activation",
-          "instructions": "Immediately after sunlight, drink 500–700 ml of water. Then perform this breathing exercise. 10 Cycles of Physiological Sigh Inhale through nose Take a second short inhale Slowly exhale through mouth Repeat 10 times. This lowers stress hormones and helps the nervous system relax.",
-          "pattern": {
-            "inhaleSeconds": 4,
-            "exhaleSeconds": 6
-          },
-          "cycles": 10
-        },
-        {
-          "type": "exercise_routine",
-          "title": "Increased Morning Movement (sleep Pressure Builder)",
-          "exercises": [
-            {
-              "name": "Total Movement Time: 15 Minutes",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Exercise Routine",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Brisk Walking",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "8–10 Minutes Continuous Walking.",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Bodyweight Squats",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "15 Reps × 3 Sets",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Pushups",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "10 Reps × 3 Sets",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Arm Circles",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "20 Seconds × 3 Sets",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Standing Forward Stretch",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "8 Slow Repetitions",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            }
-          ]
-        },
-        {
-          "type": "action_step",
-          "stepNumber": 3,
-          "title": "Caffeine Control Rule",
-          "instructions": [
-            "Today follow this rule strictly:",
-            "No caffeine after 2 PM",
-            "This includes:",
-            "coffee",
-            "tea",
-            "energy drinks",
-            "pre-workout drinks",
-            "Caffeine can remain active in the body 6–8 hours, which can disturb sleep."
-          ],
-          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
-        },
-        {
-          "type": "mindfulness_exercise",
-          "title": "Evening Nervous System Downshift",
-          "steps": [
-            "About 60 minutes before bed, listen to your guided sleep meditation audio.",
-            "Lie comfortably in bed.",
-            "Play the meditation audio at low volume.",
-            "Close your eyes and follow the instructions.",
-            "Allow your body to relax naturally.",
-            "Recommended audio length: 10–20 minutes."
-          ],
-          "completionMessage": "Stay with the practice until your body and mind feel steadier."
-        },
-        {
-          "type": "mindfulness_exercise",
-          "title": "Body Temperature Sleep Trick",
-          "steps": [
-            "Take a warm shower 60–90 minutes before sleep.",
-            "Why this works",
-            "After the shower, your body temperature drops slightly, which signals the brain that it is time for",
-            "sleep."
-          ],
-          "completionMessage": "Stay with the practice until your body and mind feel steadier."
-        },
-        {
-          "type": "exercise_routine",
-          "title": "The Military Sleep Method (fast Sleep Technique)",
-          "exercises": [
-            {
-              "name": "Once In Bed, Do This:",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Relax Your Forehead",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Relax Jaw And Tongue",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Drop Shoulders Completely",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Slowly Breathe Out",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Then Imagine A Calm Scene:",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "You Are Lying In A Quiet Field Under A Clear Night Sky.",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "The Air Is Calm And Peaceful.",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Focus On The Scene While Breathing Slowly.",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Day 2 Sleep Trick – The “cognitive Shuffle”",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "If Your Mind Keeps Thinking When Trying To Sleep, Use This Technique.",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "In Your Mind, Start Naming Random Neutral Objects.",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            }
-          ]
         },
         {
           "type": "journal",
@@ -3279,29 +2604,29 @@
         {
           "type": "close",
           "message": "Day 14 is complete.",
-          "secondaryMessage": "You reinforced locking in the sleep rhythm today."
+          "secondaryMessage": "feeling sleepy earlier at night"
         }
       ]
     },
     {
       "dayNumber": 15,
       "dayTitle": "Boosting Deep Sleep Recovery",
-      "estimatedMinutes": 31,
+      "estimatedMinutes": 20,
       "cards": [
         {
           "type": "intro",
           "dayNumber": 15,
           "dayTitle": "Boosting Deep Sleep Recovery",
-          "goal": "Complete Day 15 with steady, consistent action.",
-          "estimatedMinutes": 31
+          "goal": "Strengthen deep sleep recovery and physical fatigue, helping the body fall asleep faster and stay asleep longer.",
+          "estimatedMinutes": 20
         },
         {
           "type": "lesson",
           "title": "Today's Focus",
           "paragraphs": [
-            "Complete Day 15 with steady, consistent action."
+            "Strengthen deep sleep recovery and physical fatigue, helping the body fall asleep faster and stay asleep longer."
           ],
-          "highlight": "Consistency compounds into long-term change."
+          "highlight": "stronger sleepiness at night"
         },
         {
           "type": "action_step",
@@ -3313,11 +2638,9 @@
             "Do not wear sunglasses.",
             "Face the direction of the sky (not directly at the sun).",
             "Stay outside for 10–20 minutes.",
-            "Combine sunlight exposure with slow walking for the first 10 minutes.",
-            "Why this works",
-            "Morning sunlight resets the brain’s circadian rhythm, helping regulate melatonin release at night."
+            "Combine sunlight exposure with slow walking for the first 10 minutes."
           ],
-          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+          "whyThisWorks": "Morning sunlight resets the brain’s circadian rhythm, helping regulate melatonin release at night."
         },
         {
           "type": "breathing_exercise",
@@ -3335,12 +2658,6 @@
           "exercises": [
             {
               "name": "Total Movement Time: 35 Minutes",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Exercise Routine",
               "instructions": [
                 "Perform with steady breathing and controlled pacing."
               ]
@@ -3404,6 +2721,12 @@
               "instructions": [
                 "Perform with steady breathing and controlled pacing."
               ]
+            },
+            {
+              "name": "Plank Hold",
+              "instructions": [
+                "Perform with steady breathing and controlled pacing."
+              ]
             }
           ]
         },
@@ -3414,14 +2737,13 @@
           "instructions": [
             "Follow this rule strictly:",
             "No caffeine after 2 PM",
-            "This includes:",
             "coffee",
             "tea",
             "energy drinks",
             "pre-workout drinks",
             "Caffeine can remain active in the body 6–8 hours, affecting sleep quality."
           ],
-          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+          "whyThisWorks": "Small consistent actions reinforce stability and support restful sleep."
         },
         {
           "type": "mindfulness_exercise",
@@ -3448,7 +2770,6 @@
           "title": "Body Temperature Sleep Trick",
           "steps": [
             "Take a warm shower 60–90 minutes before sleep.",
-            "Why this works",
             "After the shower, the body temperature naturally drops, which signals the brain that it is time to",
             "sleep."
           ],
@@ -3467,27 +2788,20 @@
             "You are lying in a quiet valley under a clear night sky.",
             "The air is cool and peaceful.",
             "Everything around you is calm and silent.",
-            "Focus on the calm scene while breathing slowly.",
-            "Day 15 Sleep Trick – The “Nasal Breathing Trick”",
+            "Focus on the calm scene while breathing slowly."
+          ],
+          "completionMessage": "Stay with the practice until your body and mind feel steadier."
+        },
+        {
+          "type": "mindfulness_exercise",
+          "title": "The “Nasal Breathing Trick”",
+          "steps": [
             "Breathing through the nose instead of the mouth can significantly improve sleep quality.",
             "When lying in bed:",
             "keep your lips gently closed",
             "breathe slowly through your nose",
             "focus on calm, steady breathing",
-            "If needed, practice this for 3–5 minutes before sleep.",
-            "Why this works",
-            "Nasal breathing helps:",
-            "calm the nervous system",
-            "improve oxygen flow",
-            "reduce nighttime awakenings",
-            "It also encourages deeper and more stable sleep.",
-            "Day 15 Goal",
-            "Strengthen deep sleep recovery and physical fatigue, helping the body fall asleep faster and stay",
-            "asleep longer.",
-            "By Day 15 many people begin noticing:",
-            "stronger sleepiness at night",
-            "deeper sleep cycles",
-            "improved morning energy"
+            "If needed, practice this for 3–5 minutes before sleep."
           ],
           "completionMessage": "Stay with the practice until your body and mind feel steadier."
         },
@@ -3500,29 +2814,29 @@
         {
           "type": "close",
           "message": "Day 15 is complete.",
-          "secondaryMessage": "You reinforced boosting deep sleep recovery today."
+          "secondaryMessage": "stronger sleepiness at night"
         }
       ]
     },
     {
       "dayNumber": 16,
       "dayTitle": "Deep Sleep Conditioning",
-      "estimatedMinutes": 30,
+      "estimatedMinutes": 20,
       "cards": [
         {
           "type": "intro",
           "dayNumber": 16,
           "dayTitle": "Deep Sleep Conditioning",
-          "goal": "Complete Day 16 with steady, consistent action.",
-          "estimatedMinutes": 30
+          "goal": "Train the brain to disconnect from mental stimulation, allowing the body to transition into sleep more smoothly.",
+          "estimatedMinutes": 20
         },
         {
           "type": "lesson",
           "title": "Today's Focus",
           "paragraphs": [
-            "Complete Day 16 with steady, consistent action."
+            "Train the brain to disconnect from mental stimulation, allowing the body to transition into sleep more smoothly."
           ],
-          "highlight": "Consistency compounds into long-term change."
+          "highlight": "fewer racing thoughts"
         },
         {
           "type": "action_step",
@@ -3534,12 +2848,9 @@
             "Do not wear sunglasses.",
             "Face the direction of the sky (not directly at the sun).",
             "Stay outside for 10–20 minutes.",
-            "Combine sunlight exposure with light walking for the first 10 minutes.",
-            "Why this works",
-            "Morning sunlight resets the brain’s circadian rhythm, which controls the timing of melatonin release",
-            "at night."
+            "Combine sunlight exposure with light walking for the first 10 minutes."
           ],
-          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+          "whyThisWorks": "Morning sunlight resets the brain’s circadian rhythm, which controls the timing of melatonin release at night."
         },
         {
           "type": "breathing_exercise",
@@ -3557,12 +2868,6 @@
           "exercises": [
             {
               "name": "Total Movement Time: 40 Minutes",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Exercise Routine",
               "instructions": [
                 "Perform with steady breathing and controlled pacing."
               ]
@@ -3626,6 +2931,12 @@
               "instructions": [
                 "Perform with steady breathing and controlled pacing."
               ]
+            },
+            {
+              "name": "Standing Forward Stretch",
+              "instructions": [
+                "Perform with steady breathing and controlled pacing."
+              ]
             }
           ]
         },
@@ -3636,14 +2947,13 @@
           "instructions": [
             "Follow this rule strictly:",
             "No caffeine after 2 PM",
-            "This includes:",
             "coffee",
             "tea",
             "energy drinks",
             "pre-workout drinks",
             "Caffeine can stay active in the body 6–8 hours, disturbing sleep cycles."
           ],
-          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+          "whyThisWorks": "Small consistent actions reinforce stability and support restful sleep."
         },
         {
           "type": "mindfulness_exercise",
@@ -3670,7 +2980,6 @@
           "title": "Body Temperature Sleep Trick",
           "steps": [
             "Take a warm shower 60–90 minutes before sleep.",
-            "Why this works",
             "After the shower, the body temperature naturally drops, signaling the brain that it is time to sleep."
           ],
           "completionMessage": "Stay with the practice until your body and mind feel steadier."
@@ -3687,24 +2996,20 @@
             "Then imagine a calm scene:",
             "You are lying beside a quiet river under a peaceful night sky.",
             "The sound of water is gentle and relaxing.",
-            "Focus on the calm scene while breathing slowly.",
-            "Day 16 Sleep Trick – The “Cognitive Defusion Trick”",
+            "Focus on the calm scene while breathing slowly."
+          ],
+          "completionMessage": "Stay with the practice until your body and mind feel steadier."
+        },
+        {
+          "type": "mindfulness_exercise",
+          "title": "The “Cognitive Defusion Trick”",
+          "steps": [
             "Sometimes thoughts keep repeating in the mind at night.",
             "Instead of fighting the thought, label it and let it pass.",
             "When a thought appears, say silently:",
             "“This is just a thought.”",
             "Then let it pass and return to slow breathing.",
-            "Do not analyze or continue the thought.",
-            "Why this works",
-            "Trying to stop thoughts often makes them stronger.",
-            "Labeling them as just thoughts removes their emotional power and allows the brain to relax.",
-            "Day 16 Goal",
-            "Train the brain to disconnect from mental stimulation, allowing the body to transition into sleep",
-            "more smoothly.",
-            "By Day 16 many people notice:",
-            "fewer racing thoughts",
-            "faster sleep onset",
-            "deeper relaxation before sleep"
+            "Do not analyze or continue the thought."
           ],
           "completionMessage": "Stay with the practice until your body and mind feel steadier."
         },
@@ -3717,29 +3022,29 @@
         {
           "type": "close",
           "message": "Day 16 is complete.",
-          "secondaryMessage": "You reinforced deep sleep conditioning today."
+          "secondaryMessage": "fewer racing thoughts"
         }
       ]
     },
     {
       "dayNumber": 17,
       "dayTitle": "Deep Nervous System Recovery",
-      "estimatedMinutes": 32,
+      "estimatedMinutes": 21,
       "cards": [
         {
           "type": "intro",
           "dayNumber": 17,
           "dayTitle": "Deep Nervous System Recovery",
-          "goal": "Complete Day 17 with steady, consistent action.",
-          "estimatedMinutes": 32
+          "goal": "Encourage deep physical relaxation and nervous system calm, helping the body enter deeper restorative sleep cycles.",
+          "estimatedMinutes": 21
         },
         {
           "type": "lesson",
           "title": "Today's Focus",
           "paragraphs": [
-            "Complete Day 17 with steady, consistent action."
+            "Encourage deep physical relaxation and nervous system calm, helping the body enter deeper restorative sleep cycles."
           ],
-          "highlight": "Consistency compounds into long-term change."
+          "highlight": "deeper sleep"
         },
         {
           "type": "action_step",
@@ -3751,11 +3056,9 @@
             "Do not wear sunglasses.",
             "Face the direction of the sky (not directly at the sun).",
             "Stay outside for 10–20 minutes.",
-            "Try to combine sunlight with 10 minutes of walking.",
-            "Why this works",
-            "Morning sunlight resets the brain’s circadian rhythm, which controls melatonin release at night."
+            "Try to combine sunlight with 10 minutes of walking."
           ],
-          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+          "whyThisWorks": "Morning sunlight resets the brain’s circadian rhythm, which controls melatonin release at night."
         },
         {
           "type": "breathing_exercise",
@@ -3773,12 +3076,6 @@
           "exercises": [
             {
               "name": "Total Movement Time: 40–45 Minutes",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Exercise Routine",
               "instructions": [
                 "Perform with steady breathing and controlled pacing."
               ]
@@ -3842,6 +3139,12 @@
               "instructions": [
                 "Perform with steady breathing and controlled pacing."
               ]
+            },
+            {
+              "name": "Standing Forward Stretch",
+              "instructions": [
+                "Perform with steady breathing and controlled pacing."
+              ]
             }
           ]
         },
@@ -3852,14 +3155,13 @@
           "instructions": [
             "Follow this rule strictly:",
             "No caffeine after 2 PM",
-            "This includes:",
             "coffee",
             "tea",
             "energy drinks",
             "pre-workout drinks",
             "Caffeine can remain active in the body 6–8 hours, interfering with sleep cycles."
           ],
-          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+          "whyThisWorks": "Small consistent actions reinforce stability and support restful sleep."
         },
         {
           "type": "mindfulness_exercise",
@@ -3886,7 +3188,6 @@
           "title": "Body Temperature Sleep Trick",
           "steps": [
             "Take a warm shower 60–90 minutes before sleep.",
-            "Why this works",
             "After the shower, the body temperature naturally drops, signaling the brain that it is time to sleep."
           ],
           "completionMessage": "Stay with the practice until your body and mind feel steadier."
@@ -3904,25 +3205,21 @@
             "You are lying in a quiet forest clearing under the moonlight.",
             "The air is cool and peaceful.",
             "Everything around you is calm and silent.",
-            "Focus on the calm scene while breathing slowly.",
-            "Day 17 Sleep Trick – The “Foot Massage Relaxation”",
+            "Focus on the calm scene while breathing slowly."
+          ],
+          "completionMessage": "Stay with the practice until your body and mind feel steadier."
+        },
+        {
+          "type": "mindfulness_exercise",
+          "title": "The “Foot Massage Relaxation”",
+          "steps": [
             "The feet contain many nerve endings connected to the nervous system.",
             "Relaxing them before bed can help the entire body relax.",
             "Before sleeping:",
             "Sit comfortably on the bed.",
             "Gently massage the bottom of each foot.",
             "Apply light pressure using your thumbs.",
-            "Massage for 2–3 minutes per foot.",
-            "Why this works",
-            "Foot massage stimulates relaxation pathways in the nervous system, reducing physical tension and",
-            "helping the body transition into sleep.",
-            "Day 17 Goal",
-            "Encourage deep physical relaxation and nervous system calm, helping the body enter deeper",
-            "restorative sleep cycles.",
-            "By Day 17 many people notice:",
-            "deeper sleep",
-            "fewer awakenings during the night",
-            "waking up feeling more refreshed"
+            "Massage for 2–3 minutes per foot."
           ],
           "completionMessage": "Stay with the practice until your body and mind feel steadier."
         },
@@ -3935,29 +3232,29 @@
         {
           "type": "close",
           "message": "Day 17 is complete.",
-          "secondaryMessage": "You reinforced deep nervous system recovery today."
+          "secondaryMessage": "deeper sleep"
         }
       ]
     },
     {
       "dayNumber": 18,
       "dayTitle": "Deep Sleep Optimization",
-      "estimatedMinutes": 33,
+      "estimatedMinutes": 21,
       "cards": [
         {
           "type": "intro",
           "dayNumber": 18,
           "dayTitle": "Deep Sleep Optimization",
-          "goal": "Complete Day 18 with steady, consistent action.",
-          "estimatedMinutes": 33
+          "goal": "Deepen physical and neurological relaxation, preparing the body for stronger deep sleep cycles.",
+          "estimatedMinutes": 21
         },
         {
           "type": "lesson",
           "title": "Today's Focus",
           "paragraphs": [
-            "Complete Day 18 with steady, consistent action."
+            "Deepen physical and neurological relaxation, preparing the body for stronger deep sleep cycles."
           ],
-          "highlight": "Consistency compounds into long-term change."
+          "highlight": "falling asleep more quickly"
         },
         {
           "type": "action_step",
@@ -3969,11 +3266,9 @@
             "Do not wear sunglasses.",
             "Face the direction of the sky (not directly at the sun).",
             "Stay outside for 10–20 minutes.",
-            "Combine sunlight exposure with 10 minutes of slow walking.",
-            "Why this works",
-            "Morning sunlight resets the brain’s circadian rhythm, helping regulate melatonin release at night."
+            "Combine sunlight exposure with 10 minutes of slow walking."
           ],
-          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+          "whyThisWorks": "Morning sunlight resets the brain’s circadian rhythm, helping regulate melatonin release at night."
         },
         {
           "type": "breathing_exercise",
@@ -3991,12 +3286,6 @@
           "exercises": [
             {
               "name": "Total Movement Time: 45 Minutes",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Exercise Routine",
               "instructions": [
                 "Perform with steady breathing and controlled pacing."
               ]
@@ -4060,6 +3349,12 @@
               "instructions": [
                 "Perform with steady breathing and controlled pacing."
               ]
+            },
+            {
+              "name": "Standing Forward Stretch",
+              "instructions": [
+                "Perform with steady breathing and controlled pacing."
+              ]
             }
           ]
         },
@@ -4070,14 +3365,13 @@
           "instructions": [
             "Follow this rule strictly:",
             "No caffeine after 2 PM",
-            "This includes:",
             "coffee",
             "tea",
             "energy drinks",
             "pre-workout drinks",
             "Caffeine can remain active in the body 6–8 hours, interfering with sleep quality."
           ],
-          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+          "whyThisWorks": "Small consistent actions reinforce stability and support restful sleep."
         },
         {
           "type": "mindfulness_exercise",
@@ -4104,7 +3398,6 @@
           "title": "Body Temperature Sleep Trick",
           "steps": [
             "Take a warm shower 60–90 minutes before sleep.",
-            "Why this works",
             "After the shower, the body temperature drops slightly, signaling the brain that it is time for sleep."
           ],
           "completionMessage": "Stay with the practice until your body and mind feel steadier."
@@ -4121,23 +3414,20 @@
             "Then imagine a calm scene:",
             "You are lying beside a quiet lake under a moonlit sky.",
             "The water is still and the air is peaceful.",
-            "Focus on the calm scene while breathing slowly.",
-            "Day 18 Sleep Trick – The “Eye Relaxation Method”",
+            "Focus on the calm scene while breathing slowly."
+          ],
+          "completionMessage": "Stay with the practice until your body and mind feel steadier."
+        },
+        {
+          "type": "mindfulness_exercise",
+          "title": "The “Eye Relaxation Method”",
+          "steps": [
             "Eye tension can keep the brain in alert mode, especially after screen use.",
             "While lying in bed:",
             "Close your eyes gently.",
             "Imagine your eyeballs sinking deeper into the eye sockets.",
             "Let your eyes become very heavy and relaxed.",
-            "Stay with this feeling for 2–3 minutes.",
-            "Why this works",
-            "Relaxing the eye muscles signals the brain that alertness is no longer required, helping the nervous",
-            "system transition into sleep mode.",
-            "Day 18 Goal",
-            "Deepen physical and neurological relaxation, preparing the body for stronger deep sleep cycles.",
-            "By Day 18 many people notice:",
-            "falling asleep more quickly",
-            "deeper sleep stages",
-            "improved morning energy"
+            "Stay with this feeling for 2–3 minutes."
           ],
           "completionMessage": "Stay with the practice until your body and mind feel steadier."
         },
@@ -4150,29 +3440,29 @@
         {
           "type": "close",
           "message": "Day 18 is complete.",
-          "secondaryMessage": "You reinforced deep sleep optimization today."
+          "secondaryMessage": "falling asleep more quickly"
         }
       ]
     },
     {
       "dayNumber": 19,
       "dayTitle": "Releasing Hidden Body Tension",
-      "estimatedMinutes": 32,
+      "estimatedMinutes": 21,
       "cards": [
         {
           "type": "intro",
           "dayNumber": 19,
           "dayTitle": "Releasing Hidden Body Tension",
-          "goal": "Complete Day 19 with steady, consistent action.",
-          "estimatedMinutes": 32
+          "goal": "Release hidden muscle tension, allowing the body to enter deeper and more continuous sleep.",
+          "estimatedMinutes": 21
         },
         {
           "type": "lesson",
           "title": "Today's Focus",
           "paragraphs": [
-            "Complete Day 19 with steady, consistent action."
+            "Release hidden muscle tension, allowing the body to enter deeper and more continuous sleep."
           ],
-          "highlight": "Consistency compounds into long-term change."
+          "highlight": "deeper relaxation before sleep"
         },
         {
           "type": "action_step",
@@ -4184,11 +3474,9 @@
             "Do not wear sunglasses.",
             "Face the direction of the sky (not directly at the sun).",
             "Stay outside for 10–20 minutes.",
-            "Combine sunlight exposure with 10 minutes of slow walking.",
-            "Why this works",
-            "Morning sunlight resets the brain’s circadian rhythm, helping regulate melatonin release at night."
+            "Combine sunlight exposure with 10 minutes of slow walking."
           ],
-          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+          "whyThisWorks": "Morning sunlight resets the brain’s circadian rhythm, helping regulate melatonin release at night."
         },
         {
           "type": "breathing_exercise",
@@ -4206,12 +3494,6 @@
           "exercises": [
             {
               "name": "Total Movement Time: 45–50 Minutes",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Exercise Routine",
               "instructions": [
                 "Perform with steady breathing and controlled pacing."
               ]
@@ -4275,6 +3557,12 @@
               "instructions": [
                 "Perform with steady breathing and controlled pacing."
               ]
+            },
+            {
+              "name": "Standing Forward Stretch",
+              "instructions": [
+                "Perform with steady breathing and controlled pacing."
+              ]
             }
           ]
         },
@@ -4285,14 +3573,13 @@
           "instructions": [
             "Follow this rule strictly:",
             "No caffeine after 2 PM",
-            "This includes:",
             "coffee",
             "tea",
             "energy drinks",
             "pre-workout drinks",
             "Caffeine can remain active in the body 6–8 hours, disturbing sleep quality."
           ],
-          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+          "whyThisWorks": "Small consistent actions reinforce stability and support restful sleep."
         },
         {
           "type": "mindfulness_exercise",
@@ -4319,7 +3606,6 @@
           "title": "Body Temperature Sleep Trick",
           "steps": [
             "Take a warm shower 60–90 minutes before sleep.",
-            "Why this works",
             "After the shower, your body temperature drops slightly, signaling the brain that it is time for sleep."
           ],
           "completionMessage": "Stay with the practice until your body and mind feel steadier."
@@ -4336,23 +3622,20 @@
             "Then imagine a calm scene:",
             "You are lying beside a quiet river in the mountains.",
             "The water flows gently and the night air is peaceful.",
-            "Focus on the calm scene while breathing slowly.",
-            "Day 19 Sleep Trick – The “Jaw Release Trick”",
+            "Focus on the calm scene while breathing slowly."
+          ],
+          "completionMessage": "Stay with the practice until your body and mind feel steadier."
+        },
+        {
+          "type": "mindfulness_exercise",
+          "title": "The “Jaw Release Trick”",
+          "steps": [
             "Many people hold hidden tension in the jaw muscles, which can keep the brain alert.",
             "While lying in bed:",
             "Slightly open your mouth.",
             "Let your tongue relax at the bottom of your mouth.",
             "Allow the jaw to feel loose and heavy.",
-            "Stay like this for 1–2 minutes.",
-            "Why this works",
-            "Jaw tension is connected to the brain’s stress response system.",
-            "Releasing the jaw sends a signal that the body is safe and ready for sleep.",
-            "Day 19 Goal",
-            "Release hidden muscle tension, allowing the body to enter deeper and more continuous sleep.",
-            "By Day 19 many people notice:",
-            "deeper relaxation before sleep",
-            "fewer nighttime awakenings",
-            "improved sleep continuity"
+            "Stay like this for 1–2 minutes."
           ],
           "completionMessage": "Stay with the practice until your body and mind feel steadier."
         },
@@ -4365,29 +3648,29 @@
         {
           "type": "close",
           "message": "Day 19 is complete.",
-          "secondaryMessage": "You reinforced releasing hidden body tension today."
+          "secondaryMessage": "deeper relaxation before sleep"
         }
       ]
     },
     {
       "dayNumber": 20,
       "dayTitle": "Automatic Sleep Transition",
-      "estimatedMinutes": 32,
+      "estimatedMinutes": 21,
       "cards": [
         {
           "type": "intro",
           "dayNumber": 20,
           "dayTitle": "Automatic Sleep Transition",
-          "goal": "Complete Day 20 with steady, consistent action.",
-          "estimatedMinutes": 32
+          "goal": "Allow the body to transition into sleep naturally and effortlessly, reinforcing the strong sleep habits built over the past 20 days.",
+          "estimatedMinutes": 21
         },
         {
           "type": "lesson",
           "title": "Today's Focus",
           "paragraphs": [
-            "Complete Day 20 with steady, consistent action."
+            "Allow the body to transition into sleep naturally and effortlessly, reinforcing the strong sleep habits built over the past 20 days."
           ],
-          "highlight": "Consistency compounds into long-term change."
+          "highlight": "falling asleep almost automatically"
         },
         {
           "type": "action_step",
@@ -4399,12 +3682,9 @@
             "Do not wear sunglasses.",
             "Face the direction of the sky (not directly at the sun).",
             "Stay outside for 10–20 minutes.",
-            "Combine sunlight exposure with 10–12 minutes of walking.",
-            "Why this works",
-            "Morning sunlight resets the brain’s circadian rhythm, helping regulate melatonin production at",
-            "night."
+            "Combine sunlight exposure with 10–12 minutes of walking."
           ],
-          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+          "whyThisWorks": "Morning sunlight resets the brain’s circadian rhythm, helping regulate melatonin production at night."
         },
         {
           "type": "breathing_exercise",
@@ -4422,12 +3702,6 @@
           "exercises": [
             {
               "name": "Total Movement Time: 50 Minutes",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Exercise Routine",
               "instructions": [
                 "Perform with steady breathing and controlled pacing."
               ]
@@ -4491,6 +3765,12 @@
               "instructions": [
                 "Perform with steady breathing and controlled pacing."
               ]
+            },
+            {
+              "name": "Standing Forward Stretch",
+              "instructions": [
+                "Perform with steady breathing and controlled pacing."
+              ]
             }
           ]
         },
@@ -4501,14 +3781,13 @@
           "instructions": [
             "Follow this rule strictly:",
             "No caffeine after 2 PM",
-            "This includes:",
             "coffee",
             "tea",
             "energy drinks",
             "pre-workout drinks",
             "Caffeine can remain active in the body 6–8 hours, disturbing sleep cycles."
           ],
-          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+          "whyThisWorks": "Small consistent actions reinforce stability and support restful sleep."
         },
         {
           "type": "mindfulness_exercise",
@@ -4535,7 +3814,6 @@
           "title": "Body Temperature Sleep Trick",
           "steps": [
             "Take a warm shower 60–90 minutes before sleep.",
-            "Why this works",
             "After the shower, the body temperature drops slightly, signaling the brain that it is time for sleep."
           ],
           "completionMessage": "Stay with the practice until your body and mind feel steadier."
@@ -4553,29 +3831,18 @@
             "You are lying in a quiet valley surrounded by mountains at night.",
             "The air is cool and peaceful.",
             "Everything around you is calm and still.",
-            "Focus on the calm scene while breathing slowly.",
-            "Day 20 Sleep Trick – The “Breath Counting Drift”",
+            "Focus on the calm scene while breathing slowly."
+          ],
+          "completionMessage": "Stay with the practice until your body and mind feel steadier."
+        },
+        {
+          "type": "mindfulness_exercise",
+          "title": "The “Breath Counting Drift”",
+          "steps": [
             "This technique helps the brain drift naturally into sleep.",
             "While lying in bed:",
             "Take slow nasal breaths.",
-            "Count each exhale.",
-            "Example:",
-            "Exhale 1",
-            "Exhale 2",
-            "Exhale 3",
-            "Continue until 10, then start again.",
-            "Keep breathing slow and calm.",
-            "Why this works",
-            "Counting breaths keeps the brain lightly focused, preventing racing thoughts while allowing the body",
-            "to drift into sleep.",
-            "It creates a gentle mental rhythm that supports sleep onset.",
-            "Day 20 Goal",
-            "Allow the body to transition into sleep naturally and effortlessly, reinforcing the strong sleep habits",
-            "built over the past 20 days.",
-            "By Day 20 many people notice:",
-            "falling asleep almost automatically",
-            "deeper and longer sleep cycles",
-            "improved morning energy"
+            "Count each exhale."
           ],
           "completionMessage": "Stay with the practice until your body and mind feel steadier."
         },
@@ -4588,29 +3855,29 @@
         {
           "type": "close",
           "message": "Day 20 is complete.",
-          "secondaryMessage": "You reinforced automatic sleep transition today."
+          "secondaryMessage": "falling asleep almost automatically"
         }
       ]
     },
     {
       "dayNumber": 21,
       "dayTitle": "Long-Term Sleep Stability",
-      "estimatedMinutes": 32,
+      "estimatedMinutes": 21,
       "cards": [
         {
           "type": "intro",
           "dayNumber": 21,
           "dayTitle": "Long-Term Sleep Stability",
-          "goal": "Complete Day 21 with steady, consistent action.",
-          "estimatedMinutes": 32
+          "goal": "Lock in the sleep habits and routines developed during the past 21 days so they continue working long term.",
+          "estimatedMinutes": 21
         },
         {
           "type": "lesson",
           "title": "Today's Focus",
           "paragraphs": [
-            "Complete Day 21 with steady, consistent action."
+            "Lock in the sleep habits and routines developed during the past 21 days so they continue working long term."
           ],
-          "highlight": "Consistency compounds into long-term change."
+          "highlight": "consistent sleep timing"
         },
         {
           "type": "action_step",
@@ -4622,12 +3889,9 @@
             "Do not wear sunglasses.",
             "Face the direction of the sky (not directly at the sun).",
             "Stay outside for 10–20 minutes.",
-            "Combine sunlight exposure with 10–15 minutes of walking.",
-            "Why this works",
-            "Morning sunlight keeps your circadian rhythm stable, helping the body release melatonin at the",
-            "correct time every night."
+            "Combine sunlight exposure with 10–15 minutes of walking."
           ],
-          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+          "whyThisWorks": "Morning sunlight keeps your circadian rhythm stable, helping the body release melatonin at the correct time every night."
         },
         {
           "type": "breathing_exercise",
@@ -4645,12 +3909,6 @@
           "exercises": [
             {
               "name": "Total Movement Time: 50–55 Minutes",
-              "instructions": [
-                "Perform with steady breathing and controlled pacing."
-              ]
-            },
-            {
-              "name": "Exercise Routine",
               "instructions": [
                 "Perform with steady breathing and controlled pacing."
               ]
@@ -4714,6 +3972,12 @@
               "instructions": [
                 "Perform with steady breathing and controlled pacing."
               ]
+            },
+            {
+              "name": "Standing Forward Stretch",
+              "instructions": [
+                "Perform with steady breathing and controlled pacing."
+              ]
             }
           ]
         },
@@ -4724,14 +3988,13 @@
           "instructions": [
             "Continue following this rule:",
             "No caffeine after 2 PM",
-            "This includes:",
             "coffee",
             "tea",
             "energy drinks",
             "pre-workout drinks",
             "Reducing late caffeine protects sleep quality and sleep depth."
           ],
-          "whyThisWorks": "Small consistent actions reinforce stability and reduce automatic, stress-driven reactions."
+          "whyThisWorks": "Small consistent actions reinforce stability and support restful sleep."
         },
         {
           "type": "mindfulness_exercise",
@@ -4758,7 +4021,6 @@
           "title": "Body Temperature Sleep Trick",
           "steps": [
             "Take a warm shower 60–90 minutes before sleep.",
-            "Why this works",
             "After the shower, the body temperature drops slightly, signaling the brain that it is time for sleep."
           ],
           "completionMessage": "Stay with the practice until your body and mind feel steadier."
@@ -4775,25 +4037,20 @@
             "Then imagine a calm scene:",
             "You are lying beside a quiet lake under a clear night sky.",
             "The water is still and the night air is peaceful.",
-            "Focus on the calm scene while breathing slowly.",
-            "Day 21 Sleep Trick – The “Sleep Anchor”",
+            "Focus on the calm scene while breathing slowly."
+          ],
+          "completionMessage": "Stay with the practice until your body and mind feel steadier."
+        },
+        {
+          "type": "mindfulness_exercise",
+          "title": "The “Sleep Anchor”",
+          "steps": [
             "This technique helps the brain associate one consistent cue with sleep.",
             "Choose one simple action you will repeat every night before sleep, such as:",
             "turning on your meditation audio",
             "dimming the lights",
             "taking 5 slow breaths",
-            "Repeat the same action every night before sleeping.",
-            "Why this works",
-            "The brain begins to associate that action with sleep time.",
-            "Over time, the brain will start triggering sleep almost automatically when the cue happens.",
-            "Day 21 Goal",
-            "Lock in the sleep habits and routines developed during the past 21 days so they continue working",
-            "long term.",
-            "By the end of the program many people notice:",
-            "consistent sleep timing",
-            "deeper sleep cycles",
-            "easier sleep onset",
-            "improved morning energy"
+            "Repeat the same action every night before sleeping."
           ],
           "completionMessage": "Stay with the practice until your body and mind feel steadier."
         },
@@ -4806,7 +4063,7 @@
         {
           "type": "close",
           "message": "Day 21 is complete.",
-          "secondaryMessage": "You reinforced long-term sleep stability today."
+          "secondaryMessage": "consistent sleep timing"
         }
       ]
     }

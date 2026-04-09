@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { ONBOARDING_RESPONSE_QUERY_KEY } from '@/hooks/useOnboardingResponse';
 import { buildOnboardingSteps, createInitialOnboardingAnswers, getOnboardingResolution } from '@/lib/onboarding.flow';
-import { saveOnboardingQuestionnaire } from '@/lib/onboarding.persistence';
+import { hasMeaningfulOnboardingDraft, loadOnboardingDraft, saveOnboardingDraft, saveOnboardingQuestionnaire } from '@/lib/onboarding.persistence';
 import { GENDER_OPTIONS } from '@/lib/onboarding.types';
 import type { GenderOption, GuidedIssueId, JourneyKey, OnboardingPath, OnboardingStep, QuestionDefinition } from '@/lib/onboarding.types';
 import { useAuth } from '@/providers/auth';
@@ -18,13 +18,13 @@ import { PROFILE_QUERY_KEY } from '@/providers/profile';
 
 function SegmentedProgress({ currentStep, totalSteps }: { currentStep: number; totalSteps: number }) {
   return (
-    <View className="flex-row gap-1.5">
+    <View className="flex-row gap-2">
       {Array.from({ length: totalSteps }).map((_, index) => (
-        <View key={`questionnaire-progress-${index}`} className="h-[4px] flex-1 rounded-full bg-forest/10 overflow-hidden">
+        <View key={`questionnaire-progress-${index}`} className="h-[4px] flex-1 overflow-hidden rounded-full bg-[#D8DED5]">
           {index <= currentStep && (
             <Animated.View 
               entering={FadeIn.duration(400)} 
-              className="h-full w-full rounded-full bg-forest" 
+              className="h-full w-full rounded-full bg-[#183226]" 
             />
           )}
         </View>
@@ -67,31 +67,30 @@ function SelectionCard({
     >
       <Animated.View
         style={animatedStyle}
-        className={`mb-3 w-full rounded-[24px] border ${compact ? 'px-5 py-4' : 'px-6 py-5'} ${
+        className={`mb-3 w-full rounded-[24px] border ${compact ? 'px-4 py-4' : 'px-5 py-4.5'} ${
           selected
-            ? 'border-forest bg-forest shadow-lg shadow-forest/20'
-            : 'border-forest/5 bg-white shadow-sm shadow-forest/5'
+            ? 'border-[#183226] bg-[#EEF2EB]'
+            : 'border-[#DCE1D8] bg-white/88'
         }`}
       >
-        <View className="flex-row items-center justify-between">
-          <Text
-            className={`font-satoshi-bold ${compact ? 'text-[15px]' : 'text-base'} ${
-              selected ? 'text-white' : 'text-forest'
-            }`}
-          >
-            {title}
-          </Text>
-          {selected && (
-            <Animated.View
-              entering={FadeIn.duration(200)}
-              className="ml-3 h-2.5 w-2.5 rounded-full bg-white"
-            />
-          )}
+        <View className="flex-row items-start justify-between gap-4">
+          <View className="flex-1">
+            <Text
+              className={`font-satoshi-bold ${compact ? 'text-[15px] leading-[22px]' : 'text-[16px] leading-[24px]'} ${
+                selected ? 'text-[#13281D]' : 'text-[#1A3024]'
+              }`}
+            >
+              {title}
+            </Text>
+          </View>
+          <View className={`mt-1 h-4 w-4 rounded-full border ${selected ? 'border-[#183226] bg-[#183226]' : 'border-[#BFB29B] bg-transparent'}`}>
+            {selected ? <View className="m-[3px] h-[6px] w-[6px] rounded-full bg-[#F6F1E7]" /> : null}
+          </View>
         </View>
         {description ? (
           <Text
-            className={`mt-2 font-satoshi text-sm leading-[22px] ${
-              selected ? 'text-white/80' : 'text-forest/60'
+            className={`mt-2.5 font-satoshi text-[14px] leading-[22px] ${
+              selected ? 'text-[#3F473E]' : 'text-[#5D574E]'
             }`}
           >
             {description}
@@ -112,14 +111,14 @@ function RecommendationCard({
   body: string;
 }) {
   return (
-    <View className="mb-4 rounded-[28px] border border-forest/5 bg-white px-6 py-6 shadow-sm shadow-forest/5">
+    <View className="mb-4 rounded-[24px] border border-[#DCE1D8] bg-white/88 px-5 py-5">
       {eyebrow ? (
-        <Text className="font-satoshi-bold text-[11px] uppercase tracking-[1.8px] text-forest/50">
+        <Text className="font-satoshi-bold text-[11px] uppercase tracking-[1.8px] text-[#70695E]">
           {eyebrow}
         </Text>
       ) : null}
-      <Text className="mt-3 font-erode-semibold text-[28px] leading-[34px] text-forest">{title}</Text>
-      <Text className="mt-2 font-satoshi text-[15px] leading-relaxed text-forest/70">{body}</Text>
+      <Text className="mt-3 font-erode-semibold text-[26px] leading-[32px] text-[#13281D]">{title}</Text>
+      <Text className="mt-2 font-satoshi text-[14px] leading-6 text-[#585249]">{body}</Text>
     </View>
   );
 }
@@ -131,7 +130,9 @@ function isPositiveInteger(value: string) {
 export default function Personalization() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const [didRestoreDraft, setDidRestoreDraft] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
+  const [isDraftReady, setIsDraftReady] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [answers, setAnswers] = useState(createInitialOnboardingAnswers);
 
@@ -150,6 +151,90 @@ export default function Personalization() {
       setStepIndex(Math.max(0, steps.length - 1));
     }
   }, [stepIndex, steps.length]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const restoreDraft = async () => {
+      if (!user) {
+        if (isMounted) {
+          setIsDraftReady(true);
+        }
+        return;
+      }
+
+      try {
+        const draft = await loadOnboardingDraft(user.id);
+        if (!isMounted) return;
+
+        if (draft) {
+          const restoredAnswers = {
+            ...createInitialOnboardingAnswers(),
+            ...draft.answers,
+            questionValues: draft.answers.questionValues ?? {},
+          };
+
+          const restoredSteps = buildOnboardingSteps(restoredAnswers);
+          const restoredIndex = restoredSteps.findIndex((step) => step.id === draft.currentStepId);
+
+          setAnswers(restoredAnswers);
+          setStepIndex(
+            restoredIndex >= 0
+              ? restoredIndex
+              : Math.max(0, Math.min(draft.currentStepIndex ?? 0, restoredSteps.length - 1))
+          );
+          setDidRestoreDraft(true);
+        }
+      } catch (error) {
+        console.error('Failed to restore onboarding draft', error);
+      } finally {
+        if (isMounted) {
+          setIsDraftReady(true);
+        }
+      }
+    };
+
+    void restoreDraft();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [user]);
+
+  useEffect(() => {
+    if (!isDraftReady || !user || isSaving) {
+      return;
+    }
+
+    if (!hasMeaningfulOnboardingDraft(answers)) {
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      void saveOnboardingDraft({
+        answers,
+        currentStepId: currentStep.id,
+        currentStepIndex: stepIndex,
+        email: user.email,
+        userId: user.id,
+      }).catch((error) => {
+        console.error('Failed to save onboarding draft', error);
+      });
+    }, 500);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [answers, currentStep.id, isDraftReady, isSaving, stepIndex, user]);
+
+  useEffect(() => {
+    if (!didRestoreDraft) {
+      return;
+    }
+
+    Alert.alert('Progress restored', 'We restored your progress so you can keep going.');
+    setDidRestoreDraft(false);
+  }, [didRestoreDraft]);
 
   const updateQuickProfile = <K extends 'name' | 'age'>(key: K, value: string) => {
     setAnswers((current) => ({ ...current, [key]: value }));
@@ -341,7 +426,7 @@ export default function Personalization() {
           value={typeof currentValue === 'string' ? currentValue : ''}
           onChangeText={(value) => updateQuestionValue(question.id, value)}
           keyboardType={question.keyboardType}
-          className="rounded-[24px] border-forest/5 bg-white px-6 py-4 font-satoshi text-base text-forest shadow-sm shadow-forest/5"
+          className="rounded-[20px] border-[#DCE1D8] bg-white/92 px-5 py-4 font-satoshi text-[15px] text-forest"
         />
       );
     }
@@ -394,14 +479,14 @@ export default function Personalization() {
 
     return (
       <View>
-        <View className="mb-5 rounded-[32px] bg-forest px-6 py-6 shadow-xl shadow-forest/20">
+        <View className="mb-5 rounded-[24px] bg-forest px-5 py-5 shadow-xl shadow-forest/20">
           <Text className="font-satoshi-bold text-[11px] uppercase tracking-[1.8px] text-white/50">
             Recommended Path
           </Text>
-          <Text className="mt-3 font-erode-bold text-4xl leading-10 text-white">
+          <Text className="mt-3 font-erode-bold text-[32px] leading-[36px] text-white">
             {currentStep.recommendation.title}
           </Text>
-          <Text className="mt-3 font-satoshi text-base leading-7 text-white/80">
+          <Text className="mt-3 font-satoshi text-[15px] leading-7 text-white/80">
             {currentStep.recommendation.subtitle}
           </Text>
         </View>
@@ -418,10 +503,10 @@ export default function Personalization() {
         {currentStep.recommendation.focusPoints.map((point, index) => (
           <View
             key={`${currentStep.journey}-focus-${index}`}
-            className="mb-3 flex-row items-center rounded-[24px] bg-white px-5 py-4 shadow-sm shadow-forest/5"
+            className="mb-3 flex-row items-center rounded-[20px] border border-[#DCE1D8] bg-white/88 px-4 py-3.5"
           >
             <View className="mr-3 h-1.5 w-1.5 rounded-full bg-forest/30" />
-            <Text className="flex-1 font-satoshi text-[15px] leading-relaxed text-forest/80">{point}</Text>
+            <Text className="flex-1 font-satoshi text-[14px] leading-6 text-forest/80">{point}</Text>
           </View>
         ))}
       </View>
@@ -439,7 +524,7 @@ export default function Personalization() {
               value={answers.name}
               onChangeText={(value) => updateQuickProfile('name', value)}
               containerClassName="mb-5"
-              className="rounded-[24px] border-forest/5 bg-white px-6 py-4 font-satoshi text-base text-forest shadow-sm shadow-forest/5"
+              className="rounded-[20px] border-[#DCE1D8] bg-white/92 px-5 py-4 font-satoshi text-[15px] text-forest"
             />
             <Input
               label="Age"
@@ -448,7 +533,7 @@ export default function Personalization() {
               onChangeText={(value) => updateQuickProfile('age', value)}
               keyboardType="number-pad"
               containerClassName="mb-5"
-              className="rounded-[24px] border-forest/5 bg-white px-6 py-4 font-satoshi text-base text-forest shadow-sm shadow-forest/5"
+              className="rounded-[20px] border-[#DCE1D8] bg-white/92 px-5 py-4 font-satoshi text-[15px] text-forest"
             />
 
             <Text className="mb-3 ml-1 font-satoshi text-sm text-forest/65">Gender</Text>
@@ -518,12 +603,25 @@ export default function Personalization() {
 
   const primaryButtonLabel = stepIndex === steps.length - 1 ? 'See plans' : 'Continue';
 
+  if (!isDraftReady) {
+    return (
+      <View className="flex-1 items-center justify-center bg-[#F6F6F1] px-8">
+        <StatusBar style="dark" />
+        <Text className="font-erode-semibold text-3xl text-[#13281D] text-center">Restoring your progress</Text>
+        <Text className="mt-3 max-w-[280px] font-satoshi text-base leading-7 text-[#5B554C] text-center">
+          We are picking up your questionnaire from where you left off.
+        </Text>
+      </View>
+    );
+  }
+
   return (
-    <View className="flex-1 bg-sage">
+    <View className="flex-1 bg-[#F6F6F1]">
       <StatusBar style="dark" />
 
-      <View className="absolute -right-32 top-[-5%] h-[400px] w-[400px] rounded-full bg-white/40" />
-      <View className="absolute -left-32 bottom-[-5%] h-[400px] w-[400px] rounded-full bg-[#FAFAF7]/60" />
+      <View className="absolute -right-32 top-[-5%] h-[420px] w-[420px] rounded-full bg-[#EEF1EA]" />
+      <View className="absolute -left-28 bottom-[-4%] h-[360px] w-[360px] rounded-full bg-[#F0F2ED]" />
+      <View className="absolute left-10 top-24 h-20 w-20 rounded-full border border-[#DDE3D9] bg-[#FAFBF8]/80" />
 
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -536,8 +634,16 @@ export default function Personalization() {
         >
           <SegmentedProgress currentStep={stepIndex} totalSteps={steps.length} />
 
-          <View className="mb-4 mt-6">
-            <Text className="font-satoshi-bold text-[11px] uppercase tracking-[1.8px] text-forest/50">
+          <View className="mb-4 mt-6 flex-row items-start justify-between">
+            <View>
+              <Text className="font-satoshi-bold text-[11px] uppercase tracking-[2.1px] text-[#726B60]">
+                Personalization
+              </Text>
+              <Text className="mt-2 font-satoshi text-[13px] leading-6 text-[#6D665A]">
+                A calmer start, tailored to what you need most.
+              </Text>
+            </View>
+            <Text className="font-satoshi text-[12px] tracking-[1.5px] text-[#8C8578]">
               {progressLabel}
             </Text>
           </View>
@@ -547,12 +653,12 @@ export default function Personalization() {
             entering={FadeIn.duration(500)}
             className="flex-1"
           >
-            <View className="mb-6">
-              <Text className="font-erode-bold text-[34px] leading-[40px] text-forest">
+            <View className="mb-7 max-w-[94%]">
+              <Text className="font-erode-semibold text-[32px] leading-[36px] text-[#13281D]">
                 {currentStep.title}
               </Text>
               {currentStep.description && (
-                <Text className="mt-2 font-satoshi text-base leading-7 text-forest/70">
+                <Text className="mt-3 font-satoshi text-[15px] leading-7 text-[#5A544B]">
                   {currentStep.description}
                 </Text>
               )}
@@ -574,7 +680,8 @@ export default function Personalization() {
               onPress={() => void handleNext()}
               loading={isSaving}
               size="lg"
-              className="rounded-full py-4 shadow-xl shadow-forest/10"
+              className="rounded-full border border-[#183226] bg-[#173428] py-3.5 shadow-xl shadow-[#173428]/10"
+              textClassName="font-satoshi-bold text-[14px] tracking-[0.2px] text-[#F5F0E4]"
             />
             {stepIndex > 0 ? (
               <Button
@@ -583,6 +690,7 @@ export default function Personalization() {
                 onPress={handleBack}
                 disabled={isSaving}
                 className="mt-2 rounded-full"
+                textClassName="font-satoshi text-[14px] text-[#5A544B]"
               />
             ) : null}
           </View>

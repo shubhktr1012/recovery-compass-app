@@ -1,18 +1,18 @@
 # Sprint Status — Recovery Compass
 
-> Last updated: April 8, 2026
+> Last updated: April 9, 2026
 > Branch: `rebuild/multi-program`
 > Questionnaire foundation: ready
 > Sellable catalog: 6 products configured in RevenueCat, final INR pricing entered in App Store Connect and Google Play, unified `main_production` offering live
-> Final content files received for Sleep, Energy, and Men's Health — integration and QA pending
+> Final content files received for Sleep, Energy, and Men's Health — live in Supabase, metadata aligned, Sleep cleanup refresh shipped, final UI QA still pending
 
 ## Launch Blockers (must fix before ANY submission)
 
 - [x] App icon from Anjan (1024x1024 PNG)
 - [x] App Store Connect iOS IAP setup + final INR pricing entry
 - [x] Google Play internal build uploaded + one-time products created
-- [ ] Integrate final Sleep / Energy / Men's Health content into app
-- [ ] Final QA sweep on questionnaire → paywall → purchase → program access
+- [ ] Final QA sweep on Sleep / Energy / Men's Health program presentation in app
+- [x] Final QA sweep on questionnaire → paywall → purchase → program access
 
 ## Completed
 
@@ -46,6 +46,12 @@
 - [x] SOS modal (basic breathing)
 - [x] Content seed generator script
 - [x] Root layout auth guard (hardened, multi-route support)
+- [x] Account redesign — identity-first Account tab, nested settings/statistics stack
+- [x] Profile picture upload (gallery only) + edit-profile bottom sheet
+- [x] Statistics page + featured stat card preview on Account screen
+- [x] Clean Account/auth/profile stabilization commit created (`9fe2751`)
+- [x] 90-Day Smoking Reset content refresh applied live (clean cards re-seeded)
+- [x] Sleep content refresh applied live for Days 2, 14, and 18
 - [x] Test-cards route hidden from tab bar (`href: null` already configured)
 - [x] Xcode + Android Studio installed and configured
 - [x] Apple Developer account active
@@ -59,8 +65,16 @@
 - [ ] Questionnaire minor polish and edge-case cleanup
 - [ ] Paywall visual polish / merchandising refinement
 - [ ] Visual overhaul — apply V4 wellness design to all screens
+- [ ] Tab bar redesign — final 5-tab architecture (`Home | Program | Ground | Journal/Routines | Account`)
+- [ ] Journal + Routines redesign (shared surface, segmented Today/Journal model)
+- [ ] Dashboard redesign planning (All Programs / My Programs + slim feature previews)
+- [ ] Overall card/frontend overhaul
+- [ ] Website skeleton system via Boneyard
+- [ ] App skeleton system — native equivalent matching the Boneyard visual language
 - [ ] Ground feature (center tab, guided grounding experience)
 - [ ] Device QA on real iPhone test track
+- [ ] Android real-device QA for Account avatar upload flow
+- [ ] Account submission-safe polish pass
 
 ## Not Started — Needed for Launch
 
@@ -78,12 +92,15 @@
 ## Not Started — Can Ship After Launch
 
 - [ ] Google Play production submission / review assets
+- [ ] Avatar upload hardening: normalize uploads to one output format
+- [ ] Avatar upload hardening: enforce max image dimensions / file size
+- [ ] Avatar upload hardening: clean up old avatar objects when extension changes
+- [ ] Avatar upload hardening: migrate off `expo-file-system/legacy` to the new `File` API
 - [ ] CALM/Ground full 10-min guided experience
-- [ ] Sleep program content (waiting on Anjan — 21 days)
-- [ ] Energy program content (waiting on Anjan — 14 days)
-- [ ] Men's Health content (waiting on Anjan — 30 days)
-- [ ] Journal visual polish
-- [ ] Dashboard redesign for multi-program
+- [ ] Mentor routine system v1 (structured template library + rare custom one-off routines)
+- [ ] Day-in-program routine schema redesign (program/day-focused rather than generic task-focused)
+- [ ] Calendar sync for mentor-assigned routines (Google / Apple Calendar integration)
+- [ ] Mentor workflow streamlining (structured input flow instead of free-text routine entry)
 - [ ] Sentry crash reporting
 - [ ] Smart notifications engine
 
@@ -99,11 +116,11 @@ Launch → Splash (Expo default) → Sign In / Sign Up
   Quick profile → self-select or guided path → branched questions
 → Recommendation screen (guided path only)
 → Program-targeted paywall (recommended program(s), unified cross-platform catalog configured)
-→ 4-tab layout: Home | Program | Journal | Profile
+→ 4-tab layout: Home | Program | My Journal | Account
   Home: Dashboard with stats + today's focus card
   Program: Timeline with locked/unlocked days → V2 day-detail (PagerView)
-  Journal: Mood + cravings + reflection form
-  Profile: Stats, access status, restore, sign out
+  My Journal: Mood + cravings + reflection form
+  Account: Identity-first profile, featured stat card, Edit Profile, Settings, Statistics
 ```
 
 ## Target App Flow (what we're building toward)
@@ -112,23 +129,32 @@ Launch → Splash (Expo default) → Sign In / Sign Up
 Launch → V4 Splash → Onboarding Carousel → Sign Up / Sign In
 → Multi-program Questionnaire (branched by concern)
 → Program Recommendation → Multi-program Paywall
-→ 5-tab layout: Home | Program | [Ground] | Routine | Profile
+→ 5-tab layout: Home | Program | [Ground] | Journal/Routines | Account
   Home: Multi-program dashboard
   Program: Active program timeline → V2 day-detail (PagerView swipe)
   Ground: Guided grounding experience (center elevated button)
-  Routine: Daily routine + journal
-  Profile: Multi-program access, settings, delete account
+  Journal/Routines: Shared surface with segmented Today + Journal experience, anchored around day-in-program guidance and routines
+  Account: Identity-first profile → Edit Profile bottom sheet → Settings / Statistics inside account stack
 ```
 
 ## Known Bugs
 
-- [ ] program_access read path uses .maybeSingle() (breaks with multiple programs)
-- [ ] 90-Day Smoking Reset missing 2 days in Supabase (days 88-90 gap)
+- [ ] iOS purchase environment still noisy unless tested via Xcode StoreKit config or real-device sandbox
 
 ## Latest Verification
 
 - [x] iOS simulator fetches `main_production` correctly when launched from Xcode with local `.storekit`
 - [x] StoreKit local purchase for `ninety_day_quit` posts receipt to RevenueCat successfully
 - [x] Paywall purchase flow now waits for confirmed unlock before routing to Program tab
+- [x] StoreKit transaction reset + smoking purchase QA confirms `six_day_control` and `ninety_day_quit` unlock independently
+- [x] Post-reopen active program and restore flow stay correct after smoking purchase
+- [x] iOS native Account QA verified: edit name, clear name, settings, statistics, avatar upload
+- [x] 90-Day Smoking Reset live content refresh spot-checked clean at Days 1, 7, 45, and 90
+- [x] Sleep live content refresh applied for Days 2, 14, and 18; Day 14 in-app spot-check looks good
+- [x] Energy program in-app QA passed
+- [x] Men's Health program content refresh applied live and day view now reflects the DB-backed content correctly
+- [x] Questionnaire → recommendation → paywall → purchase → unlock sweep passed on iOS
+- [x] iOS auth QA passed for email, Google, and Apple sign-in
+- [x] Startup stale-session recovery verified end-to-end with forced invalid refresh-token state; app returns to Welcome and shows the session-expired notice
 - [ ] Real-device iPhone sandbox purchase verification still pending (borrowed device / TestFlight)
 - [x] Android internal-track Google Play purchase verification complete (Play install, tester account, Google Play purchase success, unlock path, restore path)

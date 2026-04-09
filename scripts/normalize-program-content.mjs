@@ -67,6 +67,30 @@ const PROGRAM_TOTAL_DAYS = {
   ninety_day_transform: 90,
 };
 
+const SLEEP_AUDIO_DURATIONS = {
+  1: 610,
+  2: 624,
+  3: 644,
+  4: 647,
+  5: 658,
+  6: 642,
+  7: 640,
+  8: 640,
+  9: 604,
+  10: 652,
+  11: 576,
+  12: 640,
+  13: 640,
+  14: 708,
+  15: 612,
+  16: 576,
+  17: 640,
+  18: 666,
+  19: 640,
+  20: 652,
+  21: 658,
+};
+
 function stripMarkdown(value = '') {
   return cleanText(
     String(value)
@@ -184,6 +208,32 @@ function splitParagraphLines(value = '') {
     .filter(Boolean);
 }
 
+function splitInlineBullets(value = '') {
+  const lines = cleanText(String(value))
+    .replace(/•/g, '\n• ')
+    .replace(/\s+(?=(?:Morning Hydration|Before sleep:|Best Sleeping Position:|Optional:|Steps:|Routine:|Benefits:|Why:|Purpose:|Focus:))/g, '\n')
+    .split('\n')
+    .map((line) => normalizeContentLine(line))
+    .filter(Boolean);
+
+  const merged = [];
+  for (const line of lines) {
+    if (
+      merged.length > 0 &&
+      !/^•|^(?:Morning Hydration|Before sleep:|Best Sleeping Position:|Optional:|Steps:|Routine:|Benefits:|Why:|Purpose:|Focus:|No porn today|When the urge appears:|Avoid porn today)/i.test(
+        line
+      )
+    ) {
+      merged[merged.length - 1] = cleanText(`${merged[merged.length - 1]} ${line}`);
+      continue;
+    }
+
+    merged.push(line);
+  }
+
+  return merged;
+}
+
 function stripCrossDayNarration(value = '') {
   return cleanText(
     String(value).replace(/\n?\s*Absolutely\.\s+Below\s+is\s+(?:\*\*)?DAY\s+\d+[\s\S]*$/i, '')
@@ -215,23 +265,20 @@ function parseDayBlocksFromBoldHeadings(sourceText) {
 function parseDayBlocksGeneric(rawText) {
   const sourceText = normalizeSourceText(rawText);
   const dayHeadingRegex = /^(?:\s*(?:\*\*|#{1,6}\s*)?)\s*Day\s+(\d+)\s*[—–:-]\s*(.+?)\s*(?:\*\*)?\s*$/gim;
-  const matches = [...sourceText.matchAll(dayHeadingRegex)];
-
-  const uniqueMatches = [];
-  const seen = new Set();
-  for (const match of matches) {
+  const matches = [...sourceText.matchAll(dayHeadingRegex)].filter((match) => {
     const dayNumber = Number(match[1]);
-    if (!Number.isInteger(dayNumber) || dayNumber <= 0) continue;
-    if (seen.has(dayNumber)) continue;
-    seen.add(dayNumber);
-    uniqueMatches.push(match);
-  }
+    return Number.isInteger(dayNumber) && dayNumber > 0;
+  });
 
   const blocks = [];
-  for (let index = 0; index < uniqueMatches.length; index += 1) {
-    const current = uniqueMatches[index];
-    const next = uniqueMatches[index + 1];
+  const seen = new Set();
+  for (let index = 0; index < matches.length; index += 1) {
+    const current = matches[index];
     const dayNumber = Number(current[1]);
+    if (seen.has(dayNumber)) continue;
+    seen.add(dayNumber);
+
+    const next = matches[index + 1];
     const dayTitle = normalizeDayTitle(current[2], dayNumber);
     const bodyStart = current.index + current[0].length;
     const bodyEnd = next ? next.index : sourceText.length;
@@ -408,6 +455,295 @@ function buildNinetyDaySummaryDay(dayNumber, dayTitle, summaryEntry) {
         secondaryMessage: 'Return tomorrow when you feel ready.',
       },
     ],
+  };
+}
+
+function extractSleepGoal(dayBody, dayNumber) {
+  const goalRegex = new RegExp(
+    `(?:^|\\n)##?\\s*Day\\s+${dayNumber}\\s+Goal\\s*\\n?([\\s\\S]*?)$`,
+    'i'
+  );
+  const match = dayBody.match(goalRegex);
+  if (!match) {
+    return { goal: '', benefits: [] };
+  }
+
+  const lines = splitParagraphLines(match[1]);
+  const goalLines = [];
+  const benefits = [];
+  let captureBenefits = false;
+
+  for (const line of lines) {
+    if (/^(by day \d+|by the end of)/i.test(line)) {
+      captureBenefits = true;
+      continue;
+    }
+
+    if (captureBenefits) {
+      benefits.push(line);
+      continue;
+    }
+
+    goalLines.push(line);
+  }
+
+  return {
+    goal: cleanText(goalLines.join(' ')),
+    benefits,
+  };
+}
+
+function extractSleepTrick(dayBody, dayNumber) {
+  const trickRegex = new RegExp(
+    `(?:^|\\n)(?:##?\\s*)?Day\\s+${dayNumber}\\s+Sleep\\s+Trick\\s*[—–-]\\s*(.+?)\\s*\\n([\\s\\S]*?)(?=\\n(?:##?\\s*)?Day\\s+${dayNumber}\\s+Goal\\b|$)`,
+    'i'
+  );
+  const match = dayBody.match(trickRegex);
+  if (!match) return null;
+
+  return {
+    title: cleanText(stripMarkdown(match[1])),
+    body: cleanText(match[2]),
+  };
+}
+
+function trimSleepStepBody(body, dayNumber) {
+  return cleanText(
+    String(body)
+      .replace(
+        new RegExp(`(?:^|\\n)(?:##?\\s*)?Day\\s+${dayNumber}\\s+Sleep\\s+Trick\\b[\\s\\S]*$`, 'i'),
+        ''
+      )
+      .replace(
+        new RegExp(`(?:^|\\n)(?:##?\\s*)?Day\\s+${dayNumber}\\s+Goal\\b[\\s\\S]*$`, 'i'),
+        ''
+      )
+  );
+}
+
+function parseSleepSectionContent(body) {
+  const lines = splitParagraphLines(body);
+  const instructions = [];
+  const options = [];
+  const why = [];
+  let mode = 'instructions';
+
+  for (const line of lines) {
+    if (/^how to do it(?: properly)?$/i.test(line)) {
+      mode = 'instructions';
+      continue;
+    }
+
+    if (/^pro tip$/i.test(line)) {
+      mode = 'instructions';
+      continue;
+    }
+
+    if (/^(options?|exercise routine|example):?$/i.test(line)) {
+      mode = 'options';
+      continue;
+    }
+
+    if (/^this includes:?$/i.test(line)) {
+      mode = 'instructions';
+      continue;
+    }
+
+    if (/^why this (?:works|helps sleep)$/i.test(line)) {
+      mode = 'why';
+      continue;
+    }
+
+    if (/^day \d+\s+goal$/i.test(line) || /^by day \d+/i.test(line) || /^day \d+\s+sleep trick\b/i.test(line)) {
+      break;
+    }
+
+    if (mode === 'why') {
+      why.push(line);
+      continue;
+    }
+
+    if (mode === 'options') {
+      if (/^total movement time:/i.test(line)) {
+        instructions.push(line);
+        continue;
+      }
+
+      if (
+        /(helps sleep|sleep pressure|sleep cycles|sleep quality|sleep onset|melatonin|circadian)/i.test(line) &&
+        line.split(/\s+/).length > 8
+      ) {
+        why.push(line);
+        continue;
+      }
+
+      options.push(line);
+      continue;
+    }
+
+    instructions.push(line);
+  }
+
+  return { instructions, options, why };
+}
+
+function buildSleepActionStepCard(stepNumber, title, parsed) {
+  const instructions = parsed.instructions.filter(Boolean);
+  return {
+    type: 'action_step',
+    stepNumber,
+    title,
+    instructions,
+    whyThisWorks:
+      cleanText(parsed.why.join(' ')) ||
+      'Small consistent actions reinforce stability and support restful sleep.',
+  };
+}
+
+function selectSleepExerciseLines(parsed) {
+  const candidates = [...parsed.instructions, ...parsed.options];
+  const exerciseLines = candidates.filter((line) => {
+    if (!line) return false;
+    if (/^exercise routine$/i.test(line)) return false;
+    if (/^how to do it/i.test(line)) return false;
+    if (/^why this/i.test(line)) return false;
+    if (/^(options?|example):?$/i.test(line)) return false;
+    if (
+      /^(movement early|morning movement increases|stronger physical activity|higher activity increases|why this helps sleep)/i.test(
+        line
+      )
+    ) {
+      return false;
+    }
+
+    if (/^(total movement time:|perform \d+ .*movement)/i.test(line)) return true;
+    if (/\b(walking|stretches|squats|pushups|jumping jacks|plank|arm circles|forward stretch|movement)\b/i.test(line)) {
+      return true;
+    }
+    if (/\b(reps?|sets?|seconds?|minutes?)\b/i.test(line)) return true;
+
+    return line.split(/\s+/).length <= 6;
+  });
+
+  return exerciseLines.slice(0, 12);
+}
+
+function buildSleepExerciseRoutineCard(title, parsed) {
+  const exerciseLines = selectSleepExerciseLines(parsed);
+  const exercises = exerciseLines.map((line) => ({
+    name: titleCase(line),
+    instructions: ['Perform with steady breathing and controlled pacing.'],
+  }));
+
+  return {
+    type: 'exercise_routine',
+    title,
+    exercises,
+  };
+}
+
+function buildSleepMindfulnessCard(title, parsed) {
+  const steps = parsed.instructions.filter(Boolean);
+  if (steps.length <= 2 && parsed.why.length > 0) {
+    steps.push(...parsed.why.slice(0, 2));
+  }
+
+  return {
+    type: 'mindfulness_exercise',
+    title,
+    steps,
+    completionMessage: 'Stay with the practice until your body and mind feel steadier.',
+  };
+}
+
+function buildSleepDay(dayBlock) {
+  const stepSections = parseStepSections(dayBlock.body).map((section) => ({
+    ...section,
+    body: trimSleepStepBody(section.body, dayBlock.dayNumber),
+  }));
+  const { goal, benefits } = extractSleepGoal(dayBlock.body, dayBlock.dayNumber);
+  const sleepTrick = extractSleepTrick(dayBlock.body, dayBlock.dayNumber);
+  const dayTitle = dayBlock.dayTitle || `Day ${dayBlock.dayNumber}`;
+
+  const cards = [
+    {
+      type: 'intro',
+      dayNumber: dayBlock.dayNumber,
+      dayTitle,
+      goal: goal || `Build steadier sleep patterns on Day ${dayBlock.dayNumber}.`,
+      estimatedMinutes: inferMinutesFromStepCount(stepSections.length || 6, dayBlock.dayNumber),
+    },
+    {
+      type: 'lesson',
+      title: "Today's Focus",
+      paragraphs: [goal || `Build steadier sleep patterns on Day ${dayBlock.dayNumber}.`],
+      highlight: benefits[0] || 'Stay consistent and let the routine do the work.',
+    },
+  ];
+
+  let actionStepNumber = 1;
+  for (const section of stepSections) {
+    const title = cleanText(titleCase(section.heading || `Step ${section.stepNumber}`));
+    const parsed = parseSleepSectionContent(section.body);
+    const allLines = [...parsed.instructions, ...parsed.options, ...parsed.why].filter(Boolean);
+    if (allLines.length === 0) continue;
+
+    if (section.stepNumber === 2) {
+      const breathingPattern = parseBreathingPattern(allLines);
+      cards.push(buildBreathingCard(title, allLines, breathingPattern ?? { inhaleSeconds: 4, exhaleSeconds: 6, cycles: 10 }));
+      continue;
+    }
+
+    if (section.stepNumber === 3) {
+      cards.push(buildSleepExerciseRoutineCard(title, parsed));
+      continue;
+    }
+
+    if (section.stepNumber === 5 || section.stepNumber === 6 || section.stepNumber === 7) {
+      cards.push(buildSleepMindfulnessCard(title, parsed));
+
+      if (section.stepNumber === 5) {
+        cards.push({
+          type: 'audio',
+          title: "Tonight's Guided Sleep Audio",
+          description: 'Press play during your evening wind-down or once you are in bed.',
+          audioStoragePath: `sleep_disorder_reset/day-${String(dayBlock.dayNumber).padStart(2, '0')}.mp3`,
+          durationSeconds: SLEEP_AUDIO_DURATIONS[dayBlock.dayNumber] ?? undefined,
+        });
+      }
+      continue;
+    }
+
+    cards.push(buildSleepActionStepCard(actionStepNumber, title, parsed));
+    actionStepNumber += 1;
+  }
+
+  if (sleepTrick) {
+    const parsedTrick = parseSleepSectionContent(sleepTrick.body);
+    if (parsedTrick.instructions.length > 0) {
+      cards.push(buildSleepMindfulnessCard(cleanText(stripMarkdown(sleepTrick.title)), parsedTrick));
+    }
+  }
+
+  cards.push({
+    type: 'journal',
+    prompt: `What helped you most on Day ${dayBlock.dayNumber}?`,
+    helperText: 'Write one or two practical observations.',
+    followUpPrompt: 'What will you repeat tomorrow?',
+  });
+
+  cards.push({
+    type: 'close',
+    message: `Day ${dayBlock.dayNumber} is complete.`,
+    secondaryMessage:
+      benefits[0] || `You reinforced ${dayTitle.toLowerCase()} today.`,
+  });
+
+  return {
+    dayNumber: dayBlock.dayNumber,
+    dayTitle,
+    estimatedMinutes: inferMinutesFromStepCount(stepSections.length || 6, dayBlock.dayNumber),
+    cards,
   };
 }
 
@@ -866,6 +1202,307 @@ async function normalizeGenericProgram(rawText) {
   return dayBlocks.map(buildGenericDay);
 }
 
+async function normalizeSleepProgram(rawText) {
+  const dayBlocks = parseDayBlocksGeneric(rawText);
+  return dayBlocks.map(buildSleepDay);
+}
+
+function normalizeMaleSourceText(rawText = '') {
+  return cleanText(
+    normalizeSourceText(rawText)
+      .replace(/([^\n])\s+Goal of Today\s*:/gi, '$1\nGoal of Today:')
+      .replace(/Reset\s*\+\s*\n?\s*Morning Start\s+/gi, 'Reset + Morning Start\n')
+      .replace(/Strength\s*&\s*\n?\s*Activation Routine\s*(?=\(|Pelvic|Hip|Core|Circulation|Functional|Dynamic)/gi, 'Strength & Activation Routine\n')
+      .replace(/Night Routine\s+Before sleep:/gi, 'Night Routine\nBefore sleep:')
+      .replace(/([^\n])\s+(Best Sleeping Position:)/gi, '$1\n$2')
+  );
+}
+
+function extractMaleGoal(dayBody) {
+  const match = dayBody.match(/Goal of Today:\s*([\s\S]*?)(?=\nStep\s*1\b|$)/i);
+  if (!match) return '';
+  const goalLines = splitInlineBullets(match[1]).filter((line) => !/^(goal of today:)/i.test(line));
+  return cleanText(goalLines.join(' '));
+}
+
+function parseMaleLabeledSections(body) {
+  const normalized = cleanText(String(body))
+    .replace(/```/g, '')
+    .replace(/([^\n])\s+(Morning Hydration|Before sleep:|Best Sleeping Position:|Optional:|Steps:|Routine:|Benefits:|Why:|Purpose:|Focus:)/g, '$1\n$2')
+    .replace(/•/g, '\n• ');
+
+  const sectionNames = ['Steps', 'Routine', 'Benefits', 'Why', 'Purpose', 'Focus', 'Optional'];
+  const sections = {};
+
+  for (let index = 0; index < sectionNames.length; index += 1) {
+    const label = sectionNames[index];
+    const nextLabels = sectionNames
+      .filter((candidate) => candidate !== label)
+      .map((candidate) => `${candidate}:`)
+      .join('|');
+    const regex = new RegExp(
+      `(?:^|\\n)${label}:\\s*([\\s\\S]*?)(?=\\n(?:${nextLabels})|$)`,
+      'i'
+    );
+    const match = normalized.match(regex);
+    if (!match) continue;
+    sections[label.toLowerCase()] = splitInlineBullets(match[1]);
+  }
+
+  return {
+    normalized,
+    steps: sections.steps ?? [],
+    routine: sections.routine ?? [],
+    benefits: sections.benefits ?? [],
+    why: sections.why ?? [],
+    purpose: sections.purpose ?? [],
+    focus: sections.focus ?? [],
+    optional: sections.optional ?? [],
+  };
+}
+
+function buildMaleResetCard(stepNumber, title, body) {
+  const normalized = cleanText(body).toLowerCase();
+  const instructions = [
+    'Avoid porn today.',
+    'When the urge appears, use CALM, delay 5–10 minutes, and shift focus.',
+  ];
+
+  if (normalized.includes('morning hydration') || normalized.includes('drink 1–2 glasses of water')) {
+    instructions.push('Drink 1–2 glasses of water after waking.');
+  }
+
+  if (normalized.includes('almonds') || normalized.includes('raisins')) {
+    instructions.push('Optional: add soaked almonds or raisins.');
+  }
+
+  return {
+    type: 'action_step',
+    stepNumber,
+    title,
+    instructions,
+    whyThisWorks:
+      'Reducing stimulation and giving the body an early reset builds control and steadier recovery momentum.',
+  };
+}
+
+function buildMaleBreathingCard(title, body) {
+  const parsed = parseMaleLabeledSections(body);
+  const lines = [...parsed.steps, ...parsed.routine].filter(Boolean);
+  const breathingPattern = parseBreathingPattern(lines);
+  const instructions = [...parsed.steps, ...parsed.routine, ...parsed.benefits].filter(Boolean);
+
+  return {
+    type: 'breathing_exercise',
+    title,
+    instructions: instructions.join(' '),
+    pattern: {
+      inhaleSeconds: Math.max(1, breathingPattern?.inhaleSeconds || 4),
+      ...(breathingPattern?.holdSeconds ? { holdSeconds: Math.max(1, breathingPattern.holdSeconds) } : {}),
+      exhaleSeconds: Math.max(1, breathingPattern?.exhaleSeconds || 6),
+    },
+    cycles: Math.max(1, breathingPattern?.cycles || 10),
+  };
+}
+
+function parseMaleExerciseBlocks(body) {
+  const normalized = cleanText(String(body))
+    .replace(/```/g, '')
+    .replace(/([^\n])\s+(Pelvic|Hip|Core|Circulation|Functional|Dynamic)\b/g, '$1\n$2')
+    .replace(/([^\n])\s+(Steps:|Routine:|Benefits:|Purpose:|Focus:)/g, '$1\n$2')
+    .replace(/•/g, '\n• ');
+
+  const blockRegex =
+    /(?:^|\n)((?:Pelvic|Hip|Core|Circulation|Functional|Dynamic)[^\n]+)\n([\s\S]*?)(?=\n(?:Pelvic|Hip|Core|Circulation|Functional|Dynamic)\b|$)/g;
+
+  const exercises = [];
+  for (const match of normalized.matchAll(blockRegex)) {
+    const name = cleanText(match[1]);
+    const parsed = parseMaleLabeledSections(match[2]);
+    const instructionLines = [
+      ...parsed.steps.slice(0, 3),
+      ...parsed.routine.slice(0, 2),
+      ...(parsed.focus[0] ? [parsed.focus[0]] : []),
+      ...(parsed.purpose[0] ? [parsed.purpose[0]] : []),
+    ]
+      .filter(Boolean)
+      .map((line) => line.replace(/^Optional$/i, 'Optional'));
+
+    exercises.push({
+      name,
+      instructions:
+        instructionLines.length > 0
+          ? instructionLines
+          : ['Perform with steady breathing and controlled pacing.'],
+    });
+  }
+
+  return exercises;
+}
+
+function buildMaleStrengthRoutineCard(title, body) {
+  const exercises = parseMaleExerciseBlocks(body);
+  return {
+    type: 'exercise_routine',
+    title,
+    exercises:
+      exercises.length > 0
+        ? exercises
+        : [
+            {
+              name: title,
+              instructions: ['Perform with steady breathing and controlled pacing.'],
+            },
+          ],
+  };
+}
+
+function buildMaleNightRoutineCard(stepNumber, title, body) {
+  const parsed = parseMaleLabeledSections(body);
+  const normalized = cleanText(body).toLowerCase();
+  const instructions = [
+    'Avoid phone 30 minutes before bed.',
+    'Do slow breathing and relax your body.',
+  ];
+
+  if (normalized.includes('loose pants') || normalized.includes('wear loose')) {
+    instructions.push('Wear loose pants while sleeping.');
+  }
+
+  if (normalized.includes('best sleeping position') || normalized.includes('sleep on your back') || normalized.includes('sleep on your side')) {
+    instructions.push('Best sleeping position: sleep on your back with a neutral pelvis, or sleep on your side.');
+  }
+
+  return {
+    type: 'action_step',
+    stepNumber,
+    title,
+    instructions,
+    whyThisWorks:
+      cleanText(
+        splitInlineBullets([...parsed.why, ...parsed.benefits].join(' '))
+          .map((line) => line.replace(/^•\s*/u, ''))
+          .join(' ')
+      ) ||
+      'A consistent night routine reduces tension and supports steadier recovery.',
+  };
+}
+
+function buildMaleReflectionCard(dayNumber, body) {
+  const lines = splitInlineBullets(body);
+  const introLine = lines.find((line) => /take \d+ minutes? to reflect|recognizing progress|recognize your transformation/i.test(line));
+  const questionMatches = [...cleanText(body).matchAll(/•\s*([^?]+\?)/g)];
+  const questionLines = questionMatches.map((match) => cleanText(match[1]));
+  const prompt = questionLines[0] ?? lines.find((line) => /feel|control|energy|confidence|transformation|progress/i.test(line));
+  const followUpPrompt = questionLines[1] ?? questionLines[2] ?? lines.slice(1, 3).join(' ');
+
+  return {
+    type: 'journal',
+    prompt: cleanText(prompt || `What changes are you noticing on Day ${dayNumber}?`).replace(/\s+/g, ' '),
+    helperText: cleanText(introLine || 'A short, honest check-in is enough.'),
+    followUpPrompt: cleanText(followUpPrompt || 'What feels stronger or steadier than before?').replace(/\s+/g, ' '),
+  };
+}
+
+function buildMaleDay(dayBlock) {
+  const dayTitle = normalizeDayTitle(dayBlock.dayTitle, dayBlock.dayNumber);
+  const goal = extractMaleGoal(dayBlock.body) || `Complete Day ${dayBlock.dayNumber} with calm, steady consistency.`;
+  const stepSections = parseStepSections(dayBlock.body);
+  const cards = [
+    {
+      type: 'intro',
+      dayNumber: dayBlock.dayNumber,
+      dayTitle,
+      goal,
+      estimatedMinutes: inferMinutesFromStepCount(stepSections.length || 5, dayBlock.dayNumber),
+    },
+    {
+      type: 'lesson',
+      title: "Today's Focus",
+      paragraphs: [goal],
+      highlight: 'Progress comes from consistency, not intensity alone.',
+    },
+  ];
+
+  let actionStepNumber = 1;
+  let reflectionCard = null;
+
+  for (const section of stepSections) {
+    let title = cleanText(section.heading || `Step ${section.stepNumber}`);
+    const body = cleanText(section.body);
+    if (!body) continue;
+
+    if (section.stepNumber === 1) {
+      title = 'Reset + Morning Start';
+      cards.push(buildMaleResetCard(actionStepNumber, title, body));
+      actionStepNumber += 1;
+      continue;
+    }
+
+    if (section.stepNumber === 2) {
+      cards.push(buildMaleBreathingCard(title, body));
+      continue;
+    }
+
+    if (section.stepNumber === 3) {
+      title = 'Strength & Activation Routine';
+      cards.push(buildMaleStrengthRoutineCard(title, body));
+      continue;
+    }
+
+    if (section.stepNumber === 4 && /night routine/i.test(title)) {
+      title = 'Night Routine';
+      cards.push(buildMaleNightRoutineCard(actionStepNumber, title, body));
+      actionStepNumber += 1;
+      continue;
+    }
+
+    if (/reflection/i.test(title)) {
+      reflectionCard = buildMaleReflectionCard(dayBlock.dayNumber, body);
+      continue;
+    }
+
+    const lines = splitInlineBullets(body);
+    cards.push({
+      type: 'action_step',
+      stepNumber: actionStepNumber,
+      title,
+      instructions: lines,
+      whyThisWorks:
+        'Small consistent actions reinforce stability and reduce automatic, stress-driven reactions.',
+    });
+    actionStepNumber += 1;
+  }
+
+  cards.push(
+    reflectionCard ??
+      {
+        type: 'journal',
+        prompt: `What helped you most on Day ${dayBlock.dayNumber}?`,
+        helperText: 'Write one or two practical observations.',
+        followUpPrompt: 'What will you repeat tomorrow?',
+      }
+  );
+
+  cards.push({
+    type: 'close',
+    message: `Day ${dayBlock.dayNumber} is complete.`,
+    secondaryMessage: goal,
+  });
+
+  return {
+    dayNumber: dayBlock.dayNumber,
+    dayTitle,
+    estimatedMinutes: inferMinutesFromStepCount(stepSections.length || 5, dayBlock.dayNumber),
+    cards,
+  };
+}
+
+async function normalizeMaleProgram(rawText) {
+  const dayBlocks = parseDayBlocksGeneric(normalizeMaleSourceText(rawText));
+  return dayBlocks.map(buildMaleDay);
+}
+
 async function normalizeNinetyDayProgram(rawText) {
   const dayBlocks = parseDayBlocksGeneric(rawText);
   const dayTitles = new Map(dayBlocks.map((block) => [block.dayNumber, block.dayTitle]));
@@ -902,8 +1539,8 @@ async function normalizeNinetyDayProgram(rawText) {
 const NORMALIZERS = {
   six_day_reset: normalizeSixDayProgram,
   energy_vitality: normalizeGenericProgram,
-  sleep_disorder_reset: normalizeGenericProgram,
-  male_sexual_health: normalizeGenericProgram,
+  sleep_disorder_reset: normalizeSleepProgram,
+  male_sexual_health: normalizeMaleProgram,
   age_reversal: normalizeGenericProgram,
   ninety_day_transform: normalizeNinetyDayProgram,
 };

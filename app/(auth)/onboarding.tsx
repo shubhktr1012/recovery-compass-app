@@ -1,6 +1,6 @@
 
 import React, { useRef, useState } from 'react';
-import { View, FlatList, ViewToken } from 'react-native';
+import { View, FlatList, ViewToken, Text } from 'react-native';
 import { Stack, useRouter, Href } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import Animated, { useAnimatedScrollHandler, useSharedValue } from 'react-native-reanimated';
@@ -42,14 +42,25 @@ export default function OnboardingScreen() {
     };
 
     return (
-        <View className="flex-1 justify-center items-center bg-background">
+        <View className="flex-1 bg-[#F6F6F1]">
             <Stack.Screen options={{ headerShown: false }} />
             <StatusBar style="dark" />
 
-            <View className="flex-[3]">
+            <View className="absolute -left-24 top-24 h-72 w-72 rounded-full bg-[#EEF1EA]" />
+            <View className="absolute -right-24 bottom-28 h-80 w-80 rounded-full bg-[#F0F2ED]" />
+
+            <View className="px-7 pt-14">
+                <Text className="font-satoshi text-[12px] uppercase tracking-[2.4px] text-[#7D7668]">
+                    Steady progress, without pressure
+                </Text>
+            </View>
+
+            <View className="flex-[3.35]">
                 <Animated.FlatList
                     data={ONBOARDING_DATA}
-                    renderItem={({ item }: { item: OnboardingItem }) => <OnboardingSlide item={item} />}
+                    renderItem={({ item, index }: { item: OnboardingItem; index: number }) => (
+                        <OnboardingSlide item={item} index={index} totalSlides={ONBOARDING_DATA.length} />
+                    )}
                     horizontal
                     showsHorizontalScrollIndicator={false}
                     pagingEnabled
@@ -63,9 +74,21 @@ export default function OnboardingScreen() {
                 />
             </View>
 
-            <View className="flex-1 justify-center items-center w-full">
-                <Paginator data={ONBOARDING_DATA} scrollX={scrollX} />
-                <View className="mt-8">
+            <View className="flex-1 justify-end px-7 pb-10">
+                <View className="border-t border-[#D9DDD5] pt-5">
+                    <Text className="max-w-[290px] font-satoshi text-[14px] leading-6 text-[#5E584E]">
+                        Calm guidance, structured programs, and a clearer daily rhythm from your very first session.
+                    </Text>
+                </View>
+
+                <View className="mt-7 flex-row items-center justify-between">
+                    <Paginator data={ONBOARDING_DATA} scrollX={scrollX} />
+                    <Text className="font-satoshi text-[12px] tracking-[1.3px] text-[#8A8478]">
+                        Swipe or continue
+                    </Text>
+                </View>
+
+                <View className="mt-6 items-end">
                     <NextButton
                         scrollTo={scrollTo}
                         currentIndex={currentIndex}

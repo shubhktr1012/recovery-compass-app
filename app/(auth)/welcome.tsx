@@ -45,6 +45,19 @@ const flatButtonStyle = {
     elevation: 0,
 };
 
+function getGoogleIosReversedClientScheme(clientId: string | null) {
+    if (!clientId) {
+        return null;
+    }
+
+    const suffix = '.apps.googleusercontent.com';
+    if (!clientId.endsWith(suffix)) {
+        return null;
+    }
+
+    return `com.googleusercontent.apps.${clientId.slice(0, -suffix.length)}`;
+}
+
 function toStaggeredProgress(value: number, start: number, end: number) {
     'worklet';
     return interpolate(value, [start, end], [0, 1], Extrapolation.CLAMP);
@@ -66,8 +79,12 @@ export default function WelcomeScreen() {
         googleIosClientId,
         googleAndroidClientId,
     } = getPublicEnv();
+    const googleIosNativeScheme = getGoogleIosReversedClientScheme(googleIosClientId);
     const googleRedirectUri = AuthSession.makeRedirectUri({
-        native: 'recoverycompassapp:/oauthredirect',
+        native:
+            Platform.OS === 'ios' && googleIosNativeScheme
+                ? `${googleIosNativeScheme}:/oauthredirect`
+                : 'recoverycompassapp:/oauthredirect',
     });
     const hasGoogleConfig = Boolean(googleWebClientId || googleIosClientId || googleAndroidClientId);
     const [googleRequest, googleAuthResponse, promptGoogleSignIn] = Google.useAuthRequest({

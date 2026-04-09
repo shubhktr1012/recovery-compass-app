@@ -40,15 +40,15 @@ function PaginatorDot({ index, scrollX }: PaginatorDotProps) {
 
     return (
         <Animated.View
-            style={[{ height: 8, borderRadius: 4 }, animatedDotStyle]}
-            className="bg-primary"
+            style={[{ height: 6, borderRadius: 999 }, animatedDotStyle]}
+            className="bg-[#173428]"
         />
     );
 }
 
 export const Paginator: React.FC<PaginatorProps> = ({ data, scrollX }) => {
     return (
-        <View className="flex-row h-16 justify-center items-center space-x-2">
+        <View className="flex-row items-center gap-2">
             {data.map((_, i) => {
                 return (
                     <PaginatorDot key={i.toString()} index={i} scrollX={scrollX} />

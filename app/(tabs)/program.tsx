@@ -1,13 +1,16 @@
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Href, router } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
+import { useQueryClient } from '@tanstack/react-query';
 import { useProgram } from '@/content';
 import { useProfile } from '@/providers/profile';
 import { TimelineItem } from '@/components/program/TimelineItem';
 import { ProgramCard } from '@/components/program/ProgramCard';
 import { DayContent, ProgramSlug } from '@/types/content';
+import { programQueryKey } from '@/hooks/contentQueryUtils';
 
 function getDayPreview(day: DayContent) {
   const introCard = day.cards.find((card) => card.type === 'intro');
@@ -26,7 +29,14 @@ function getDayPreview(day: DayContent) {
 export default function ProgramScreen() {
   const { access, progress } = useProfile();
   const activeProgram = (access.ownedProgram ?? 'six_day_reset') as ProgramSlug;
+  const queryClient = useQueryClient();
   const { program } = useProgram(activeProgram);
+
+  useFocusEffect(
+    useCallback(() => {
+      void queryClient.invalidateQueries({ queryKey: programQueryKey(activeProgram) });
+    }, [activeProgram, queryClient])
+  );
 
   const { completedDays, currentDay } = useMemo(() => {
     return {
