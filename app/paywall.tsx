@@ -1,13 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Alert, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Pressable, ScrollView, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import Purchases, { PurchasesPackage } from 'react-native-purchases';
+import Animated, { FadeIn } from 'react-native-reanimated';
 
 import { PROGRAM_METADATA } from '@/content/programs/metadata';
-import { Button } from '@/components/ui/Button';
 import { captureError } from '@/lib/monitoring';
 import { ProgramSlug } from '@/lib/programs/types';
 import {
@@ -16,6 +15,10 @@ import {
   getProgramSlugForPackage,
 } from '@/lib/revenuecat/config';
 import { useProfile } from '@/providers/profile';
+
+// Reusing intake components for the premium aesthetic
+import { CompassCTA } from '@/components/onboarding/intake/CompassCTA';
+import { FocusPointRow } from '@/components/onboarding/intake/FocusPointRow';
 
 const ACCESS_CONFIRMATION_RETRY_DELAY_MS = 1500;
 const ACCESS_CONFIRMATION_RETRY_COUNT = 4;
@@ -40,9 +43,11 @@ export default function Paywall() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { access, profile, refreshAccess, setProgramAccess } = useProfile();
+
   const [loading, setLoading] = useState(false);
   const [packages, setPackages] = useState<PurchasesPackage[]>([]);
   const [fetchingOfferings, setFetchingOfferings] = useState(true);
+  const [selectedPackageId, setSelectedPackageId] = useState<string | null>(null);
 
   const confirmUnlockedProgram = async (expectedProgram: ProgramSlug | null) => {
     for (let attempt = 0; attempt < ACCESS_CONFIRMATION_RETRY_COUNT; attempt += 1) {
@@ -102,17 +107,17 @@ export default function Paywall() {
     access.ownedProgram === 'six_day_reset' &&
     (access.purchaseState === 'owned_completed' || access.purchaseState === 'owned_archived');
   const recommendedProgram = profile?.recommended_program ?? null;
+
   const visibleProgramSlugs = useMemo(() => {
     if (isUpgradeFlow) {
       return ['ninety_day_transform'] as ProgramSlug[];
     }
-
     if (access.ownedProgram) {
       return [] as ProgramSlug[];
     }
-
     return getRecommendedPrograms(recommendedProgram);
   }, [access.ownedProgram, isUpgradeFlow, recommendedProgram]);
+
   const eligiblePackages = useMemo(() => {
     const matchingPackages = packages
       .map((pack) => ({
@@ -136,23 +141,38 @@ export default function Paywall() {
       .map((slug) => uniquePackages.get(slug))
       .filter((pack): pack is PurchasesPackage => Boolean(pack));
   }, [packages, visibleProgramSlugs]);
+
+  // Default select the primary package
+  useEffect(() => {
+    if (eligiblePackages.length > 0 && !selectedPackageId) {
+      const primary = eligiblePackages.find(p => getProgramSlugForPackage(p) === 'ninety_day_transform');
+      setSelectedPackageId(primary ? primary.identifier : eligiblePackages[0].identifier);
+    }
+  }, [eligiblePackages, selectedPackageId]);
+
   const headerTitle = isUpgradeFlow
     ? 'Your Reset Is Complete'
     : recommendedProgram === 'six_day_reset'
-      ? 'Choose Your Smoking Path'
+      ? 'Choose Your Path'
       : recommendedProgram
-        ? `${getDisplayNameForProgram(recommendedProgram)} Is Ready`
-        : 'Commit to Your Freedom';
-  const headerBody = isUpgradeFlow
-    ? 'Unlock the 90-Day Smoking Reset to continue with daily guided recovery work.'
-    : recommendedProgram === 'six_day_reset'
-      ? 'Both smoking plans are available. Pick the level of support you want right now.'
-      : recommendedProgram
-        ? 'This program was matched to your questionnaire answers and is ready to unlock.'
-        : 'Choose the program path that fits your journey.';
+        ? `${getDisplayNameForProgram(recommendedProgram)}`
+        : 'Your Recovery Path';
 
-  const handlePurchase = async (pack: PurchasesPackage) => {
+  const headerBody = isUpgradeFlow
+    ? `Unlock ${getDisplayNameForProgram('ninety_day_transform')} to continue with daily guided recovery work.`
+    : recommendedProgram === 'six_day_reset'
+      ? 'Both plans are open. Select the level of support you need right now.'
+      : recommendedProgram
+        ? 'This program matches your assessment and is ready to begin.'
+        : 'Select the program that fits your journey.';
+
+  const activePackage = eligiblePackages.find(p => p.identifier === selectedPackageId);
+
+  const handlePurchase = async () => {
+    if (!activePackage) return;
+
     setLoading(true);
+    const pack = activePackage;
     const programSlug = getProgramSlugForPackage(pack);
     try {
       const result = await Purchases.purchasePackage(pack);
@@ -174,7 +194,7 @@ export default function Paywall() {
       await setProgramAccess(confirmedProgram);
       await refreshAccess();
 
-      Alert.alert('Success', `Your ${getPackageDisplayName(pack)} is now unlocked.`);
+      // No alert needed for success if we just drop them into the program smoothly
       router.replace('/(tabs)/program');
     } catch (e: any) {
       const combinedErrorMessage = [e?.message, e?.underlyingErrorMessage]
@@ -204,7 +224,7 @@ export default function Paywall() {
 
         Alert.alert(
           'Purchase Already Owned',
-          'Google Play says this item is already owned. We tried restoring access, but it is not confirmed yet. Please use Restore Purchases again after the billing credentials issue is resolved.'
+          'The store indicates this is already owned. We tried restoring access, but it is not confirmed yet. Please use Restore Purchases later.'
         );
         return;
       }
@@ -214,7 +234,6 @@ export default function Paywall() {
 
         if (restoredProgram) {
           await setProgramAccess(restoredProgram);
-          Alert.alert('Success', `Your ${getDisplayNameForProgram(restoredProgram)} is now unlocked.`);
           router.replace('/(tabs)/program');
           return;
         }
@@ -234,7 +253,7 @@ export default function Paywall() {
         Alert.alert(
           'Purchase Failed',
           isCredentialError
-            ? 'Google Play completed the purchase, but Recovery Compass could not validate it yet because of a billing credentials issue. Please use Restore Purchases after the RevenueCat Google Play credentials are fixed.'
+            ? 'The purchase was processed, but Recovery Compass could not validate it yet. Please use Restore Purchases later.'
             : e.message
         );
       }
@@ -269,85 +288,135 @@ export default function Paywall() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-surface">
+    <View className="flex-1 bg-surface">
       <StatusBar style="dark" />
       <ScrollView
         contentContainerStyle={{
-          paddingLeft: 24,
-          paddingRight: 24,
-          paddingTop: 16,
-          paddingBottom: Math.max(insets.bottom, 20) + 20,
+          paddingTop: Math.max(insets.top, 24) + 24,
+          paddingHorizontal: 24,
+          // Keep the sticky purchase bar from covering the final card.
+          paddingBottom: 180 + insets.bottom,
         }}
       >
-        <View className="items-center mb-10">
-          <Text className="font-erode-bold text-3xl text-forest text-center mb-2">{headerTitle}</Text>
-          <Text className="font-satoshi text-gray-500 text-center text-lg">{headerBody}</Text>
+        <View className="mb-8">
+          <Text className="font-erode-bold text-[32px] text-forest leading-tight mb-4">
+            {headerTitle}
+          </Text>
+          <Text className="font-satoshi text-[16px] leading-[24px] text-forest/65">
+            {headerBody}
+          </Text>
         </View>
 
         {fetchingOfferings ? (
-          <ActivityIndicator size="large" color="#2A3F33" className="mt-10" />
+          <View className="items-center justify-center py-12">
+            <ActivityIndicator size="large" color="#06290C" />
+          </View>
         ) : eligiblePackages.length === 0 ? (
-          <View className="items-center mt-10">
-            <Text className="font-satoshi border border-dashed border-gray-300 p-4 rounded-xl text-gray-500 text-center">
+          <View className="items-center py-12 px-4 rounded-3xl bg-forest/5 border border-forest/10">
+            <Text className="font-satoshi text-center text-forest/70 leading-[24px]">
               {access.ownedProgram && !isUpgradeFlow
-                ? 'This account already has access to an unlocked Recovery Compass program. Open Program or use a fresh test account to verify a first-time purchase flow.'
-                : 'No eligible purchases are available for this account right now. This usually means this account already owns the highest available program path.'}
+                ? 'You already have full access to Recovery Compass. Head to the Program tab to continue your journey.'
+                : 'No eligible setups are available for this account right now. This usually means your account is already fully unlocked.'}
             </Text>
+            <Pressable
+              onPress={handleRestore}
+              disabled={loading}
+              hitSlop={15}
+              className="mt-8 rounded-full border border-forest/10 px-6 py-3"
+            >
+              <Text className="font-satoshi-bold text-[13px] text-forest">
+                {loading ? 'Restoring...' : 'Restore Purchases'}
+              </Text>
+            </Pressable>
           </View>
         ) : (
-          eligiblePackages.map((pack) => {
-            const programSlug = getProgramSlugForPackage(pack);
-            const isPrimary = eligiblePackages.length === 1 || programSlug === 'ninety_day_transform';
+          <View>
+            <View className="mb-10 pl-1" style={{ gap: 12 }}>
+              <FocusPointRow text="Private daily progress tracking" />
+              <FocusPointRow text="Science-based behavioral grounding" />
+              <FocusPointRow text="One-time unlock. No recurring fees." />
+            </View>
 
-            return (
-              <View
-                key={pack.identifier}
-                className={`rounded-3xl p-6 mb-6 shadow-sm border ${
-                  isPrimary ? 'bg-forest border-transparent' : 'bg-white border-gray-100'
-                }`}
-              >
-                <View className="flex-row justify-between items-center mb-4">
-                  <Text className={`font-erode-bold text-2xl ${isPrimary ? 'text-white' : 'text-forest'}`}>
-                    {getPackageDisplayName(pack)}
-                  </Text>
-                </View>
+            <Text className="font-satoshi-bold text-forest text-[13px] uppercase tracking-widest mb-4 opacity-60 ml-2">
+              Select Program
+            </Text>
 
-                <Text className={`font-satoshi mb-6 leading-6 ${isPrimary ? 'text-gray-300' : 'text-gray-500'}`}>
-                  {pack.product.description ||
-                    (programSlug ? PROGRAM_METADATA[programSlug].description : 'A guided Recovery Compass program.')}
-                </Text>
+            <View style={{ gap: 12 }}>
+              {eligiblePackages.map((pack) => {
+                const programSlug = getProgramSlugForPackage(pack);
+                const isSelected = selectedPackageId === pack.identifier;
 
-                <View className="mb-6">
-                  <Text className={`font-satoshi-bold text-3xl ${isPrimary ? 'text-white' : 'text-forest'}`}>
-                    {pack.product.priceString}
-                  </Text>
-                </View>
+                return (
+                  <Pressable
+                    key={pack.identifier}
+                    onPress={() => setSelectedPackageId(pack.identifier)}
+                    className={`relative overflow-hidden rounded-3xl px-6 py-6 transition-all ${
+                      isSelected
+                        ? 'bg-sage border-2 border-forest/15'
+                        : 'bg-white border-2 border-transparent shadow-[0_2px_12px_-4px_rgba(6,41,12,0.06)]'
+                    }`}
+                  >
+                    {/* Left Accent & Radio Indicator */}
+                    <View className="flex-row items-start justify-between mb-2">
+                      <Text className={`font-erode text-[22px] ${isSelected ? 'font-erode-bold text-forest' : 'text-forest/80'}`}>
+                        {getPackageDisplayName(pack)}
+                      </Text>
 
-                <Button
-                  label={`Select ${getPackageDisplayName(pack)}`}
-                  variant={isPrimary ? 'secondary' : 'primary'}
-                  onPress={() => handlePurchase(pack)}
-                  loading={loading}
-                />
-              </View>
-            );
-          })
+                      {/* Premium Radio indicator */}
+                      <View className={`h-5 w-5 rounded-full border-[1.5px] items-center justify-center mt-1 ${isSelected ? 'border-forest' : 'border-forest/20'}`}>
+                        {isSelected && (
+                          <Animated.View entering={FadeIn.duration(150)} className="h-2.5 w-2.5 rounded-full bg-forest" />
+                        )}
+                      </View>
+                    </View>
+
+                    <Text className={`font-satoshi text-[14px] leading-6 pr-4 mb-4 ${isSelected ? 'text-forest/70' : 'text-forest/50'}`}>
+                      {pack.product.description ||
+                        (programSlug ? PROGRAM_METADATA[programSlug].description : 'A guided Recovery Compass program.')}
+                    </Text>
+
+                    <Text className={`font-satoshi-bold text-[24px] ${isSelected ? 'text-forest' : 'text-forest/70'}`}>
+                      {pack.product.priceString}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </View>
         )}
-
-        <View className="items-center mt-6">
-          <Button
-            label="Restore Purchases"
-            variant="ghost"
-            size="sm"
-            onPress={handleRestore}
-            loading={loading}
-          />
-        </View>
-
-        <Text className="text-center text-gray-400 text-xs mt-8">
-          One-time program unlocks. Restore anytime from this screen.
-        </Text>
       </ScrollView>
-    </SafeAreaView>
+
+      {/* Sticky Bottom Area */}
+      {eligiblePackages.length > 0 && !fetchingOfferings && (
+        <View
+          className="absolute bottom-0 left-0 right-0 bg-surface border-t border-forest/5"
+          style={{
+            paddingTop: 20,
+            paddingHorizontal: 24,
+            paddingBottom: Math.max(insets.bottom, 20) + 12,
+            shadowColor: '#06290C',
+            shadowOffset: { width: 0, height: -10 },
+            shadowOpacity: 0.03,
+            shadowRadius: 15,
+            elevation: 10
+          }}
+        >
+          <CompassCTA
+            label={`Unlock ${activePackage ? getPackageDisplayName(activePackage) : 'Access'}`}
+            onPress={handlePurchase}
+            loading={loading}
+            disabled={!selectedPackageId || loading}
+          />
+
+          <View className="flex-row items-center justify-center mt-5" style={{ gap: 24 }}>
+            <Pressable onPress={handleRestore} disabled={loading} hitSlop={15}>
+              <Text className="font-satoshi text-[13px] text-forest/40 underline">
+                Restore Purchases
+              </Text>
+            </Pressable>
+          </View>
+        </View>
+      )}
+    </View>
   );
 }
