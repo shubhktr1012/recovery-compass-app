@@ -1,13 +1,24 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Alert, KeyboardAvoidingView, Platform, Text, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Href, router } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
-import Animated, { FadeIn, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import Animated, { FadeIn } from 'react-native-reanimated';
 
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
+import {
+  CompassCTA,
+  FocusPointRow,
+  InlineSelectRow,
+  InputText,
+  LargeNumberInput,
+  ProgressLine,
+  RecommendationHero,
+  SelectChip,
+  StepContainer,
+  StepHeadline,
+  StepPill,
+  SurfaceSelectCard,
+} from '@/components/onboarding/intake';
 import { ONBOARDING_RESPONSE_QUERY_KEY } from '@/hooks/useOnboardingResponse';
 import { buildOnboardingSteps, createInitialOnboardingAnswers, getOnboardingResolution } from '@/lib/onboarding.flow';
 import { hasMeaningfulOnboardingDraft, loadOnboardingDraft, saveOnboardingDraft, saveOnboardingQuestionnaire } from '@/lib/onboarding.persistence';
@@ -16,117 +27,22 @@ import type { GenderOption, GuidedIssueId, JourneyKey, OnboardingPath, Onboardin
 import { useAuth } from '@/providers/auth';
 import { PROFILE_QUERY_KEY } from '@/providers/profile';
 
-function SegmentedProgress({ currentStep, totalSteps }: { currentStep: number; totalSteps: number }) {
-  return (
-    <View className="flex-row gap-2">
-      {Array.from({ length: totalSteps }).map((_, index) => (
-        <View key={`questionnaire-progress-${index}`} className="h-[4px] flex-1 overflow-hidden rounded-full bg-[#D8DED5]">
-          {index <= currentStep && (
-            <Animated.View 
-              entering={FadeIn.duration(400)} 
-              className="h-full w-full rounded-full bg-[#183226]" 
-            />
-          )}
-        </View>
-      ))}
-    </View>
-  );
-}
+// ─── Pill label mapping (spec §3) ──────────────────────────────────────────
+const STEP_PILL_LABELS: Record<OnboardingStep['type'], string> = {
+  quick_profile: 'YOUR PROFILE',
+  path_choice: 'YOUR PATH',
+  program_choice: 'CHOOSE YOUR PROGRAM',
+  guided_issue: 'YOUR MAIN ISSUE',
+  question: 'PERSONALIZATION',
+  recommendation: 'YOUR RECOMMENDATION',
+};
 
-function SelectionCard({
-  compact = false,
-  description,
-  onPress,
-  selected,
-  title,
-}: {
-  compact?: boolean;
-  description?: string;
-  onPress: () => void;
-  selected: boolean;
-  title: string;
-}) {
-  const scale = useSharedValue(1);
-
-  const handlePressIn = () => {
-    scale.value = withTiming(0.98, { duration: 100 });
-  };
-  const handlePressOut = () => {
-    scale.value = withTiming(1, { duration: 100 });
-  };
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
-
-  return (
-    <Pressable
-      onPress={onPress}
-      onPressIn={handlePressIn}
-      onPressOut={handlePressOut}
-    >
-      <Animated.View
-        style={animatedStyle}
-        className={`mb-3 w-full rounded-[24px] border ${compact ? 'px-4 py-4' : 'px-5 py-4.5'} ${
-          selected
-            ? 'border-[#183226] bg-[#EEF2EB]'
-            : 'border-[#DCE1D8] bg-white/88'
-        }`}
-      >
-        <View className="flex-row items-start justify-between gap-4">
-          <View className="flex-1">
-            <Text
-              className={`font-satoshi-bold ${compact ? 'text-[15px] leading-[22px]' : 'text-[16px] leading-[24px]'} ${
-                selected ? 'text-[#13281D]' : 'text-[#1A3024]'
-              }`}
-            >
-              {title}
-            </Text>
-          </View>
-          <View className={`mt-1 h-4 w-4 rounded-full border ${selected ? 'border-[#183226] bg-[#183226]' : 'border-[#BFB29B] bg-transparent'}`}>
-            {selected ? <View className="m-[3px] h-[6px] w-[6px] rounded-full bg-[#F6F1E7]" /> : null}
-          </View>
-        </View>
-        {description ? (
-          <Text
-            className={`mt-2.5 font-satoshi text-[14px] leading-[22px] ${
-              selected ? 'text-[#3F473E]' : 'text-[#5D574E]'
-            }`}
-          >
-            {description}
-          </Text>
-        ) : null}
-      </Animated.View>
-    </Pressable>
-  );
-}
-
-function RecommendationCard({
-  eyebrow,
-  title,
-  body,
-}: {
-  eyebrow?: string;
-  title: string;
-  body: string;
-}) {
-  return (
-    <View className="mb-4 rounded-[24px] border border-[#DCE1D8] bg-white/88 px-5 py-5">
-      {eyebrow ? (
-        <Text className="font-satoshi-bold text-[11px] uppercase tracking-[1.8px] text-[#70695E]">
-          {eyebrow}
-        </Text>
-      ) : null}
-      <Text className="mt-3 font-erode-semibold text-[26px] leading-[32px] text-[#13281D]">{title}</Text>
-      <Text className="mt-2 font-satoshi text-[14px] leading-6 text-[#585249]">{body}</Text>
-    </View>
-  );
-}
-
+// ─── Helpers ────────────────────────────────────────────────────────────────
 function isPositiveInteger(value: string) {
   return Number.isInteger(Number(value)) && Number(value) > 0;
 }
 
+// ─── Screen ─────────────────────────────────────────────────────────────────
 export default function Personalization() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -139,19 +55,15 @@ export default function Personalization() {
   const steps = useMemo(() => buildOnboardingSteps(answers), [answers]);
   const currentStep = steps[Math.min(stepIndex, steps.length - 1)];
   const resolution = useMemo(() => getOnboardingResolution(answers), [answers]);
-  const insets = useSafeAreaInsets();
-  const progressLabel = answers.path
-    ? `Step ${stepIndex + 1} of ${steps.length}`
-    : stepIndex === 0
-      ? 'Getting started'
-      : 'Choose your path';
 
+  // ─── Clamp step index if steps change ───────────────────────────────────
   useEffect(() => {
     if (stepIndex > steps.length - 1) {
       setStepIndex(Math.max(0, steps.length - 1));
     }
   }, [stepIndex, steps.length]);
 
+  // ─── Restore draft ──────────────────────────────────────────────────────
   useEffect(() => {
     let isMounted = true;
 
@@ -201,6 +113,7 @@ export default function Personalization() {
     };
   }, [user]);
 
+  // ─── Auto-save draft ───────────────────────────────────────────────────
   useEffect(() => {
     if (!isDraftReady || !user || isSaving) {
       return;
@@ -227,6 +140,7 @@ export default function Personalization() {
     };
   }, [answers, currentStep.id, isDraftReady, isSaving, stepIndex, user]);
 
+  // ─── Draft restored alert ──────────────────────────────────────────────
   useEffect(() => {
     if (!didRestoreDraft) {
       return;
@@ -236,6 +150,7 @@ export default function Personalization() {
     setDidRestoreDraft(false);
   }, [didRestoreDraft]);
 
+  // ─── State updaters (unchanged) ────────────────────────────────────────
   const updateQuickProfile = <K extends 'name' | 'age'>(key: K, value: string) => {
     setAnswers((current) => ({ ...current, [key]: value }));
   };
@@ -316,6 +231,7 @@ export default function Personalization() {
     });
   };
 
+  // ─── Validation (unchanged) ────────────────────────────────────────────
   const validateQuestion = (question: QuestionDefinition) => {
     const rawValue = answers.questionValues[question.id];
 
@@ -370,6 +286,7 @@ export default function Personalization() {
     }
   };
 
+  // ─── Save & nav (unchanged) ────────────────────────────────────────────
   const saveAndContinue = async () => {
     if (!user) {
       Alert.alert('No account found', 'Please sign in again and retry.');
@@ -397,6 +314,10 @@ export default function Personalization() {
   };
 
   const handleNext = async () => {
+    if (isSaving) {
+      return;
+    }
+
     const validation = validateCurrentStep(currentStep);
     if (validation !== true) {
       Alert.alert('Required', validation);
@@ -415,18 +336,18 @@ export default function Personalization() {
     setStepIndex((current) => Math.max(0, current - 1));
   };
 
+  // ─── Render: question interaction zones ────────────────────────────────
   const renderQuestion = (question: QuestionDefinition) => {
     if (question.type === 'number_input') {
       const currentValue = answers.questionValues[question.id];
 
       return (
-        <Input
-          label="Answer"
-          placeholder={question.placeholder}
+        <LargeNumberInput
           value={typeof currentValue === 'string' ? currentValue : ''}
           onChangeText={(value) => updateQuestionValue(question.id, value)}
-          keyboardType={question.keyboardType}
-          className="rounded-[20px] border-[#DCE1D8] bg-white/92 px-5 py-4 font-satoshi text-[15px] text-forest"
+          unit={question.placeholder}
+          autoFocus
+          onSubmitEditing={() => void handleNext()}
         />
       );
     }
@@ -436,13 +357,11 @@ export default function Personalization() {
       const selectedValues = Array.isArray(currentValue) ? currentValue : [];
 
       return (
-        <View>
-          <Text className="mb-4 font-satoshi text-sm text-forest/60">Choose any that apply.</Text>
+        <View className="mt-8 flex-row flex-wrap" style={{ gap: 10 }}>
           {question.options?.map((option) => (
-            <SelectionCard
+            <SelectChip
               key={option.id}
-              title={option.label}
-              description={option.description}
+              label={option.label}
               selected={selectedValues.includes(option.id)}
               onPress={() => toggleQuestionValue(question.id, option.id)}
             />
@@ -451,23 +370,25 @@ export default function Personalization() {
       );
     }
 
+    // single_select — inline text rows
     const currentValue = answers.questionValues[question.id];
 
     return (
-      <View>
-        {question.options?.map((option) => (
-          <SelectionCard
+      <View className="mt-8">
+        {question.options?.map((option, index) => (
+          <InlineSelectRow
             key={option.id}
-            title={option.label}
-            description={option.description}
+            label={option.label}
             selected={currentValue === option.id}
             onPress={() => updateQuestionValue(question.id, option.id)}
+            isLast={index === (question.options?.length ?? 0) - 1}
           />
         ))}
       </View>
     );
   };
 
+  // ─── Render: recommendation reveal ─────────────────────────────────────
   const renderRecommendation = () => {
     if (currentStep.type !== 'recommendation') {
       return null;
@@ -478,83 +399,88 @@ export default function Personalization() {
       : 'You gave us enough context to narrow this down clearly.';
 
     return (
-      <View>
-        <View className="mb-5 rounded-[24px] bg-forest px-5 py-5 shadow-xl shadow-forest/20">
-          <Text className="font-satoshi-bold text-[11px] uppercase tracking-[1.8px] text-white/50">
-            Recommended Path
-          </Text>
-          <Text className="mt-3 font-erode-bold text-[32px] leading-[36px] text-white">
-            {currentStep.recommendation.title}
-          </Text>
-          <Text className="mt-3 font-satoshi text-[15px] leading-7 text-white/80">
-            {currentStep.recommendation.subtitle}
+      <View className="mt-8">
+        {/* Hero card */}
+        <RecommendationHero
+          title={`${currentStep.recommendation.title} fits your current pattern.`}
+          subtitle={currentStep.recommendation.subtitle}
+        />
+
+        {/* Why this fits */}
+        <View className="mt-6">
+          <StepPill label="WHY THIS FITS" />
+          <Text className="mt-4 font-satoshi text-[15px] leading-[26px] text-forest/70">
+            {primaryConcernCopy} {currentStep.recommendation.whyFits}
           </Text>
         </View>
 
-        <RecommendationCard
-          eyebrow="Why this fits"
-          title="Why we matched you here"
-          body={`${primaryConcernCopy} ${currentStep.recommendation.whyFits}`}
-        />
+        {/* Divider */}
+        <View className="my-4 h-[1px] w-[24px] bg-forest/15" />
 
-        <Text className="mb-3 mt-4 font-satoshi-bold text-[11px] uppercase tracking-[1.8px] text-forest/50">
-          {currentStep.recommendation.focusLabel}
-        </Text>
-        {currentStep.recommendation.focusPoints.map((point, index) => (
-          <View
-            key={`${currentStep.journey}-focus-${index}`}
-            className="mb-3 flex-row items-center rounded-[20px] border border-[#DCE1D8] bg-white/88 px-4 py-3.5"
-          >
-            <View className="mr-3 h-1.5 w-1.5 rounded-full bg-forest/30" />
-            <Text className="flex-1 font-satoshi text-[14px] leading-6 text-forest/80">{point}</Text>
+        {/* Focus points */}
+        <View>
+          <StepPill label={currentStep.recommendation.focusLabel.toUpperCase()} />
+          <View className="mt-4" style={{ gap: 16 }}>
+            {currentStep.recommendation.focusPoints.map((point, index) => (
+              <FocusPointRow
+                key={`${currentStep.journey}-focus-${index}`}
+                text={point}
+              />
+            ))}
           </View>
-        ))}
+        </View>
       </View>
     );
   };
 
+  // ─── Render: the interaction zone for each step type ───────────────────
   const renderCurrentStep = () => {
     switch (currentStep.type) {
       case 'quick_profile':
         return (
-          <View>
-            <Input
-              label="Name"
-              placeholder="What should we call you?"
+          <View className="mt-8">
+            <InputText
               value={answers.name}
               onChangeText={(value) => updateQuickProfile('name', value)}
-              containerClassName="mb-5"
-              className="rounded-[20px] border-[#DCE1D8] bg-white/92 px-5 py-4 font-satoshi text-[15px] text-forest"
-            />
-            <Input
-              label="Age"
-              placeholder="Your age"
-              value={answers.age}
-              onChangeText={(value) => updateQuickProfile('age', value)}
-              keyboardType="number-pad"
-              containerClassName="mb-5"
-              className="rounded-[20px] border-[#DCE1D8] bg-white/92 px-5 py-4 font-satoshi text-[15px] text-forest"
+              placeholder="What should we call you?"
+              autoFocus
+              maxLength={80}
             />
 
-            <Text className="mb-3 ml-1 font-satoshi text-sm text-forest/65">Gender</Text>
-            <View className="flex-col gap-3">
-              {GENDER_OPTIONS.map((option) => (
-                <SelectionCard
+            <View className="mt-8">
+              <Text className="font-satoshi-bold text-[10px] uppercase tracking-[2.4px] text-forest/35 mb-4">
+                AGE
+              </Text>
+              <LargeNumberInput
+                value={answers.age}
+                onChangeText={(value) => updateQuickProfile('age', value)}
+                unit="years"
+                maxLength={3}
+              />
+            </View>
+
+            <View className="mt-8">
+              <Text className="font-satoshi-bold text-[10px] uppercase tracking-[2.4px] text-forest/35 mb-4">
+                GENDER
+              </Text>
+              {GENDER_OPTIONS.map((option, index) => (
+                <InlineSelectRow
                   key={option}
-                  compact
-                  title={option}
+                  label={option}
                   selected={answers.gender === option}
                   onPress={() => updateGender(option)}
+                  isLast={index === GENDER_OPTIONS.length - 1}
                 />
               ))}
             </View>
           </View>
         );
+
       case 'path_choice':
         return (
-          <View>
+          <View className="mt-8">
             {currentStep.options.map((option) => (
-              <SelectionCard
+              <SurfaceSelectCard
                 key={option.id}
                 title={option.label}
                 description={option.description}
@@ -564,11 +490,12 @@ export default function Personalization() {
             ))}
           </View>
         );
+
       case 'program_choice':
         return (
-          <View>
+          <View className="mt-8">
             {currentStep.options.map((option) => (
-              <SelectionCard
+              <SurfaceSelectCard
                 key={option.id}
                 title={option.label}
                 description={option.description}
@@ -578,11 +505,12 @@ export default function Personalization() {
             ))}
           </View>
         );
+
       case 'guided_issue':
         return (
-          <View>
+          <View className="mt-8">
             {currentStep.options.map((option) => (
-              <SelectionCard
+              <SurfaceSelectCard
                 key={option.id}
                 title={option.label}
                 description={option.description}
@@ -592,110 +520,81 @@ export default function Personalization() {
             ))}
           </View>
         );
+
       case 'question':
         return renderQuestion(currentStep.question);
+
       case 'recommendation':
         return renderRecommendation();
+
       default:
         return null;
     }
   };
 
-  const primaryButtonLabel = stepIndex === steps.length - 1 ? 'See plans' : 'Continue';
+  // ─── CTA label ─────────────────────────────────────────────────────────
+  const ctaLabel = currentStep.type === 'recommendation' ? 'See plans' : 'Continue';
 
+  // ─── Loading state ─────────────────────────────────────────────────────
   if (!isDraftReady) {
     return (
-      <View className="flex-1 items-center justify-center bg-[#F6F6F1] px-8">
+      <View className="flex-1 items-center justify-center bg-surface px-8">
         <StatusBar style="dark" />
-        <Text className="font-erode-semibold text-3xl text-[#13281D] text-center">Restoring your progress</Text>
-        <Text className="mt-3 max-w-[280px] font-satoshi text-base leading-7 text-[#5B554C] text-center">
+        <Text className="font-erode-semibold text-[28px] leading-[34px] text-forest text-center">
+          Restoring your progress
+        </Text>
+        <Text className="mt-3 max-w-[280px] font-satoshi text-[15px] leading-[24px] text-forest/50 text-center">
           We are picking up your questionnaire from where you left off.
         </Text>
       </View>
     );
   }
 
+  // ─── Main render ───────────────────────────────────────────────────────
   return (
-    <View className="flex-1 bg-[#F6F6F1]">
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      className="flex-1"
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 8 : 0}
+    >
       <StatusBar style="dark" />
 
-      <View className="absolute -right-32 top-[-5%] h-[420px] w-[420px] rounded-full bg-[#EEF1EA]" />
-      <View className="absolute -left-28 bottom-[-4%] h-[360px] w-[360px] rounded-full bg-[#F0F2ED]" />
-      <View className="absolute left-10 top-24 h-20 w-20 rounded-full border border-[#DDE3D9] bg-[#FAFBF8]/80" />
-
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        className="flex-1"
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 8 : 0}
+      <StepContainer
+        currentStep={stepIndex}
+        totalSteps={steps.length}
+        onBack={handleBack}
+        showBack={stepIndex > 0}
+        footer={
+          <CompassCTA
+            label={ctaLabel}
+            onPress={() => void handleNext()}
+            loading={isSaving}
+          />
+        }
       >
-        <View 
-          className="flex-1 px-6" 
-          style={{ paddingTop: Math.max(insets.top + 16, 20), paddingBottom: insets.bottom }}
+        {/* Progress line */}
+        <ProgressLine currentStep={stepIndex} totalSteps={steps.length} />
+
+        {/* Content with transition */}
+        <Animated.View
+          key={`step-${stepIndex}`}
+          entering={FadeIn.duration(400)}
         >
-          <SegmentedProgress currentStep={stepIndex} totalSteps={steps.length} />
-
-          <View className="mb-4 mt-6 flex-row items-start justify-between">
-            <View>
-              <Text className="font-satoshi-bold text-[11px] uppercase tracking-[2.1px] text-[#726B60]">
-                Personalization
-              </Text>
-              <Text className="mt-2 font-satoshi text-[13px] leading-6 text-[#6D665A]">
-                A calmer start, tailored to what you need most.
-              </Text>
-            </View>
-            <Text className="font-satoshi text-[12px] tracking-[1.5px] text-[#8C8578]">
-              {progressLabel}
-            </Text>
+          {/* Pill label — 48px below progress */}
+          <View className="mt-12">
+            <StepPill label={STEP_PILL_LABELS[currentStep.type]} />
           </View>
 
-          <Animated.View 
-            key={`step-${stepIndex}`}
-            entering={FadeIn.duration(500)}
-            className="flex-1"
-          >
-            <View className="mb-7 max-w-[94%]">
-              <Text className="font-erode-semibold text-[32px] leading-[36px] text-[#13281D]">
-                {currentStep.title}
-              </Text>
-              {currentStep.description && (
-                <Text className="mt-3 font-satoshi text-[15px] leading-7 text-[#5A544B]">
-                  {currentStep.description}
-                </Text>
-              )}
-            </View>
+          {/* Headline */}
+          <StepHeadline
+            title={currentStep.title}
+            description={currentStep.description}
+          />
 
-            <ScrollView
-              className="flex-1"
-              contentContainerClassName="pb-6"
-              keyboardShouldPersistTaps="handled"
-              showsVerticalScrollIndicator={false}
-            >
-              {renderCurrentStep()}
-            </ScrollView>
-          </Animated.View>
-
-          <View className="pb-4 pt-4">
-            <Button
-              label={primaryButtonLabel}
-              onPress={() => void handleNext()}
-              loading={isSaving}
-              size="lg"
-              className="rounded-full border border-[#183226] bg-[#173428] py-3.5 shadow-xl shadow-[#173428]/10"
-              textClassName="font-satoshi-bold text-[14px] tracking-[0.2px] text-[#F5F0E4]"
-            />
-            {stepIndex > 0 ? (
-              <Button
-                label="Back"
-                variant="ghost"
-                onPress={handleBack}
-                disabled={isSaving}
-                className="mt-2 rounded-full"
-                textClassName="font-satoshi text-[14px] text-[#5A544B]"
-              />
-            ) : null}
-          </View>
-        </View>
-      </KeyboardAvoidingView>
-    </View>
+          {/* Interaction zone */}
+          {renderCurrentStep()}
+        </Animated.View>
+      </StepContainer>
+    </KeyboardAvoidingView>
   );
 }
