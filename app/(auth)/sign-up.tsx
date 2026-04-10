@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, ScrollView, Alert, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
 import { useRouter, Href } from 'expo-router';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -10,6 +10,7 @@ import { StatusBar } from 'expo-status-bar';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { AppColors } from '@/constants/theme';
 
 const signUpSchema = z.object({
     email: z.string().email('Please enter a valid email'),
@@ -126,26 +127,22 @@ export default function SignUp() {
     };
 
     return (
-        <SafeAreaView className="flex-1 bg-surface">
+        <SafeAreaView style={styles.safeArea}>
             <StatusBar style="dark" />
             <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                className="flex-1"
+                style={styles.keyboardView}
             >
                 <ScrollView
-                    contentContainerClassName="flex-grow justify-center px-6 pb-10"
+                    contentContainerStyle={styles.scrollContent}
                     keyboardShouldPersistTaps="handled"
                 >
-                    <View className="items-center mb-10">
-                        <Text className="font-erode-bold text-4xl text-forest mb-2 text-center">
-                            Create Account
-                        </Text>
-                        <Text className="font-satoshi text-gray-500 text-center text-lg">
-                            Start your journey to freedom.
-                        </Text>
+                    <View style={styles.headerContainer}>
+                        <Text style={styles.title}>Create Account</Text>
+                        <Text style={styles.subtitle}>Start your journey to freedom.</Text>
                     </View>
 
-                    <View className="space-y-5">
+                    <View style={styles.formContainer}>
                         <Controller
                             control={control}
                             name="email"
@@ -184,15 +181,15 @@ export default function SignUp() {
                             label="Sign Up"
                             onPress={handleSubmit(onSubmit)}
                             loading={loading}
-                            className="mt-4"
+                            style={styles.submitButton}
                             size="lg"
                         />
                     </View>
 
-                    <View className="mt-10 flex-row justify-center">
-                        <Text className="text-gray-500 font-satoshi">Already have an account? </Text>
+                    <View style={styles.footerContainer}>
+                        <Text style={styles.footerText}>Already have an account? </Text>
                         <Text
-                            className="text-forest font-satoshi-bold font-medium"
+                            style={styles.footerLink}
                             onPress={() => router.replace('/welcome' as Href)}
                         >
                             Sign In
@@ -203,3 +200,59 @@ export default function SignUp() {
         </SafeAreaView>
     );
 }
+
+const styles = StyleSheet.create({
+    safeArea: {
+        flex: 1,
+        backgroundColor: AppColors.white,
+    },
+    keyboardView: {
+        flex: 1,
+    },
+    scrollContent: {
+        flexGrow: 1,
+        justifyContent: 'center',
+        paddingHorizontal: 24,
+        paddingBottom: 40,
+    },
+    headerContainer: {
+        alignItems: 'center',
+        marginBottom: 40,
+    },
+    title: {
+        fontFamily: 'Erode-Bold',
+        fontSize: 36,
+        color: AppColors.forest,
+        marginBottom: 8,
+        textAlign: 'center',
+    },
+    subtitle: {
+        fontFamily: 'Satoshi-Regular',
+        color: AppColors.iconMuted,
+        textAlign: 'center',
+        fontSize: 18,
+    },
+    formContainer: {
+        gap: 20,
+    },
+    submitButton: {
+        marginTop: 16,
+        shadowColor: 'transparent',
+    },
+    footerContainer: {
+        marginTop: 40,
+        flexDirection: 'row',
+        justifyContent: 'center',
+    },
+    footerText: {
+        color: AppColors.iconMuted,
+        fontFamily: 'Satoshi-Regular',
+        fontSize: 16,
+    },
+    footerLink: {
+        color: AppColors.forest,
+        fontFamily: 'Satoshi-Bold',
+        fontWeight: '500',
+        fontSize: 16,
+    },
+});

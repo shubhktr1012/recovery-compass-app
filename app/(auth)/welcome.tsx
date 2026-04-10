@@ -7,14 +7,6 @@ import { router } from 'expo-router';
 import { AppColors } from '@/constants/theme';
 import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Animated, {
-    Easing,
-    Extrapolation,
-    interpolate,
-    useAnimatedStyle,
-    useSharedValue,
-    withTiming,
-} from 'react-native-reanimated';
 import { useAuth } from '@/providers/auth';
 import { getPublicEnv } from '@/lib/env';
 import * as Google from 'expo-auth-session/providers/google';
@@ -24,16 +16,9 @@ import * as AppleAuthentication from 'expo-apple-authentication';
 import * as Crypto from 'expo-crypto';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-type AuthMode = 'default' | 'signIn';
 type OAuthProvider = 'google' | 'apple';
 type LastSignInProvider = 'email' | 'google' | 'apple';
 
-const APPEAR_DURATION = 560;
-const DISAPPEAR_DURATION = 760;
-const BUTTON_ROW_HEIGHT = 60;
-const BUTTON_ROW_GAP = 16;
-const REVEAL_TRAVEL = 14;
-const authModeEasing = Easing.bezier(0.22, 1, 0.36, 1);
 const OAUTH_LINK_NOTICE_PREFIX = 'auth:linked-provider-notice';
 const LAST_SIGN_IN_PROVIDER_KEY = 'auth:last-sign-in-provider';
 const SESSION_EXPIRED_NOTICE_KEY = 'auth:session-expired-notice';
@@ -58,20 +43,13 @@ function getGoogleIosReversedClientScheme(clientId: string | null) {
     return `com.googleusercontent.apps.${clientId.slice(0, -suffix.length)}`;
 }
 
-function toStaggeredProgress(value: number, start: number, end: number) {
-    'worklet';
-    return interpolate(value, [start, end], [0, 1], Extrapolation.CLAMP);
-}
-
 WebBrowser.maybeCompleteAuthSession();
 
 export default function WelcomeScreen() {
     const insets = useSafeAreaInsets();
-    const [authMode, setAuthMode] = useState<AuthMode>('default');
     const [authProviderLoading, setAuthProviderLoading] = useState<'google' | 'apple' | null>(null);
     const [lastSignInProvider, setLastSignInProvider] = useState<LastSignInProvider | null>(null);
     const [sessionExpiredNotice, setSessionExpiredNotice] = useState<string | null>(null);
-    const progress = useSharedValue(0);
     const isIOS = Platform.OS === 'ios';
     const { signInWithGoogleIdToken, signInWithAppleIdToken } = useAuth();
     const {
@@ -138,13 +116,6 @@ export default function WelcomeScreen() {
             console.warn('Failed to persist last sign-in provider', error);
         }
     };
-
-    useEffect(() => {
-        progress.value = withTiming(authMode === 'signIn' ? 1 : 0, {
-            duration: authMode === 'signIn' ? APPEAR_DURATION : DISAPPEAR_DURATION,
-            easing: authModeEasing,
-        });
-    }, [authMode, progress]);
 
     useEffect(() => {
         let isMounted = true;
@@ -249,20 +220,8 @@ export default function WelcomeScreen() {
         };
     }, [googleAuthResponse, signInWithGoogleIdToken]);
 
-    const handlePrimaryButtonPress = () => {
-        if (authMode === 'default') {
-            router.push('/(auth)/onboarding'); 
-        } else {
-            router.push('/(auth)/sign-in'); // Adjust if there's a specific route for email sign-in
-        }
-    };
-
-    const handleSecondaryButtonPress = () => {
-        if (authMode === 'default') {
-            setAuthMode('signIn');
-        } else {
-            setAuthMode('default');
-        }
+    const handleCreateAccountPress = () => {
+        router.push('/(auth)/onboarding');
     };
 
     const openLink = (url: string) => {
@@ -349,52 +308,6 @@ export default function WelcomeScreen() {
         }
     };
 
-    const createAccountStyle = useAnimatedStyle(() => ({
-        opacity: 1 - progress.value,
-        transform: [
-            { translateY: interpolate(progress.value, [0, 1], [0, -6], Extrapolation.CLAMP) },
-            { scale: interpolate(progress.value, [0, 1], [1, 0.992], Extrapolation.CLAMP) },
-        ],
-    }));
-
-    const googleStyle = useAnimatedStyle(() => ({
-        opacity: progress.value,
-        transform: [
-            { translateY: interpolate(progress.value, [0, 1], [6, 0], Extrapolation.CLAMP) },
-            { scale: interpolate(progress.value, [0, 1], [0.992, 1], Extrapolation.CLAMP) },
-        ],
-    }));
-
-    const appleRowStyle = useAnimatedStyle(() => {
-        const staged = toStaggeredProgress(progress.value, 0.26, 0.84);
-        return {
-            opacity: staged,
-            height: interpolate(staged, [0, 1], [0, BUTTON_ROW_HEIGHT], Extrapolation.CLAMP),
-            marginBottom: interpolate(staged, [0, 1], [0, BUTTON_ROW_GAP], Extrapolation.CLAMP),
-            transform: [{ translateY: interpolate(staged, [0, 1], [-REVEAL_TRAVEL, 0], Extrapolation.CLAMP) }],
-        };
-    });
-
-    const emailRowStyle = useAnimatedStyle(() => {
-        const staged = toStaggeredProgress(progress.value, 0.42, 1);
-        return {
-            opacity: staged,
-            height: interpolate(staged, [0, 1], [0, BUTTON_ROW_HEIGHT], Extrapolation.CLAMP),
-            marginBottom: interpolate(staged, [0, 1], [0, BUTTON_ROW_GAP], Extrapolation.CLAMP),
-            transform: [{ translateY: interpolate(staged, [0, 1], [-REVEAL_TRAVEL, 0], Extrapolation.CLAMP) }],
-        };
-    });
-
-    const signInStyle = useAnimatedStyle(() => ({
-        opacity: 1 - progress.value,
-        transform: [{ translateY: interpolate(progress.value, [0, 1], [0, -5], Extrapolation.CLAMP) }],
-    }));
-
-    const backStyle = useAnimatedStyle(() => ({
-        opacity: progress.value,
-        transform: [{ translateY: interpolate(progress.value, [0, 1], [5, 0], Extrapolation.CLAMP) }],
-    }));
-
     return (
         <ThemedView style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom + 16 }]}> 
             <View style={styles.content}>
@@ -442,7 +355,7 @@ export default function WelcomeScreen() {
                             </ThemedText>
                         ) : null}
 
-                        {authMode === 'signIn' && lastSignInProvider ? (
+                        {lastSignInProvider ? (
                             <ThemedText style={styles.lastProviderHint}>
                                 You signed in using{' '}
                                 {lastSignInProvider === 'email'
@@ -454,24 +367,8 @@ export default function WelcomeScreen() {
                             </ThemedText>
                         ) : null}
 
-                        <View style={styles.morphRow}>
-                            <Animated.View
-                                style={[styles.overlayButton, createAccountStyle]}
-                                pointerEvents={authMode === 'default' ? 'auto' : 'none'}
-                            >
-                                <Button
-                                    variant="primary"
-                                    size="lg"
-                                    label="Create Account"
-                                    onPress={handlePrimaryButtonPress}
-                                    style={flatButtonStyle}
-                                />
-                            </Animated.View>
-
-                            <Animated.View
-                                style={[styles.overlayButton, googleStyle]}
-                                pointerEvents={authMode === 'signIn' ? 'auto' : 'none'}
-                            >
+                        <View style={styles.authButtonStack}>
+                            <View style={styles.authButtonRow}>
                                 <Button
                                     variant="secondary"
                                     size="lg"
@@ -482,65 +379,40 @@ export default function WelcomeScreen() {
                                     disabled={!hasGoogleConfig}
                                     style={flatButtonStyle}
                                 />
-                            </Animated.View>
+                            </View>
+
+                            {isIOS ? (
+                                <View style={styles.authButtonRow}>
+                                    <Button
+                                        variant="secondary"
+                                        size="lg"
+                                        icon={<Image source={require('@/assets/images/apple-logo.svg')} style={{ width: 22, height: 22, marginRight: 12, tintColor: AppColors.forest }} contentFit="contain" />}
+                                        label="Sign In with Apple"
+                                        onPress={() => void handleAppleSignIn()}
+                                        loading={authProviderLoading === 'apple'}
+                                        style={flatButtonStyle}
+                                    />
+                                </View>
+                            ) : null}
+
+                            <View style={styles.authButtonRow}>
+                                <Button
+                                    variant="primary"
+                                    size="lg"
+                                    label="Sign in with Email Address"
+                                    onPress={() => router.push('/(auth)/sign-in')}
+                                    style={flatButtonStyle}
+                                />
+                            </View>
                         </View>
 
-                        {isIOS ? (
-                            <Animated.View
-                                style={[styles.revealRow, styles.appleRowLayer, appleRowStyle]}
-                                pointerEvents={authMode === 'signIn' ? 'auto' : 'none'}
-                            >
-                                <Button
-                                    variant="secondary"
-                                    size="lg"
-                                    icon={<Image source={require('@/assets/images/apple-logo.svg')} style={{ width: 22, height: 22, marginRight: 12, tintColor: AppColors.forest }} contentFit="contain" />}
-                                    label="Sign In with Apple"
-                                    onPress={() => void handleAppleSignIn()}
-                                    loading={authProviderLoading === 'apple'}
-                                    style={flatButtonStyle}
-                                />
-                            </Animated.View>
-                        ) : null}
-                        
-                        <Animated.View
-                            style={[styles.revealRow, styles.emailRowLayer, emailRowStyle]}
-                            pointerEvents={authMode === 'signIn' ? 'auto' : 'none'}
-                        >
-                            <Button
-                                variant="primary"
-                                size="lg"
-                                label="Sign in with Email Address"
-                                onPress={() => router.push('/(auth)/sign-in')}
-                                style={flatButtonStyle}
-                            />
-                        </Animated.View>
-
-                        <View style={styles.switchRow}>
-                            <Animated.View
-                                style={[styles.switchOverlay, signInStyle]}
-                                pointerEvents={authMode === 'default' ? 'auto' : 'none'}
-                            >
-                                <Button
-                                    variant="ghost"
-                                    size="lg"
-                                    label="Sign In"
-                                    onPress={handleSecondaryButtonPress}
-                                    style={flatButtonStyle}
-                                />
-                            </Animated.View>
-                            <Animated.View
-                                style={[styles.switchOverlay, backStyle]}
-                                pointerEvents={authMode === 'signIn' ? 'auto' : 'none'}
-                            >
-                                <Button
-                                    variant="ghost"
-                                    size="lg"
-                                    label="Back"
-                                    onPress={handleSecondaryButtonPress}
-                                    style={flatButtonStyle}
-                                />
-                            </Animated.View>
-                        </View>
+                        <Button
+                            variant="ghost"
+                            size="lg"
+                            label="Create Account"
+                            onPress={handleCreateAccountPress}
+                            style={[flatButtonStyle, styles.createAccountButton]}
+                        />
                     </View>
                 </View>
             </View>
@@ -616,34 +488,13 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         marginBottom: 14,
     },
-    morphRow: {
-        position: 'relative',
-        height: BUTTON_ROW_HEIGHT,
-        zIndex: 1,
+    authButtonStack: {
+        gap: 8,
     },
-    overlayButton: {
-        position: 'absolute',
-        left: 0,
-        right: 0,
-        top: 0,
+    authButtonRow: {
+        width: '100%',
     },
-    revealRow: {
-        overflow: 'hidden',
-        zIndex: 1,
-    },
-    appleRowLayer: {
-        zIndex: 2,
-    },
-    emailRowLayer: {
-        zIndex: 3,
-    },
-    switchRow: {
-        minHeight: 48,
-    },
-    switchOverlay: {
-        position: 'absolute',
-        left: 0,
-        right: 0,
-        top: 0,
+    createAccountButton: {
+        marginTop: 8,
     },
 });

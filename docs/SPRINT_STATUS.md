@@ -1,10 +1,10 @@
 # Sprint Status — Recovery Compass
 
-> Last updated: April 9, 2026
+> Last updated: April 10, 2026
 > Branch: `rebuild/multi-program`
 > Questionnaire foundation: ready
 > Sellable catalog: 6 products configured in RevenueCat, final INR pricing entered in App Store Connect and Google Play, unified `main_production` offering live
-> Final content files received for Sleep, Energy, and Men's Health — live in Supabase, metadata aligned, Sleep cleanup refresh shipped, final UI QA still pending
+> Final content files received for Sleep, Energy, and Men's Health — live in Supabase, metadata aligned, Sleep cleanup refresh shipped, redesigned day-detail/card pass now underway
 
 ## Launch Blockers (must fix before ANY submission)
 
@@ -13,6 +13,8 @@
 - [x] Google Play internal build uploaded + one-time products created
 - [ ] Final QA sweep on Sleep / Energy / Men's Health program presentation in app
 - [x] Final QA sweep on questionnaire → paywall → purchase → program access
+- [ ] App Store submission package complete (metadata, screenshots, IAP review notes/screenshots)
+- [ ] Android closed testing release published and 12-tester / 14-day clock started
 
 ## Completed
 
@@ -57,15 +59,20 @@
 - [x] Apple Developer account active
 - [x] Premium card design reference HTML (V2)
 - [x] Splash screen design direction established (V4 wellness)
-- [x] Tab bar design with Ground center button (notched)
+- [x] Submission-safe 4-tab bar redesign shipped (dark forest, safe-area hardened, hidden test route preserved)
 - [x] Privacy Policy / Terms links available in-app on auth welcome screen
+- [x] Auth / first-run visual polish pass shipped (welcome/auth surfaces refreshed, onboarding routes preserved)
+- [x] Account / settings / statistics visual polish pass shipped
+- [x] Day-detail shell refreshed (editorial header, story-style progress rail, resume continuity, card handoff plumbing)
+- [x] Program reflection persistence foundation added (Supabase table + native API wiring)
 
 ## In Progress
 
 - [ ] Questionnaire minor polish and edge-case cleanup
 - [ ] Paywall visual polish / merchandising refinement
 - [ ] Visual overhaul — apply V4 wellness design to all screens
-- [ ] Tab bar redesign — final 5-tab architecture (`Home | Program | Ground | Journal/Routines | Account`)
+- [ ] Program day/content-card overhaul (routine/audio/journal/editorial consistency)
+- [ ] Tab bar redesign — future 5-tab architecture (`Home | Program | Ground | Journal/Routines | Account`)
 - [ ] Journal + Routines redesign (shared surface, segmented Today/Journal model)
 - [ ] Dashboard redesign planning (All Programs / My Programs + slim feature previews)
 - [ ] Overall card/frontend overhaul
@@ -75,6 +82,7 @@
 - [ ] Device QA on real iPhone test track
 - [ ] Android real-device QA for Account avatar upload flow
 - [ ] Account submission-safe polish pass
+- [ ] Final real-device QA on redesigned tab bar + day-detail cards
 
 ## Not Started — Needed for Launch
 
@@ -85,6 +93,7 @@
 - [ ] Push notification permission (after Day 1)
 - [ ] Store review prompt (after Day 3+)
 - [ ] EAS production build (iOS)
+- [ ] Google Play closed testing release (AAB) + tester onboarding
 - [ ] App Store Connect metadata + screenshots
 - [ ] Generate final store listing copy and screenshots
 - [ ] App Store Connect IAP review screenshots + notes for all 6 products
@@ -158,3 +167,6 @@ Launch → V4 Splash → Onboarding Carousel → Sign Up / Sign In
 - [x] Startup stale-session recovery verified end-to-end with forced invalid refresh-token state; app returns to Welcome and shows the session-expired notice
 - [ ] Real-device iPhone sandbox purchase verification still pending (borrowed device / TestFlight)
 - [x] Android internal-track Google Play purchase verification complete (Play install, tester account, Google Play purchase success, unlock path, restore path)
+- [x] Redesigned 4-tab bar routes verified on device (Home / Program / My Journal / Account)
+- [x] Redesigned 4-tab bar shows no clipping near the home indicator on device
+- [ ] Redesigned 4-tab bar keyboard-hide behavior still needs explicit on-device confirmation

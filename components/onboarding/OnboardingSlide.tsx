@@ -1,7 +1,7 @@
-
 import React from 'react';
-import { View, Text, useWindowDimensions } from 'react-native';
+import { View, Text, useWindowDimensions, StyleSheet } from 'react-native';
 import { OnboardingItem } from './onboardingData';
+import { AppColors } from '@/constants/theme';
 
 interface OnboardingSlideProps {
     item: OnboardingItem;
@@ -9,86 +9,87 @@ interface OnboardingSlideProps {
     totalSlides: number;
 }
 
-const MOTIF_COPY: Record<string, { chip: string; note: string; initial: string }> = {
-    compass: {
-        chip: 'Grounded response',
-        note: 'Slow the spiral before it takes over.',
-        initial: '01',
-    },
-    path: {
-        chip: 'Built to hold you',
-        note: 'Clear structure, softer pressure, daily movement.',
-        initial: '02',
-    },
-    journal: {
-        chip: 'Proof of progress',
-        note: 'Small reflections that keep your direction visible.',
-        initial: '03',
-    },
-};
-
 export const OnboardingSlide: React.FC<OnboardingSlideProps> = ({ item, index, totalSlides }) => {
     const { width } = useWindowDimensions();
-    const motif = MOTIF_COPY[item.image] ?? MOTIF_COPY.compass;
 
     return (
-        <View style={{ width }} className="flex-1 px-7 pb-12 pt-10">
-            <View className="mb-9 flex-row items-center justify-between">
-                <Text className="font-satoshi-bold text-[11px] uppercase tracking-[2.2px] text-[#6E695F]">
-                    Recovery Compass
-                </Text>
-                <Text className="font-satoshi text-[12px] tracking-[1.4px] text-[#8F8776]">
-                    {String(index + 1).padStart(2, '0')} / {String(totalSlides).padStart(2, '0')}
-                </Text>
+        <View style={[styles.slideContainer, { width }]}>
+            <View style={styles.upperContent}>
+                <Text style={styles.eyebrowText}>{item.eyebrow}</Text>
+                <Text style={styles.titleText}>{item.title}</Text>
+                <Text style={styles.descriptionText}>{item.description}</Text>
             </View>
 
-            <View className="relative mb-10 h-[280px] overflow-hidden rounded-[34px] border border-[#E4E7E0] bg-[#F7F8F3] px-6 py-6">
-                <View className="absolute left-6 top-6 h-20 w-20 rounded-full bg-[#E7F0E5]" />
-                <View className="absolute -right-10 top-0 h-48 w-48 rounded-full bg-[#EEF2EC]" />
-                <View className="absolute bottom-0 right-0 h-48 w-36 rounded-tl-[42px] bg-[#163126]" />
-                <View className="absolute bottom-7 left-7 h-[1px] w-24 bg-[#D7DBD2]" />
-
-                <View className="h-full justify-between">
-                    <View className="max-w-[76%]">
-                        <View className="self-start rounded-full border border-[#D8DED5] bg-white/80 px-3 py-1.5">
-                            <Text className="font-satoshi-bold text-[10px] uppercase tracking-[1.8px] text-[#5F5A50]">
-                                {item.eyebrow}
-                            </Text>
-                        </View>
-
-                        <View className="mt-6">
-                            <Text className="font-erode-semibold text-[28px] leading-[34px] text-[#13281D]">
-                                {item.accent}
-                            </Text>
-                        </View>
-                    </View>
-
-                    <View className="w-[74%]">
-                        <Text className="font-satoshi-bold text-[11px] uppercase tracking-[1.8px] text-[#7F786B]">
-                            {motif.chip}
-                        </Text>
-                        <Text className="mt-2 font-satoshi text-[14px] leading-6 text-[#514D44]">
-                            {motif.note}
-                        </Text>
-                    </View>
+            <View style={styles.lowerVisual}>
+                {/* Cinematic, minimal, typography-driven visual instead of heavy generic shapes */}
+                <Text style={styles.watermarkNumber}>{String(index + 1).padStart(2, '0')}</Text>
+                <View style={styles.quoteContainer}>
+                    <Text style={styles.quoteText}>{item.accent}</Text>
                 </View>
-
-                <View className="absolute bottom-6 right-6">
-                    <Text className="font-satoshi text-[28px] tracking-[-1px] text-white/88">{motif.initial}</Text>
-                </View>
-            </View>
-
-            <View className="max-w-[92%]">
-                <Text className="font-satoshi-bold text-[11px] uppercase tracking-[2.1px] text-[#6F6A5F]">
-                    {item.eyebrow}
-                </Text>
-                <Text className="mt-4 font-erode-semibold text-[35px] leading-[39px] text-[#13281D]">
-                    {item.title}
-                </Text>
-                <Text className="mt-4 max-w-[94%] font-satoshi text-[15px] leading-7 text-[#5F5A50]">
-                    {item.description}
-                </Text>
             </View>
         </View>
     );
 };
+
+const styles = StyleSheet.create({
+    slideContainer: {
+        flex: 1,
+        paddingHorizontal: 32,
+        paddingTop: 8,
+        justifyContent: 'space-between',
+    },
+    upperContent: {
+        marginTop: 24,
+    },
+    eyebrowText: {
+        fontFamily: 'Satoshi-Bold',
+        fontSize: 12,
+        textTransform: 'uppercase',
+        letterSpacing: 2.4,
+        color: AppColors.iconMuted,
+        marginBottom: 20,
+    },
+    titleText: {
+        fontFamily: 'Erode-Bold',
+        fontSize: 48,
+        lineHeight: 56,
+        color: AppColors.forest,
+        marginBottom: 24,
+    },
+    descriptionText: {
+        fontFamily: 'Satoshi-Regular',
+        fontSize: 16,
+        lineHeight: 28,
+        color: AppColors.forest,
+        opacity: 0.8,
+        maxWidth: '90%',
+    },
+    lowerVisual: {
+        height: 260,
+        position: 'relative',
+        justifyContent: 'center',
+        paddingLeft: 16,
+    },
+    watermarkNumber: {
+        position: 'absolute',
+        top: 20,
+        left: -8,
+        fontFamily: 'Erode-Regular',
+        fontSize: 160,
+        color: AppColors.sage,
+        opacity: 0.25,
+        letterSpacing: -6,
+    },
+    quoteContainer: {
+        borderLeftWidth: 1,
+        borderLeftColor: AppColors.forest,
+        paddingLeft: 24,
+        zIndex: 2, // Keeps text strictly above the watermark
+    },
+    quoteText: {
+        fontFamily: 'Erode-Regular',
+        fontSize: 22,
+        lineHeight: 32,
+        color: AppColors.forest,
+    },
+});

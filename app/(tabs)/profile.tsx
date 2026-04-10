@@ -8,6 +8,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  StyleSheet,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -20,9 +21,10 @@ import { formatInr, getOnboardingProjection } from '@/lib/onboarding-metrics';
 import { useProfile } from '@/providers/profile';
 import { EditProfileSheet } from '@/components/account/EditProfileSheet';
 import type { ProgramSlug } from '@/types/content';
+import { AppColors } from '@/constants/theme';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
-const STAT_CARD_WIDTH = SCREEN_WIDTH - 48; // p-6 on both sides
+const STAT_CARD_WIDTH = SCREEN_WIDTH - 48;
 
 interface StatCard {
   label: string;
@@ -54,7 +56,6 @@ export default function AccountScreen() {
 
   const activeProgram = access.ownedProgram ? PROGRAM_METADATA[access.ownedProgram as ProgramSlug] : null;
 
-  // Derive display name with fallbacks
   const displayName = profile?.display_name
     || onboardingQuery.data?.full_name?.trim().split(/\s+/)[0]
     || user?.email?.split('@')[0]
@@ -63,7 +64,6 @@ export default function AccountScreen() {
   const avatarUrl = profile?.avatar_url ?? null;
   const emailDisplay = user?.email ?? 'Signed in';
 
-  // Featured stat cards
   const statCards: StatCard[] = useMemo(() => {
     const cards: StatCard[] = [
       {
@@ -73,15 +73,15 @@ export default function AccountScreen() {
         icon: 'flame-outline',
       },
       {
-        label: 'Projected 90-Day Savings',
+        label: '90-Day Savings',
         value: formatInr(stats.projectedSavings90Days),
-        subtitle: 'based on your daily spend',
+        subtitle: 'projected accumulation',
         icon: 'wallet-outline',
       },
       {
-        label: '90-Day Units Avoided',
+        label: 'Units Avoided',
         value: stats.avoidedUnits90Days,
-        subtitle: 'if you stay on track',
+        subtitle: 'across 90 days',
         icon: 'shield-checkmark-outline',
       },
     ];
@@ -90,7 +90,7 @@ export default function AccountScreen() {
       cards.push({
         label: 'Program Progress',
         value: `${progress.completedDays.length}/${activeProgram.totalDays}`,
-        subtitle: `days completed in ${activeProgram.name}`,
+        subtitle: `days in ${activeProgram.name}`,
         icon: 'checkmark-circle-outline',
       });
     }
@@ -104,92 +104,72 @@ export default function AccountScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-surface">
+    <SafeAreaView style={styles.safeArea}>
       <StatusBar style="dark" />
-      <ScrollView contentContainerClassName="pb-32">
-        {/* ─── Header ─── */}
-        <View className="flex-row items-center justify-between px-6 pt-4 pb-2">
-          <Text className="font-erode-bold text-3xl text-forest">Account</Text>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>Account</Text>
           <TouchableOpacity
             onPress={() => router.push('/account/settings')}
-            className="w-10 h-10 rounded-full bg-white border border-gray-200 items-center justify-center"
+            style={styles.settingsButton}
             activeOpacity={0.7}
           >
-            <Ionicons name="settings-outline" size={20} color="#06290C" />
+            <Ionicons name="settings-outline" size={20} color={AppColors.forest} />
           </TouchableOpacity>
         </View>
 
-        {/* ─── Identity Block ─── */}
-        <View className="px-6 pt-4 pb-6">
-          <View className="flex-row items-center">
-            {/* Avatar */}
-            <TouchableOpacity
-              onPress={() => setIsEditOpen(true)}
-              activeOpacity={0.8}
-            >
-              <View className="w-20 h-20 rounded-full overflow-hidden bg-sage items-center justify-center border-2 border-forest/10">
+        {/* Identity Block */}
+        <View style={styles.identityBlock}>
+          <View style={styles.identityRow}>
+            <TouchableOpacity onPress={() => setIsEditOpen(true)} activeOpacity={0.8}>
+              <View style={styles.avatarContainer}>
                 {avatarUrl ? (
-                  <Image
-                    source={{ uri: avatarUrl }}
-                    className="w-full h-full"
-                    resizeMode="cover"
-                  />
+                  <Image source={{ uri: avatarUrl }} style={styles.avatarImage} resizeMode="cover" />
                 ) : (
-                  <Text className="font-erode-bold text-3xl text-forest/30">
+                  <Text style={styles.avatarPlaceholder}>
                     {displayName.charAt(0).toUpperCase()}
                   </Text>
                 )}
               </View>
             </TouchableOpacity>
 
-            {/* Name & Email */}
-            <View className="ml-4 flex-1">
-              <Text className="font-erode-bold text-2xl text-forest leading-8" numberOfLines={1}>
-                {displayName}
-              </Text>
-              <Text className="font-satoshi text-sm text-gray-500 mt-0.5" numberOfLines={1}>
-                {emailDisplay}
-              </Text>
+            <View style={styles.identityTextContainer}>
+              <Text style={styles.identityName} numberOfLines={1}>{displayName}</Text>
+              <Text style={styles.identityEmail} numberOfLines={1}>{emailDisplay}</Text>
             </View>
           </View>
 
-          {/* Edit Profile CTA */}
           <TouchableOpacity
             onPress={() => setIsEditOpen(true)}
-            className="mt-4 flex-row items-center justify-center py-2.5 rounded-full border border-gray-200 bg-white"
+            style={styles.editProfileCta}
             activeOpacity={0.7}
           >
-            <Ionicons name="create-outline" size={16} color="#06290C" />
-            <Text className="font-satoshi-medium text-sm text-forest ml-1.5">Edit Profile</Text>
+            <Ionicons name="create-outline" size={16} color={AppColors.forest} />
+            <Text style={styles.editProfileText}>Edit Profile</Text>
           </TouchableOpacity>
         </View>
 
-        {/* ─── Active Program Block ─── */}
-        <View className="px-6 mb-5">
-          <View className="rounded-3xl bg-white border border-gray-200 p-5">
-            <Text className="font-satoshi-bold text-xs uppercase text-gray-400 tracking-wider mb-2">
-              Active Program
-            </Text>
+        {/* Active Program Block */}
+        <View style={styles.sectionContainer}>
+          <View style={styles.card}>
+            <Text style={styles.cardEyebrow}>Active Program</Text>
             {activeProgram ? (
               <>
-                <Text className="font-erode-semibold text-xl text-forest">
-                  {activeProgram.name}
-                </Text>
-                <Text className="font-satoshi text-sm text-gray-500 mt-1">
+                <Text style={styles.programTitle}>{activeProgram.name}</Text>
+                <Text style={styles.programSubtitle}>
                   Day {progress?.completedDays.length ?? 0} of {activeProgram.totalDays}
                   {access.completionState === 'completed' ? ' · Completed' : ''}
                 </Text>
               </>
             ) : (
-              <Text className="font-satoshi text-base text-gray-400 italic">
-                No active program yet
-              </Text>
+              <Text style={styles.emptyProgramText}>No active program yet</Text>
             )}
           </View>
         </View>
 
-        {/* ─── Featured Stat Card (swipeable) ─── */}
-        <View className="mb-2">
+        {/* Featured Stat Card (swipeable) */}
+        <View style={styles.statsSection}>
           <ScrollView
             horizontal
             pagingEnabled
@@ -198,76 +178,305 @@ export default function AccountScreen() {
             decelerationRate="fast"
             snapToInterval={STAT_CARD_WIDTH}
             snapToAlignment="start"
-            contentContainerStyle={{ paddingHorizontal: 24 }}
+            contentContainerStyle={styles.statsScrollContent}
           >
             {statCards.map((card, index) => (
               <View
                 key={card.label}
-                className="rounded-3xl bg-forest p-6"
-                style={{
-                  width: STAT_CARD_WIDTH,
-                  marginRight: index < statCards.length - 1 ? 12 : 0,
-                }}
+                style={[
+                  styles.statCardContainer,
+                  { width: STAT_CARD_WIDTH, marginRight: index < statCards.length - 1 ? 12 : 0 }
+                ]}
               >
-                <View className="flex-row items-center mb-3">
-                  <View className="w-9 h-9 rounded-full bg-white/15 items-center justify-center mr-2.5">
+                <View style={styles.statCardHeader}>
+                  <View style={styles.statIconContainer}>
                     <Ionicons name={card.icon} size={18} color="rgba(255,255,255,0.9)" />
                   </View>
-                  <Text className="font-satoshi-bold text-white/70 text-xs uppercase tracking-wider">
-                    {card.label}
-                  </Text>
+                  <Text style={styles.statCardEyebrow}>{card.label}</Text>
                 </View>
-                <Text className="font-erode-bold text-white text-4xl mb-1">
-                  {card.value}
-                </Text>
-                <Text className="font-satoshi text-white/60 text-sm">
-                  {card.subtitle}
-                </Text>
+                <Text style={styles.statCardValue}>{card.value}</Text>
+                <Text style={styles.statCardSubtitle}>{card.subtitle}</Text>
               </View>
             ))}
           </ScrollView>
 
           {/* Pagination dots */}
           {statCards.length > 1 && (
-            <View className="flex-row items-center justify-center mt-3 gap-1.5">
+            <View style={styles.paginationDotsContainer}>
               {statCards.map((_, index) => (
                 <View
                   key={index}
-                  className={`rounded-full ${index === activeStatIndex ? 'bg-forest w-5 h-1.5' : 'bg-gray-300 w-1.5 h-1.5'}`}
+                  style={[
+                    styles.dot,
+                    index === activeStatIndex ? styles.activeDot : styles.inactiveDot
+                  ]}
                 />
               ))}
             </View>
           )}
         </View>
 
-        {/* ─── View Statistics CTA ─── */}
-        <View className="px-6 mt-3 mb-5">
+        {/* View Statistics CTA */}
+        <View style={styles.sectionContainer}>
           <TouchableOpacity
             onPress={() => router.push('/account/statistics')}
-            className="flex-row items-center justify-between py-4 px-5 rounded-2xl bg-white border border-gray-200"
+            style={styles.statsCta}
             activeOpacity={0.7}
           >
-            <View className="flex-row items-center">
-              <Ionicons name="stats-chart-outline" size={20} color="#06290C" />
-              <Text className="font-satoshi-medium text-base text-forest ml-2">View All Statistics</Text>
+            <View style={styles.statsCtaLeft}>
+              <Ionicons name="stats-chart-outline" size={20} color={AppColors.forest} />
+              <Text style={styles.statsCtaText}>View All Statistics</Text>
             </View>
             <Ionicons name="chevron-forward" size={18} color="rgba(5, 41, 12, 0.4)" />
           </TouchableOpacity>
         </View>
 
-        {/* ─── Why You Started ─── */}
-        <View className="px-6 mb-6">
-          <View className="rounded-3xl bg-sage/60 border border-forest/5 p-6">
-            <Text className="font-erode-semibold text-lg text-forest mb-2">Why You Started</Text>
-            <Text className="font-satoshi text-gray-700 leading-7 text-base">
+        {/* Why You Started */}
+        <View style={styles.sectionContainer}>
+          <View style={styles.whyStartedCard}>
+            <Text style={styles.whyStartedTitle}>Why You Started</Text>
+            <Text style={styles.whyStartedText}>
               {onboardingQuery.data?.primary_goal ?? 'Finish onboarding to generate your personal reason and projection.'}
             </Text>
           </View>
         </View>
       </ScrollView>
 
-      {/* Edit Profile Bottom Sheet */}
       <EditProfileSheet isOpen={isEditOpen} onClose={() => setIsEditOpen(false)} />
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: AppColors.surface,
+  },
+  scrollContent: {
+    paddingBottom: 120,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 24,
+    paddingTop: 16,
+    paddingBottom: 8,
+  },
+  headerTitle: {
+    fontFamily: 'Erode-Bold',
+    fontSize: 28,
+    color: AppColors.forest,
+  },
+  settingsButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: AppColors.white,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.06)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  identityBlock: {
+    paddingHorizontal: 24,
+    paddingTop: 16,
+    paddingBottom: 24,
+  },
+  identityRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  avatarContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    overflow: 'hidden',
+    backgroundColor: AppColors.sage,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: 'rgba(5,41,12,0.1)',
+  },
+  avatarImage: {
+    width: '100%',
+    height: '100%',
+  },
+  avatarPlaceholder: {
+    fontFamily: 'Erode-Bold',
+    fontSize: 32,
+    color: 'rgba(5,41,12,0.3)',
+  },
+  identityTextContainer: {
+    marginLeft: 16,
+    flex: 1,
+  },
+  identityName: {
+    fontFamily: 'Erode-Bold',
+    fontSize: 24,
+    lineHeight: 32,
+    color: AppColors.forest,
+  },
+  identityEmail: {
+    fontFamily: 'Satoshi-Regular',
+    fontSize: 14,
+    color: AppColors.iconMuted,
+    marginTop: 2,
+  },
+  editProfileCta: {
+    marginTop: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 10,
+    borderRadius: 9999,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.06)',
+    backgroundColor: AppColors.white,
+  },
+  editProfileText: {
+    fontFamily: 'Satoshi-Medium',
+    fontSize: 14,
+    color: AppColors.forest,
+    marginLeft: 6,
+  },
+  sectionContainer: {
+    paddingHorizontal: 24,
+    marginBottom: 20,
+  },
+  card: {
+    borderRadius: 24,
+    backgroundColor: AppColors.white,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.06)',
+    padding: 24,
+  },
+  cardEyebrow: {
+    fontFamily: 'Satoshi-Bold',
+    fontSize: 11,
+    textTransform: 'uppercase',
+    letterSpacing: 1.2,
+    color: AppColors.iconMuted,
+    marginBottom: 8,
+  },
+  programTitle: {
+    fontFamily: 'Erode-SemiBold',
+    fontSize: 20,
+    color: AppColors.forest,
+  },
+  programSubtitle: {
+    fontFamily: 'Satoshi-Regular',
+    fontSize: 14,
+    color: AppColors.iconMuted,
+    marginTop: 4,
+  },
+  emptyProgramText: {
+    fontFamily: 'Satoshi-Regular',
+    fontSize: 14,
+    color: 'rgba(0,0,0,0.4)',
+    fontStyle: 'italic',
+  },
+  statsSection: {
+    marginBottom: 8,
+  },
+  statsScrollContent: {
+    paddingHorizontal: 24,
+  },
+  statCardContainer: {
+    borderRadius: 24,
+    backgroundColor: AppColors.forest,
+    padding: 24,
+  },
+  statCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  statIconContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 10,
+  },
+  statCardEyebrow: {
+    fontFamily: 'Satoshi-Bold',
+    fontSize: 11,
+    color: 'rgba(255,255,255,0.7)',
+    textTransform: 'uppercase',
+    letterSpacing: 1.2,
+  },
+  statCardValue: {
+    fontFamily: 'Erode-Bold',
+    fontSize: 36,
+    color: AppColors.white,
+    marginBottom: 4,
+  },
+  statCardSubtitle: {
+    fontFamily: 'Satoshi-Regular',
+    fontSize: 14,
+    color: 'rgba(255,255,255,0.6)',
+  },
+  paginationDotsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 16,
+    gap: 6,
+  },
+  dot: {
+    borderRadius: 9999,
+  },
+  activeDot: {
+    backgroundColor: AppColors.forest,
+    width: 20,
+    height: 6,
+  },
+  inactiveDot: {
+    backgroundColor: 'rgba(0,0,0,0.15)',
+    width: 6,
+    height: 6,
+  },
+  statsCta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+    backgroundColor: AppColors.white,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.06)',
+  },
+  statsCtaLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  statsCtaText: {
+    fontFamily: 'Satoshi-Medium',
+    fontSize: 16,
+    color: AppColors.forest,
+    marginLeft: 12,
+  },
+  whyStartedCard: {
+    borderRadius: 24,
+    backgroundColor: 'rgba(206,215,203,0.3)', // Sage but much softer
+    borderWidth: 1,
+    borderColor: 'rgba(5,41,12,0.05)',
+    padding: 24,
+  },
+  whyStartedTitle: {
+    fontFamily: 'Erode-SemiBold',
+    fontSize: 18,
+    color: AppColors.forest,
+    marginBottom: 10,
+  },
+  whyStartedText: {
+    fontFamily: 'Satoshi-Regular',
+    fontSize: 15,
+    lineHeight: 24,
+    color: 'rgba(0,0,0,0.7)',
+  },
+});

@@ -1,7 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useState } from 'react';
 import { BlurView } from 'expo-blur';
-import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Pressable, ScrollView, Text, TextInput, View, StyleSheet } from 'react-native';
 import Animated, {
   Easing,
   FadeInDown,
@@ -15,10 +17,14 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { ProgramAudioPlayer } from '@/components/program/ProgramAudioPlayer';
+import {
+  getProgramReflection,
+  upsertProgramReflection,
+} from '@/lib/api/program-reflections';
+import type { ProgramReflectionIdentity } from '@/lib/api/program-reflections';
 import type {
   ActionStepCard,
   AudioCard,
-  BreathingExerciseCard,
   CalmTriggerCard,
   CloseCard,
   ContentCard,
@@ -27,44 +33,8 @@ import type {
   JournalCard,
   LessonCard,
   MindfulnessExerciseCard,
+  BreathingExerciseCard,
 } from '@/types/content';
-
-function ProgressBar({
-  currentIndex,
-  totalCards,
-  variant = 'light',
-}: {
-  currentIndex?: number;
-  totalCards?: number;
-  variant?: 'light' | 'dark' | 'accent';
-}) {
-  if (typeof currentIndex !== 'number' || typeof totalCards !== 'number') {
-    return null;
-  }
-
-  let emptyColor = 'bg-gray-200';
-  let filledColor = 'bg-forest';
-
-  if (variant === 'dark') {
-    emptyColor = 'bg-white/20';
-    filledColor = 'bg-white';
-  } else if (variant === 'accent') {
-    emptyColor = 'bg-forest/10';
-    filledColor = 'bg-forest';
-  }
-
-  return (
-    <View className="mb-6 flex-row gap-1.5">
-      {Array.from({ length: totalCards }).map((_, index) => (
-        <View key={`progress-${index}`} className={`flex-1 rounded-full ${emptyColor}`}>
-          <View
-            className={`h-[3px] rounded-full ${index <= currentIndex ? filledColor : 'bg-transparent'}`}
-          />
-        </View>
-      ))}
-    </View>
-  );
-}
 
 function FadingScrollView({ children, contentContainerStyle }: { children: React.ReactNode; contentContainerStyle?: any }) {
   const [scrollViewHeight, setScrollViewHeight] = useState(0);
@@ -72,9 +42,7 @@ function FadingScrollView({ children, contentContainerStyle }: { children: React
   const [isAtBottom, setIsAtBottom] = useState(false);
   const scrollViewRef = React.useRef<ScrollView>(null);
 
-  // Consider scrollable if content height is reasonably larger than scroll view height
   const isScrollable = contentHeight > scrollViewHeight + 5;
-
   const bounceValue = useSharedValue(0);
 
   React.useEffect(() => {
@@ -85,7 +53,7 @@ function FadingScrollView({ children, contentContainerStyle }: { children: React
       ),
       -1 // infinite
     );
-  }, []);
+  }, [bounceValue]);
 
   const bounceStyle = useAnimatedStyle(() => {
     return {
@@ -94,7 +62,7 @@ function FadingScrollView({ children, contentContainerStyle }: { children: React
   });
 
   return (
-    <View className="flex-shrink">
+    <View style={styles.scrollWrapper}>
       <ScrollView
         ref={scrollViewRef}
         showsVerticalScrollIndicator={true}
@@ -111,40 +79,29 @@ function FadingScrollView({ children, contentContainerStyle }: { children: React
         scrollEventThrottle={16}
         onLayout={(e) => setScrollViewHeight(e.nativeEvent.layout.height)}
         onContentSizeChange={(_, h) => setContentHeight(h)}
-        contentContainerStyle={[contentContainerStyle, { paddingBottom: 32 }]}
+        contentContainerStyle={[contentContainerStyle, styles.scrollContent]}
       >
         {children}
       </ScrollView>
 
-      {/* Bottom Fade Mask */}
       {isScrollable && (
-        <View
+        <LinearGradient
+          colors={['rgba(255,255,255,0)', 'rgba(255,255,255,1)']}
           pointerEvents="none"
-          className="absolute bottom-[-10px] left-0 right-0 h-16"
-        >
-          {/* 
-            TODO: Re-enable LinearGradient after running `npx expo run:ios` (or android).
-            The app crashes because the native code for expo-linear-gradient isn't built into 
-            your current dev client yet.
-          */}
-          {/* <LinearGradient
-            colors={['rgba(255, 255, 255, 0)', 'rgba(255, 255, 255, 0.9)', 'rgba(255, 255, 255, 1)']}
-            style={{ flex: 1 }}
-          /> */}
-        </View>
+          style={styles.fadeMask}
+        />
       )}
 
-      {/* Interactive Bottom-Right Scroll FAB */}
       {isScrollable ? (
-        <View 
+        <View
           pointerEvents="box-none"
-          className="absolute bottom-4 right-4 items-center justify-center"
+          style={styles.fabContainer}
         >
           <Animated.View
             entering={FadeInDown.delay(600).springify().damping(16).stiffness(150)}
             style={!isAtBottom ? bounceStyle : undefined}
           >
-            <Pressable 
+            <Pressable
               onPress={() => {
                 if (isAtBottom) {
                   scrollViewRef.current?.scrollTo({ y: 0, animated: true });
@@ -152,19 +109,12 @@ function FadingScrollView({ children, contentContainerStyle }: { children: React
                   scrollViewRef.current?.scrollToEnd({ animated: true });
                 }
               }}
-              style={{
-                shadowColor: '#05290C',
-                shadowOpacity: 0.1,
-                shadowRadius: 6,
-                shadowOffset: { width: 0, height: 2 },
-                elevation: 3,
-                borderRadius: 9999,
-              }}
+              style={styles.fabShadow}
             >
               <BlurView
                 intensity={80}
                 tint="light"
-                className="h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-forest/10"
+                style={styles.fabBlur}
               >
                 <Ionicons name={isAtBottom ? "arrow-up" : "arrow-down"} size={16} color="rgba(5, 41, 12, 0.7)" />
               </BlurView>
@@ -181,33 +131,28 @@ function CardShell({
   eyebrow,
   title,
   scrollable = false,
-  cardIndex,
-  totalCards,
 }: {
   children: React.ReactNode;
   eyebrow?: string;
   title?: string;
   scrollable?: boolean;
-  cardIndex?: number;
-  totalCards?: number;
 }) {
   const content = (
     <>
       {eyebrow ? (
-        <Text className="mb-3 font-satoshi-bold text-[11px] uppercase tracking-[1.4px] text-forest/40">
+        <Text style={styles.eyebrowLight}>
           {eyebrow}
         </Text>
       ) : null}
       {title ? (
-        <Text className="mb-3 font-erode-semibold text-[24px] leading-[30px] text-forest">{title}</Text>
+        <Text style={styles.titleLight}>{title}</Text>
       ) : null}
       {children}
     </>
   );
 
   return (
-    <View className="flex-shrink w-full rounded-3xl border border-forest/5 bg-white px-6 py-7" style={{ borderCurve: 'continuous' }}>
-      <ProgressBar currentIndex={cardIndex} totalCards={totalCards} variant="light" />
+    <View style={[styles.cardShell, styles.cardShellContinuous]}>
       {scrollable ? (
         <FadingScrollView contentContainerStyle={{ flexGrow: 1 }}>
           {content}
@@ -223,25 +168,20 @@ function AccentCardShell({
   children,
   eyebrow,
   title,
-  cardIndex,
-  totalCards,
 }: {
   children: React.ReactNode;
   eyebrow?: string;
   title?: string;
-  cardIndex?: number;
-  totalCards?: number;
 }) {
   return (
-    <View className="flex-shrink w-full rounded-3xl border border-forest/10 bg-sage px-6 py-7" style={{ borderCurve: 'continuous' }}>
-      <ProgressBar currentIndex={cardIndex} totalCards={totalCards} variant="accent" />
+    <View style={[styles.accentCardShell, styles.cardShellContinuous]}>
       {eyebrow ? (
-        <Text className="mb-3 font-satoshi-bold text-[11px] uppercase tracking-[1.4px] text-forest/40">
+        <Text style={styles.eyebrowLight}>
           {eyebrow}
         </Text>
       ) : null}
       {title ? (
-        <Text className="text-center font-erode-semibold text-[24px] leading-[30px] text-forest">
+        <Text style={styles.titleAccent}>
           {title}
         </Text>
       ) : null}
@@ -254,25 +194,20 @@ function DarkCardShell({
   children,
   eyebrow,
   title,
-  cardIndex,
-  totalCards,
 }: {
   children: React.ReactNode;
   eyebrow?: string;
   title?: string;
-  cardIndex?: number;
-  totalCards?: number;
 }) {
   return (
-    <View className="flex-shrink w-full rounded-3xl bg-forest px-6 py-7" style={{ borderCurve: 'continuous' }}>
-      <ProgressBar currentIndex={cardIndex} totalCards={totalCards} variant="dark" />
+    <View style={[styles.darkCardShell, styles.cardShellContinuous]}>
       {eyebrow ? (
-        <Text className="mb-3 font-satoshi-bold text-[11px] uppercase tracking-[1.4px] text-white/50">
+        <Text style={styles.eyebrowDark}>
           {eyebrow}
         </Text>
       ) : null}
       {title ? (
-        <Text className="mb-3 font-erode-semibold text-[28px] leading-[34px] text-white">{title}</Text>
+        <Text style={styles.titleDark}>{title}</Text>
       ) : null}
       {children}
     </View>
@@ -282,122 +217,110 @@ function DarkCardShell({
 function PrimaryVisualButton({
   label,
   inverted = false,
+  onPress,
 }: {
   label: string;
   inverted?: boolean;
+  onPress?: () => void;
 }) {
-  return (
+  const content = (
     <View
-      className={`items-center rounded-2xl px-5 py-4 ${
-        inverted ? 'bg-white' : 'bg-forest'
-      }`}
+      style={inverted ? styles.primaryButtonLight : styles.primaryButtonDark}
     >
       <Text
-        className={`font-satoshi-bold text-[15px] ${
-          inverted ? 'text-forest' : 'text-white'
-        }`}
+        style={inverted ? styles.primaryButtonTextLight : styles.primaryButtonTextDark}
       >
         {label}
       </Text>
     </View>
   );
+
+  if (!onPress) {
+    return content;
+  }
+
+  return (
+    <Pressable onPress={onPress} accessibilityRole="button">
+      {content}
+    </Pressable>
+  );
 }
 
-function GhostVisualButton({ label }: { label: string }) {
-  return (
-    <View className="items-center rounded-2xl border border-gray-200 px-5 py-4">
-      <Text className="font-satoshi text-[15px] text-forest/60">{label}</Text>
+function GhostVisualButton({ label, onPress }: { label: string; onPress?: () => void }) {
+  const content = (
+    <View style={styles.ghostButton}>
+      <Text style={styles.ghostButtonText}>{label}</Text>
     </View>
+  );
+
+  if (!onPress) {
+    return content;
+  }
+
+  return (
+    <Pressable onPress={onPress} accessibilityRole="button">
+      {content}
+    </Pressable>
   );
 }
 
 function DotList({
   items,
-  textClassName = 'text-gray-700',
-  itemClassName,
+  textStyle,
+  itemStyle,
 }: {
   items: string[];
-  textClassName?: string;
-  itemClassName?: string;
+  textStyle?: any;
+  itemStyle?: any;
 }) {
   return (
     <View>
       {items.map((item, index) => (
-        <View key={`${item}-${index}`} className={`flex-row items-start gap-4 py-2 ${index < items.length - 1 ? 'border-b border-forest/5' : ''} ${itemClassName ?? ''}`}>
-          <View className="mt-[9px] h-[6px] w-[6px] rounded-full bg-[#CADCD6]" />
-          <Text className={`flex-1 font-satoshi text-[15px] leading-7 ${textClassName}`}>{item}</Text>
+        <View
+          key={`${item}-${index}`}
+          style={[
+            styles.dotListItem,
+            index < items.length - 1 && styles.dotListBorder,
+            itemStyle
+          ]}
+        >
+          <View style={styles.dotBullet} />
+          <Text style={[styles.dotText, textStyle]}>{item}</Text>
         </View>
       ))}
     </View>
   );
 }
 
-function formatTimer(seconds?: number) {
-  if (typeof seconds !== 'number' || Number.isNaN(seconds)) {
-    return null;
-  }
-
-  const minutes = Math.floor(seconds / 60)
-    .toString()
-    .padStart(2, '0');
-  const remainingSeconds = Math.floor(seconds % 60)
-    .toString()
-    .padStart(2, '0');
-
-  return `${minutes}:${remainingSeconds}`;
-}
-
-function formatAudioTime(seconds: number) {
-  const minutes = Math.floor(seconds / 60);
-  const remainingSeconds = Math.floor(seconds % 60)
-    .toString()
-    .padStart(2, '0');
-
-  return `${minutes}:${remainingSeconds}`;
-}
-
-function IntroCardView({ card, programName, cardIndex, totalCards }: { card: IntroCard; programName?: string; cardIndex?: number; totalCards?: number; }) {
+function IntroCardView({ card, programName }: { card: IntroCard; programName?: string; }) {
   return (
-    <View
-      className="flex-shrink w-full rounded-[28px] border border-forest/5 bg-white px-7 pb-8 pt-9"
-      style={{
-        borderCurve: 'continuous',
-        shadowColor: '#000',
-        shadowOpacity: 0.04,
-        shadowRadius: 32,
-        shadowOffset: { width: 0, height: 16 },
-        elevation: 2,
-      }}
-    >
-      <ProgressBar currentIndex={cardIndex} totalCards={totalCards} variant="light" />
-      <Text className="mb-auto font-satoshi-bold text-[11px] uppercase tracking-[2.5px] text-forest/30">
+    <View style={styles.introCard}>
+      <View style={styles.introSpacer} />
+      <Text style={styles.introEyebrow}>
         Day {card.dayNumber}
       </Text>
 
       <View>
-        <Text
-          className="mb-5 font-erode text-[44px] leading-[47px] text-forest"
-          style={{ letterSpacing: -0.5 }}
-        >
+        <Text style={styles.introTitle}>
           {card.dayTitle}
         </Text>
 
-        <Text className="mb-6 font-satoshi text-[17px] leading-[29px] text-gray-600">{card.goal}</Text>
+        <Text style={styles.introGoal}>{card.goal}</Text>
 
         {card.estimatedMinutes || programName ? (
-          <View className="flex-row items-center gap-4">
+          <View style={styles.introMetaRow}>
             {card.estimatedMinutes ? (
-              <View className="rounded-full bg-forest/5 px-[14px] py-[6px]">
-                <Text style={{ letterSpacing: 0.3 }} className="font-satoshi-medium text-[12px] text-forest/50">{`~${card.estimatedMinutes} min`}</Text>
+              <View style={styles.introMetaPill}>
+                <Text style={styles.introMetaTextTime}>{`~${card.estimatedMinutes} min`}</Text>
               </View>
             ) : null}
 
             {card.estimatedMinutes && programName ? (
-              <View className="h-[3px] w-[3px] rounded-full bg-forest/15" />
+              <View style={styles.introMetaDot} />
             ) : null}
 
             {programName ? (
-              <Text style={{ letterSpacing: 0.3 }} className="font-satoshi-medium text-[12px] text-forest/30">{programName}</Text>
+              <Text style={styles.introMetaTextProgram}>{programName}</Text>
             ) : null}
           </View>
         ) : null}
@@ -406,107 +329,81 @@ function IntroCardView({ card, programName, cardIndex, totalCards }: { card: Int
   );
 }
 
-function LessonCardView({ card, cardIndex, totalCards }: { card: LessonCard; cardIndex?: number; totalCards?: number; }) {
+function LessonCardView({ card }: { card: LessonCard; }) {
   return (
-    <View
-      className="flex-shrink w-full rounded-[28px] border border-forest/5 bg-white px-7 py-9"
-      style={{
-        borderCurve: 'continuous',
-        shadowColor: '#000',
-        shadowOpacity: 0.04,
-        shadowRadius: 32,
-        shadowOffset: { width: 0, height: 16 },
-        elevation: 2,
-      }}
-    >
-      <ProgressBar currentIndex={cardIndex} totalCards={totalCards} variant="light" />
-      <FadingScrollView contentContainerStyle={{ flexGrow: 1 }}>
+    <CardShell scrollable>
+      <View style={styles.lessonContextPill}>
+        <Text style={styles.lessonContextText}>Context</Text>
+      </View>
 
-        <View className="mb-6 self-start rounded-md border border-forest/10 px-3 py-[5px]">
-          <Text className="font-satoshi-bold text-[11px] uppercase tracking-[1.5px] text-forest/50">Context</Text>
-        </View>
+      <Text style={styles.lessonTitle}>
+        {card.title ?? 'Why timing matters'}
+      </Text>
 
-        <Text
-          className="mb-6 font-erode text-[26px] leading-[31px] text-forest"
-          style={{ letterSpacing: -0.3 }}
-        >
-          {card.title ?? 'Why timing matters'}
-        </Text>
+      <View style={styles.lessonBody}>
+        {card.paragraphs.map((paragraph, index) => {
+          const isDuplicate = card.highlight && paragraph.trim() === card.highlight.trim();
 
-        <View className="mb-1">
-          {card.paragraphs.map((paragraph, index) => {
-            const isDuplicate = card.highlight && paragraph.trim() === card.highlight.trim();
+          return (
+            <React.Fragment key={`${paragraph}-${index}`}>
+              {!isDuplicate ? (
+                <Text style={styles.lessonParagraph}>
+                  {paragraph}
+                </Text>
+              ) : null}
 
-            return (
-              <React.Fragment key={`${paragraph}-${index}`}>
-                {!isDuplicate ? (
-                  <Text className="mb-5 font-satoshi text-[16px] font-light leading-[30px] text-gray-600">
-                    {paragraph}
+              {card.highlight && index === 1 ? (
+                <View style={styles.lessonHighlightContainer}>
+                  <Text style={styles.lessonHighlightText}>
+                    {card.highlight}
                   </Text>
-                ) : null}
+                </View>
+              ) : null}
+            </React.Fragment>
+          );
+        })}
 
-                {card.highlight && index === 1 ? (
-                  <View className="my-7 border-l-2 border-forest py-6 pl-6">
-                    <Text
-                      className="font-erode-italic text-[22px] leading-[32px] text-forest/90"
-                      style={{ letterSpacing: -0.2 }}
-                    >
-                      {card.highlight}
-                    </Text>
-                  </View>
-                ) : null}
-              </React.Fragment>
-            );
-          })}
-
-          {card.highlight && card.paragraphs.length <= 1 ? (
-            <View className="my-7 border-l-2 border-forest py-6 pl-6">
-              <Text
-                className="font-erode-italic text-[22px] leading-[32px] text-forest/90"
-                style={{ letterSpacing: -0.2 }}
-              >
-                {card.highlight}
-              </Text>
-            </View>
-          ) : null}
-        </View>
-      </FadingScrollView>
-    </View>
+        {card.highlight && card.paragraphs.length <= 1 ? (
+          <View style={styles.lessonHighlightContainer}>
+            <Text style={styles.lessonHighlightText}>
+              {card.highlight}
+            </Text>
+          </View>
+        ) : null}
+      </View>
+    </CardShell>
   );
 }
 
-function ActionStepCardView({ card, cardIndex, totalCards }: { card: ActionStepCard; cardIndex?: number; totalCards?: number; }) {
+function ActionStepCardView({ card }: { card: ActionStepCard; }) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
-    <CardShell scrollable cardIndex={cardIndex} totalCards={totalCards}>
-      <View className="mb-[20px] flex-row items-start gap-4">
-        <View className="h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-forest">
-          <Text className="font-satoshi-bold text-[15px] text-white">{card.stepNumber}</Text>
-        </View>
-        <View className="flex-1 pt-1">
-          <Text className="mb-1 font-satoshi-medium text-[20px] leading-[25px] text-forest">
-            {card.title}
-          </Text>
-          {card.duration ? (
-            <Text className="font-satoshi text-[13px] text-forest/40">{card.duration}</Text>
-          ) : null}
-        </View>
-      </View>
+    <CardShell
+      scrollable
+      eyebrow={`Action Step ${card.stepNumber}`}
+      title={card.title}
+    >
+      <View style={styles.actionBody}>
+        {card.duration ? (
+          <View style={styles.actionDurationPill}>
+            <Ionicons name="time-outline" size={14} color="rgba(6, 41, 12, 0.4)" />
+            <Text style={styles.actionDurationText}>{card.duration}</Text>
+          </View>
+        ) : null}
 
-      <View className="pl-[52px]">
-        <DotList items={card.instructions} />
+        <DotList items={card.instructions} textStyle={{ color: '#374151', fontSize: 16, lineHeight: 26 }} />
 
         {card.whyThisWorks ? (
           <Animated.View
             layout={LinearTransition.springify().damping(18).stiffness(130)}
-            className="mt-[20px] overflow-hidden"
+            style={styles.whyWorksContainer}
           >
             <Pressable
-              className="flex-row items-center justify-between rounded-[16px] bg-[#F0F7F5] px-5 py-[18px]"
+              style={styles.whyWorksHeader}
               onPress={() => setIsExpanded((value) => !value)}
             >
-              <Text className="font-satoshi-bold text-[12px] uppercase tracking-[1px] text-forest/50">Why this works</Text>
+              <Text style={styles.whyWorksHeaderText}>Why this works</Text>
               <Ionicons
                 name={isExpanded ? 'chevron-up' : 'chevron-down'}
                 size={14}
@@ -518,18 +415,18 @@ function ActionStepCardView({ card, cardIndex, totalCards }: { card: ActionStepC
               <Animated.View
                 entering={FadeInDown.springify().damping(18).stiffness(130)}
                 exiting={FadeOut.duration(140)}
-                className="mt-2 rounded-[16px] bg-[#F0F7F5] px-5 py-[18px]"
+                style={styles.whyWorksBody}
               >
-                <Text className="font-satoshi text-[14px] leading-[26px] text-gray-600">{card.whyThisWorks}</Text>
+                <Text style={styles.whyWorksText}>{card.whyThisWorks}</Text>
               </Animated.View>
             ) : null}
           </Animated.View>
         ) : null}
 
         {card.proTip ? (
-          <View className="mt-3 flex-row items-start gap-2.5 rounded-[14px] border border-[#F0DFC0] bg-[#FEF9F0] px-[18px] py-[14px]">
-            <Text className="mt-[1px] text-[16px] text-[#7A5C2E]">✦</Text>
-            <Text className="flex-1 font-satoshi text-[13px] leading-[24px] text-[#7A5C2E]">
+          <View style={styles.proTipContainer}>
+            <Text style={styles.proTipIcon}>✦</Text>
+            <Text style={styles.proTipText}>
               {card.proTip}
             </Text>
           </View>
@@ -539,112 +436,171 @@ function ActionStepCardView({ card, cardIndex, totalCards }: { card: ActionStepC
   );
 }
 
-function BreathingExerciseCardView({ card, cardIndex, totalCards }: { card: BreathingExerciseCard; cardIndex?: number; totalCards?: number; }) {
-  return (
-    <AccentCardShell eyebrow="Breathing exercise" title={card.title} cardIndex={cardIndex} totalCards={totalCards}>
-      <View className="items-center py-8">
-        <View className="h-40 w-40 items-center justify-center rounded-full border-2 border-forest/20 bg-sage">
-          <Text className="font-erode-semibold-italic text-[18px] text-forest/60">Breathe in...</Text>
-        </View>
+function MindfulExerciseCardView({ card }: { card: MindfulnessExerciseCard | BreathingExerciseCard; }) {
+  const [isActive, setIsActive] = useState(false);
+  const scale = useSharedValue(1);
+  const opacity = useSharedValue(0.15);
+  const breathingPattern = card.type === 'breathing_exercise' ? card.pattern : undefined;
+  const cycles = card.type === 'breathing_exercise' ? card.cycles : undefined;
+  const duration = card.type === 'mindfulness_exercise' ? card.duration : undefined;
+  const steps = card.type === 'mindfulness_exercise' ? card.steps : undefined;
 
-        <Text className="mt-6 font-satoshi-medium text-sm text-forest/40">
-          Cycle 1 of {card.cycles}
-        </Text>
+  const animatedCircleStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+    opacity: opacity.value,
+  }));
 
-        <View className="mt-4 flex-row flex-wrap items-center justify-center gap-3">
-          <Text className="font-satoshi text-[13px] text-gray-600">
-            Inhale {card.pattern.inhaleSeconds}s
-          </Text>
-          {card.pattern.holdSeconds ? (
-            <>
-              <Text className="font-satoshi text-[13px] text-gray-600">·</Text>
-              <Text className="font-satoshi text-[13px] text-gray-600">
-                Hold {card.pattern.holdSeconds}s
-              </Text>
-            </>
-          ) : null}
-          <Text className="font-satoshi text-[13px] text-gray-600">·</Text>
-          <Text className="font-satoshi text-[13px] text-gray-600">
-            Exhale {card.pattern.exhaleSeconds}s
-          </Text>
-        </View>
+  const startBreathing = () => {
+    setIsActive(true);
+    scale.value = withRepeat(
+      withSequence(
+        withTiming(1.6, { duration: (breathingPattern?.inhaleSeconds ?? 4) * 1000, easing: Easing.inOut(Easing.quad) }),
+        withTiming(1.6, { duration: (breathingPattern?.holdSeconds ?? 0) * 1000 }),
+        withTiming(1, { duration: (breathingPattern?.exhaleSeconds ?? 6) * 1000, easing: Easing.inOut(Easing.quad) })
+      ),
+      cycles ?? -1,
+      false
+    );
+    opacity.value = withTiming(0.4, { duration: 1000 });
+  };
 
-        {card.instructions ? (
-          <Text className="mt-6 text-center font-satoshi text-sm leading-6 text-gray-600">
-            {card.instructions}
-          </Text>
-        ) : null}
-      </View>
-    </AccentCardShell>
-  );
-}
-
-function MindfulnessExerciseCardView({ card, cardIndex, totalCards }: { card: MindfulnessExerciseCard; cardIndex?: number; totalCards?: number; }) {
-  const timerLabel = formatTimer(card.timerSeconds) ?? card.duration ?? 'Take your time';
+  const isBreathing = card.type === 'breathing_exercise';
 
   return (
     <AccentCardShell
-      eyebrow={card.duration ? `Grounding · ${card.duration}` : 'Mindfulness'}
+      eyebrow={duration ? `Mindful · ${duration}` : 'Grounding'}
       title={card.title}
-      cardIndex={cardIndex}
-      totalCards={totalCards}
     >
-      <View className="py-6">
-        <View>
-          {card.steps.map((step, index) => (
-            <View
-              key={`${step}-${index}`}
-              className={`items-center px-2 py-3 ${index < card.steps.length - 1 ? 'border-b border-forest/5' : ''}`}
-            >
-              <Text className="text-center font-satoshi text-[18px] leading-8 text-forest">{step}</Text>
+      <View style={{ paddingVertical: 24, alignItems: 'center' }}>
+        {isBreathing ? (
+          <View style={{ alignItems: 'center', width: '100%' }}>
+            <View style={styles.breathingContainer}>
+              <Animated.View style={[styles.breathingCircle, animatedCircleStyle]} />
+              <View style={styles.breathingCore}>
+                <Ionicons
+                  name={isActive ? "medical-outline" : "water-outline"}
+                  size={32}
+                  color="rgba(6, 41, 12, 0.4)"
+                  style={{ marginBottom: 4 }}
+                />
+              </View>
             </View>
-          ))}
-        </View>
 
-        <Text className="my-6 text-center font-satoshi text-5xl font-light tracking-[2px] text-forest">
-          {timerLabel}
-        </Text>
-
-        <Text className="text-center font-satoshi text-sm text-forest/40">
-          {card.completionMessage ?? "Take your time. There's no rush."}
-        </Text>
+            {!isActive ? (
+              <Pressable
+                onPress={startBreathing}
+                style={({ pressed }) => [
+                  styles.startExerciseButton,
+                  pressed && { opacity: 0.8 }
+                ]}
+              >
+                <Text style={styles.startExerciseButtonText}>Begin Focus</Text>
+              </Pressable>
+            ) : (
+              <View style={{ alignItems: 'center' }}>
+                <Text style={styles.breathingStatusText}>Focus on your breath</Text>
+                <Text style={styles.breathingSubtext}>
+                  Inhale as it expands, exhale as it contracts
+                </Text>
+              </View>
+            )}
+          </View>
+        ) : (
+          <View style={{ width: '100%' }}>
+            {steps?.map((step, index) => (
+              <View
+                key={`${step}-${index}`}
+                style={[
+                  styles.mindfulnessStep,
+                  index < (steps?.length ?? 0) - 1 && styles.mindfulnessStepBorder
+                ]}
+              >
+                <View style={styles.mindfulnessStepDot} />
+                <Text style={styles.mindfulnessStepText}>{step}</Text>
+              </View>
+            ))}
+            {card.completionMessage ? (
+              <Text style={styles.mindfulnessSmallText}>
+                {card.completionMessage}
+              </Text>
+            ) : null}
+          </View>
+        )}
       </View>
     </AccentCardShell>
   );
 }
 
-function ExerciseRoutineCardView({ card, cardIndex, totalCards }: { card: ExerciseRoutineCard; cardIndex?: number; totalCards?: number; }) {
+function ExerciseRoutineCardView({ card }: { card: ExerciseRoutineCard; }) {
+  const [completedItems, setCompletedItems] = useState<Set<string>>(new Set());
+  const routineItems = card.exercises ?? [];
+
+  const toggleItem = (id: string) => {
+    setCompletedItems((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
   return (
     <CardShell
       eyebrow={`Routine${card.totalDuration ? ` · ${card.totalDuration}` : ''}`}
       title={card.title}
-      cardIndex={cardIndex}
-      totalCards={totalCards}
+      scrollable
     >
-      <View className="mt-1 gap-3">
-        {card.exercises.map((exercise, index) => {
-          const meta = [exercise.reps, exercise.duration, exercise.rest].filter(Boolean).join(' · ');
+      <View style={styles.routineList}>
+        {routineItems.map((item, index) => {
+          const itemId = `${item.name}-${index}`;
+          const isCompleted = completedItems.has(itemId);
+          const instructions = Array.isArray(item.instructions) ? item.instructions : [];
+          const meta = [item.reps, item.duration, item.rest].filter(Boolean).join(' · ');
 
           return (
-            <View
-              key={`${exercise.name}-${index}`}
-              className="rounded-2xl border border-gray-200 bg-surface px-5 py-4"
+            <Pressable
+              key={itemId}
+              onPress={() => toggleItem(itemId)}
+              style={[
+                styles.routineItem,
+                index < routineItems.length - 1 && styles.routineItemBorder,
+                isCompleted && { opacity: 0.5 },
+              ]}
             >
-              <Text className="mb-2 font-satoshi-bold text-base text-forest">{exercise.name}</Text>
-              <View className="gap-1.5">
-                {exercise.instructions.map((instruction, instructionIndex) => (
+              <View style={styles.routineItemHeader}>
+                <View style={[
+                  styles.routineItemCheckbox,
+                  isCompleted && styles.routineItemCheckboxChecked
+                ]}>
+                  {isCompleted && <Ionicons name="checkmark" size={10} color="white" />}
+                </View>
+                <Text style={[
+                  styles.routineItemTitle,
+                  isCompleted && styles.routineItemTitleCompleted
+                ]}>
+                  {item.name}
+                </Text>
+              </View>
+
+              <View style={styles.routineItemBody}>
+                {instructions.map((instruction, instructionIndex) => (
                   <Text
                     key={`${instruction}-${instructionIndex}`}
-                    className="font-satoshi text-sm leading-6 text-gray-600"
+                    style={styles.routineItemDesc}
                   >
                     {instruction}
                   </Text>
                 ))}
+                {meta ? (
+                  <View style={styles.routineItemMetaBox}>
+                    <Text style={styles.routineItemMetaText}>{meta}</Text>
+                  </View>
+                ) : null}
               </View>
-              {meta ? (
-                <Text className="mt-3 font-satoshi text-[13px] text-forest/60">{meta}</Text>
-              ) : null}
-            </View>
+            </Pressable>
           );
         })}
       </View>
@@ -652,13 +608,24 @@ function ExerciseRoutineCardView({ card, cardIndex, totalCards }: { card: Exerci
   );
 }
 
-function AudioCardView({ card, cardIndex, totalCards }: { card: AudioCard; cardIndex?: number; totalCards?: number; }) {
+function AudioCardView({ card }: { card: AudioCard; }) {
   return (
-    <CardShell eyebrow="Guided meditation" title={card.title} cardIndex={cardIndex} totalCards={totalCards}>
+    <DarkCardShell eyebrow="Guided meditation" title={card.title}>
+      <View style={styles.audioDurationBadge}>
+        <Ionicons name="headset-outline" size={14} color="rgba(255, 255, 255, 0.55)" />
+        <Text style={styles.audioDurationText}>
+          {card.durationSeconds
+            ? `${Math.round(card.durationSeconds / 60)} min session`
+            : 'Guided session'}
+        </Text>
+      </View>
+
       {card.description ? (
-        <Text className="mb-5 font-satoshi text-sm leading-6 text-gray-600">{card.description}</Text>
+        <Text style={styles.audioIntention}>{card.description}</Text>
       ) : null}
+
       <ProgramAudioPlayer
+        embeddedDark
         audio={{
           storagePath: card.audioStoragePath,
           durationSeconds: card.durationSeconds,
@@ -666,30 +633,185 @@ function AudioCardView({ card, cardIndex, totalCards }: { card: AudioCard; cardI
       />
 
       {card.autoAdvance ? (
-        <Text className="mt-3 text-center font-satoshi text-[13px] text-forest/60">
+        <Text style={styles.autoAdvanceDark}>
           Auto-advance enabled
         </Text>
       ) : null}
-    </CardShell>
+    </DarkCardShell>
   );
 }
 
-function CalmTriggerCardView({ card, cardIndex, totalCards }: { card: CalmTriggerCard; cardIndex?: number; totalCards?: number; }) {
+function CalmTriggerCardView({ card }: { card: CalmTriggerCard; }) {
   return (
-    <AccentCardShell eyebrow="CALM" title="Need a moment?" cardIndex={cardIndex} totalCards={totalCards}>
-      <Text className="mb-5 mt-3 font-satoshi text-base leading-8 text-gray-700">{card.context}</Text>
+    <AccentCardShell eyebrow="CALM" title="Need a moment?">
+      <Text style={styles.calmContext}>{card.context}</Text>
       <PrimaryVisualButton label="Start 10-Minute Calm Session" />
     </AccentCardShell>
   );
 }
 
-function JournalCardView({ card, cardIndex, totalCards }: { card: JournalCard; cardIndex?: number; totalCards?: number; }) {
+function JournalCardView({
+  card,
+  onContinue,
+  journalStorageKey,
+  programReflectionIdentity,
+}: {
+  card: JournalCard;
+  onContinue?: () => void;
+  journalStorageKey?: string;
+  programReflectionIdentity?: ProgramReflectionIdentity;
+}) {
   const [value, setValue] = useState('');
+  const [savedValue, setSavedValue] = useState('');
+  const [isEditingSavedReflection, setIsEditingSavedReflection] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const trimmedValue = value.trim();
+  const hasSavedReflection = savedValue.trim().length > 0 && !isEditingSavedReflection;
+  const shouldSaveDraft = trimmedValue.length > 0;
+  const reflectionUserId = programReflectionIdentity?.userId;
+  const reflectionProgramSlug = programReflectionIdentity?.programSlug;
+  const reflectionDayNumber = programReflectionIdentity?.dayNumber;
+  const reflectionCardIndex = programReflectionIdentity?.cardIndex;
+  const reflectionCardType = programReflectionIdentity?.cardType;
+  const reflectionPrompt = programReflectionIdentity?.prompt;
+  const remoteIdentity = React.useMemo<ProgramReflectionIdentity | undefined>(() => {
+    if (
+      !reflectionUserId ||
+      !reflectionProgramSlug ||
+      typeof reflectionDayNumber !== 'number' ||
+      typeof reflectionCardIndex !== 'number' ||
+      !reflectionCardType ||
+      !reflectionPrompt
+    ) {
+      return undefined;
+    }
+
+    return {
+      userId: reflectionUserId,
+      programSlug: reflectionProgramSlug,
+      dayNumber: reflectionDayNumber,
+      cardIndex: reflectionCardIndex,
+      cardType: reflectionCardType,
+      prompt: reflectionPrompt,
+    };
+  }, [
+    reflectionCardIndex,
+    reflectionCardType,
+    reflectionDayNumber,
+    reflectionProgramSlug,
+    reflectionPrompt,
+    reflectionUserId,
+  ]);
+
+  const applySavedReflection = React.useCallback((reflection: string) => {
+    setSavedValue(reflection);
+    setValue(reflection);
+    setIsEditingSavedReflection(false);
+  }, []);
+
+  React.useEffect(() => {
+    if (!journalStorageKey && !remoteIdentity) return;
+
+    let isCancelled = false;
+
+    const restoreReflection = async () => {
+      try {
+        if (journalStorageKey) {
+          const storedReflection = await AsyncStorage.getItem(journalStorageKey);
+          if (!isCancelled && storedReflection) {
+            applySavedReflection(storedReflection);
+          }
+        }
+
+        if (remoteIdentity) {
+          const remoteReflection = await getProgramReflection(remoteIdentity);
+          if (!isCancelled && remoteReflection?.reflection) {
+            applySavedReflection(remoteReflection.reflection);
+            if (journalStorageKey) {
+              await AsyncStorage.setItem(journalStorageKey, remoteReflection.reflection);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Failed to restore card reflection', error);
+      }
+    };
+
+    void restoreReflection();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [applySavedReflection, journalStorageKey, remoteIdentity]);
+
+  const handleSaveAndContinue = async () => {
+    if (!shouldSaveDraft) {
+      onContinue?.();
+      return;
+    }
+
+    setIsSaving(true);
+    setSaveError(null);
+
+    try {
+      if (journalStorageKey) {
+        await AsyncStorage.setItem(journalStorageKey, trimmedValue);
+      }
+
+      if (remoteIdentity) {
+        await upsertProgramReflection(remoteIdentity, trimmedValue);
+      }
+
+      setSavedValue(trimmedValue);
+      setValue(trimmedValue);
+      setIsEditingSavedReflection(false);
+      onContinue?.();
+    } catch (error) {
+      console.error('Failed to save card reflection', error);
+      setSaveError('Saved on this device, but not synced. Check your connection and try again.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleEditReflection = () => {
+    setValue(savedValue);
+    setIsEditingSavedReflection(true);
+  };
+
+  const handleCancelEdit = () => {
+    setValue(savedValue);
+    setIsEditingSavedReflection(false);
+  };
+
+  if (hasSavedReflection) {
+    return (
+      <CardShell eyebrow="Reflection · Saved" title={card.prompt}>
+        <View style={styles.journalSavedBox}>
+          <Text style={styles.journalSavedLabel}>Your reflection</Text>
+          <Text style={styles.journalSavedText}>{savedValue}</Text>
+        </View>
+
+        <View style={styles.journalButtonRow}>
+          <View style={{ flexShrink: 1 }}>
+            <PrimaryVisualButton label="Continue" onPress={onContinue} />
+          </View>
+          <View style={{ flexShrink: 1 }}>
+            <GhostVisualButton label="Edit Reflection" onPress={handleEditReflection} />
+          </View>
+        </View>
+      </CardShell>
+    );
+  }
 
   return (
-    <CardShell eyebrow="Reflection · Optional" title={card.prompt} cardIndex={cardIndex} totalCards={totalCards}>
+    <CardShell
+      eyebrow={isEditingSavedReflection ? 'Reflection · Editing' : 'Reflection · Optional'}
+      title={card.prompt}
+    >
       {card.helperText ? (
-        <Text className="mb-4 font-satoshi text-sm leading-6 text-gray-600">{card.helperText}</Text>
+        <Text style={styles.genericDesc}>{card.helperText}</Text>
       ) : null}
 
       <TextInput
@@ -699,32 +821,43 @@ function JournalCardView({ card, cardIndex, totalCards }: { card: JournalCard; c
         value={value}
         onChangeText={setValue}
         textAlignVertical="top"
-        className="min-h-[120px] rounded-2xl border border-gray-200 bg-gray-50 px-4 py-4 font-satoshi text-base leading-7 text-forest"
+        style={styles.journalInput}
       />
 
-      <View className="mt-4 flex-row gap-3">
-        <View className="flex-shrink">
-          <PrimaryVisualButton label="Save & Continue" />
+      <View style={styles.journalButtonRow}>
+        <View style={{ flexShrink: 1 }}>
+          <PrimaryVisualButton
+            label={isSaving ? 'Saving...' : shouldSaveDraft ? (isEditingSavedReflection ? 'Update & Continue' : 'Save & Continue') : 'Continue'}
+            onPress={() => void handleSaveAndContinue()}
+          />
         </View>
-        <View className="flex-shrink">
-          <GhostVisualButton label="Skip" />
+        <View style={{ flexShrink: 1 }}>
+          <GhostVisualButton
+            label={isEditingSavedReflection ? 'Cancel Edit' : 'Skip'}
+            onPress={isEditingSavedReflection ? handleCancelEdit : onContinue}
+          />
         </View>
       </View>
 
+      {saveError ? (
+        <Text style={styles.journalErrorText}>{saveError}</Text>
+      ) : null}
+
       {card.followUpPrompt ? (
-        <Text className="mt-4 font-satoshi text-[13px] leading-5 text-forest/60">
-          Follow-up: {card.followUpPrompt}
-        </Text>
+        <View style={styles.journalFollowupBox}>
+          <Text style={styles.journalFollowupTitle}>Deepen your practice</Text>
+          <Text style={styles.journalFollowupText}>{card.followUpPrompt}</Text>
+        </View>
       ) : null}
     </CardShell>
   );
 }
 
-function CloseCardView({ card, cardIndex, totalCards }: { card: CloseCard; cardIndex?: number; totalCards?: number; }) {
+function CloseCardView({ card }: { card: CloseCard; }) {
   return (
-    <DarkCardShell eyebrow="Today's close" title={card.message} cardIndex={cardIndex} totalCards={totalCards}>
+    <DarkCardShell eyebrow="Today's close" title={card.message}>
       {card.secondaryMessage ? (
-        <Text className="mb-6 font-satoshi text-sm leading-6 text-white/50">{card.secondaryMessage}</Text>
+        <Text style={styles.closeSub}>{card.secondaryMessage}</Text>
       ) : null}
       <PrimaryVisualButton label="Complete Day" inverted />
     </DarkCardShell>
@@ -734,42 +867,782 @@ function CloseCardView({ card, cardIndex, totalCards }: { card: CloseCard; cardI
 export function CardRenderer({
   card,
   programName,
-  cardIndex,
-  totalCards,
+  onContinue,
+  journalStorageKey,
+  programReflectionContext,
 }: {
   card: ContentCard;
   programName?: string;
-  cardIndex?: number;
-  totalCards?: number;
+  onContinue?: () => void;
+  journalStorageKey?: string;
+  programReflectionContext?: {
+    userId?: string;
+    programSlug: string;
+    dayNumber: number;
+    cardIndex: number;
+  };
 }) {
   switch (card.type) {
     case 'intro':
-      return <IntroCardView card={card} programName={programName} cardIndex={cardIndex} totalCards={totalCards} />;
+      return <IntroCardView card={card} programName={programName} />;
     case 'lesson':
-      return <LessonCardView card={card} cardIndex={cardIndex} totalCards={totalCards} />;
+      return <LessonCardView card={card} />;
     case 'action_step':
-      return <ActionStepCardView card={card} cardIndex={cardIndex} totalCards={totalCards} />;
-    case 'breathing_exercise':
-      return <BreathingExerciseCardView card={card} cardIndex={cardIndex} totalCards={totalCards} />;
+      return <ActionStepCardView card={card} />;
     case 'mindfulness_exercise':
-      return <MindfulnessExerciseCardView card={card} cardIndex={cardIndex} totalCards={totalCards} />;
+    case 'breathing_exercise':
+      return <MindfulExerciseCardView card={card} />;
     case 'exercise_routine':
-      return <ExerciseRoutineCardView card={card} cardIndex={cardIndex} totalCards={totalCards} />;
+      return <ExerciseRoutineCardView card={card} />;
     case 'audio':
-      return <AudioCardView card={card} cardIndex={cardIndex} totalCards={totalCards} />;
+      return <AudioCardView card={card} />;
     case 'calm_trigger':
-      return <CalmTriggerCardView card={card} cardIndex={cardIndex} totalCards={totalCards} />;
+      return <CalmTriggerCardView card={card} />;
     case 'journal':
-      return <JournalCardView card={card} cardIndex={cardIndex} totalCards={totalCards} />;
+      return (
+        <JournalCardView
+          card={card}
+          onContinue={onContinue}
+          journalStorageKey={journalStorageKey}
+          programReflectionIdentity={
+            programReflectionContext?.userId
+              ? {
+                  ...programReflectionContext,
+                  userId: programReflectionContext.userId,
+                  cardType: card.type,
+                  prompt: card.prompt,
+                }
+              : undefined
+          }
+        />
+      );
     case 'close':
-      return <CloseCardView card={card} cardIndex={cardIndex} totalCards={totalCards} />;
+      return <CloseCardView card={card} />;
     default:
       return (
-        <CardShell eyebrow="Unsupported card" title="Card type not mapped" cardIndex={cardIndex} totalCards={totalCards}>
-          <Text className="font-satoshi text-base leading-7 text-gray-700">
+        <CardShell eyebrow="Unsupported card" title="Card type not mapped">
+          <Text style={styles.unsupportedText}>
             This card type is not yet wired in the renderer.
           </Text>
         </CardShell>
       );
   }
 }
+
+const styles = StyleSheet.create({
+  // FadingScrollView
+  scrollWrapper: { flexShrink: 1 },
+  scrollContent: { paddingBottom: 32 },
+  fadeMask: {
+    position: 'absolute',
+    bottom: -10,
+    left: 0,
+    right: 0,
+    height: 64,
+  },
+  fabContainer: {
+    position: 'absolute',
+    bottom: 16,
+    right: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  fabShadow: {
+    shadowColor: '#05290C',
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 3,
+    borderRadius: 9999,
+  },
+  fabBlur: {
+    height: 40,
+    width: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(6, 41, 12, 0.1)',
+  },
+
+  // CardShell
+  cardShell: {
+    flexShrink: 1,
+    width: '100%',
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(6, 41, 12, 0.05)',
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 24,
+    paddingVertical: 28,
+  },
+  cardShellContinuous: {
+    borderCurve: 'continuous',
+  },
+  accentCardShell: {
+    flexShrink: 1,
+    width: '100%',
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(6, 41, 12, 0.1)',
+    backgroundColor: '#E3F3E5', // sage
+    paddingHorizontal: 24,
+    paddingVertical: 28,
+  },
+  darkCardShell: {
+    flexShrink: 1,
+    width: '100%',
+    borderRadius: 24,
+    backgroundColor: '#06290C', // forest
+    paddingHorizontal: 24,
+    paddingVertical: 28,
+  },
+
+  // Text elements inside shells
+  eyebrowLight: {
+    marginBottom: 12,
+    fontFamily: 'Satoshi-Bold',
+    fontSize: 11,
+    textTransform: 'uppercase',
+    letterSpacing: 1.4,
+    color: 'rgba(6, 41, 12, 0.4)',
+  },
+  eyebrowDark: {
+    marginBottom: 12,
+    fontFamily: 'Satoshi-Bold',
+    fontSize: 11,
+    textTransform: 'uppercase',
+    letterSpacing: 1.4,
+    color: 'rgba(255, 255, 255, 0.5)',
+  },
+  titleLight: {
+    marginBottom: 12,
+    fontFamily: 'Erode-Semibold',
+    fontSize: 24,
+    lineHeight: 30,
+    color: '#06290C',
+  },
+  titleAccent: {
+    textAlign: 'center',
+    fontFamily: 'Erode-Semibold',
+    fontSize: 24,
+    lineHeight: 30,
+    color: '#06290C',
+  },
+  titleDark: {
+    marginBottom: 12,
+    fontFamily: 'Erode-Semibold',
+    fontSize: 28,
+    lineHeight: 34,
+    color: '#FFFFFF',
+  },
+
+  // Buttons
+  primaryButtonLight: {
+    alignItems: 'center',
+    borderRadius: 16,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    backgroundColor: '#FFFFFF',
+  },
+  primaryButtonDark: {
+    alignItems: 'center',
+    borderRadius: 16,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    backgroundColor: '#06290C',
+  },
+  primaryButtonTextLight: {
+    fontFamily: 'Satoshi-Bold',
+    fontSize: 15,
+    color: '#06290C',
+  },
+  primaryButtonTextDark: {
+    fontFamily: 'Satoshi-Bold',
+    fontSize: 15,
+    color: '#FFFFFF',
+  },
+  ghostButton: {
+    alignItems: 'center',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+  },
+  ghostButtonText: {
+    fontFamily: 'Satoshi',
+    fontSize: 15,
+    color: 'rgba(6, 41, 12, 0.6)',
+  },
+
+  // DotList
+  dotListItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 16,
+    paddingVertical: 8,
+  },
+  dotListBorder: {
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(6, 41, 12, 0.05)',
+  },
+  dotBullet: {
+    marginTop: 9,
+    height: 6,
+    width: 6,
+    borderRadius: 3,
+    backgroundColor: '#CADCD6',
+  },
+  dotText: {
+    flex: 1,
+    fontFamily: 'Satoshi',
+    fontSize: 15,
+    lineHeight: 28,
+  },
+
+  // Specific Card Views...
+  // Intro Card
+  introCard: {
+    flex: 1,
+    width: '100%',
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(6, 41, 12, 0.05)',
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 24,
+    paddingBottom: 32,
+    paddingTop: 36,
+    borderCurve: 'continuous',
+  },
+  introSpacer: {
+    flex: 1,
+  },
+  introEyebrow: {
+    marginBottom: 10,
+    fontFamily: 'Satoshi-Bold',
+    fontSize: 12,
+    textTransform: 'uppercase',
+    letterSpacing: 2.5,
+    color: 'rgba(6, 41, 12, 0.4)',
+  },
+  introTitle: {
+    marginBottom: 20,
+    fontFamily: 'Erode',
+    fontSize: 48,
+    lineHeight: 52,
+    letterSpacing: -0.5,
+    color: '#06290C',
+  },
+  introGoal: {
+    marginBottom: 32,
+    fontFamily: 'Satoshi',
+    fontSize: 18,
+    lineHeight: 30,
+    color: '#4B5563',
+  },
+  introMetaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+  },
+  introMetaPill: {
+    borderRadius: 9999,
+    backgroundColor: 'rgba(6, 41, 12, 0.05)',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  introMetaTextTime: {
+    letterSpacing: 0.3,
+    fontFamily: 'Satoshi-Bold',
+    fontSize: 13,
+    color: 'rgba(6, 41, 12, 0.6)',
+  },
+  introMetaDot: {
+    height: 4,
+    width: 4,
+    borderRadius: 2,
+    backgroundColor: 'rgba(6, 41, 12, 0.2)',
+  },
+  introMetaTextProgram: {
+    letterSpacing: 0.3,
+    fontFamily: 'Satoshi-Medium',
+    fontSize: 13,
+    color: 'rgba(6, 41, 12, 0.4)',
+  },
+
+  // Lesson Card
+  lessonContextPill: {
+    marginBottom: 24,
+    alignSelf: 'flex-start',
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(6, 41, 12, 0.1)',
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+  },
+  lessonContextText: {
+    fontFamily: 'Satoshi-Bold',
+    fontSize: 11,
+    textTransform: 'uppercase',
+    letterSpacing: 1.5,
+    color: 'rgba(6, 41, 12, 0.5)',
+  },
+  lessonTitle: {
+    marginBottom: 32,
+    fontFamily: 'Erode',
+    fontSize: 28,
+    lineHeight: 34,
+    letterSpacing: -0.3,
+    color: '#06290C',
+  },
+  lessonBody: {
+    marginBottom: 4,
+  },
+  lessonParagraph: {
+    marginBottom: 20,
+    fontFamily: 'Satoshi',
+    fontWeight: '300',
+    fontSize: 16,
+    lineHeight: 30,
+    color: '#4B5563',
+  },
+  lessonHighlightContainer: {
+    marginVertical: 32,
+    borderLeftWidth: 2,
+    borderLeftColor: '#06290C',
+    paddingVertical: 16,
+    paddingLeft: 24,
+  },
+  lessonHighlightText: {
+    fontFamily: 'Erode-Italic',
+    fontSize: 24,
+    lineHeight: 34,
+    letterSpacing: -0.2,
+    color: 'rgba(6, 41, 12, 0.9)',
+  },
+
+  // Action Step
+  actionDurationPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 20,
+    alignSelf: 'flex-start',
+    backgroundColor: 'rgba(6, 41, 12, 0.05)',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  actionDurationText: {
+    fontFamily: 'Satoshi-Medium',
+    fontSize: 13,
+    color: 'rgba(6, 41, 12, 0.6)',
+  },
+  actionBody: {
+    marginTop: 8,
+  },
+  whyWorksContainer: {
+    marginTop: 32,
+    overflow: 'hidden',
+    borderLeftWidth: 2,
+    borderLeftColor: 'rgba(6, 41, 12, 0.06)',
+    paddingLeft: 20,
+  },
+  whyWorksHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingBottom: 4,
+  },
+  whyWorksHeaderText: {
+    fontFamily: 'Satoshi-Bold',
+    fontSize: 12,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    color: 'rgba(6, 41, 12, 0.5)',
+  },
+  whyWorksBody: {
+    marginTop: 12,
+  },
+  whyWorksText: {
+    fontFamily: 'Satoshi',
+    fontSize: 15,
+    lineHeight: 28,
+    color: '#4B5563',
+  },
+  proTipContainer: {
+    marginTop: 32,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#F0DFC0',
+    backgroundColor: '#FEF9F0',
+    paddingHorizontal: 18,
+    paddingVertical: 16,
+  },
+  proTipIcon: {
+    marginTop: 1,
+    fontSize: 16,
+    color: '#7A5C2E',
+  },
+  proTipText: {
+    flex: 1,
+    fontFamily: 'Satoshi',
+    fontSize: 13,
+    lineHeight: 24,
+    color: '#7A5C2E',
+  },
+
+
+  // Journal & Reflection
+  journalHelper: {
+    fontFamily: 'Satoshi',
+    fontSize: 15,
+    lineHeight: 24,
+    color: 'rgba(6, 41, 12, 0.5)',
+    marginBottom: 24,
+  },
+  journalInputWrapper: {
+    marginBottom: 24,
+    position: 'relative',
+  },
+  journalInput: {
+    minHeight: 180,
+    fontFamily: 'Satoshi',
+    fontSize: 16,
+    lineHeight: 32, // Matches ruled lines
+    color: '#06290C',
+    paddingTop: 0,
+    paddingBottom: 0,
+  },
+  journalRuledLines: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: -1,
+  },
+  journalLine: {
+    height: 32,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(6, 41, 12, 0.05)',
+  },
+  journalButtonRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  journalFollowupBox: {
+    marginTop: 32,
+    padding: 16,
+    backgroundColor: 'rgba(6, 41, 12, 0.03)',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(6, 41, 12, 0.05)',
+  },
+  journalFollowupTitle: {
+    fontFamily: 'Satoshi-Bold',
+    fontSize: 12,
+    color: 'rgba(6, 41, 12, 0.4)',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 8,
+  },
+  journalFollowupText: {
+    fontFamily: 'Satoshi',
+    fontSize: 14,
+    lineHeight: 22,
+    color: '#4B5563',
+  },
+  journalErrorText: {
+    marginTop: 14,
+    fontFamily: 'Satoshi-Medium',
+    fontSize: 13,
+    lineHeight: 20,
+    color: '#8A3B2F',
+  },
+  journalSavedBox: {
+    marginBottom: 24,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: 'rgba(6, 41, 12, 0.08)',
+    backgroundColor: 'rgba(6, 41, 12, 0.03)',
+    paddingHorizontal: 18,
+    paddingVertical: 18,
+  },
+  journalSavedLabel: {
+    marginBottom: 10,
+    fontFamily: 'Satoshi-Bold',
+    fontSize: 11,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    color: 'rgba(6, 41, 12, 0.45)',
+  },
+  journalSavedText: {
+    fontFamily: 'Satoshi',
+    fontSize: 16,
+    lineHeight: 28,
+    color: '#06290C',
+  },
+
+  // Close Card
+  closeContent: {
+    flex: 1,
+    paddingTop: 20,
+  },
+  closeIconCircle: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: 'rgba(227, 243, 229, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 24,
+  },
+  closeSub: {
+    fontFamily: 'Satoshi',
+    fontSize: 16,
+    lineHeight: 28,
+    color: 'rgba(255, 255, 255, 0.6)',
+    marginBottom: 40,
+  },
+  closeDivider: {
+    height: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    marginBottom: 40,
+  },
+  closeFinishBox: {
+    alignItems: 'center',
+    width: '100%',
+  },
+  closeFinishLabel: {
+    fontFamily: 'Satoshi-Bold',
+    fontSize: 13,
+    color: 'rgba(255, 255, 255, 0.4)',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: 16,
+  },
+
+  // Atmospheric / Core
+  calmContext: {
+    marginTop: 12,
+    marginBottom: 20,
+    fontFamily: 'Satoshi',
+    fontSize: 16,
+    lineHeight: 32,
+    color: '#374151',
+  },
+  genericDesc: {
+    marginBottom: 24,
+    fontFamily: 'Satoshi',
+    fontSize: 15,
+    lineHeight: 24,
+    color: '#4B5563',
+  },
+  autoAdvance: {
+    marginTop: 16,
+    textAlign: 'center',
+    fontFamily: 'Satoshi-Bold',
+    fontSize: 12,
+    color: 'rgba(6, 41, 12, 0.4)',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  autoAdvanceDark: {
+    marginTop: 16,
+    textAlign: 'center',
+    fontFamily: 'Satoshi-Bold',
+    fontSize: 12,
+    color: 'rgba(255, 255, 255, 0.45)',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  audioDurationBadge: {
+    marginBottom: 20,
+    alignSelf: 'flex-start',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    borderRadius: 9999,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+  },
+  audioDurationText: {
+    fontFamily: 'Satoshi-Bold',
+    fontSize: 11,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    color: 'rgba(255, 255, 255, 0.55)',
+  },
+  audioIntention: {
+    marginBottom: 28,
+    fontFamily: 'Satoshi',
+    fontSize: 16,
+    lineHeight: 28,
+    color: 'rgba(255, 255, 255, 0.68)',
+  },
+  unsupportedText: {
+    fontFamily: 'Satoshi',
+    fontSize: 16,
+    lineHeight: 28,
+    color: '#374151',
+  },
+
+  // Mindful/Breathing
+  breathingContainer: {
+    width: 140,
+    height: 140,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 32,
+  },
+  breathingCircle: {
+    position: 'absolute',
+    width: 80,
+    height: 80,
+    borderRadius: 9999,
+    backgroundColor: '#06290C',
+  },
+  breathingCore: {
+    width: 80,
+    height: 80,
+    borderRadius: 9999,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(6, 41, 12, 0.05)',
+  },
+  startExerciseButton: {
+    backgroundColor: '#06290C',
+    paddingHorizontal: 32,
+    paddingVertical: 16,
+    borderRadius: 20,
+    marginTop: 8,
+  },
+  startExerciseButtonText: {
+    color: '#E3F3E5',
+    fontFamily: 'Satoshi-Bold',
+    fontSize: 15,
+  },
+  breathingStatusText: {
+    fontFamily: 'Satoshi-Bold',
+    fontSize: 18,
+    color: '#06290C',
+    marginBottom: 4,
+    textAlign: 'center',
+  },
+  breathingSubtext: {
+    fontFamily: 'Satoshi',
+    fontSize: 14,
+    color: 'rgba(6, 41, 12, 0.5)',
+    textAlign: 'center',
+  },
+  mindfulnessStep: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    paddingVertical: 14,
+  },
+  mindfulnessStepDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: 'rgba(6, 41, 12, 0.2)',
+    marginTop: 8,
+    marginRight: 12,
+  },
+  mindfulnessStepText: {
+    flex: 1,
+    fontFamily: 'Satoshi',
+    fontSize: 16,
+    lineHeight: 24,
+    color: '#06290C',
+  },
+  mindfulnessStepBorder: {
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(6, 41, 12, 0.05)',
+  },
+  mindfulnessSmallText: {
+    marginTop: 16,
+    fontFamily: 'Satoshi',
+    fontSize: 14,
+    color: 'rgba(6, 41, 12, 0.4)',
+    textAlign: 'center',
+    fontStyle: 'italic',
+  },
+
+  // Routine
+  routineItemCheckbox: {
+    width: 20,
+    height: 20,
+    borderRadius: 6,
+    borderWidth: 1.5,
+    borderColor: 'rgba(6, 41, 12, 0.2)',
+    marginRight: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 2,
+  },
+  routineItemCheckboxChecked: {
+    backgroundColor: '#06290C',
+    borderColor: '#06290C',
+  },
+  routineItemTitleCompleted: {
+    textDecorationLine: 'line-through',
+    opacity: 0.6,
+  },
+
+  // Routine List Layout
+  routineList: {
+    marginTop: 8,
+  },
+  routineItem: {
+    paddingVertical: 24,
+  },
+  routineItemBorder: {
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(6, 41, 12, 0.05)',
+  },
+  routineItemHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  routineItemTitle: {
+    flex: 1,
+    fontFamily: 'Erode',
+    fontSize: 20,
+    color: '#06290C',
+  },
+  routineItemBody: {
+    paddingLeft: 32, // Align with checkbox spacing
+  },
+  routineItemDesc: {
+    fontFamily: 'Satoshi',
+    fontSize: 15,
+    lineHeight: 24,
+    color: '#4B5563',
+    marginBottom: 12,
+  },
+  routineItemMetaBox: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    backgroundColor: 'rgba(6, 41, 12, 0.03)',
+    borderRadius: 6,
+    alignSelf: 'flex-start',
+  },
+  routineItemMetaText: {
+    fontFamily: 'Satoshi-Bold',
+    fontSize: 11,
+    color: 'rgba(6, 41, 12, 0.5)',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+});

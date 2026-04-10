@@ -1,6 +1,5 @@
-
 import React, { useEffect } from 'react';
-import { TouchableOpacity, Text, View } from 'react-native';
+import { TouchableOpacity, Text, View, StyleSheet } from 'react-native';
 import Animated, {
     useSharedValue,
     useAnimatedStyle,
@@ -8,6 +7,7 @@ import Animated, {
     withTiming
 } from 'react-native-reanimated';
 import { Feather } from '@expo/vector-icons';
+import { AppColors } from '@/constants/theme';
 
 interface NextButtonProps {
     scrollTo: () => void;
@@ -49,24 +49,21 @@ export const NextButton: React.FC<NextButtonProps> = ({ scrollTo, currentIndex, 
     });
 
     return (
-        <View className="items-center justify-center">
+        <View style={styles.container}>
             <TouchableOpacity
                 activeOpacity={0.8}
                 onPress={scrollTo}
             >
-                <Animated.View
-                    style={[animatedContainerStyle]}
-                    className="h-[56px] flex-row items-center justify-between overflow-hidden rounded-full border border-[#193126] bg-[#173428] px-4.5"
-                >
-                    <Animated.View style={[animatedTextStyle, { flexDirection: 'row', alignItems: 'center', gap: 8 }]}>
-                        <Text className="font-satoshi-bold text-[14px] tracking-[0.2px] text-[#F5F0E4]">
+                <Animated.View style={[styles.buttonContainer, animatedContainerStyle]}>
+                    <Animated.View style={[styles.textContainer, animatedTextStyle]}>
+                        <Text style={styles.buttonText}>
                             {isLastSlide ? 'Begin your plan' : 'Continue'}
                         </Text>
                     </Animated.View>
 
                     <Animated.View style={[animatedIconStyle]}>
-                        <View className="h-9 w-9 items-center justify-center rounded-full bg-[#F5F2E9]">
-                            <Feather name={isLastSlide ? 'check' : 'arrow-right'} size={16} color="#173428" />
+                        <View style={styles.iconContainer}>
+                            <Feather name={isLastSlide ? 'check' : 'arrow-right'} size={16} color={AppColors.forest} />
                         </View>
                     </Animated.View>
                 </Animated.View>
@@ -74,3 +71,40 @@ export const NextButton: React.FC<NextButtonProps> = ({ scrollTo, currentIndex, 
         </View>
     );
 };
+
+const styles = StyleSheet.create({
+    container: {
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    buttonContainer: {
+        height: 52,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        overflow: 'hidden',
+        borderRadius: 9999,
+        backgroundColor: AppColors.forest,
+        paddingLeft: 22,
+        paddingRight: 8,
+    },
+    textContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+    },
+    buttonText: {
+        fontFamily: 'Satoshi-Medium',
+        fontSize: 14,
+        letterSpacing: 0.2,
+        color: AppColors.white,
+    },
+    iconContainer: {
+        height: 36,
+        width: 36,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: 18,
+        backgroundColor: AppColors.surface,
+    },
+});

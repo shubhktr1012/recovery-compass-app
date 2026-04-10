@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, ScrollView, Alert, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
 import { useRouter, Href } from 'expo-router';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -11,6 +11,7 @@ import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { useAuth } from '@/providers/auth';
+import { AppColors } from '@/constants/theme';
 
 const resetPasswordSchema = z.object({
     password: z.string().min(8, 'Password must be at least 8 characters'),
@@ -61,27 +62,23 @@ export default function ResetPassword() {
     const canResetPassword = isRecoveringPassword || !!session;
 
     return (
-        <SafeAreaView className="flex-1 bg-surface">
+        <SafeAreaView style={styles.safeArea}>
             <StatusBar style="dark" />
             <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                className="flex-1"
+                style={styles.keyboardView}
             >
                 <ScrollView
-                    contentContainerClassName="flex-grow justify-center px-6 pb-10"
+                    contentContainerStyle={styles.scrollContent}
                     keyboardShouldPersistTaps="handled"
                 >
-                    <View className="items-center mb-10">
-                        <Text className="font-erode-bold text-4xl text-forest mb-2 text-center">
-                            Set a New Password
-                        </Text>
-                        <Text className="font-satoshi text-gray-500 text-center text-lg">
-                            Choose a new password to secure your account.
-                        </Text>
+                    <View style={styles.headerContainer}>
+                        <Text style={styles.title}>Set a New Password</Text>
+                        <Text style={styles.subtitle}>Choose a new password to secure your account.</Text>
                     </View>
 
                     {canResetPassword ? (
-                        <View className="space-y-5">
+                        <View style={styles.formContainer}>
                             <Controller
                                 control={control}
                                 name="password"
@@ -120,20 +117,20 @@ export default function ResetPassword() {
                                 label="Update Password"
                                 onPress={handleSubmit(onSubmit)}
                                 loading={loading}
-                                className="mt-4"
+                                style={styles.submitButton}
                                 size="lg"
                             />
                         </View>
                     ) : (
-                        <View className="space-y-5">
-                            <Text className="text-center text-gray-500 font-satoshi text-base">
+                        <View style={styles.formContainer}>
+                            <Text style={styles.expiredText}>
                                 This password reset link is missing, expired, or has already been used.
                             </Text>
 
                             <Button
                                 label="Back to Sign In"
                                 onPress={handleBackToSignIn}
-                                className="mt-4"
+                                style={styles.submitButton}
                                 size="lg"
                             />
                         </View>
@@ -143,3 +140,49 @@ export default function ResetPassword() {
         </SafeAreaView>
     );
 }
+
+const styles = StyleSheet.create({
+    safeArea: {
+        flex: 1,
+        backgroundColor: AppColors.white,
+    },
+    keyboardView: {
+        flex: 1,
+    },
+    scrollContent: {
+        flexGrow: 1,
+        justifyContent: 'center',
+        paddingHorizontal: 24,
+        paddingBottom: 40,
+    },
+    headerContainer: {
+        alignItems: 'center',
+        marginBottom: 40,
+    },
+    title: {
+        fontFamily: 'Erode-Bold',
+        fontSize: 36,
+        color: AppColors.forest,
+        marginBottom: 8,
+        textAlign: 'center',
+    },
+    subtitle: {
+        fontFamily: 'Satoshi-Regular',
+        color: AppColors.iconMuted,
+        textAlign: 'center',
+        fontSize: 18,
+    },
+    formContainer: {
+        gap: 20,
+    },
+    submitButton: {
+        marginTop: 16,
+        shadowColor: 'transparent',
+    },
+    expiredText: {
+        textAlign: 'center',
+        color: AppColors.iconMuted,
+        fontFamily: 'Satoshi-Regular',
+        fontSize: 16,
+    },
+});

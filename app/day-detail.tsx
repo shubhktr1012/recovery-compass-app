@@ -14,7 +14,7 @@ import Animated, {
   useSharedValue,
 } from 'react-native-reanimated';
 import type { SharedValue } from 'react-native-reanimated';
-import { Pressable, Text, View, useWindowDimensions } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
@@ -22,6 +22,7 @@ import { CardRenderer } from '@/components/cards/CardRenderer';
 import { Button } from '@/components/ui/Button';
 import { useDay, useProgram } from '@/content';
 import { programDayQueryKey, programQueryKey } from '@/hooks/contentQueryUtils';
+import { useAuth } from '@/providers/auth';
 import type { DayContent, ProgramSlug } from '@/types/content';
 
 const PROGRAM_SLUGS: ProgramSlug[] = [
@@ -54,11 +55,11 @@ function ErrorState({ message }: { message: string }) {
   const router = useRouter();
 
   return (
-    <SafeAreaView className="flex-1 bg-sage">
+    <SafeAreaView style={styles.container}>
       <StatusBar style="dark" />
-      <View className="flex-1 items-center justify-center px-6">
-        <Text className="mb-3 font-erode-bold text-3xl text-forest">Day not found</Text>
-        <Text className="mb-6 text-center font-satoshi text-base leading-7 text-gray-600">{message}</Text>
+      <View style={styles.centerContainer}>
+        <Text style={styles.errorTitle}>Day not found</Text>
+        <Text style={styles.errorDescription}>{message}</Text>
         <Button
           label="Back to Program"
           onPress={() => router.replace('/(tabs)/program' as Href)}
@@ -70,10 +71,10 @@ function ErrorState({ message }: { message: string }) {
 
 function LoadingState() {
   return (
-    <SafeAreaView className="flex-1 bg-sage">
+    <SafeAreaView style={styles.container}>
       <StatusBar style="dark" />
-      <View className="flex-1 items-center justify-center px-6">
-        <Text className="font-satoshi text-base text-gray-600">Loading day progress...</Text>
+      <View style={styles.centerContainer}>
+        <Text style={styles.loadingText}>Loading day progress...</Text>
       </View>
     </SafeAreaView>
   );
@@ -83,22 +84,11 @@ function ResumeToast() {
   return (
     <Animated.View
       entering={FadeInDown.springify().damping(18).stiffness(150)}
-      className="absolute bottom-12 left-0 right-0 items-center z-50"
+      style={styles.toastWrapper}
       pointerEvents="none"
-      style={{
-        shadowColor: '#000',
-        shadowOpacity: 0.1,
-        shadowRadius: 12,
-        shadowOffset: { width: 0, height: 6 },
-        elevation: 4,
-      }}
     >
-      <BlurView 
-        intensity={80} 
-        tint="light" 
-        className="rounded-[20px] border border-forest/10 px-5 py-2.5 overflow-hidden bg-white/50"
-      >
-        <Text className="text-center font-satoshi text-[13px] text-forest/90 font-medium tracking-wide">
+      <BlurView intensity={80} tint="light" style={styles.toastBlur}>
+        <Text style={styles.toastText}>
           Continuing where you left off
         </Text>
       </BlurView>
@@ -112,20 +102,29 @@ function SwipeDeckCard({
   totalCards,
   progress,
   programName,
-  cardHeight,
+  onContinue,
+  journalStorageKey,
+  programReflectionContext,
 }: {
   card: DayContent['cards'][number];
   index: number;
   totalCards: number;
   progress: SharedValue<number>;
   programName?: string;
-  cardHeight: number;
+  onContinue?: () => void;
+  journalStorageKey?: string;
+  programReflectionContext?: {
+    userId?: string;
+    programSlug: ProgramSlug;
+    dayNumber: number;
+    cardIndex: number;
+  };
 }) {
   const animatedStyle = useAnimatedStyle(() => {
     const distance = Math.abs(progress.value - index);
     const scale = interpolate(distance, [0, 1], [1, 0.95], Extrapolation.CLAMP);
     const opacity = interpolate(distance, [0, 1], [1, 0.75], Extrapolation.CLAMP);
-    const translateY = interpolate(distance, [0, 1], [0, 8], Extrapolation.CLAMP);
+    const translateY = interpolate(distance, [0, 1], [0, 12], Extrapolation.CLAMP);
 
     return {
       opacity,
@@ -134,13 +133,21 @@ function SwipeDeckCard({
   }, [index]);
 
   return (
-    <SafeAreaView edges={['bottom']} className="flex-1 px-6 pb-6">
-      <View className="flex-1 items-center pt-2">
+    <SafeAreaView edges={['bottom']} style={styles.safeAreaCard}>
+      <View style={styles.cardInner}>
         <Animated.View
           entering={FadeInDown.springify().damping(18).stiffness(140)}
-          style={[{ maxHeight: cardHeight, width: '100%' }, animatedStyle]}
+          style={[styles.animatedCardContainer, animatedStyle]}
         >
-          <CardRenderer card={card} programName={programName} cardIndex={index} totalCards={totalCards} />
+          <CardRenderer
+            card={card}
+            programName={programName}
+            onContinue={onContinue}
+            journalStorageKey={journalStorageKey}
+            programReflectionContext={
+              card.type === 'journal' ? programReflectionContext : undefined
+            }
+          />
         </Animated.View>
       </View>
     </SafeAreaView>
@@ -151,13 +158,13 @@ export default function DayDetailScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const pagerRef = useRef<PagerView>(null);
+  const { user } = useAuth();
   const params = useLocalSearchParams<{ dayNumber?: string | string[]; programSlug?: string | string[] }>();
-  const { height: viewportHeight } = useWindowDimensions();
+
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isRestored, setIsRestored] = useState(false);
   const [showResumeToast, setShowResumeToast] = useState(false);
   const swipeProgress = useSharedValue(0);
-  const cardHeight = Math.round(viewportHeight * 0.55);
 
   const rawProgramSlug = normalizeRouteParam(params.programSlug);
   const rawDayNumber = normalizeRouteParam(params.dayNumber);
@@ -252,6 +259,15 @@ export default function DayDetailScreen() {
     }
   };
 
+  const handleContinueFromCard = () => {
+    if (!dayContent) return;
+
+    const nextIndex = Math.min(currentIndex + 1, dayContent.cards.length - 1);
+    if (nextIndex === currentIndex) return;
+
+    pagerRef.current?.setPage(nextIndex);
+  };
+
   if (!programSlug || !Number.isInteger(dayNumber) || dayNumber < 1) {
     return <ErrorState message="The requested day detail route is missing a valid program slug or day number." />;
   }
@@ -269,37 +285,51 @@ export default function DayDetailScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-sage">
+    <SafeAreaView style={styles.container}>
       <StatusBar style="dark" />
 
-      <View className="px-6 pb-1 pt-3">
-        <View className="flex-row items-center justify-between">
+      <View style={styles.header}>
+        <View style={styles.headerRow}>
           <Pressable
             accessibilityLabel="Back to program"
-            className="h-11 w-11 items-center justify-center rounded-full bg-forest"
+            style={styles.backButton}
             onPress={() => router.replace('/(tabs)/program' as Href)}
           >
             <Ionicons name="chevron-back" size={22} color="#FFFFFF" />
           </Pressable>
 
-          <View className="flex-1 px-4">
-            <Text className="text-center font-satoshi-bold text-xs uppercase tracking-wide text-forest/60">
+          <View style={styles.headerTitleContainer}>
+            <Text style={styles.headerSubtitle}>
               {program.name}
             </Text>
-            <Text className="mt-1 text-center font-satoshi text-sm text-gray-600">
+            <Text style={styles.headerTitle}>
               Day {dayContent.dayNumber}
             </Text>
           </View>
 
-          <View className="h-11 w-11" />
+          <View style={styles.dummyBox} />
         </View>
+      </View>
+
+      {/* Instagram Stories Style Screen-Level Progress Bar */}
+      <View style={styles.progressBarContainer}>
+        {dayContent.cards.map((_, index) => (
+          <View key={`progress-${index}`} style={styles.progressTrack}>
+            <View
+              style={[
+                styles.progressFill,
+                index <= currentIndex && styles.progressFillActive
+              ]}
+            />
+          </View>
+        ))}
       </View>
 
       {showResumeToast ? <ResumeToast /> : null}
 
       <PagerView
         ref={pagerRef}
-        style={{ flex: 1 }}
+        style={styles.pager}
         overdrag
         offscreenPageLimit={2}
         initialPage={currentIndex}
@@ -314,7 +344,7 @@ export default function DayDetailScreen() {
         {dayContent.cards.map((card, index) => (
           <View
             key={`${dayContent.programSlug}-${dayContent.dayNumber}-${card.type}-${index}`}
-            style={{ flex: 1 }}
+            style={styles.cardWrapper}
             collapsable={false}
           >
             <SwipeDeckCard
@@ -323,7 +353,14 @@ export default function DayDetailScreen() {
               totalCards={dayContent.cards.length}
               progress={swipeProgress}
               programName={program.name}
-              cardHeight={cardHeight}
+              onContinue={handleContinueFromCard}
+              journalStorageKey={`day-reflection:${dayContent.programSlug}:${dayContent.dayNumber}:${index}`}
+              programReflectionContext={{
+                userId: user?.id,
+                programSlug: dayContent.programSlug,
+                dayNumber: dayContent.dayNumber,
+                cardIndex: index,
+              }}
             />
           </View>
         ))}
@@ -331,3 +368,147 @@ export default function DayDetailScreen() {
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#E3F3E5', // sage
+  },
+  header: {
+    paddingHorizontal: 24,
+    paddingBottom: 4,
+    paddingTop: 12,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  backButton: {
+    height: 44,
+    width: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 22,
+    backgroundColor: '#06290C', // forest
+  },
+  headerTitleContainer: {
+    flex: 1,
+    paddingHorizontal: 16,
+  },
+  headerSubtitle: {
+    textAlign: 'center',
+    fontFamily: 'Satoshi-Bold',
+    fontSize: 12,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    color: 'rgba(6, 41, 12, 0.6)',
+  },
+  headerTitle: {
+    marginTop: 4,
+    textAlign: 'center',
+    fontFamily: 'Satoshi',
+    fontSize: 14,
+    color: '#4B5563', // gray-600
+  },
+  dummyBox: {
+    height: 44,
+    width: 44,
+  },
+  progressBarContainer: {
+    flexDirection: 'row',
+    gap: 6,
+    paddingHorizontal: 24,
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  progressTrack: {
+    flex: 1,
+    height: 3,
+    borderRadius: 1.5,
+    backgroundColor: 'rgba(6, 41, 12, 0.1)',
+  },
+  progressFill: {
+    height: '100%',
+    borderRadius: 1.5,
+  },
+  progressFillActive: {
+    backgroundColor: '#06290C',
+  },
+  pager: {
+    flex: 1,
+  },
+  cardWrapper: {
+    flex: 1,
+  },
+  safeAreaCard: {
+    flex: 1,
+    paddingHorizontal: 24,
+    paddingBottom: 24,
+  },
+  cardInner: {
+    flex: 1,
+    alignItems: 'center',
+    paddingTop: 8,
+  },
+  animatedCardContainer: {
+    width: '100%',
+    flex: 1,
+  },
+  // Toast
+  toastWrapper: {
+    position: 'absolute',
+    bottom: 48,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    zIndex: 50,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 4,
+  },
+  toastBlur: {
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(6, 41, 12, 0.1)',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    overflow: 'hidden',
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+  },
+  toastText: {
+    textAlign: 'center',
+    fontFamily: 'Satoshi-Medium',
+    fontSize: 13,
+    color: 'rgba(6, 41, 12, 0.9)',
+    letterSpacing: 0.25,
+  },
+  // Error / Loading
+  centerContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 24,
+  },
+  errorTitle: {
+    marginBottom: 12,
+    fontFamily: 'Erode-Bold',
+    fontSize: 30,
+    color: '#06290C',
+  },
+  errorDescription: {
+    marginBottom: 24,
+    textAlign: 'center',
+    fontFamily: 'Satoshi',
+    fontSize: 16,
+    lineHeight: 28,
+    color: '#4B5563',
+  },
+  loadingText: {
+    fontFamily: 'Satoshi',
+    fontSize: 16,
+    color: '#4B5563',
+  }
+});

@@ -1,21 +1,24 @@
-
 import React, { useRef, useState } from 'react';
-import { View, FlatList, ViewToken, Text } from 'react-native';
+import { View, FlatList, ViewToken, Text, StyleSheet } from 'react-native';
 import { Stack, useRouter, Href } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import Animated, { useAnimatedScrollHandler, useSharedValue } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ONBOARDING_DATA, OnboardingItem } from '@/components/onboarding/onboardingData';
 import { OnboardingSlide } from '@/components/onboarding/OnboardingSlide';
 import { Paginator } from '@/components/onboarding/Paginator';
 import { NextButton } from '@/components/onboarding/NextButton';
 import { AppStorage } from '@/lib/storage';
+import { AppColors } from '@/constants/theme';
 
 export default function OnboardingScreen() {
     const [currentIndex, setCurrentIndex] = useState(0);
     const scrollX = useSharedValue(0);
     const slidesRef = useRef<FlatList<OnboardingItem>>(null);
     const router = useRouter();
+    const insets = useSafeAreaInsets();
+
     const onScroll = useAnimatedScrollHandler((event) => {
         scrollX.value = event.contentOffset.x;
     });
@@ -34,7 +37,7 @@ export default function OnboardingScreen() {
         } else {
             try {
                 await AppStorage.setItem('hasSeenOnboarding', 'true');
-                router.replace('/sign-in' as Href); // Or wherever Auth starts
+                router.replace('/sign-in' as Href);
             } catch (err) {
                 console.log('Error @setItem: ', err);
             }
@@ -42,20 +45,17 @@ export default function OnboardingScreen() {
     };
 
     return (
-        <View className="flex-1 bg-[#F6F6F1]">
+        <View style={styles.container}>
             <Stack.Screen options={{ headerShown: false }} />
             <StatusBar style="dark" />
 
-            <View className="absolute -left-24 top-24 h-72 w-72 rounded-full bg-[#EEF1EA]" />
-            <View className="absolute -right-24 bottom-28 h-80 w-80 rounded-full bg-[#F0F2ED]" />
-
-            <View className="px-7 pt-14">
-                <Text className="font-satoshi text-[12px] uppercase tracking-[2.4px] text-[#7D7668]">
-                    Steady progress, without pressure
+            <View style={[styles.header, { paddingTop: insets.top || 40 }]}>
+                <Text style={styles.headerSubtitle}>
+                    Recovery Compass
                 </Text>
             </View>
 
-            <View className="flex-[3.35]">
+            <View style={styles.sliderContainer}>
                 <Animated.FlatList
                     data={ONBOARDING_DATA}
                     renderItem={({ item, index }: { item: OnboardingItem; index: number }) => (
@@ -74,21 +74,9 @@ export default function OnboardingScreen() {
                 />
             </View>
 
-            <View className="flex-1 justify-end px-7 pb-10">
-                <View className="border-t border-[#D9DDD5] pt-5">
-                    <Text className="max-w-[290px] font-satoshi text-[14px] leading-6 text-[#5E584E]">
-                        Calm guidance, structured programs, and a clearer daily rhythm from your very first session.
-                    </Text>
-                </View>
-
-                <View className="mt-7 flex-row items-center justify-between">
+            <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 40) }]}>
+                <View style={styles.bottomControls}>
                     <Paginator data={ONBOARDING_DATA} scrollX={scrollX} />
-                    <Text className="font-satoshi text-[12px] tracking-[1.3px] text-[#8A8478]">
-                        Swipe or continue
-                    </Text>
-                </View>
-
-                <View className="mt-6 items-end">
                     <NextButton
                         scrollTo={scrollTo}
                         currentIndex={currentIndex}
@@ -99,3 +87,34 @@ export default function OnboardingScreen() {
         </View>
     );
 }
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: AppColors.white,
+    },
+    header: {
+        paddingHorizontal: 32,
+        paddingTop: 56,
+        paddingBottom: 24,
+    },
+    headerSubtitle: {
+        fontFamily: 'Satoshi-Bold',
+        fontSize: 11,
+        textTransform: 'uppercase',
+        letterSpacing: 2.4,
+        color: AppColors.iconMuted,
+    },
+    sliderContainer: {
+        flex: 1,
+    },
+    footer: {
+        paddingHorizontal: 32,
+    },
+    bottomControls: {
+        marginTop: 24,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+    },
+});

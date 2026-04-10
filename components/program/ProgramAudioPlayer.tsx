@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { setAudioModeAsync, useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -10,9 +10,10 @@ import { AppColors } from '@/constants/theme';
 
 interface ProgramAudioPlayerProps {
   audio: ProgramDayAudio;
+  embeddedDark?: boolean;
 }
 
-export function ProgramAudioPlayer({ audio }: ProgramAudioPlayerProps) {
+export function ProgramAudioPlayer({ audio, embeddedDark = false }: ProgramAudioPlayerProps) {
   const player = useAudioPlayer(null, { updateInterval: 250 });
   const status = useAudioPlayerStatus(player);
   const pendingPlayRef = useRef(false);
@@ -112,46 +113,155 @@ export function ProgramAudioPlayer({ audio }: ProgramAudioPlayerProps) {
   };
 
   return (
-    <View className="rounded-3xl bg-forest p-5">
-      <Text className="font-satoshi-bold text-white/70 text-xs uppercase mb-2">Guided Audio</Text>
-      <Text className="font-erode-semibold text-white text-2xl mb-3">Listen to today&apos;s exercise</Text>
+    <View style={embeddedDark ? styles.containerEmbeddedDark : styles.container}>
+      {!embeddedDark ? (
+        <>
+          <Text style={styles.eyebrow}>Guided Audio</Text>
+          <Text style={styles.title}>Listen to today&apos;s exercise</Text>
+        </>
+      ) : null}
+
       <TouchableOpacity
-        activeOpacity={0.9}
+        activeOpacity={0.8}
         onPress={() => void handleTogglePlayback()}
-        className="rounded-2xl bg-white/10 border border-white/10 px-4 py-4 flex-row items-center"
+        style={styles.playerContainer}
       >
-        <View className="w-12 h-12 rounded-full bg-white/15 items-center justify-center mr-4">
+        <View style={styles.playButton}>
           {isLoading ? (
-            <ActivityIndicator color="white" />
+            <ActivityIndicator color="white" size="small" />
           ) : (
             <Ionicons
               name={status.playing ? 'pause' : 'play'}
-              size={22}
+              size={24}
               color={AppColors.white}
             />
           )}
         </View>
-        <View className="flex-1">
-          <Text className="font-satoshi-bold text-white text-base">
+
+        <View style={styles.textContainer}>
+          <Text style={styles.playerAction}>
             {status.playing ? 'Pause audio' : 'Play audio'}
           </Text>
-          <Text className="font-satoshi text-white/70 text-sm mt-1">
+          <Text style={styles.playerSubtext}>
             {audio.durationSeconds
               ? `${Math.round(audio.durationSeconds / 60)} min guided practice`
               : 'Guided meditation'}
           </Text>
-          <Text className="font-satoshi text-white/55 text-xs mt-2">
-            {isCached
-              ? 'Downloaded for faster replay'
-              : isPrefetching
-                ? 'Caching for offline replay...'
-                : 'Streaming available'}
-          </Text>
+
+          <View style={styles.cacheStatusRow}>
+            <View style={[
+              styles.cacheDot,
+              { backgroundColor: isCached ? '#4ADE80' : isPrefetching ? '#FBBF24' : 'rgba(255,255,255,0.3)' }
+            ]} />
+            <Text style={styles.cacheText}>
+              {isCached
+                ? 'Offline ready'
+                : isPrefetching
+                  ? 'Caching...'
+                  : 'Streaming'}
+            </Text>
+          </View>
         </View>
       </TouchableOpacity>
+
       {error ? (
-        <Text className="font-satoshi text-white/70 text-sm mt-3">{error}</Text>
+        <View style={styles.errorContainer}>
+          <Ionicons name="alert-circle-outline" size={16} color="rgba(255,255,255,0.7)" />
+          <Text style={styles.errorText}>{error}</Text>
+        </View>
       ) : null}
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    borderRadius: 32,
+    backgroundColor: '#06290C', // Forest
+    padding: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 5,
+  },
+  containerEmbeddedDark: {
+    borderRadius: 0,
+  },
+  eyebrow: {
+    fontFamily: 'Satoshi-Bold',
+    fontSize: 11,
+    color: 'rgba(255, 255, 255, 0.5)',
+    textTransform: 'uppercase',
+    letterSpacing: 1.2,
+    marginBottom: 8,
+  },
+  title: {
+    fontFamily: 'Erode-Bold',
+    fontSize: 24,
+    color: '#FFFFFF',
+    marginBottom: 20,
+    lineHeight: 32,
+  },
+  playerContainer: {
+    borderRadius: 24,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  playButton: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 16,
+  },
+  textContainer: {
+    flex: 1,
+  },
+  playerAction: {
+    fontFamily: 'Satoshi-Bold',
+    fontSize: 16,
+    color: '#FFFFFF',
+    marginBottom: 2,
+  },
+  playerSubtext: {
+    fontFamily: 'Satoshi',
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.7)',
+  },
+  cacheStatusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  cacheDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    marginRight: 6,
+  },
+  cacheText: {
+    fontFamily: 'Satoshi-Bold',
+    fontSize: 10,
+    color: 'rgba(255, 255, 255, 0.4)',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  errorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 16,
+    gap: 8,
+  },
+  errorText: {
+    fontFamily: 'Satoshi',
+    fontSize: 13,
+    color: 'rgba(255, 255, 255, 0.7)',
+  },
+});

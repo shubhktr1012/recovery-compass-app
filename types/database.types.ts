@@ -377,6 +377,45 @@ export type Database = {
           },
         ]
       }
+      program_reflections: {
+        Row: {
+          card_index: number
+          card_type: string
+          created_at: string
+          day_number: number
+          id: string
+          program_slug: string
+          prompt: string
+          reflection: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          card_index: number
+          card_type?: string
+          created_at?: string
+          day_number: number
+          id?: string
+          program_slug: string
+          prompt: string
+          reflection: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          card_index?: number
+          card_type?: string
+          created_at?: string
+          day_number?: number
+          id?: string
+          program_slug?: string
+          prompt?: string
+          reflection?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       programs: {
         Row: {
           created_at: string | null

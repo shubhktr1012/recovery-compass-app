@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, ScrollView, Text, TouchableOpacity, View, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
@@ -85,30 +85,30 @@ export default function SettingsScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-surface">
+    <SafeAreaView style={styles.safeArea}>
       <StatusBar style="dark" />
-      <ScrollView contentContainerClassName="p-6 pb-32">
+      <ScrollView contentContainerStyle={styles.scrollContent}>
         {/* Header */}
-        <View className="flex-row items-center mb-8">
+        <View style={styles.headerRow}>
           <TouchableOpacity
             onPress={() => router.back()}
-            className="w-10 h-10 rounded-full bg-white border border-gray-200 items-center justify-center mr-3"
+            style={styles.backButton}
             activeOpacity={0.7}
           >
             <Ionicons name="chevron-back" size={20} color={AppColors.forest} />
           </TouchableOpacity>
-          <Text className="font-erode-bold text-3xl text-forest">Settings</Text>
+          <Text style={styles.headerTitle}>Settings</Text>
         </View>
 
         {/* Restore Purchases */}
-        <View className="rounded-3xl bg-white border border-gray-200 p-5 mb-4">
-          <View className="flex-row items-center mb-3">
-            <View className="w-10 h-10 rounded-full bg-sage items-center justify-center mr-3">
+        <View style={styles.settingCard}>
+          <View style={styles.cardHeader}>
+            <View style={[styles.iconContainer, { backgroundColor: AppColors.sage }]}>
               <Ionicons name="refresh-outline" size={20} color={AppColors.forest} />
             </View>
-            <View className="flex-1">
-              <Text className="font-satoshi-bold text-forest text-base">Restore Purchases</Text>
-              <Text className="font-satoshi text-gray-500 text-sm">
+            <View style={styles.cardTextContainer}>
+              <Text style={styles.cardTitle}>Restore Purchases</Text>
+              <Text style={styles.cardDescription}>
                 Refresh access from the App Store or Play Store
               </Text>
             </View>
@@ -122,14 +122,14 @@ export default function SettingsScreen() {
         </View>
 
         {/* Sign Out */}
-        <View className="rounded-3xl bg-white border border-gray-200 p-5 mb-4">
-          <View className="flex-row items-center mb-3">
-            <View className="w-10 h-10 rounded-full bg-sage items-center justify-center mr-3">
+        <View style={styles.settingCard}>
+          <View style={styles.cardHeader}>
+            <View style={[styles.iconContainer, { backgroundColor: AppColors.sage }]}>
               <Ionicons name="log-out-outline" size={20} color={AppColors.forest} />
             </View>
-            <View className="flex-1">
-              <Text className="font-satoshi-bold text-forest text-base">Sign Out</Text>
-              <Text className="font-satoshi text-gray-500 text-sm">
+            <View style={styles.cardTextContainer}>
+              <Text style={styles.cardTitle}>Sign Out</Text>
+              <Text style={styles.cardDescription}>
                 Sign out of your account on this device
               </Text>
             </View>
@@ -143,14 +143,14 @@ export default function SettingsScreen() {
         </View>
 
         {/* Delete Account */}
-        <View className="rounded-3xl bg-white border border-red-200 p-5 mb-4">
-          <View className="flex-row items-center mb-3">
-            <View className="w-10 h-10 rounded-full bg-red-50 items-center justify-center mr-3">
+        <View style={styles.dangerCard}>
+          <View style={styles.cardHeader}>
+            <View style={[styles.iconContainer, { backgroundColor: '#FEF2F2' }]}>
               <Ionicons name="trash-outline" size={20} color={AppColors.danger} />
             </View>
-            <View className="flex-1">
-              <Text className="font-satoshi-bold text-forest text-base">Delete Account</Text>
-              <Text className="font-satoshi text-gray-500 text-sm leading-5">
+            <View style={styles.cardTextContainer}>
+              <Text style={styles.cardTitle}>Delete Account</Text>
+              <Text style={[styles.cardDescription, { lineHeight: 20 }]}>
                 Permanently delete your Recovery Compass account, questionnaire data, journal entries, and program progress
               </Text>
             </View>
@@ -166,3 +166,78 @@ export default function SettingsScreen() {
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: AppColors.surface,
+  },
+  scrollContent: {
+    padding: 24,
+    paddingBottom: 120,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 32,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: AppColors.white,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.06)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  headerTitle: {
+    fontFamily: 'Erode-Bold',
+    fontSize: 28,
+    color: AppColors.forest,
+  },
+  settingCard: {
+    borderRadius: 24,
+    backgroundColor: AppColors.white,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.06)',
+    padding: 20,
+    marginBottom: 16,
+  },
+  dangerCard: {
+    borderRadius: 24,
+    backgroundColor: AppColors.white,
+    borderWidth: 1,
+    borderColor: '#FECACA',
+    padding: 20,
+    marginBottom: 16,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  iconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  cardTextContainer: {
+    flex: 1,
+  },
+  cardTitle: {
+    fontFamily: 'Satoshi-Bold',
+    fontSize: 16,
+    color: AppColors.forest,
+    marginBottom: 2,
+  },
+  cardDescription: {
+    fontFamily: 'Satoshi-Regular',
+    fontSize: 14,
+    color: AppColors.iconMuted,
+  },
+});

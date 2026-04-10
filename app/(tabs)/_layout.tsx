@@ -1,12 +1,12 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { Platform, Pressable } from 'react-native';
+import { Platform, Pressable, StyleSheet, View } from 'react-native';
 import { BlurView } from 'expo-blur';
 import * as Haptics from 'expo-haptics';
 import { BottomTabBarButtonProps } from '@react-navigation/bottom-tabs';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { AppColors, Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { AppColors } from '@/constants/theme';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 
 function TabIcon({
@@ -17,32 +17,24 @@ function TabIcon({
   name: 'house.fill' | 'list.bullet.rectangle.portrait.fill' | 'book.fill' | 'person.fill';
 }) {
   return (
-    <Pressable
-      pointerEvents="none"
-      className={`items-center justify-center rounded-full transition-all duration-200 ${focused ? 'bg-forest scale-105' : 'bg-transparent'} w-11 h-11`}
-      style={
-        focused
-          ? {
-              shadowColor: AppColors.forest,
-              shadowOffset: { width: 0, height: 6 },
-              shadowOpacity: 0.24,
-              shadowRadius: 8,
-              elevation: 5,
-            }
-          : undefined
-      }
-    >
-      <IconSymbol
-        name={name}
-        size={21}
-        color={focused ? AppColors.white : 'rgba(5, 41, 12, 0.58)'}
-      />
-    </Pressable>
+    <View style={styles.tabIconContainer} pointerEvents="none">
+      <View style={styles.iconWrapper}>
+        <IconSymbol
+          name={name}
+          size={24}
+          color={focused ? AppColors.white : 'rgba(227, 243, 229, 0.5)'}
+        />
+        {/* Subtle active indicator under the icon */}
+        {focused && <View style={styles.activeIndicator} />}
+      </View>
+    </View>
   );
 }
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
+  const insets = useSafeAreaInsets();
+  const bottomPadding = Math.max(insets.bottom, 12);
+  const TAB_BAR_HEIGHT = 60 + bottomPadding;
 
   const renderTabButton = (props: BottomTabBarButtonProps) => (
     <Pressable
@@ -57,7 +49,7 @@ export default function TabLayout() {
         props.onPress?.(event);
       }}
       onLongPress={props.onLongPress}
-      style={[{ flex: 1, alignItems: 'center', justifyContent: 'center', height: '100%' }, props.style]}
+      style={styles.tabButton}
     >
       {props.children}
     </Pressable>
@@ -68,56 +60,53 @@ export default function TabLayout() {
       screenOptions={{
         headerShown: false,
         tabBarShowLabel: false,
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+        tabBarHideOnKeyboard: true,
         tabBarStyle: {
           position: 'absolute',
           left: 0,
           right: 0,
-          marginHorizontal: 26,
-          bottom: 20,
-          height: 66,
-          borderRadius: 999,
-          borderTopWidth: 0,
-          borderWidth: 1,
-          borderColor: 'rgba(5, 41, 12, 0.1)',
-          overflow: 'hidden',
+          bottom: 0,
+          height: TAB_BAR_HEIGHT,
+          paddingBottom: bottomPadding,
+          borderTopWidth: 1,
+          borderColor: 'rgba(255, 255, 255, 0.1)',
           backgroundColor: 'transparent',
-          shadowColor: AppColors.black,
-          shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.12,
-          shadowRadius: 14,
-          elevation: 8,
+          elevation: 0, // Removes Android default shadow to rely on our own flat or subtle shadow
         },
         tabBarBackground: () => (
           <BlurView
-            intensity={90}
-            tint="light"
-            style={{
-              flex: 1,
-              backgroundColor:
-                Platform.OS === 'android'
-                  ? 'rgba(230, 242, 239, 0.96)'
-                  : 'rgba(230, 242, 239, 0.82)',
-            }}
+            intensity={Platform.OS === 'ios' ? 85 : 100}
+            tint="dark"
+            style={[
+              StyleSheet.absoluteFill,
+              {
+                backgroundColor:
+                  Platform.OS === 'android'
+                    ? AppColors.forest // Opaque forest for Android to prevent artifacting
+                    : 'rgba(6, 41, 12, 0.95)', // Deep translucent forest for iOS
+              },
+            ]}
           />
         ),
         tabBarButton: renderTabButton,
         tabBarItemStyle: {
-          paddingVertical: 8,
+          paddingVertical: 0,
         },
       }}>
       <Tabs.Screen
         name="index"
         options={{
           title: 'Home',
-          tabBarIcon: ({ focused }) => <TabIcon focused={focused} name="house.fill" />,
+          tabBarIcon: ({ focused }: { focused: boolean }) => (
+            <TabIcon focused={focused} name="house.fill" />
+          ),
         }}
       />
       <Tabs.Screen
         name="program"
         options={{
           title: 'Program',
-          tabBarIcon: ({ focused }) => (
+          tabBarIcon: ({ focused }: { focused: boolean }) => (
             <TabIcon focused={focused} name="list.bullet.rectangle.portrait.fill" />
           ),
         }}
@@ -126,14 +115,18 @@ export default function TabLayout() {
         name="journal"
         options={{
           title: 'My Journal',
-          tabBarIcon: ({ focused }) => <TabIcon focused={focused} name="book.fill" />,
+          tabBarIcon: ({ focused }: { focused: boolean }) => (
+            <TabIcon focused={focused} name="book.fill" />
+          ),
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           title: 'Account',
-          tabBarIcon: ({ focused }) => <TabIcon focused={focused} name="person.fill" />,
+          tabBarIcon: ({ focused }: { focused: boolean }) => (
+            <TabIcon focused={focused} name="person.fill" />
+          ),
         }}
       />
       <Tabs.Screen
@@ -145,3 +138,30 @@ export default function TabLayout() {
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  tabButton: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: '100%',
+  },
+  tabIconContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingTop: 8,
+  },
+  iconWrapper: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 32,
+  },
+  activeIndicator: {
+    position: 'absolute',
+    bottom: -4,
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: AppColors.white,
+  },
+});
