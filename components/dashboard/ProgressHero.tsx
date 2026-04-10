@@ -41,57 +41,64 @@ export function ProgressHero() {
             ? 'Cigarettes avoided'
             : 'Vices sidestepped';
     const hasMoneyProjection = metrics.projectedSavings90Days > 0;
-    const heroTitle = hasMoneyProjection ? 'Your 90-Day Projection' : 'Your plan is in motion';
-    const heroValue = hasMoneyProjection
-        ? formatInr(metrics.projectedSavings90Days)
-        : metrics.targetSelection ?? 'Recovery Compass';
-    const heroBody = hasMoneyProjection
-        ? 'Potential money back over the next 90 days if you stick to the plan.'
-        : 'Your onboarding is complete. We will keep adapting the experience around the path you selected.';
-    const secondaryLabel = hasMoneyProjection ? unitsLabel : 'Current focus';
-    const secondaryValue = hasMoneyProjection
-        ? metrics.avoidedUnits90Days.toLocaleString()
-        : metrics.targetSelection ?? 'Recovery plan';
 
     return (
-        <View className="mb-6 overflow-hidden rounded-[32px] bg-forest p-6 shadow-md">
-            <View className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10" />
-            <View className="absolute -bottom-12 right-12 h-28 w-28 rounded-full bg-white/5" />
-            <Text className="mb-1 font-satoshi text-sm uppercase tracking-[2px] text-white/70">
-                {heroTitle}
-            </Text>
-            <Text className="mb-2 font-erode-bold text-5xl text-white">
-                {heroValue}
-            </Text>
-            <Text className="mb-6 max-w-[280px] font-satoshi text-base text-white/85">
-                {heroBody}
-            </Text>
-
-            <View className="mb-4 h-px w-full bg-white/10" />
-
-            <View className="flex-row items-center justify-between rounded-[24px] border border-white/10 bg-white/5 p-4">
-                <View>
-                    <Text className="mb-1 font-satoshi text-xs text-white/60">
-                        Plan In Motion
+        <View className="mb-6">
+            {/* Primary metric — the anchor */}
+            {hasMoneyProjection ? (
+                <View className="mb-5">
+                    <Text className="font-satoshi text-[11px] uppercase tracking-[3px] text-forest/35 mb-1">
+                        90-Day Projection
                     </Text>
-                    <Text className="font-satoshi-bold text-xl text-white">
+                    <Text className="font-erode-medium text-[48px] leading-[52px] tracking-tight text-forest">
+                        {formatInr(metrics.projectedSavings90Days)}
+                    </Text>
+                    <Text className="mt-1 font-satoshi text-[14px] leading-5 text-forest/40">
+                        Potential savings if you stay on track
+                    </Text>
+                </View>
+            ) : (
+                <View className="mb-5">
+                    <Text className="font-satoshi text-[11px] uppercase tracking-[3px] text-forest/35 mb-1">
+                        Your Path
+                    </Text>
+                    <Text className="font-erode-medium text-[32px] leading-[38px] tracking-tight text-forest">
+                        {metrics.targetSelection ?? 'Recovery'}
+                    </Text>
+                </View>
+            )}
+
+            {/* Secondary stats — quiet inline row */}
+            <View className="flex-row gap-4 mb-2">
+                <View className="flex-1 rounded-2xl bg-sage/60 p-4">
+                    <Text className="font-satoshi text-[11px] uppercase tracking-[2px] text-forest/40 mb-1">
+                        In Motion
+                    </Text>
+                    <Text className="font-satoshi-bold text-[20px] text-forest">
                         {metrics.days}d {metrics.hours}h
                     </Text>
                 </View>
-                <View className="items-end">
-                    <Text className="mb-1 font-satoshi text-xs text-white/60">
-                        {secondaryLabel}
-                    </Text>
-                    <Text className="font-satoshi-bold text-xl text-white">
-                        {secondaryValue}
-                    </Text>
-                </View>
+                {hasMoneyProjection && (
+                    <View className="flex-1 rounded-2xl bg-sage/60 p-4">
+                        <Text className="font-satoshi text-[11px] uppercase tracking-[2px] text-forest/40 mb-1">
+                            {unitsLabel}
+                        </Text>
+                        <Text className="font-satoshi-bold text-[20px] text-forest">
+                            {metrics.avoidedUnits90Days.toLocaleString()}
+                        </Text>
+                    </View>
+                )}
             </View>
 
+            {/* Primary goal — editorial quote block */}
             {metrics.primaryGoal ? (
-                <View className="mt-4 rounded-[24px] border border-white/10 bg-white/5 p-4">
-                    <Text className="mb-1 font-satoshi text-xs text-white/60">Why this matters</Text>
-                    <Text className="font-satoshi text-base leading-7 text-white">{metrics.primaryGoal}</Text>
+                <View className="mt-3 border-l-2 border-forest/10 pl-4 py-1">
+                    <Text className="font-satoshi-medium text-[11px] uppercase tracking-[2px] text-forest/30 mb-1">
+                        Why this matters
+                    </Text>
+                    <Text className="font-erode-italic text-[16px] leading-7 text-forest/60">
+                        {metrics.primaryGoal}
+                    </Text>
                 </View>
             ) : null}
         </View>

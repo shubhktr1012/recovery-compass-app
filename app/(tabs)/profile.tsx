@@ -1,5 +1,6 @@
 import React, { useMemo, useRef, useState } from 'react';
 import {
+  Alert,
   Dimensions,
   Image,
   NativeScrollEvent,
@@ -14,11 +15,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useQuery } from '@tanstack/react-query';
 import { PROGRAM_METADATA } from '@/content/programs/metadata';
 import { useAuth } from '@/providers/auth';
 import { useOnboardingResponse } from '@/hooks/useOnboardingResponse';
 import { formatInr, getOnboardingProjection } from '@/lib/onboarding-metrics';
 import { useProfile } from '@/providers/profile';
+import { supabase } from '@/lib/supabase';
 import { EditProfileSheet } from '@/components/account/EditProfileSheet';
 import type { ProgramSlug } from '@/types/content';
 import { AppColors } from '@/constants/theme';
@@ -36,10 +39,54 @@ interface StatCard {
 export default function AccountScreen() {
   const router = useRouter();
   const { user } = useAuth();
-  const { access, profile, progress } = useProfile();
+  const { access, profile, progress, uploadAvatar } = useProfile();
   const onboardingQuery = useOnboardingResponse();
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [activeStatIndex, setActiveStatIndex] = useState(0);
+  const userId = user?.id ?? null;
+
+  // Journal entry count
+  const journalCountQuery = useQuery({
+    queryKey: ['journal-count', userId],
+    queryFn: async () => {
+      if (!userId) return 0;
+      const { count, error } = await supabase
+        .from('journal_entries')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', userId);
+      if (error) throw error;
+      return count ?? 0;
+    },
+    enabled: Boolean(userId),
+  });
+
+  // Calculate streak from completedDays
+  const { currentStreak, bestStreak } = useMemo(() => {
+    const days = progress?.completedDays ?? [];
+    if (days.length === 0) return { currentStreak: 0, bestStreak: 0 };
+    const sorted = [...days].sort((a, b) => a - b);
+    let best = 1;
+    let current = 1;
+    let runLength = 1;
+    for (let i = 1; i < sorted.length; i++) {
+      if (sorted[i] === sorted[i - 1]! + 1) {
+        runLength++;
+      } else {
+        runLength = 1;
+      }
+      best = Math.max(best, runLength);
+    }
+    // Current streak = run ending at the last completed day
+    current = 1;
+    for (let i = sorted.length - 1; i > 0; i--) {
+      if (sorted[i] === sorted[i - 1]! + 1) {
+        current++;
+      } else {
+        break;
+      }
+    }
+    return { currentStreak: current, bestStreak: best };
+  }, [progress?.completedDays]);
 
   const stats = useMemo(() => {
     const projection = getOnboardingProjection(onboardingQuery.data ?? null);
@@ -64,6 +111,32 @@ export default function AccountScreen() {
   const avatarUrl = profile?.avatar_url ?? null;
   const emailDisplay = user?.email ?? 'Signed in';
 
+  // Direct avatar change via image picker
+  const handleAvatarTap = async () => {
+    try {
+      const { requireOptionalNativeModule } = await import('expo-modules-core');
+      const hasImagePickerNativeModule = Boolean(
+        requireOptionalNativeModule('ExponentImagePicker')
+      );
+      if (!hasImagePickerNativeModule) {
+        Alert.alert('Profile photo unavailable', 'Photo upload needs a fresh native iOS build.');
+        return;
+      }
+      const ImagePicker = await import('expo-image-picker');
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+      if (!result.canceled && result.assets[0]) {
+        await uploadAvatar(result.assets[0].uri);
+      }
+    } catch {
+      Alert.alert('Profile photo unavailable', 'We could not open your photo library right now.');
+    }
+  };
+
   const statCards: StatCard[] = useMemo(() => {
     const cards: StatCard[] = [
       {
@@ -84,6 +157,12 @@ export default function AccountScreen() {
         subtitle: 'across 90 days',
         icon: 'shield-checkmark-outline',
       },
+      {
+        label: 'Reflections',
+        value: journalCountQuery.data ?? 0,
+        subtitle: 'journal entries written',
+        icon: 'book-outline',
+      },
     ];
 
     if (activeProgram && progress) {
@@ -95,8 +174,17 @@ export default function AccountScreen() {
       });
     }
 
+    if (currentStreak > 0) {
+      cards.push({
+        label: 'Current Streak',
+        value: currentStreak,
+        subtitle: bestStreak > currentStreak ? `best: ${bestStreak} days` : 'your best yet!',
+        icon: 'trending-up-outline',
+      });
+    }
+
     return cards;
-  }, [stats, activeProgram, progress]);
+  }, [stats, activeProgram, progress, journalCountQuery.data, currentStreak, bestStreak]);
 
   const handleStatScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const index = Math.round(event.nativeEvent.contentOffset.x / STAT_CARD_WIDTH);
@@ -122,7 +210,7 @@ export default function AccountScreen() {
         {/* Identity Block */}
         <View style={styles.identityBlock}>
           <View style={styles.identityRow}>
-            <TouchableOpacity onPress={() => setIsEditOpen(true)} activeOpacity={0.8}>
+            <TouchableOpacity onPress={() => void handleAvatarTap()} activeOpacity={0.8}>
               <View style={styles.avatarContainer}>
                 {avatarUrl ? (
                   <Image source={{ uri: avatarUrl }} style={styles.avatarImage} resizeMode="cover" />

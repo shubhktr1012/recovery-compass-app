@@ -1,37 +1,47 @@
-import { TouchableOpacity, View, Text } from 'react-native';
+import { Pressable, View, Text } from 'react-native';
 import { Href, useRouter } from 'expo-router';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { BlurView } from 'expo-blur';
 import { AppColors } from '@/constants/theme';
+import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing } from 'react-native-reanimated';
 
 export function PanicButton() {
     const router = useRouter();
+    const scale = useSharedValue(1);
+
+    const animatedStyle = useAnimatedStyle(() => ({
+        transform: [{ scale: scale.value }],
+    }));
+
+    const handlePressIn = () => {
+        scale.value = withTiming(0.92, { duration: 180, easing: Easing.inOut(Easing.cubic) });
+    };
+    const handlePressOut = () => {
+        scale.value = withTiming(1, { duration: 240, easing: Easing.inOut(Easing.cubic) });
+    };
 
     return (
         <View className="absolute bottom-24 right-6 items-center z-50">
-            <TouchableOpacity
-                activeOpacity={0.8}
+            <Pressable
+                onPressIn={handlePressIn}
+                onPressOut={handlePressOut}
                 onPress={() => router.push('/modal' as Href)}
-                className="rounded-full shadow-lg shadow-red-900/40"
-                style={{
-                    shadowColor: AppColors.danger,
-                    shadowOffset: { width: 0, height: 4 },
-                    shadowOpacity: 0.3,
-                    shadowRadius: 12,
-                    elevation: 8
-                }}
             >
-                <BlurView
-                    intensity={40}
-                    tint="light"
-                    className="w-16 h-16 rounded-full items-center justify-center bg-danger overflow-hidden border-2 border-white/20"
+                <Animated.View
+                    style={[
+                        animatedStyle,
+                        {
+                            shadowColor: AppColors.forest,
+                            shadowOffset: { width: 0, height: 4 },
+                            shadowOpacity: 0.15,
+                            shadowRadius: 16,
+                            elevation: 6,
+                        },
+                    ]}
+                    className="w-14 h-14 rounded-full items-center justify-center bg-forest"
                 >
-                    <IconSymbol name="exclamationmark.triangle.fill" size={32} color="white" />
-                </BlurView>
-            </TouchableOpacity>
-            <View className="bg-black/80 px-2 py-1 rounded-md mt-2">
-                <Text className="text-white text-xs font-bold uppercase tracking-wider">SOS</Text>
-            </View>
+                    <IconSymbol name="leaf.fill" size={24} color={AppColors.sage} />
+                </Animated.View>
+            </Pressable>
         </View>
     );
 }

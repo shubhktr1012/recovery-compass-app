@@ -8,9 +8,14 @@ import { useCallback } from 'react';
 import { useDay } from '@/content';
 import { PROGRAM_METADATA } from '@/content/programs/metadata';
 import { Greeting } from '@/components/dashboard/Greeting';
+import { StreakRibbon } from '@/components/dashboard/StreakRibbon';
 import { ProgressHero } from '@/components/dashboard/ProgressHero';
 import { DailyActionCard } from '@/components/dashboard/DailyActionCard';
+import { JournalPrompt } from '@/components/dashboard/JournalPrompt';
+import { MyPrograms } from '@/components/dashboard/MyPrograms';
+import { ExplorePrograms } from '@/components/dashboard/ExplorePrograms';
 import { PanicButton } from '@/components/dashboard/PanicButton';
+import { PaperGrain } from '@/components/ui/PaperGrain';
 import { getProgramScheduledDay } from '@/lib/programs/schedule';
 import { useProfile } from '@/providers/profile';
 import type { ProgramSlug } from '@/types/content';
@@ -38,22 +43,36 @@ export default function HomeScreen() {
     }, [activeProgram, currentDayNumber, queryClient])
   );
 
+  // Surface the day's actual goal/highlight
+  const dayPreview = (() => {
+    if (!currentDay) return program.description;
+    const introCard = currentDay.cards.find((c) => c.type === 'intro');
+    if (introCard?.type === 'intro') return introCard.goal;
+    const lessonCard = currentDay.cards.find((c) => c.type === 'lesson');
+    if (lessonCard?.type === 'lesson') return lessonCard.highlight ?? lessonCard.paragraphs[0] ?? program.description;
+    return program.description;
+  })();
+
   return (
     <SafeAreaView className="flex-1 bg-surface">
+      <PaperGrain />
       <StatusBar style="dark" />
       <View className="flex-1">
         <ScrollView contentContainerClassName="p-6 pb-32">
           <Greeting />
+          <StreakRibbon />
           <ProgressHero />
-          <Text className="font-erode-bold text-2xl text-forest mb-4 mt-2">Today&apos;s Focus</Text>
           <DailyActionCard
             dayNumber={resolvedDayNumber}
             title={currentDay?.dayTitle ?? 'Your next recovery step'}
-            description={program.description}
+            description={dayPreview}
             duration={`${currentDay?.estimatedMinutes ?? 5} min session`}
             ctaLabel="Open Today"
             route={`/day-detail?programSlug=${activeProgram}&dayNumber=${resolvedDayNumber}` as Href}
           />
+          <JournalPrompt />
+          <MyPrograms />
+          <ExplorePrograms />
         </ScrollView>
         <PanicButton />
       </View>

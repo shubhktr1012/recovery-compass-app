@@ -1,19 +1,20 @@
 import React, { useState } from 'react';
-import { Alert, ScrollView, Text, TouchableOpacity, View, StyleSheet } from 'react-native';
+import { Alert, ScrollView, Text, TouchableOpacity, View, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
 import { AppColors } from '@/constants/theme';
 import { useAuth } from '@/providers/auth';
 import { useProfile } from '@/providers/profile';
-import { Button } from '@/components/ui/Button';
 import Purchases from 'react-native-purchases';
+import { SettingRow } from '@/components/account/SettingRow';
+import { IconSymbol } from '@/components/ui/icon-symbol';
+import { PaperGrain } from '@/components/ui/PaperGrain';
 
 export default function SettingsScreen() {
   const router = useRouter();
   const { deleteAccount, signOut } = useAuth();
-  const { refreshAccess } = useProfile();
+  const { refreshAccess, access } = useProfile();
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
@@ -84,160 +85,83 @@ export default function SettingsScreen() {
     );
   };
 
+  const activeProgramStatus = access.ownedProgram ? 'Active' : 'Free Tier';
+
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView className="flex-1 bg-surface">
+      <PaperGrain />
       <StatusBar style="dark" />
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Header */}
-        <View style={styles.headerRow}>
-          <TouchableOpacity
-            onPress={() => router.back()}
-            style={styles.backButton}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="chevron-back" size={20} color={AppColors.forest} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Settings</Text>
+      
+      <ScrollView 
+        contentContainerClassName="p-6 pb-32"
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Header Section */}
+        <View className="mb-10 pt-4">
+          <View className="flex-row items-center justify-between mb-4">
+            <TouchableOpacity
+              onPress={() => router.back()}
+              className="h-10 w-10 items-center justify-center"
+              hitSlop={12}
+            >
+              <IconSymbol name="chevron.left" size={20} color={AppColors.forest} />
+            </TouchableOpacity>
+          </View>
+          
+          <Text className="font-satoshi text-[11px] uppercase tracking-[3px] text-forest/35 mb-1">
+            Account & System
+          </Text>
+          <Text className="font-erode-medium text-[40px] leading-[48px] tracking-tight text-forest">
+            Settings
+          </Text>
         </View>
 
-        {/* Restore Purchases */}
-        <View style={styles.settingCard}>
-          <View style={styles.cardHeader}>
-            <View style={[styles.iconContainer, { backgroundColor: AppColors.sage }]}>
-              <Ionicons name="refresh-outline" size={20} color={AppColors.forest} />
-            </View>
-            <View style={styles.cardTextContainer}>
-              <Text style={styles.cardTitle}>Restore Purchases</Text>
-              <Text style={styles.cardDescription}>
-                Refresh access from the App Store or Play Store
-              </Text>
-            </View>
-          </View>
-          <Button
+        {/* Subscription Section */}
+        <View className="mb-8">
+          <Text className="font-satoshi-bold text-[11px] uppercase tracking-[2px] text-forest/30 mb-4 px-1">
+            Subscription
+          </Text>
+          <SettingRow
             label="Restore Purchases"
-            variant="outline"
+            description="Sync your access from the App Store"
+            icon="arrow.clockwise"
             onPress={() => void handleRestorePurchases()}
             loading={isRestoring}
+            value={activeProgramStatus}
           />
         </View>
 
-        {/* Sign Out */}
-        <View style={styles.settingCard}>
-          <View style={styles.cardHeader}>
-            <View style={[styles.iconContainer, { backgroundColor: AppColors.sage }]}>
-              <Ionicons name="log-out-outline" size={20} color={AppColors.forest} />
-            </View>
-            <View style={styles.cardTextContainer}>
-              <Text style={styles.cardTitle}>Sign Out</Text>
-              <Text style={styles.cardDescription}>
-                Sign out of your account on this device
-              </Text>
-            </View>
-          </View>
-          <Button
+        {/* Account Section */}
+        <View className="mb-12">
+          <Text className="font-satoshi-bold text-[11px] uppercase tracking-[2px] text-forest/30 mb-4 px-1">
+            Session
+          </Text>
+          <SettingRow
             label="Sign Out"
-            variant="outline"
+            description="Securely disconnect from this device"
+            icon="arrow.right.to.line"
             onPress={() => void handleSignOut()}
             loading={isSigningOut}
           />
         </View>
 
-        {/* Delete Account */}
-        <View style={styles.dangerCard}>
-          <View style={styles.cardHeader}>
-            <View style={[styles.iconContainer, { backgroundColor: '#FEF2F2' }]}>
-              <Ionicons name="trash-outline" size={20} color={AppColors.danger} />
-            </View>
-            <View style={styles.cardTextContainer}>
-              <Text style={styles.cardTitle}>Delete Account</Text>
-              <Text style={[styles.cardDescription, { lineHeight: 20 }]}>
-                Permanently delete your Recovery Compass account, questionnaire data, journal entries, and program progress
-              </Text>
-            </View>
-          </View>
-          <Button
-            label="Delete Account"
-            variant="destructive"
-            onPress={handleDeleteAccount}
-            loading={isDeletingAccount}
-          />
+        {/* Danger Zone - Refined Text Link */}
+        <View className="mt-8 pt-8 border-t border-forest/5 items-center">
+            <Pressable
+                onPress={handleDeleteAccount}
+                className="flex-row items-center opacity-40 active:opacity-100"
+                disabled={isDeletingAccount}
+            >
+                <IconSymbol name="exclamationmark.triangle.fill" size={14} color={AppColors.danger} />
+                <Text className="ml-2 font-satoshi-medium text-[13px] text-danger">
+                    Permanently Delete Account
+                </Text>
+            </Pressable>
+            <Text className="mt-3 font-satoshi text-[11px] text-forest/20 text-center max-w-[240px]">
+                This action is irreversible and will remove all your recovery data.
+            </Text>
         </View>
       </ScrollView>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: AppColors.surface,
-  },
-  scrollContent: {
-    padding: 24,
-    paddingBottom: 120,
-  },
-  headerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 32,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: AppColors.white,
-    borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.06)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-  headerTitle: {
-    fontFamily: 'Erode-Bold',
-    fontSize: 28,
-    color: AppColors.forest,
-  },
-  settingCard: {
-    borderRadius: 24,
-    backgroundColor: AppColors.white,
-    borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.06)',
-    padding: 20,
-    marginBottom: 16,
-  },
-  dangerCard: {
-    borderRadius: 24,
-    backgroundColor: AppColors.white,
-    borderWidth: 1,
-    borderColor: '#FECACA',
-    padding: 20,
-    marginBottom: 16,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  iconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-  cardTextContainer: {
-    flex: 1,
-  },
-  cardTitle: {
-    fontFamily: 'Satoshi-Bold',
-    fontSize: 16,
-    color: AppColors.forest,
-    marginBottom: 2,
-  },
-  cardDescription: {
-    fontFamily: 'Satoshi-Regular',
-    fontSize: 14,
-    color: AppColors.iconMuted,
-  },
-});

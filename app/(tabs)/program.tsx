@@ -183,13 +183,13 @@ export default function ProgramScreen() {
         onScroll={handleScroll}
         scrollEventThrottle={16}
       >
-        <View className="mb-8">
-          <Text className="font-erode-medium text-[40px] leading-[48px] tracking-tight text-forest mb-2">Your Program</Text>
-          <Text className="font-satoshi-bold text-forest/50 text-[11px] uppercase tracking-[3px] mb-3">{program.name}</Text>
-          <Text className="font-satoshi text-base text-gray-500">
+        <View className="mb-8 pt-2">
+          <Text className="font-satoshi text-[11px] uppercase tracking-[3px] text-forest/35 mb-1">Your Program</Text>
+          <Text className="font-erode-medium text-[40px] leading-[48px] tracking-tight text-forest mb-3">{program.name}</Text>
+          <Text className="font-satoshi text-[14px] text-forest/40">
             Day {Math.min(currentDay, program.totalDays)} of {program.totalDays}
           </Text>
-          <Text className="font-satoshi text-sm text-gray-500 mt-2">{program.description}</Text>
+          <Text className="font-satoshi text-[13px] text-forest/30 mt-1">{program.description}</Text>
           {nextUnlockLabel ? (
             <Text className="mt-3 font-satoshi text-sm text-forest/70">
               {nextUnlockLabel}
