@@ -7,6 +7,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useQueryClient } from '@tanstack/react-query';
 import { useProgram } from '@/content';
 import { useProfile } from '@/providers/profile';
+import { formatUnlockLabel, getProgramNextUnlockAt, getProgramScheduledDay } from '@/lib/programs/schedule';
 import { TimelineItem } from '@/components/program/TimelineItem';
 import { ProgramCard } from '@/components/program/ProgramCard';
 import { DayContent, ProgramSlug } from '@/types/content';
@@ -31,6 +32,7 @@ export default function ProgramScreen() {
   const activeProgram = (access.ownedProgram ?? 'six_day_reset') as ProgramSlug;
   const queryClient = useQueryClient();
   const { program } = useProgram(activeProgram);
+  const totalDays = program?.totalDays ?? 1;
 
   useFocusEffect(
     useCallback(() => {
@@ -39,12 +41,20 @@ export default function ProgramScreen() {
   );
 
   const { completedDays, currentDay } = useMemo(() => {
+    const derivedCurrentDay = access.startedAt
+      ? getProgramScheduledDay(access.startedAt, totalDays)
+      : access.currentDay ?? 1;
+
     return {
-      currentDay: access.currentDay ?? 1,
+      currentDay: access.completionState === 'completed' ? totalDays : derivedCurrentDay,
       completedDays: progress?.completedDays ?? [],
     };
-  }, [access.currentDay, progress?.completedDays]);
+  }, [access.completionState, access.currentDay, access.startedAt, progress?.completedDays, totalDays]);
   const isArchivedReset = activeProgram === 'six_day_reset' && access.purchaseState === 'owned_archived';
+  const nextUnlockLabel = useMemo(() => {
+    if (access.completionState === 'completed') return null;
+    return formatUnlockLabel(getProgramNextUnlockAt(access.startedAt, totalDays));
+  }, [access.completionState, access.startedAt, totalDays]);
 
   if (!program) {
     return null;
@@ -61,6 +71,11 @@ export default function ProgramScreen() {
             Day {Math.min(currentDay, program.totalDays)} of {program.totalDays}
           </Text>
           <Text className="font-satoshi text-sm text-gray-500 mt-2">{program.description}</Text>
+          {nextUnlockLabel ? (
+            <Text className="mt-3 font-satoshi text-sm text-forest/70">
+              {nextUnlockLabel}
+            </Text>
+          ) : null}
           {isArchivedReset ? (
             <Text className="font-satoshi text-sm text-forest/70 mt-3">
               Your 6-Day Control has been archived. The next step is upgrading into the 90-Day Smoking Reset.

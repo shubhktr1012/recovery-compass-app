@@ -26,7 +26,7 @@ export function ProgramCard({ day, isLocked, isCompleted, isCurrent }: ProgramCa
 
   const titleClassName = isLocked ? 'text-gray-400' : 'text-forest';
   const bodyClassName = isLocked ? 'text-gray-400' : 'text-gray-600';
-  const statusLabel = isLocked ? 'Locked' : isCompleted ? 'Completed' : isCurrent ? 'Current Day' : 'Unlocked';
+  const statusLabel = isLocked ? 'Locked' : isCompleted ? 'Completed' : isCurrent ? 'Today' : 'Available';
   const statusClassName = isLocked
     ? 'bg-gray-100 text-gray-400'
     : isCompleted

@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Purchases, { CustomerInfo } from 'react-native-purchases';
 
 import { PROGRAM_METADATA } from '@/content/programs/metadata';
+import { getProgramScheduledDay } from '@/lib/programs/schedule';
 import { getOwnedProgramsFromCustomerInfo, getRevenueCatProgram } from '@/lib/revenuecat/config';
 import { supabase } from '@/lib/supabase';
 import {
@@ -20,6 +21,7 @@ const DEFAULT_ACCESS_SNAPSHOT: ProgramAccessSnapshot = {
   purchaseState: 'not_owned',
   completionState: 'not_started',
   currentDay: null,
+  startedAt: null,
   completedAt: null,
   archivedAt: null,
   eligibleProducts: ['six_day_reset', 'ninety_day_transform'],
@@ -41,21 +43,37 @@ function getProgramLength(programSlug: ProgramSlug) {
 
 function getStateForProgress(
   programSlug: ProgramSlug | null,
-  progress: ProgramProgressRecord | null
+  progress: ProgramProgressRecord | null,
+  startedAt: string | null | undefined
 ): Pick<ProgramAccessSnapshot, 'currentDay' | 'purchaseState' | 'completionState' | 'completedAt' | 'archivedAt'> {
-  if (!programSlug || !progress) {
+  if (!programSlug) {
     return {
-      currentDay: programSlug ? 1 : null,
-      purchaseState: programSlug ? 'owned_active' : 'not_owned',
-      completionState: programSlug ? 'in_progress' : 'not_started',
+      currentDay: null,
+      purchaseState: 'not_owned',
+      completionState: 'not_started',
       completedAt: null,
       archivedAt: null,
     };
   }
 
   const totalDays = getProgramLength(programSlug);
+  const scheduledDay = getProgramScheduledDay(startedAt, totalDays);
+
+  if (!progress) {
+    return {
+      currentDay: scheduledDay,
+      purchaseState: 'owned_active',
+      completionState: 'in_progress',
+      completedAt: null,
+      archivedAt: null,
+    };
+  }
+
   const isProgramComplete = progress.completedDays.includes(totalDays) || Boolean(progress.completedAt);
   const isArchived = Boolean(progress.archivedAt);
+  const effectiveScheduledDay = isProgramComplete
+    ? totalDays
+    : scheduledDay;
 
   let completionState: CompletionState = 'in_progress';
   let purchaseState: PurchaseState = 'owned_active';
@@ -69,7 +87,7 @@ function getStateForProgress(
   }
 
   return {
-    currentDay: Math.max(1, Math.min(progress.currentDay, totalDays)),
+    currentDay: effectiveScheduledDay,
     purchaseState,
     completionState,
     completedAt: progress.completedAt,
@@ -104,9 +122,11 @@ type ProgramAccessRow = {
   archived_at: string | null;
   completed_at: string | null;
   completion_state: string | null;
+  created_at?: string | null;
   current_day: number | null;
   owned_program: string | null;
   purchase_state: string | null;
+  started_at?: string | null;
   updated_at?: string | null;
 };
 
@@ -248,7 +268,7 @@ export class AccessService {
       const activeProgram = preferredProgram ?? (await this.getProfileActiveProgram(userId));
       const { data, error } = await supabase
         .from('program_access')
-        .select('owned_program, purchase_state, completion_state, current_day, completed_at, archived_at, updated_at')
+        .select('owned_program, purchase_state, completion_state, current_day, completed_at, archived_at, started_at, created_at, updated_at')
         .eq('user_id', userId);
 
       if (error) throw error;
@@ -260,6 +280,7 @@ export class AccessService {
         purchaseState: (selectedRow.purchase_state as PurchaseState) ?? 'not_owned',
         completionState: (selectedRow.completion_state as CompletionState) ?? 'not_started',
         currentDay: selectedRow.current_day,
+        startedAt: selectedRow.started_at ?? selectedRow.created_at ?? null,
         completedAt: selectedRow.completed_at,
         archivedAt: selectedRow.archived_at,
         eligibleProducts: ['six_day_reset', 'ninety_day_transform'],
@@ -296,7 +317,7 @@ export class AccessService {
       const isComplete = Boolean(snapshot?.completedAt) || highestCompletedDay >= totalDays;
       const fallbackCurrentDay = isComplete
         ? totalDays
-        : Math.min(totalDays, Math.max(1, highestCompletedDay + 1));
+        : getProgramScheduledDay(snapshot?.startedAt, totalDays);
 
       if (!completedDays.length && !snapshot?.currentDay && !snapshot?.completedAt && !snapshot?.archivedAt) {
         return null;
@@ -329,6 +350,7 @@ export class AccessService {
           purchase_state: snapshot.purchaseState,
           completion_state: snapshot.completionState,
           current_day: snapshot.currentDay,
+          started_at: snapshot.startedAt,
           completed_at: snapshot.completedAt,
           archived_at: snapshot.archivedAt,
           revenuecat_product_id: revenueCatProductId,
@@ -390,10 +412,14 @@ export class AccessService {
     const nextSnapshot: ProgramAccessSnapshot = snapshot.ownedProgram
       ? {
           ...snapshot,
-          ...getStateForProgress(snapshot.ownedProgram, progress),
+          ...getStateForProgress(snapshot.ownedProgram, progress, snapshot.startedAt),
           source: 'supabase',
         }
       : createDefaultSnapshot('supabase');
+
+    if (progress && nextSnapshot.currentDay) {
+      progress.currentDay = nextSnapshot.currentDay;
+    }
 
     nextSnapshot.eligibleProducts = deriveEligibleProducts(nextSnapshot);
 
@@ -455,8 +481,19 @@ export class AccessService {
     const snapshot: ProgramAccessSnapshot = {
       ...createDefaultSnapshot('revenuecat'),
       ownedProgram,
-      ...getStateForProgress(ownedProgram, nextProgress),
+      startedAt: ownedProgram
+        ? serverSnapshot?.startedAt ?? localSnapshot.startedAt ?? new Date().toISOString()
+        : null,
+      ...getStateForProgress(
+        ownedProgram,
+        nextProgress,
+        ownedProgram ? serverSnapshot?.startedAt ?? localSnapshot.startedAt ?? new Date().toISOString() : null
+      ),
     };
+
+    if (nextProgress && snapshot.currentDay) {
+      nextProgress.currentDay = snapshot.currentDay;
+    }
 
     snapshot.eligibleProducts = deriveEligibleProducts(snapshot);
     await this.saveAccessSnapshot(snapshot);
@@ -488,8 +525,13 @@ export class AccessService {
       ...currentSnapshot,
       ownedProgram: programSlug,
       source: currentSnapshot.source,
-      ...getStateForProgress(programSlug, nextProgress),
+      startedAt: currentSnapshot.startedAt ?? new Date().toISOString(),
+      ...getStateForProgress(programSlug, nextProgress, currentSnapshot.startedAt ?? new Date().toISOString()),
     };
+
+    if (nextSnapshot.currentDay) {
+      nextProgress.currentDay = nextSnapshot.currentDay;
+    }
 
     nextSnapshot.eligibleProducts = deriveEligibleProducts(nextSnapshot);
     await this.saveAccessSnapshot(nextSnapshot);

@@ -22,7 +22,9 @@ import { CardRenderer } from '@/components/cards/CardRenderer';
 import { Button } from '@/components/ui/Button';
 import { useDay, useProgram } from '@/content';
 import { programDayQueryKey, programQueryKey } from '@/hooks/contentQueryUtils';
+import { formatUnlockLabel, getProgramNextUnlockAt, getProgramScheduledDay } from '@/lib/programs/schedule';
 import { useAuth } from '@/providers/auth';
+import { useProfile } from '@/providers/profile';
 import type { DayContent, ProgramSlug } from '@/types/content';
 
 const PROGRAM_SLUGS: ProgramSlug[] = [
@@ -159,11 +161,13 @@ export default function DayDetailScreen() {
   const queryClient = useQueryClient();
   const pagerRef = useRef<PagerView>(null);
   const { user } = useAuth();
+  const { access, progress, completeProgramDay } = useProfile();
   const params = useLocalSearchParams<{ dayNumber?: string | string[]; programSlug?: string | string[] }>();
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isRestored, setIsRestored] = useState(false);
   const [showResumeToast, setShowResumeToast] = useState(false);
+  const [isCompletingDay, setIsCompletingDay] = useState(false);
   const swipeProgress = useSharedValue(0);
 
   const rawProgramSlug = normalizeRouteParam(params.programSlug);
@@ -268,6 +272,45 @@ export default function DayDetailScreen() {
     pagerRef.current?.setPage(nextIndex);
   };
 
+  const completedDays = progress?.completedDays ?? [];
+  const isDayCompleted = normalizedDayNumber ? completedDays.includes(normalizedDayNumber) : false;
+  const scheduledDay = useMemo(() => {
+    if (!program) {
+      return access.currentDay ?? 1;
+    }
+
+    if (access.completionState === 'completed') {
+      return program.totalDays;
+    }
+
+    return access.startedAt
+      ? getProgramScheduledDay(access.startedAt, program.totalDays)
+      : access.currentDay ?? 1;
+  }, [access.completionState, access.currentDay, access.startedAt, program]);
+
+  const isFutureLocked = Boolean(normalizedDayNumber && normalizedDayNumber > scheduledDay && !isDayCompleted);
+  const isLastCard = Boolean(dayContent && currentIndex === dayContent.cards.length - 1);
+  const shouldShowCompletionBar = isDayCompleted || isLastCard;
+  const nextUnlockLabel = useMemo(() => {
+    if (!program || access.completionState === 'completed') return null;
+    return formatUnlockLabel(getProgramNextUnlockAt(access.startedAt, program.totalDays));
+  }, [access.completionState, access.startedAt, program]);
+
+  const handleCompleteCurrentDay = async () => {
+    if (!programSlug || !dayContent || isDayCompleted || isCompletingDay) {
+      return;
+    }
+
+    try {
+      setIsCompletingDay(true);
+      await completeProgramDay(programSlug, dayContent.dayNumber);
+    } catch (error) {
+      console.error('Failed to complete day', error);
+    } finally {
+      setIsCompletingDay(false);
+    }
+  };
+
   if (!programSlug || !Number.isInteger(dayNumber) || dayNumber < 1) {
     return <ErrorState message="The requested day detail route is missing a valid program slug or day number." />;
   }
@@ -283,6 +326,37 @@ export default function DayDetailScreen() {
   if (!isRestored) {
     return <LoadingState />;
   }
+
+  if (isFutureLocked) {
+    return (
+      <ErrorState
+        message={nextUnlockLabel
+          ? `This day has not unlocked yet. ${nextUnlockLabel}.`
+          : 'This day has not unlocked yet. Please return to the Program tab for the next available step.'}
+      />
+    );
+  }
+
+  const isCurrentScheduledDay = dayContent.dayNumber === scheduledDay && !isDayCompleted;
+  const isFinalProgramDay = dayContent.dayNumber >= program.totalDays;
+  const completionTitle = isDayCompleted
+    ? isFinalProgramDay
+      ? 'Program day complete'
+      : 'Day complete'
+    : isCurrentScheduledDay
+      ? 'Ready to close today?'
+      : 'Ready to mark this day complete?';
+  const completionDescription = isDayCompleted
+    ? isFinalProgramDay
+      ? 'You have completed this final day. You can revisit it anytime.'
+      : nextUnlockLabel
+        ? `${nextUnlockLabel}. You can revisit this day anytime.`
+        : 'You can revisit this day anytime.'
+    : isCurrentScheduledDay
+      ? nextUnlockLabel
+        ? `${nextUnlockLabel}. Earlier practices will stay available if you want to revisit them.`
+        : 'When you are ready, mark today complete.'
+      : 'This earlier practice will stay available even after you complete it.';
 
   return (
     <SafeAreaView style={styles.container}>
@@ -365,6 +439,32 @@ export default function DayDetailScreen() {
           </View>
         ))}
       </PagerView>
+
+      {shouldShowCompletionBar ? (
+        <View style={styles.completionBar}>
+          <View style={styles.completionCopy}>
+            <Text style={styles.completionEyebrow}>
+              {isDayCompleted ? 'Review mode' : 'Day closing'}
+            </Text>
+            <Text style={styles.completionTitle}>{completionTitle}</Text>
+            <Text style={styles.completionDescription}>{completionDescription}</Text>
+          </View>
+
+          {isDayCompleted ? (
+            <Button
+              label="Back to Program"
+              variant="secondary"
+              onPress={() => router.replace('/(tabs)/program' as Href)}
+            />
+          ) : (
+            <Button
+              label={isFinalProgramDay ? 'Complete program day' : 'Complete day'}
+              onPress={handleCompleteCurrentDay}
+              loading={isCompletingDay}
+            />
+          )}
+        </View>
+      ) : null}
     </SafeAreaView>
   );
 }
@@ -484,6 +584,36 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: 'rgba(6, 41, 12, 0.9)',
     letterSpacing: 0.25,
+  },
+  completionBar: {
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(6, 41, 12, 0.08)',
+    backgroundColor: 'rgba(252, 250, 246, 0.96)',
+    paddingHorizontal: 24,
+    paddingTop: 16,
+    paddingBottom: 20,
+    gap: 14,
+  },
+  completionCopy: {
+    gap: 6,
+  },
+  completionEyebrow: {
+    fontFamily: 'Satoshi-Bold',
+    fontSize: 11,
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
+    color: 'rgba(6, 41, 12, 0.55)',
+  },
+  completionTitle: {
+    fontFamily: 'Erode-Semibold',
+    fontSize: 26,
+    color: '#06290C',
+  },
+  completionDescription: {
+    fontFamily: 'Satoshi',
+    fontSize: 14,
+    lineHeight: 22,
+    color: 'rgba(6, 41, 12, 0.72)',
   },
   // Error / Loading
   centerContainer: {

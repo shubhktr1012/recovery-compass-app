@@ -56,6 +56,7 @@ export interface ProgramAccessSnapshot {
   purchaseState: PurchaseState;
   completionState: CompletionState;
   currentDay: number | null;
+  startedAt: string | null;
   completedAt: string | null;
   archivedAt: string | null;
   eligibleProducts: EligibleProduct[];

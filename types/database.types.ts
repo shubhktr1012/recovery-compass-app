@@ -251,6 +251,7 @@ export type Database = {
           owned_program: string | null
           purchase_state: string
           revenuecat_product_id: string | null
+          started_at: string | null
           updated_at: string
           user_id: string
         }
@@ -263,6 +264,7 @@ export type Database = {
           owned_program?: string | null
           purchase_state?: string
           revenuecat_product_id?: string | null
+          started_at?: string | null
           updated_at?: string
           user_id: string
         }
@@ -275,6 +277,7 @@ export type Database = {
           owned_program?: string | null
           purchase_state?: string
           revenuecat_product_id?: string | null
+          started_at?: string | null
           updated_at?: string
           user_id?: string
         }

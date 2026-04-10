@@ -11,6 +11,7 @@ import { Greeting } from '@/components/dashboard/Greeting';
 import { ProgressHero } from '@/components/dashboard/ProgressHero';
 import { DailyActionCard } from '@/components/dashboard/DailyActionCard';
 import { PanicButton } from '@/components/dashboard/PanicButton';
+import { getProgramScheduledDay } from '@/lib/programs/schedule';
 import { useProfile } from '@/providers/profile';
 import type { ProgramSlug } from '@/types/content';
 import { programDayQueryKey, programQueryKey } from '@/hooks/contentQueryUtils';
@@ -18,10 +19,14 @@ import { programDayQueryKey, programQueryKey } from '@/hooks/contentQueryUtils';
 export default function HomeScreen() {
   const { access } = useProfile();
   const activeProgram = (access.ownedProgram ?? 'six_day_reset') as ProgramSlug;
-  const currentDayNumber = access.currentDay ?? 1;
+  const program = PROGRAM_METADATA[activeProgram];
+  const currentDayNumber = access.completionState === 'completed'
+    ? program.totalDays
+    : access.startedAt
+      ? getProgramScheduledDay(access.startedAt, program.totalDays)
+      : access.currentDay ?? 1;
   const queryClient = useQueryClient();
   const { day: currentDay } = useDay(activeProgram, currentDayNumber);
-  const program = PROGRAM_METADATA[activeProgram];
   const resolvedDayNumber = currentDay?.dayNumber ?? currentDayNumber;
 
   useFocusEffect(
