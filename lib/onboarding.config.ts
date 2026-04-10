@@ -137,13 +137,15 @@ const JOURNEY_CONFIG: Record<JourneyKey, JourneyConfig> = {
         ],
       },
       severity: {
-        id: 'smoking_daily_count',
-        title: 'How many cigarettes do you smoke on an average day?',
-        description: 'A rough number is enough. We just need your current baseline.',
-        type: 'number_input',
+        id: 'smoking_baseline',
+        title: 'Tell us about your daily habit.',
+        description: 'Provide your typical daily count and spend. We use this to calculate your savings.',
+        type: 'compound_number_input',
         required: true,
-        placeholder: 'Enter a number',
-        keyboardType: 'number-pad',
+        inputs: [
+          { id: 'smoking_daily_count', label: 'Cigarettes per day', placeholder: 'Count' },
+          { id: 'smoking_daily_spend', label: 'Daily spend', placeholder: 'Amount in INR' }
+        ]
       },
       coping: {
         id: 'smoking_coping',

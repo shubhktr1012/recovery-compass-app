@@ -2,11 +2,11 @@ import React, { useCallback, useMemo, useRef, memo } from 'react';
 import { NativeSyntheticEvent, NativeScrollEvent, ScrollView, Text, Pressable, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
-import { Href, router } from 'expo-router';
+import { Href, useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { useQueryClient } from '@tanstack/react-query';
 import * as Haptics from 'expo-haptics';
-import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing, withSpring } from 'react-native-reanimated';
+import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing } from 'react-native-reanimated';
 
 import { useProgram } from '@/content';
 import { useProfile } from '@/providers/profile';
@@ -62,7 +62,6 @@ const SquishPressable = ({ children, disabled, onPress, className }: any) => {
 
 const ProgramTimelineNode = memo(({ 
   day, 
-  index, 
   isFirst, 
   isLast, 
   isLocked, 
@@ -70,7 +69,9 @@ const ProgramTimelineNode = memo(({
   isCurrent, 
   isReturningUser, 
   activeProgram,
-  onLayout
+  availabilityLabel,
+  onLayout,
+  onPress,
 }: any) => {
   return (
     <TimelineItem
@@ -84,7 +85,7 @@ const ProgramTimelineNode = memo(({
     >
       <SquishPressable
         disabled={isLocked}
-        onPress={() => router.push(`/day-detail?programSlug=${activeProgram}&dayNumber=${day.dayNumber}` as Href)}
+        onPress={onPress}
         className={isLocked ? "opacity-70" : ""}
       >
         <ProgramCard
@@ -98,13 +99,16 @@ const ProgramTimelineNode = memo(({
           isCompleted={isCompleted}
           isCurrent={isCurrent}
           isReturningUser={isReturningUser}
+          availabilityLabel={availabilityLabel}
         />
       </SquishPressable>
     </TimelineItem>
   );
 });
+ProgramTimelineNode.displayName = 'ProgramTimelineNode';
 
 export default function ProgramScreen() {
+  const router = useRouter();
   const { access, progress } = useProfile();
   const activeProgram = (access.ownedProgram ?? 'six_day_reset') as ProgramSlug;
   const queryClient = useQueryClient();
@@ -128,10 +132,13 @@ export default function ProgramScreen() {
     };
   }, [access.completionState, access.currentDay, access.startedAt, progress?.completedDays, totalDays]);
   const isArchivedReset = activeProgram === 'six_day_reset' && access.purchaseState === 'owned_archived';
+  const completedCount = completedDays.length;
+  const progressPercent = Math.max(0, Math.min(100, Math.round((completedCount / totalDays) * 100)));
   const nextUnlockLabel = useMemo(() => {
     if (access.completionState === 'completed') return null;
     return formatUnlockLabel(getProgramNextUnlockAt(access.startedAt, totalDays));
   }, [access.completionState, access.startedAt, totalDays]);
+  const nextLockedDayNumber = access.completionState === 'completed' ? null : Math.min(currentDay + 1, totalDays);
 
   // Determine if user has been away for 3+ days (72 hours)
   const isReturningUser = useMemo(() => {
@@ -139,10 +146,6 @@ export default function ProgramScreen() {
     const hoursSinceUpdate = (Date.now() - new Date(progress.updatedAt).getTime()) / (1000 * 60 * 60);
     return hoursSinceUpdate >= 72;
   }, [progress?.updatedAt]);
-
-  if (!program) {
-    return null;
-  }
 
   // Haptics & Scroll Tracking
   const daysContainerY = useRef<number>(0);
@@ -174,6 +177,10 @@ export default function ProgramScreen() {
     }
   }, []);
 
+  if (!program) {
+    return null;
+  }
+
   return (
     <SafeAreaView className="flex-1 bg-surface">
       <PaperGrain />
@@ -183,22 +190,45 @@ export default function ProgramScreen() {
         onScroll={handleScroll}
         scrollEventThrottle={16}
       >
-        <View className="mb-8 pt-2">
-          <Text className="font-satoshi text-[11px] uppercase tracking-[3px] text-forest/35 mb-1">Your Program</Text>
-          <Text className="font-erode-medium text-[40px] leading-[48px] tracking-tight text-forest mb-3">{program.name}</Text>
-          <Text className="font-satoshi text-[14px] text-forest/40">
-            Day {Math.min(currentDay, program.totalDays)} of {program.totalDays}
+        <View className="mb-10 pt-4">
+          <Text className="font-satoshi-bold text-[10px] uppercase tracking-[2.6px] text-forest/30 mb-2">Current Journey</Text>
+          <Text className="font-erode-medium text-[44px] leading-[48px] tracking-tight text-forest mb-4 pr-4">{program.name}</Text>
+          <Text className="font-satoshi text-[16px] leading-[26px] text-forest/60 pr-8">
+            {program.description}
           </Text>
-          <Text className="font-satoshi text-[13px] text-forest/30 mt-1">{program.description}</Text>
-          {nextUnlockLabel ? (
-            <Text className="mt-3 font-satoshi text-sm text-forest/70">
-              {nextUnlockLabel}
-            </Text>
-          ) : null}
+
+          <View className="mt-12">
+            <View className="mb-4">
+              <Text className="font-satoshi-bold text-[11px] uppercase tracking-[2px] text-forest/40 mb-1">
+                Day {Math.min(currentDay, program.totalDays)} of {totalDays}
+              </Text>
+              <Text className="font-erode-medium text-[32px] leading-[36px] text-forest">
+                {progressPercent}% Complete
+              </Text>
+              {nextUnlockLabel && access.completionState !== 'completed' ? (
+                <Text className="font-satoshi-medium text-[12px] text-forest/50 mt-2">
+                  {nextUnlockLabel}
+                </Text>
+              ) : null}
+            </View>
+
+            <View className="h-[3px] w-full bg-forest/[0.06] rounded-full overflow-hidden">
+              <View
+                className="h-full bg-forest rounded-full"
+                style={{ width: `${progressPercent}%` }}
+              />
+            </View>
+          </View>
+
           {isArchivedReset ? (
-            <Text className="font-satoshi text-sm text-forest/70 mt-3">
-              Your 6-Day Control has been archived. The next step is upgrading into the 90-Day Smoking Reset.
-            </Text>
+            <View className="mt-8 rounded-[20px] border border-forest/[0.08] bg-[#F6F7F4] px-5 py-5 shadow-sm shadow-[#06290C]/5">
+              <Text className="font-satoshi-bold text-[10px] uppercase tracking-[2px] text-forest/50 mb-2">
+                Archived Path
+              </Text>
+              <Text className="font-satoshi text-[14px] leading-[22px] text-forest/70">
+                Your 6-Day Control has been archived. The next step is upgrading into the 90-Day Smoking Reset.
+              </Text>
+            </View>
           ) : null}
         </View>
 
@@ -210,16 +240,22 @@ export default function ProgramScreen() {
           </View>
         ) : (
           <View onLayout={(e) => { daysContainerY.current = e.nativeEvent.layout.y; }}>
+            <Text className="mb-4 font-satoshi text-[11px] uppercase tracking-[3px] text-forest/35">
+              Day Timeline
+            </Text>
             {program.days.map((day, index) => {
               const isCompleted = completedDays.includes(day.dayNumber);
               const isLocked = isArchivedReset || day.dayNumber > currentDay;
               const isCurrent = day.dayNumber === currentDay && !isCompleted;
+              const availabilityLabel =
+                isLocked && day.dayNumber === nextLockedDayNumber
+                  ? nextUnlockLabel
+                  : null;
 
               return (
                 <ProgramTimelineNode
                   key={`${activeProgram}-${day.dayNumber}`}
                   day={day}
-                  index={index}
                   isFirst={index === 0}
                   isLast={index === program.days.length - 1}
                   isLocked={isLocked}
@@ -227,6 +263,10 @@ export default function ProgramScreen() {
                   isCurrent={isCurrent}
                   isReturningUser={isReturningUser}
                   activeProgram={activeProgram}
+                  availabilityLabel={availabilityLabel}
+                  onPress={() =>
+                    router.push(`/day-detail?programSlug=${activeProgram}&dayNumber=${day.dayNumber}` as Href)
+                  }
                   onLayout={isCurrent ? (e: any) => {
                     currentDayRelativeY.current = e.nativeEvent.layout.y;
                     currentDayHeight.current = e.nativeEvent.layout.height;

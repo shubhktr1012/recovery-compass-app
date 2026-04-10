@@ -1,7 +1,7 @@
 import "../global.css";
 import { useEffect, useRef, useState } from 'react';
 import { useFonts } from 'expo-font';
-import { Stack, useSegments, Href, useRootNavigationState, router } from 'expo-router';
+import { Stack, useSegments, Href, useRootNavigationState, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import 'react-native-reanimated';
 import { StatusBar } from 'expo-status-bar';
@@ -52,6 +52,7 @@ function NavigationGate({
     profile: UserProfile | null;
     session: Session | null;
 }) {
+  const router = useRouter();
   const segments = useSegments();
   const rootNavigationState = useRootNavigationState();
   const pendingRedirectRef = useRef<Href | null>(null);
@@ -108,7 +109,7 @@ function NavigationGate({
     };
 
     void checkRouting();
-    }, [isNavigationReady, rootNavigationState?.key, session, profile, isSubscribed, isRecoveringPassword, segments]);
+    }, [isNavigationReady, rootNavigationState?.key, session, profile, isSubscribed, isRecoveringPassword, router, segments]);
 
   return null;
 }

@@ -16,83 +16,133 @@ interface ProgramCardProps {
   isCompleted: boolean;
   isCurrent: boolean;
   isReturningUser?: boolean;
+  availabilityLabel?: string | null;
 }
 
-export function ProgramCard({ day, isLocked, isCompleted, isCurrent, isReturningUser = false }: ProgramCardProps) {
+export function ProgramCard({
+  day,
+  isLocked,
+  isCompleted,
+  isCurrent,
+  isReturningUser = false,
+  availabilityLabel,
+}: ProgramCardProps) {
   const { fontScale } = useWindowDimensions();
+  const showDuration = fontScale <= 1.25;
 
-  let containerClassName = 'rounded-3xl p-5 border ';
   if (isCurrent) {
-    containerClassName += 'bg-[#E3F3E5] border-[#06290C]';
-  } else if (isCompleted) {
-    containerClassName += 'bg-transparent border-[#06290C]/10';
-  } else if (isLocked) {
-    containerClassName += 'bg-transparent border-transparent opacity-40';
-  } else {
-    containerClassName += 'bg-white border-gray-200';
+    return (
+      <View
+        className="rounded-[24px] bg-white px-6 py-6 border border-forest/10"
+        style={{
+          shadowColor: '#06290C',
+          shadowOffset: { width: 0, height: 16 },
+          shadowOpacity: 0.06,
+          shadowRadius: 32,
+          elevation: 6,
+        }}
+      >
+        <View className="mb-3 flex-row items-baseline justify-between">
+          <Text className="font-erode-semibold text-[32px] leading-[36px] text-forest">
+            Day {day.id}
+          </Text>
+          <Text className="font-satoshi-bold text-[10px] uppercase tracking-[2px] text-forest">
+            {isReturningUser ? 'WELCOME BACK' : 'TODAY'}
+          </Text>
+        </View>
+        <Text className="font-satoshi-medium text-[20px] leading-[26px] text-forest mb-2.5">
+          {day.title}
+        </Text>
+        <Text className="font-satoshi text-[16px] leading-[26px] text-forest/70 mb-5">
+          {day.description}
+        </Text>
+        <View className="flex-row items-center justify-between border-t border-forest/[0.06] pt-4 mt-2">
+          <Text className="font-satoshi-medium text-[13px] text-forest/60">
+            Open today’s guidance
+          </Text>
+          {showDuration && (
+            <Text className="font-satoshi-bold text-[11px] uppercase tracking-[1.4px] text-forest/50">
+              {day.durationMinutes} min
+            </Text>
+          )}
+        </View>
+      </View>
+    );
   }
 
-  const titleColor = isLocked || isCompleted ? 'text-forest/70' : 'text-forest';
-  const bodyColor = isLocked || isCompleted ? 'text-forest/60' : 'text-gray-700';
-
-  const statusLabel = isLocked ? 'LOCKED' : isCompleted ? 'COMPLETED' : isCurrent ? (isReturningUser ? 'WELCOME BACK' : 'TODAY') : 'AVAILABLE';
-  const statusColor = isLocked
-    ? 'text-forest/40'
-    : isCompleted
-      ? 'text-success'
-      : isCurrent
-        ? 'text-forest'
-        : 'text-forest/70';
-
-  // DYNAMIC TYPOGRAPHY DISTILLATION
-  // Hide non-critical labels if the user needs large text
-  const showStatusLabel = fontScale <= 1.15 || isCurrent;
-  const showDuration = fontScale <= 1.25 && !isLocked;
-
-  return (
-    <View
-      className={containerClassName}
-      style={
-        isCurrent
-          ? {
-              shadowColor: '#06290C',
-              shadowOffset: { width: 0, height: 8 },
-              shadowOpacity: 0.08,
-              shadowRadius: 20,
-              elevation: 4,
-            }
-          : undefined
-      }
-    >
-      <View className="mb-3 flex-row items-center justify-between">
-        <Text className={`font-erode-semibold text-[22px] ${titleColor}`}>Day {day.id}</Text>
-        {showStatusLabel ? (
-          <View 
-            className={`flex-row items-center ${isCompleted ? 'bg-sage pl-1 pr-2 py-0.5 rounded-lg border border-success/10' : ''}`}
-          >
-            {isCompleted && (
-              <IconSymbol 
-                name="checkmark.circle.fill" 
-                size={12} 
-                color={AppColors.success} 
-                style={{ marginRight: 6 }}
-              />
-            )}
-            <Text className={`font-satoshi-bold text-[10px] uppercase tracking-[2px] ${statusColor}`}>
-              {statusLabel}
+  if (isCompleted) {
+    return (
+      <View className="px-2 py-4 opacity-70">
+        <View className="mb-2 flex-row items-center justify-between">
+          <View className="flex-row items-center">
+            <IconSymbol 
+              name="checkmark" 
+              size={12} 
+              color={AppColors.forest} 
+              style={{ marginRight: 8, opacity: 0.8 }}
+            />
+            <Text className="font-erode-medium text-[22px] text-forest">
+              Day {day.id}
             </Text>
           </View>
+          {showDuration && (
+            <Text className="font-satoshi text-[12px] text-forest/40">
+              {day.durationMinutes} min
+            </Text>
+          )}
+        </View>
+        <Text className="font-satoshi-medium text-[16px] leading-[24px] text-forest ml-5 mb-1.5">
+          {day.title}
+        </Text>
+        <Text className="font-satoshi text-[14px] leading-[22px] text-forest/50 ml-5" numberOfLines={2}>
+          {day.description}
+        </Text>
+      </View>
+    );
+  }
+
+  if (isLocked) {
+    return (
+      <View className="px-2 py-4 opacity-40">
+        <View className="mb-2 flex-row items-center justify-between">
+          <Text className="font-erode-medium text-[22px] text-forest">
+            Day {day.id}
+          </Text>
+        </View>
+        <Text className="font-satoshi-medium text-[16px] leading-[24px] text-forest mb-1.5">
+          {day.title}
+        </Text>
+        <Text className="font-satoshi text-[14px] leading-[22px] text-forest/50" numberOfLines={2}>
+          {day.description}
+        </Text>
+        {availabilityLabel ? (
+          <Text className="mt-3 font-satoshi-bold text-[10px] uppercase tracking-[1px] text-forest/40">
+            {availabilityLabel}
+          </Text>
         ) : null}
       </View>
-      <Text className={`font-satoshi-bold text-lg mb-1.5 ${titleColor}`}>{day.title}</Text>
-      <Text className={`font-satoshi text-base leading-6 ${showDuration ? 'mb-4' : ''} ${bodyColor}`}>
+    );
+  }
+
+  // Available, incomplete, not current (e.g. a skipped or ignored past day)
+  return (
+    <View className="px-2 py-4">
+      <View className="mb-2 flex-row items-center justify-between">
+        <Text className="font-erode-medium text-[22px] text-forest">
+          Day {day.id}
+        </Text>
+        {showDuration && (
+          <Text className="font-satoshi text-[12px] text-forest/60">
+            {day.durationMinutes} min
+          </Text>
+        )}
+      </View>
+      <Text className="font-satoshi-medium text-[16px] leading-[24px] text-forest mb-1.5">
+        {day.title}
+      </Text>
+      <Text className="font-satoshi text-[14px] leading-[22px] text-forest/70" numberOfLines={2}>
         {day.description}
       </Text>
-      {showDuration && (
-        <Text className={`font-satoshi-medium text-xs ${isCompleted ? 'text-forest/40' : 'text-forest/70'}`}>
-          {day.durationMinutes} min action
-        </Text>
-      )}
     </View>
   );
 }

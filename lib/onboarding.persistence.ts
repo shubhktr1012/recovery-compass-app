@@ -38,7 +38,7 @@ function serializeQuestionValue(
     const selectedValues = Array.isArray(rawValue) ? rawValue : [rawValue];
     return selectedValues
       .map((value) => getOptionLabel(question.options, value))
-      .filter(Boolean);
+      .filter((value): value is string => Boolean(value));
   }
 
   if (Array.isArray(rawValue)) {
@@ -46,6 +46,20 @@ function serializeQuestionValue(
   }
 
   return getOptionLabel(question.options, rawValue) ?? rawValue;
+}
+
+function serializeQuestionEntries(
+  question: QuestionDefinition,
+  answers: OnboardingAnswers
+): [string, string | string[] | null][] {
+  if (question.type === 'compound_number_input' && question.inputs?.length) {
+    return question.inputs.map((input) => [
+      input.id,
+      serializeQuestionValue(question, answers.questionValues[input.id]),
+    ]);
+  }
+
+  return [[question.id, serializeQuestionValue(question, answers.questionValues[question.id])]];
 }
 
 function toNumericValue(value: string | string[] | undefined) {
@@ -146,19 +160,31 @@ export async function saveOnboardingQuestionnaire(args: {
   const journeyConfig = getJourneyConfig(resolution.journey);
   const activeQuestions = getActiveQuestionSequence(answers);
   const serializedQuestionAnswers = Object.fromEntries(
-    activeQuestions.map((question) => [
-      question.id,
-      serializeQuestionValue(question, answers.questionValues[question.id]),
-    ])
+    activeQuestions.flatMap((question) => serializeQuestionEntries(question, answers))
   );
+
+  const severityInputId =
+    journeyConfig.questions.severity.type === 'compound_number_input' &&
+    journeyConfig.questions.severity.inputs?.[0]?.id
+      ? journeyConfig.questions.severity.inputs[0].id
+      : journeyConfig.questions.severity.id;
+  const spendInputId =
+    journeyConfig.questions.severity.type === 'compound_number_input' &&
+    journeyConfig.questions.severity.inputs?.[1]?.id
+      ? journeyConfig.questions.severity.inputs[1].id
+      : journeyConfig.questions.spend?.id ?? null;
 
   const durationAnswer = serializedQuestionAnswers[journeyConfig.questions.duration.id];
   const frictionAnswer = serializedQuestionAnswers[journeyConfig.questions.friction.id];
   const triggerAnswer = serializedQuestionAnswers[journeyConfig.questions.trigger.id];
   const copingAnswer = serializedQuestionAnswers[journeyConfig.questions.coping.id];
-  const severityAnswer = serializedQuestionAnswers[journeyConfig.questions.severity.id];
+  const severityAnswer = serializedQuestionAnswers[severityInputId];
   const secondarySymptoms =
     (serializedQuestionAnswers[SECONDARY_SYMPTOMS_QUESTION_ID] as string[] | null) ?? [];
+  const dailyConsumptionAmount = toNumericValue(answers.questionValues[severityInputId]);
+  const dailyConsumptionCost = spendInputId
+    ? toNumericValue(answers.questionValues[spendInputId])
+    : null;
 
   const questionnaireAnswers = {
     version: 'onboarding_redesign_v1',
@@ -193,8 +219,8 @@ export async function saveOnboardingQuestionnaire(args: {
     root_cause: resolution.primaryConcernLabel,
     physical_toll: typeof frictionAnswer === 'string' ? frictionAnswer : resolution.primaryConcernLabel,
     mental_toll: null,
-    daily_consumption_amount: toNumericValue(answers.questionValues[journeyConfig.questions.severity.id]),
-    daily_consumption_cost: null,
+    daily_consumption_amount: dailyConsumptionAmount,
+    daily_consumption_cost: dailyConsumptionCost,
     primary_goal: journeyConfig.primaryGoal,
     updated_at: updatedAt,
   };
@@ -227,7 +253,7 @@ export async function saveOnboardingQuestionnaire(args: {
           { onConflict: 'id' }
         )
         .select(
-          'id, email, onboarding_complete, recommended_program, created_at, updated_at, active_program, expo_push_token, push_opt_in'
+          'id, email, onboarding_complete, questionnaire_answers, recommended_program, created_at, updated_at, active_program, expo_push_token, push_opt_in'
         )
         .single(),
     ]);

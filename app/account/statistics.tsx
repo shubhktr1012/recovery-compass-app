@@ -7,7 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { AppColors } from '@/constants/theme';
 import { useProfile } from '@/providers/profile';
 import { useOnboardingResponse } from '@/hooks/useOnboardingResponse';
-import { formatInr, getOnboardingProjection } from '@/lib/onboarding-metrics';
+import { getProgramStatisticsSummary } from '@/lib/program-statistics';
 import { PROGRAM_METADATA } from '@/content/programs/metadata';
 import type { ProgramSlug } from '@/types/content';
 
@@ -16,31 +16,19 @@ export default function StatisticsScreen() {
   const { access, profile, progress } = useProfile();
   const onboardingQuery = useOnboardingResponse();
 
-  const stats = useMemo(() => {
-    const projection = getOnboardingProjection(onboardingQuery.data ?? null);
-    const joinedDays = profile?.created_at
-      ? Math.floor(Math.max(0, Date.now() - new Date(profile.created_at).getTime()) / (1000 * 60 * 60 * 24))
-      : 0;
-
-    return {
-      avoidedUnits90Days: projection.avoidedUnits90Days,
-      dailyAmount: projection.dailyAmount,
-      dailyCost: projection.dailyCost,
-      joinedDays,
-      monthlySpend: projection.monthlySpend,
-      projectedSavings90Days: projection.projectedSavings90Days,
-      targetSelection: projection.targetSelection,
-      yearlySpend: projection.yearlySpend,
-    };
-  }, [onboardingQuery.data, profile?.created_at]);
-
-  const unitsLabel = stats.targetSelection === 'Quit Alcohol'
-    ? 'Daily drinks'
-    : stats.targetSelection === 'Quit Smoking'
-      ? 'Daily cigarettes'
-      : 'Daily vices';
+  const joinedDays = profile?.created_at
+    ? Math.floor(Math.max(0, Date.now() - new Date(profile.created_at).getTime()) / (1000 * 60 * 60 * 24))
+    : 0;
 
   const activeProgram = access.ownedProgram ? PROGRAM_METADATA[access.ownedProgram as ProgramSlug] : null;
+
+  const summary = useMemo(() => {
+    return getProgramStatisticsSummary(
+      access.ownedProgram as ProgramSlug | null,
+      onboardingQuery.data ?? null,
+      profile?.questionnaire_answers ?? null
+    );
+  }, [access.ownedProgram, onboardingQuery.data, profile?.questionnaire_answers]);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -61,48 +49,27 @@ export default function StatisticsScreen() {
         {/* Days in Motion Card */}
         <View style={styles.heroCard}>
           <Text style={styles.heroEyebrow}>Days in Motion</Text>
-          <Text style={styles.heroValue}>{stats.joinedDays}</Text>
+          <Text style={styles.heroValue}>{joinedDays}</Text>
           <Text style={styles.heroSubtitle}>
             since {profile?.created_at ? new Date(profile.created_at).toLocaleDateString('en-IN', { month: 'long', day: 'numeric', year: 'numeric' }) : 'joining'}
           </Text>
         </View>
 
-        {/* Projection Overview */}
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Projection Overview</Text>
-          <View style={styles.splitRow}>
-            <View style={styles.splitLeft}>
-              <Text style={styles.splitLabel}>90-day savings</Text>
-              <Text style={styles.splitValue}>{formatInr(stats.projectedSavings90Days)}</Text>
-            </View>
-            <View style={styles.splitRight}>
-              <Text style={styles.splitLabel}>90-day units avoided</Text>
-              <Text style={styles.splitValue}>{stats.avoidedUnits90Days}</Text>
-            </View>
+        {/* Dynamic Program Statistics */}
+        {summary && summary.cards.length > 0 && (
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Program Statistics</Text>
+            {summary.cards.map((card, idx) => {
+              const isLast = idx === summary.cards.length - 1;
+              return (
+                <View key={card.id} style={isLast ? styles.breakdownRowLast : styles.breakdownRow}>
+                  <Text style={styles.breakdownLabel}>{card.label}</Text>
+                  <Text style={styles.breakdownValue}>{card.value}</Text>
+                </View>
+              );
+            })}
           </View>
-        </View>
-
-        {/* Spending Breakdown */}
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Spending Breakdown</Text>
-
-          <View style={styles.breakdownRow}>
-            <Text style={styles.breakdownLabel}>{unitsLabel}</Text>
-            <Text style={styles.breakdownValue}>{stats.dailyAmount || 'Not set'}</Text>
-          </View>
-          <View style={styles.breakdownRow}>
-            <Text style={styles.breakdownLabel}>Daily spend</Text>
-            <Text style={styles.breakdownValue}>{stats.dailyCost ? formatInr(stats.dailyCost) : 'Not set'}</Text>
-          </View>
-          <View style={styles.breakdownRow}>
-            <Text style={styles.breakdownLabel}>Monthly spend</Text>
-            <Text style={styles.breakdownValue}>{stats.monthlySpend ? formatInr(stats.monthlySpend) : 'Not set'}</Text>
-          </View>
-          <View style={styles.breakdownRowLast}>
-            <Text style={styles.breakdownLabel}>Yearly spend</Text>
-            <Text style={styles.breakdownValue}>{stats.yearlySpend ? formatInr(stats.yearlySpend) : 'Not set'}</Text>
-          </View>
-        </View>
+        )}
 
         {/* Program Progress */}
         <View style={styles.card}>

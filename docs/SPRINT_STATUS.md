@@ -66,11 +66,13 @@
 - [x] Day-detail shell refreshed (editorial header, story-style progress rail, resume continuity, card handoff plumbing)
 - [x] Program reflection persistence foundation added (Supabase table + native API wiring)
 - [x] Day completion flow shipped (calendar-based unlock cadence, in-card close/completion UX, Supabase sync restored)
+- [x] Smoking onboarding baseline now captures both daily count and daily spend, with program-aware statistics wiring added for all journeys
 
 ## In Progress
 
 - [ ] Questionnaire minor polish and edge-case cleanup
 - [ ] Paywall visual polish / merchandising refinement
+- [ ] Program tab hierarchy and timeline refinement
 - [ ] Visual overhaul — apply V4 wellness design to all screens
 - [ ] Program day/content-card overhaul (routine/audio/journal/editorial consistency)
 - [ ] Tab bar redesign — future 5-tab architecture (`Home | Program | Ground | Journal/Routines | Account`)

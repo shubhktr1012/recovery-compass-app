@@ -30,7 +30,7 @@ export interface SelectionOption<Value extends string = string> {
   description?: string;
 }
 
-export type QuestionType = 'single_select' | 'multi_select' | 'number_input';
+export type QuestionType = 'single_select' | 'multi_select' | 'number_input' | 'compound_number_input';
 
 export interface QuestionDefinition<OptionId extends string = string> {
   id: string;
@@ -42,6 +42,7 @@ export interface QuestionDefinition<OptionId extends string = string> {
   keyboardType?: 'default' | 'number-pad';
   required?: boolean;
   allowEmpty?: boolean;
+  inputs?: { id: string; label: string; placeholder?: string }[];
 }
 
 export interface JourneyRecommendation {
@@ -57,6 +58,7 @@ export interface JourneyQuestionSet {
   friction: QuestionDefinition;
   trigger: QuestionDefinition;
   severity: QuestionDefinition;
+  spend?: QuestionDefinition;
   coping: QuestionDefinition;
 }
 

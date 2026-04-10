@@ -28,17 +28,17 @@ export function TimelineItem({
   onLayout,
 }: TimelineItemProps) {
   // Line logic: Top line connects from previous. Bottom line connects to next.
-  const topConnectorColor = isLocked ? 'bg-gray-200' : 'bg-forest';
+  const topConnectorColor = isLocked ? 'bg-forest/10' : 'bg-forest';
   // Bottom line is only solid forest if THIS item is fully completed, mapping to the next.
-  const bottomConnectorColor = isCompleted ? 'bg-forest' : 'bg-gray-200';
+  const bottomConnectorColor = isCompleted ? 'bg-forest' : 'bg-forest/10';
 
   const dotClassName = isLocked
-    ? 'bg-surface border-[2px] border-gray-200'
+    ? 'bg-transparent border border-forest/20 w-2 h-2 rounded-full'
     : isCurrent
-      ? 'bg-forest border-[1px] border-forest'
+      ? 'bg-forest w-2.5 h-2.5 rounded-full'
       : isCompleted
-        ? 'bg-forest'
-        : 'bg-white border-[2px] border-forest/40';
+        ? 'bg-forest/40 w-2 h-2 rounded-full'
+        : 'bg-surface border border-forest/40 w-2 h-2 rounded-full';
 
   // Pulse animation for Current Day
   const scale = useSharedValue(1);
@@ -69,28 +69,28 @@ export function TimelineItem({
       className="flex-row" 
       onLayout={onLayout}
     >
-      <View className="items-center w-6 mr-4">
-        {!isFirst && <View className={`w-[2.5px] h-6 ${topConnectorColor}`} />}
-        <View className="w-5 h-5 items-center justify-center my-0.5">
+      <View className="items-center w-6 mr-5">
+        {!isFirst && <View className={`w-[2px] h-6 ${topConnectorColor}`} />}
+        <View className="w-6 h-6 items-center justify-center my-1 relative">
           {isCurrent && (
             <Animated.View
               style={[
                 animatedRingStyle,
                 {
                   position: 'absolute',
-                  width: 14,
-                  height: 14,
-                  borderRadius: 7,
+                  width: 20,
+                  height: 20,
+                  borderRadius: 10,
                   backgroundColor: '#06290C',
                 },
               ]}
             />
           )}
-          <View className={`w-3.5 h-3.5 rounded-full z-10 ${dotClassName}`} />
+          <View className={`z-10 ${dotClassName}`} />
         </View>
-        {!isLast && <View className={`w-[2.5px] flex-1 min-h-[48px] ${bottomConnectorColor}`} />}
+        {!isLast && <View className={`w-[2px] flex-1 min-h-[48px] ${bottomConnectorColor}`} />}
       </View>
-      <View className="flex-1 pb-6">{children}</View>
+      <View className="flex-1 pb-10">{children}</View>
     </View>
   );
 }

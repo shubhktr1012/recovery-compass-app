@@ -19,6 +19,7 @@ export interface UserProfile {
   id: string;
   email: string | null;
   onboarding_complete: boolean;
+  questionnaire_answers?: Record<string, unknown> | null;
   recommended_program?: ProgramSlug | null;
   created_at: string;
   updated_at: string;
@@ -44,7 +45,7 @@ interface ProfileContextType {
 }
 
 const PROFILE_COLUMNS =
-  'id, email, onboarding_complete, recommended_program, created_at, updated_at, active_program, expo_push_token, push_opt_in, display_name, avatar_url';
+  'id, email, onboarding_complete, questionnaire_answers, recommended_program, created_at, updated_at, active_program, expo_push_token, push_opt_in, display_name, avatar_url';
 export const PROFILE_QUERY_KEY = (userId: string | null) => ['profile', userId];
 const PROFILE_IMAGE_BUCKET = 'profile-images';
 const PROFILE_IMAGE_SIGNED_URL_TTL_SECONDS = 60 * 60 * 24 * 7;

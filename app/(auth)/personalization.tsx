@@ -1,9 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Alert, KeyboardAvoidingView, Platform, Text, View } from 'react-native';
+import { Alert, Animated as RNAnimated, KeyboardAvoidingView, Platform, Text, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { Href, router, useLocalSearchParams } from 'expo-router';
+import { Href, useLocalSearchParams, useRouter } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
-import { Animated as RNAnimated } from 'react-native';
 
 import {
   CompassCTA,
@@ -51,6 +50,7 @@ function getPaywallReturnStateKey(userId: string) {
 
 // ─── Screen ─────────────────────────────────────────────────────────────────
 export default function Personalization() {
+  const router = useRouter();
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const params = useLocalSearchParams<{ resume?: string | string[] }>();
@@ -302,6 +302,15 @@ export default function Personalization() {
           (typeof rawValue === 'string' && isPositiveInteger(rawValue)) ||
           'Enter a valid number before continuing.'
         );
+      case 'compound_number_input':
+        if (!question.inputs || question.inputs.length === 0) return true;
+        for (const input of question.inputs) {
+          const val = answers.questionValues[input.id];
+          if (!(typeof val === 'string' && isPositiveInteger(val))) {
+            return 'Enter valid numbers for all fields before continuing.';
+          }
+        }
+        return true;
       case 'single_select':
         return (
           (typeof rawValue === 'string' && Boolean(rawValue)) ||
@@ -416,6 +425,33 @@ export default function Personalization() {
           autoFocus
           onSubmitEditing={() => void handleNext()}
         />
+      );
+    }
+
+    if (question.type === 'compound_number_input' && question.inputs) {
+      return (
+        <View className="mt-8 gap-6">
+          {question.inputs.map((input, index) => {
+            const currentValue = answers.questionValues[input.id];
+            const isLast = index === question.inputs!.length - 1;
+            return (
+              <View key={input.id}>
+                <Text className="text-forest/50 font-satoshi-bold text-[11px] uppercase tracking-[2px] mb-3 ml-1">
+                  {input.label}
+                </Text>
+                <LargeNumberInput
+                  value={typeof currentValue === 'string' ? currentValue : ''}
+                  onChangeText={(value) => updateQuestionValue(input.id, value)}
+                  unit={input.placeholder || ''}
+                  autoFocus={index === 0}
+                  onSubmitEditing={() => {
+                    if (isLast) void handleNext();
+                  }}
+                />
+              </View>
+            );
+          })}
+        </View>
       );
     }
 

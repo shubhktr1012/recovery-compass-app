@@ -73,6 +73,7 @@ export function getActiveQuestionSequence(answers: OnboardingAnswers): QuestionD
       journeyQuestions.duration,
       journeyQuestions.trigger,
       journeyQuestions.severity,
+      ...(journeyQuestions.spend ? [journeyQuestions.spend] : []),
       journeyQuestions.coping,
       secondarySymptoms,
     ];
@@ -82,6 +83,7 @@ export function getActiveQuestionSequence(answers: OnboardingAnswers): QuestionD
     journeyQuestions.duration,
     journeyQuestions.friction,
     journeyQuestions.severity,
+    ...(journeyQuestions.spend ? [journeyQuestions.spend] : []),
     secondarySymptoms,
     journeyQuestions.trigger,
     journeyQuestions.coping,
