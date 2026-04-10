@@ -1,15 +1,19 @@
-import React, { useCallback, useMemo } from 'react';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import React, { useCallback, useMemo, useRef, memo } from 'react';
+import { NativeSyntheticEvent, NativeScrollEvent, ScrollView, Text, Pressable, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Href, router } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { useQueryClient } from '@tanstack/react-query';
+import * as Haptics from 'expo-haptics';
+import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing, withSpring } from 'react-native-reanimated';
+
 import { useProgram } from '@/content';
 import { useProfile } from '@/providers/profile';
 import { formatUnlockLabel, getProgramNextUnlockAt, getProgramScheduledDay } from '@/lib/programs/schedule';
 import { TimelineItem } from '@/components/program/TimelineItem';
 import { ProgramCard } from '@/components/program/ProgramCard';
+import { PaperGrain } from '@/components/ui/PaperGrain';
 import { DayContent, ProgramSlug } from '@/types/content';
 import { programQueryKey } from '@/hooks/contentQueryUtils';
 
@@ -26,6 +30,79 @@ function getDayPreview(day: DayContent) {
 
   return 'Open today’s guidance and keep moving.';
 }
+
+const SquishPressable = ({ children, disabled, onPress, className }: any) => {
+  const scale = useSharedValue(1);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  const handlePressIn = () => {
+    if (!disabled) scale.value = withTiming(0.97, { duration: 180, easing: Easing.inOut(Easing.cubic) });
+  };
+  const handlePressOut = () => {
+    if (!disabled) scale.value = withTiming(1, { duration: 240, easing: Easing.inOut(Easing.cubic) });
+  };
+
+  return (
+    <Pressable
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+      onPress={onPress}
+      disabled={disabled}
+      className={className}
+    >
+      <Animated.View style={animatedStyle}>
+        {children}
+      </Animated.View>
+    </Pressable>
+  );
+};
+
+const ProgramTimelineNode = memo(({ 
+  day, 
+  index, 
+  isFirst, 
+  isLast, 
+  isLocked, 
+  isCompleted, 
+  isCurrent, 
+  isReturningUser, 
+  activeProgram,
+  onLayout
+}: any) => {
+  return (
+    <TimelineItem
+      key={`${activeProgram}-${day.dayNumber}`}
+      isFirst={isFirst}
+      isLast={isLast}
+      isLocked={isLocked}
+      isCompleted={isCompleted}
+      isCurrent={isCurrent}
+      onLayout={onLayout}
+    >
+      <SquishPressable
+        disabled={isLocked}
+        onPress={() => router.push(`/day-detail?programSlug=${activeProgram}&dayNumber=${day.dayNumber}` as Href)}
+        className={isLocked ? "opacity-70" : ""}
+      >
+        <ProgramCard
+          day={{
+            id: day.dayNumber,
+            title: day.dayTitle,
+            description: getDayPreview(day),
+            durationMinutes: day.estimatedMinutes ?? 5,
+          }}
+          isLocked={isLocked}
+          isCompleted={isCompleted}
+          isCurrent={isCurrent}
+          isReturningUser={isReturningUser}
+        />
+      </SquishPressable>
+    </TimelineItem>
+  );
+});
 
 export default function ProgramScreen() {
   const { access, progress } = useProfile();
@@ -56,17 +133,59 @@ export default function ProgramScreen() {
     return formatUnlockLabel(getProgramNextUnlockAt(access.startedAt, totalDays));
   }, [access.completionState, access.startedAt, totalDays]);
 
+  // Determine if user has been away for 3+ days (72 hours)
+  const isReturningUser = useMemo(() => {
+    if (!progress?.updatedAt) return false;
+    const hoursSinceUpdate = (Date.now() - new Date(progress.updatedAt).getTime()) / (1000 * 60 * 60);
+    return hoursSinceUpdate >= 72;
+  }, [progress?.updatedAt]);
+
   if (!program) {
     return null;
   }
 
+  // Haptics & Scroll Tracking
+  const daysContainerY = useRef<number>(0);
+  const currentDayRelativeY = useRef<number | null>(null);
+  const currentDayHeight = useRef<number | null>(null);
+  const hasFiredHaptic = useRef<boolean>(false);
+
+  const handleScroll = useCallback((e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    if (currentDayRelativeY.current === null || currentDayHeight.current === null) return;
+    
+    const { contentOffset, layoutMeasurement } = e.nativeEvent;
+    const scrollCenterY = contentOffset.y + (layoutMeasurement.height / 2);
+    
+    // Calculate absolute Y boundaries relative to the ScrollView content
+    const absoluteTop = daysContainerY.current + currentDayRelativeY.current;
+    
+    // We add a tighter hit box (middle 50% of the card) down so it snaps specifically 
+    // when they are solidly viewing it, not just crossing the top edge.
+    const snapTop = absoluteTop + (currentDayHeight.current * 0.25);
+    const snapBottom = absoluteTop + (currentDayHeight.current * 0.75);
+    
+    if (scrollCenterY >= snapTop && scrollCenterY <= snapBottom) {
+      if (!hasFiredHaptic.current) {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        hasFiredHaptic.current = true;
+      }
+    } else {
+      hasFiredHaptic.current = false;
+    }
+  }, []);
+
   return (
     <SafeAreaView className="flex-1 bg-surface">
+      <PaperGrain />
       <StatusBar style="dark" />
-      <ScrollView contentContainerClassName="p-6 pb-32">
+      <ScrollView 
+        contentContainerClassName="p-6 pb-32"
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
+      >
         <View className="mb-8">
-          <Text className="font-erode-bold text-4xl text-forest mb-2">Your Program</Text>
-          <Text className="font-satoshi-bold text-forest/70 text-sm uppercase mb-2">{program.name}</Text>
+          <Text className="font-erode-medium text-[40px] leading-[48px] tracking-tight text-forest mb-2">Your Program</Text>
+          <Text className="font-satoshi-bold text-forest/50 text-[11px] uppercase tracking-[3px] mb-3">{program.name}</Text>
           <Text className="font-satoshi text-base text-gray-500">
             Day {Math.min(currentDay, program.totalDays)} of {program.totalDays}
           </Text>
@@ -90,41 +209,29 @@ export default function ProgramScreen() {
             </Text>
           </View>
         ) : (
-          <View>
+          <View onLayout={(e) => { daysContainerY.current = e.nativeEvent.layout.y; }}>
             {program.days.map((day, index) => {
               const isCompleted = completedDays.includes(day.dayNumber);
               const isLocked = isArchivedReset || day.dayNumber > currentDay;
               const isCurrent = day.dayNumber === currentDay && !isCompleted;
 
               return (
-                <TimelineItem
+                <ProgramTimelineNode
                   key={`${activeProgram}-${day.dayNumber}`}
+                  day={day}
+                  index={index}
                   isFirst={index === 0}
                   isLast={index === program.days.length - 1}
                   isLocked={isLocked}
                   isCompleted={isCompleted}
                   isCurrent={isCurrent}
-                >
-                  <TouchableOpacity
-                    activeOpacity={isLocked ? 1 : 0.9}
-                    disabled={isLocked}
-                    onPress={() =>
-                      router.push(`/day-detail?programSlug=${activeProgram}&dayNumber=${day.dayNumber}` as Href)
-                    }
-                  >
-                    <ProgramCard
-                      day={{
-                        id: day.dayNumber,
-                        title: day.dayTitle,
-                        description: getDayPreview(day),
-                        durationMinutes: day.estimatedMinutes ?? 5,
-                      }}
-                      isLocked={isLocked}
-                      isCompleted={isCompleted}
-                      isCurrent={isCurrent}
-                    />
-                  </TouchableOpacity>
-                </TimelineItem>
+                  isReturningUser={isReturningUser}
+                  activeProgram={activeProgram}
+                  onLayout={isCurrent ? (e: any) => {
+                    currentDayRelativeY.current = e.nativeEvent.layout.y;
+                    currentDayHeight.current = e.nativeEvent.layout.height;
+                  } : undefined}
+                />
               );
             })}
           </View>

@@ -86,7 +86,7 @@ export function formatUnlockLabel(nextUnlockAt: string | null | undefined, now: 
   });
 
   if (isTomorrow) {
-    return `Available tomorrow at ${timeLabel}`;
+    return `Your next step unlocks tomorrow at ${timeLabel}`;
   }
 
   const dateLabel = unlockDate.toLocaleDateString([], {
@@ -94,5 +94,5 @@ export function formatUnlockLabel(nextUnlockAt: string | null | undefined, now: 
     day: 'numeric',
   });
 
-  return `Available ${dateLabel} at ${timeLabel}`;
+  return `Your next step unlocks ${dateLabel} at ${timeLabel}`;
 }

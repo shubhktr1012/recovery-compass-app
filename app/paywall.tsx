@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import Purchases, { PurchasesPackage } from 'react-native-purchases';
 import Animated, { FadeIn } from 'react-native-reanimated';
+import { Animated as RNAnimated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import { PROGRAM_METADATA } from '@/content/programs/metadata';
@@ -46,6 +47,24 @@ function getRecommendedPrograms(programSlug: ProgramSlug | null | undefined): Pr
   }
 
   return [programSlug];
+}
+
+function RadioIndicator({ isSelected }: { isSelected: boolean }) {
+  const opacity = React.useRef(new RNAnimated.Value(isSelected ? 1 : 0)).current;
+
+  React.useEffect(() => {
+    RNAnimated.timing(opacity, {
+      toValue: isSelected ? 1 : 0,
+      duration: 200,
+      useNativeDriver: true,
+    }).start();
+  }, [isSelected]);
+
+  return (
+    <View className={`mt-1 h-6 w-6 rounded-full border-[1.5px] items-center justify-center ${isSelected ? 'border-forest/40 bg-white' : 'border-forest/20 bg-transparent'}`}>
+      <RNAnimated.View style={{ opacity }} className="h-2.5 w-2.5 rounded-full bg-forest" />
+    </View>
+  );
 }
 
 export default function Paywall() {
@@ -406,11 +425,7 @@ export default function Paywall() {
                     </View>
 
                     {/* Premium Radio indicator */}
-                    <View className={`mt-1 h-6 w-6 rounded-full border-[1.5px] items-center justify-center ${isSelected ? 'border-forest/40 bg-white' : 'border-forest/20 bg-transparent'}`}>
-                      {isSelected && (
-                        <Animated.View entering={FadeIn.duration(200)} className="h-2.5 w-2.5 rounded-full bg-forest" />
-                      )}
-                    </View>
+                    <RadioIndicator isSelected={isSelected} />
                   </Pressable>
                 );
               })}

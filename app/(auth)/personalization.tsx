@@ -3,7 +3,7 @@ import { Alert, KeyboardAvoidingView, Platform, Text, View } from 'react-native'
 import { StatusBar } from 'expo-status-bar';
 import { Href, router, useLocalSearchParams } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
-import Animated, { FadeIn } from 'react-native-reanimated';
+import { Animated as RNAnimated } from 'react-native';
 
 import {
   CompassCTA,
@@ -64,6 +64,17 @@ export default function Personalization() {
   const steps = useMemo(() => buildOnboardingSteps(answers), [answers]);
   const currentStep = steps[Math.min(stepIndex, steps.length - 1)];
   const resolution = useMemo(() => getOnboardingResolution(answers), [answers]);
+
+  const stepFadeAnim = React.useRef(new RNAnimated.Value(1)).current;
+
+  useEffect(() => {
+    stepFadeAnim.setValue(0);
+    RNAnimated.timing(stepFadeAnim, {
+      toValue: 1,
+      duration: 400,
+      useNativeDriver: true,
+    }).start();
+  }, [stepIndex, stepFadeAnim]);
 
   // ─── Clamp step index if steps change ───────────────────────────────────
   useEffect(() => {
@@ -632,9 +643,9 @@ export default function Personalization() {
         <ProgressLine currentStep={stepIndex} totalSteps={steps.length} />
 
         {/* Content with transition */}
-        <Animated.View
+        <RNAnimated.View
           key={`step-${stepIndex}`}
-          entering={FadeIn.duration(400)}
+          style={{ opacity: stepFadeAnim }}
         >
           {/* Pill label — 48px below progress */}
           <View className="mt-12">
@@ -649,7 +660,7 @@ export default function Personalization() {
 
           {/* Interaction zone */}
           {renderCurrentStep()}
-        </Animated.View>
+        </RNAnimated.View>
       </StepContainer>
     </KeyboardAvoidingView>
   );

@@ -1,6 +1,5 @@
-import React from 'react';
-import { Pressable, Text, View } from 'react-native';
-import Animated, { FadeIn } from 'react-native-reanimated';
+import React, { useEffect, useRef } from 'react';
+import { Pressable, Text, View, Animated, StyleSheet } from 'react-native';
 
 interface SurfaceSelectCardProps {
   title: string;
@@ -10,32 +9,69 @@ interface SurfaceSelectCardProps {
 }
 
 export function SurfaceSelectCard({ title, description, selected, onPress }: SurfaceSelectCardProps) {
-  return (
-    <Pressable onPress={onPress} className="mb-3">
-      <View
-        className={`relative overflow-hidden rounded-3xl px-6 py-5 ${
-          selected 
-            ? 'bg-[#F9FAF9] border border-forest/15' 
-            : 'bg-white shadow-[0_2px_8px_-4px_rgba(6,41,12,0.05)] border border-forest/5'
-        }`}
-      >
-        {/* Left accent bar when selected */}
-        {selected && (
-          <Animated.View 
-            entering={FadeIn.duration(200)}
-            className="absolute left-0 top-3 bottom-3 w-[3px] rounded-full bg-forest"
-          />
-        )}
+  const opacity = useRef(new Animated.Value(selected ? 1 : 0)).current;
 
-        <Text className="font-satoshi-bold text-[16px] text-forest">
-          {title}
-        </Text>
-        {description ? (
-          <Text className="font-satoshi text-[14px] text-forest/50 mt-1.5">
-            {description}
-          </Text>
-        ) : null}
+  useEffect(() => {
+    Animated.timing(opacity, {
+      toValue: selected ? 1 : 0,
+      duration: 200,
+      useNativeDriver: true,
+    }).start();
+  }, [selected]);
+
+  return (
+    <Pressable onPress={onPress} style={{ marginBottom: 12 }}>
+      <View style={[styles.card, selected ? styles.cardSelected : styles.cardUnselected]}>
+        {/* Left accent bar when selected */}
+        <Animated.View style={[styles.indicator, { opacity }]} />
+
+        <Text style={styles.title}>{title}</Text>
+        {description ? <Text style={styles.description}>{description}</Text> : null}
       </View>
     </Pressable>
   );
 }
+
+const styles = StyleSheet.create({
+  card: {
+    position: 'relative',
+    overflow: 'hidden',
+    borderRadius: 24,
+    paddingHorizontal: 24,
+    paddingVertical: 20,
+    borderWidth: 1,
+  },
+  cardUnselected: {
+    backgroundColor: '#ffffff',
+    borderColor: 'rgba(6, 41, 12, 0.05)',
+    shadowColor: 'rgba(6, 41, 12, 1)',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  cardSelected: {
+    backgroundColor: '#F9FAF9',
+    borderColor: 'rgba(6, 41, 12, 0.15)',
+  },
+  title: {
+    fontFamily: 'Satoshi-Bold',
+    fontSize: 16,
+    color: '#06290C',
+  },
+  description: {
+    fontFamily: 'Satoshi-Regular',
+    fontSize: 14,
+    color: 'rgba(6, 41, 12, 0.5)',
+    marginTop: 6,
+  },
+  indicator: {
+    position: 'absolute',
+    left: 0,
+    top: 12,
+    bottom: 12,
+    width: 3,
+    borderRadius: 9999,
+    backgroundColor: '#06290C',
+  },
+});

@@ -23,6 +23,7 @@ const MAPPING = {
   'person.fill': 'person', // Profile
   'exclamationmark.triangle.fill': 'warning', // SOS
   'play.circle.fill': 'play-circle', // Action Card
+  'checkmark.circle.fill': 'check-circle',
 } as IconMapping;
 
 /**

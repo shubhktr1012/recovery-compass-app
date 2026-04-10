@@ -1,6 +1,6 @@
 import React from 'react';
 import { Pressable, Text, View } from 'react-native';
-import Animated, { FadeIn } from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated';
 
 interface InlineSelectRowProps {
   label: string;
@@ -10,6 +10,10 @@ interface InlineSelectRowProps {
 }
 
 export function InlineSelectRow({ label, selected, onPress, isLast }: InlineSelectRowProps) {
+  const indicatorStyle = useAnimatedStyle(() => ({
+    opacity: withTiming(selected ? 1 : 0, { duration: 150 }),
+  }), [selected]);
+
   return (
     <Pressable 
       onPress={onPress}
@@ -20,12 +24,10 @@ export function InlineSelectRow({ label, selected, onPress, isLast }: InlineSele
           selected ? 'border-forest' : 'border-forest/20'
         }`}
       >
-        {selected && (
-          <Animated.View 
-            entering={FadeIn.duration(150)} 
-            className="h-2.5 w-2.5 rounded-full bg-forest" 
-          />
-        )}
+        <Animated.View 
+          style={indicatorStyle}
+          className="h-2.5 w-2.5 rounded-full bg-forest" 
+        />
       </View>
       
       <Text 

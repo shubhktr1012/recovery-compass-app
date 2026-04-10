@@ -555,6 +555,8 @@ function ExerciseRoutineCardView({ card }: { card: ExerciseRoutineCard; }) {
     >
       <View style={styles.routineList}>
         {routineItems.map((item, index) => {
+          if (!item) return null;
+          // Use name+index since 'id' doesn't exist on this inline type representation
           const itemId = `${item.name}-${index}`;
           const isCompleted = completedItems.has(itemId);
           const instructions = Array.isArray(item.instructions) ? item.instructions : [];
