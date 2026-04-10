@@ -64,6 +64,7 @@ function NavigationGate({
         const inPaywall = (segments[0] as string) === 'paywall';
         const inDayDetail = (segments[0] as string) === 'day-detail';
         const inResetPassword = inAuthGroup && (segments[1] as string) === 'reset-password';
+        const inPersonalization = inAuthGroup && (segments[1] as string) === 'personalization';
         const inAccountStack = (segments[0] as string) === 'account';
 
         const checkRouting = async () => {
@@ -85,7 +86,7 @@ function NavigationGate({
             target = '/(auth)/personalization' as Href;
           }
         } else if (!isSubscribed) {
-          if (!inPaywall) {
+          if (!inPaywall && !inPersonalization) {
             target = '/paywall' as Href;
           }
         } else if (!inTabsGroup && !inDayDetail && !inAccountStack) {

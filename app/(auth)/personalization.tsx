@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Alert, KeyboardAvoidingView, Platform, Text, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { Href, router } from 'expo-router';
+import { Href, router, useLocalSearchParams } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
 import Animated, { FadeIn } from 'react-native-reanimated';
 
@@ -22,6 +22,7 @@ import {
 import { ONBOARDING_RESPONSE_QUERY_KEY } from '@/hooks/useOnboardingResponse';
 import { buildOnboardingSteps, createInitialOnboardingAnswers, getOnboardingResolution } from '@/lib/onboarding.flow';
 import { hasMeaningfulOnboardingDraft, loadOnboardingDraft, saveOnboardingDraft, saveOnboardingQuestionnaire } from '@/lib/onboarding.persistence';
+import { AppStorage } from '@/lib/storage';
 import { GENDER_OPTIONS } from '@/lib/onboarding.types';
 import type { GenderOption, GuidedIssueId, JourneyKey, OnboardingPath, OnboardingStep, QuestionDefinition } from '@/lib/onboarding.types';
 import { useAuth } from '@/providers/auth';
@@ -42,15 +43,23 @@ function isPositiveInteger(value: string) {
   return Number.isInteger(Number(value)) && Number(value) > 0;
 }
 
+const PAYWALL_RETURN_STATE_VERSION = 'onboarding_paywall_return_v1';
+
+function getPaywallReturnStateKey(userId: string) {
+  return `onboarding:paywall-return:${userId}`;
+}
+
 // ─── Screen ─────────────────────────────────────────────────────────────────
 export default function Personalization() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const params = useLocalSearchParams<{ resume?: string | string[] }>();
   const [didRestoreDraft, setDidRestoreDraft] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
   const [isDraftReady, setIsDraftReady] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [answers, setAnswers] = useState(createInitialOnboardingAnswers);
+  const resumeMode = Array.isArray(params.resume) ? params.resume[0] : params.resume;
 
   const steps = useMemo(() => buildOnboardingSteps(answers), [answers]);
   const currentStep = steps[Math.min(stepIndex, steps.length - 1)];
@@ -76,6 +85,43 @@ export default function Personalization() {
       }
 
       try {
+        const shouldRestorePaywallReturn = resumeMode === 'review';
+
+        if (shouldRestorePaywallReturn) {
+          const rawReturnState = await AppStorage.getItem(getPaywallReturnStateKey(user.id));
+
+          if (rawReturnState) {
+            const returnState = JSON.parse(rawReturnState) as {
+              version?: string;
+              currentStepId?: string;
+              currentStepIndex?: number;
+              answers?: ReturnType<typeof createInitialOnboardingAnswers>;
+            };
+
+            if (
+              returnState.version === PAYWALL_RETURN_STATE_VERSION &&
+              returnState.answers
+            ) {
+              const restoredAnswers = {
+                ...createInitialOnboardingAnswers(),
+                ...returnState.answers,
+                questionValues: returnState.answers.questionValues ?? {},
+              };
+              const restoredSteps = buildOnboardingSteps(restoredAnswers);
+              const restoredIndex = restoredSteps.findIndex((step) => step.id === returnState.currentStepId);
+
+              setAnswers(restoredAnswers);
+              setStepIndex(
+                restoredIndex >= 0
+                  ? restoredIndex
+                  : Math.max(0, Math.min(returnState.currentStepIndex ?? restoredSteps.length - 1, restoredSteps.length - 1))
+              );
+              setDidRestoreDraft(true);
+              return;
+            }
+          }
+        }
+
         const draft = await loadOnboardingDraft(user.id);
         if (!isMounted) return;
 
@@ -111,7 +157,7 @@ export default function Personalization() {
     return () => {
       isMounted = false;
     };
-  }, [user]);
+  }, [resumeMode, user]);
 
   // ─── Auto-save draft ───────────────────────────────────────────────────
   useEffect(() => {
@@ -296,6 +342,16 @@ export default function Personalization() {
     setIsSaving(true);
 
     try {
+      await AppStorage.setItem(
+        getPaywallReturnStateKey(user.id),
+        JSON.stringify({
+          version: PAYWALL_RETURN_STATE_VERSION,
+          currentStepId: currentStep.id,
+          currentStepIndex: stepIndex,
+          answers,
+        })
+      );
+
       const { persistedOnboarding, persistedProfile } = await saveOnboardingQuestionnaire({
         answers,
         email: user.email,

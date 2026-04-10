@@ -1,10 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Alert, Pressable, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Linking, Pressable, ScrollView, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import Purchases, { PurchasesPackage } from 'react-native-purchases';
 import Animated, { FadeIn } from 'react-native-reanimated';
+import { Ionicons } from '@expo/vector-icons';
 
 import { PROGRAM_METADATA } from '@/content/programs/metadata';
 import { captureError } from '@/lib/monitoring';
@@ -25,6 +26,14 @@ const ACCESS_CONFIRMATION_RETRY_COUNT = 4;
 
 function wait(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function openLink(url: string) {
+  try {
+    await Linking.openURL(url);
+  } catch {
+    Alert.alert('Unable to open link', 'Please try again in a moment.');
+  }
 }
 
 function getRecommendedPrograms(programSlug: ProgramSlug | null | undefined): ProgramSlug[] {
@@ -94,7 +103,7 @@ export default function Paywall() {
       } catch (e) {
         console.error('Error fetching offerings', e);
         void captureError(e, { source: 'paywall', metadata: { stage: 'get_offerings' } });
-        Alert.alert('Error', 'Could not load subscription options.');
+        Alert.alert('Error', 'Could not load purchase options.');
       } finally {
         setFetchingOfferings(false);
       }
@@ -107,6 +116,20 @@ export default function Paywall() {
     access.ownedProgram === 'six_day_reset' &&
     (access.purchaseState === 'owned_completed' || access.purchaseState === 'owned_archived');
   const recommendedProgram = profile?.recommended_program ?? null;
+
+  const handleBack = () => {
+    if (isUpgradeFlow || access.ownedProgram) {
+      if (typeof router.canGoBack === 'function' && router.canGoBack()) {
+        router.back();
+        return;
+      }
+
+      router.replace('/(tabs)/program');
+      return;
+    }
+
+    router.replace('/(auth)/personalization?resume=review');
+  };
 
   const visibleProgramSlugs = useMemo(() => {
     if (isUpgradeFlow) {
@@ -291,57 +314,63 @@ export default function Paywall() {
     <View className="flex-1 bg-surface">
       <StatusBar style="dark" />
       <ScrollView
+        showsVerticalScrollIndicator={false}
         contentContainerStyle={{
-          paddingTop: Math.max(insets.top, 24) + 24,
+          paddingTop: Math.max(insets.top, 24) + 16,
           paddingHorizontal: 24,
-          // Keep the sticky purchase bar from covering the final card.
-          paddingBottom: 180 + insets.bottom,
+          paddingBottom: 220 + insets.bottom,
         }}
       >
-        <View className="mb-8">
-          <Text className="font-erode-bold text-[32px] text-forest leading-tight mb-4">
+        <Pressable
+          onPress={handleBack}
+          hitSlop={20}
+          className="self-start mb-10 h-12 w-12 items-center justify-center rounded-full border border-forest/10 bg-white"
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
+        >
+          <Ionicons name="chevron-back" size={20} color="#06290C" />
+        </Pressable>
+
+        <View className="mb-12">
+          <Text className="font-erode text-[36px] text-forest leading-[42px] tracking-tight mb-3">
             {headerTitle}
           </Text>
-          <Text className="font-satoshi text-[16px] leading-[24px] text-forest/65">
+          <Text className="font-satoshi text-[17px] leading-[26px] text-forest/70 pr-4">
             {headerBody}
           </Text>
         </View>
 
         {fetchingOfferings ? (
-          <View className="items-center justify-center py-12">
-            <ActivityIndicator size="large" color="#06290C" />
+          <View className="items-center justify-center py-16">
+            <ActivityIndicator size="small" color="#06290C" />
           </View>
         ) : eligiblePackages.length === 0 ? (
-          <View className="items-center py-12 px-4 rounded-3xl bg-forest/5 border border-forest/10">
-            <Text className="font-satoshi text-center text-forest/70 leading-[24px]">
+          <View className="items-center py-12 px-6 rounded-3xl bg-forest/5 border border-forest/10">
+            <Text className="font-satoshi text-center text-[15px] text-forest/70 leading-[24px]">
               {access.ownedProgram && !isUpgradeFlow
-                ? 'You already have full access to Recovery Compass. Head to the Program tab to continue your journey.'
-                : 'No eligible setups are available for this account right now. This usually means your account is already fully unlocked.'}
+                ? 'Your account has full access to Recovery Compass. Head to the Program tab to continue your journey.'
+                : 'No eligible setups are available right now. This usually means your account is already fully unlocked.'}
             </Text>
             <Pressable
               onPress={handleRestore}
               disabled={loading}
-              hitSlop={15}
-              className="mt-8 rounded-full border border-forest/10 px-6 py-3"
+              hitSlop={20}
+              className="mt-8 rounded-full border border-forest/10 px-8 py-3.5 bg-white"
             >
-              <Text className="font-satoshi-bold text-[13px] text-forest">
+              <Text className="font-satoshi-bold text-[14px] text-forest">
                 {loading ? 'Restoring...' : 'Restore Purchases'}
               </Text>
             </Pressable>
           </View>
         ) : (
           <View>
-            <View className="mb-10 pl-1" style={{ gap: 12 }}>
+            <View className="mb-12 pl-1" style={{ gap: 16 }}>
               <FocusPointRow text="Private daily progress tracking" />
               <FocusPointRow text="Science-based behavioral grounding" />
               <FocusPointRow text="One-time unlock. No recurring fees." />
             </View>
 
-            <Text className="font-satoshi-bold text-forest text-[13px] uppercase tracking-widest mb-4 opacity-60 ml-2">
-              Select Program
-            </Text>
-
-            <View style={{ gap: 12 }}>
+            <View style={{ gap: 16 }}>
               {eligiblePackages.map((pack) => {
                 const programSlug = getProgramSlugForPackage(pack);
                 const isSelected = selectedPackageId === pack.identifier;
@@ -350,34 +379,38 @@ export default function Paywall() {
                   <Pressable
                     key={pack.identifier}
                     onPress={() => setSelectedPackageId(pack.identifier)}
-                    className={`relative overflow-hidden rounded-3xl px-6 py-6 transition-all ${
+                    className={`flex-row items-start px-6 py-6 rounded-3xl border transition-colors duration-200 ${
                       isSelected
-                        ? 'bg-sage border-2 border-forest/15'
-                        : 'bg-white border-2 border-transparent shadow-[0_2px_12px_-4px_rgba(6,41,12,0.06)]'
+                        ? 'bg-sage border-forest/15'
+                        : 'bg-white border-forest/10'
                     }`}
                   >
-                    {/* Left Accent & Radio Indicator */}
-                    <View className="flex-row items-start justify-between mb-2">
-                      <Text className={`font-erode text-[22px] ${isSelected ? 'font-erode-bold text-forest' : 'text-forest/80'}`}>
+                    <View className="flex-1 pr-6">
+                      <Text className={`font-erode text-[24px] tracking-tight mb-2 ${isSelected ? 'text-forest' : 'text-forest/80'}`}>
                         {getPackageDisplayName(pack)}
                       </Text>
 
-                      {/* Premium Radio indicator */}
-                      <View className={`h-5 w-5 rounded-full border-[1.5px] items-center justify-center mt-1 ${isSelected ? 'border-forest' : 'border-forest/20'}`}>
-                        {isSelected && (
-                          <Animated.View entering={FadeIn.duration(150)} className="h-2.5 w-2.5 rounded-full bg-forest" />
-                        )}
+                      <Text className={`font-satoshi text-[15px] leading-6 mb-5 ${isSelected ? 'text-forest/80' : 'text-forest/60'}`}>
+                        {pack.product.description ||
+                          (programSlug ? PROGRAM_METADATA[programSlug].description : 'A guided Recovery Compass program.')}
+                      </Text>
+
+                      <View className="flex-row items-baseline">
+                        <Text className={`font-satoshi-bold text-[22px] tracking-tight ${isSelected ? 'text-forest' : 'text-forest/70'}`}>
+                          {pack.product.priceString}
+                        </Text>
+                        <Text className={`font-satoshi text-[14px] ml-1.5 ${isSelected ? 'text-forest/70' : 'text-forest/50'}`}>
+                          one-time
+                        </Text>
                       </View>
                     </View>
 
-                    <Text className={`font-satoshi text-[14px] leading-6 pr-4 mb-4 ${isSelected ? 'text-forest/70' : 'text-forest/50'}`}>
-                      {pack.product.description ||
-                        (programSlug ? PROGRAM_METADATA[programSlug].description : 'A guided Recovery Compass program.')}
-                    </Text>
-
-                    <Text className={`font-satoshi-bold text-[24px] ${isSelected ? 'text-forest' : 'text-forest/70'}`}>
-                      {pack.product.priceString}
-                    </Text>
+                    {/* Premium Radio indicator */}
+                    <View className={`mt-1 h-6 w-6 rounded-full border-[1.5px] items-center justify-center ${isSelected ? 'border-forest/40 bg-white' : 'border-forest/20 bg-transparent'}`}>
+                      {isSelected && (
+                        <Animated.View entering={FadeIn.duration(200)} className="h-2.5 w-2.5 rounded-full bg-forest" />
+                      )}
+                    </View>
                   </Pressable>
                 );
               })}
@@ -389,16 +422,11 @@ export default function Paywall() {
       {/* Sticky Bottom Area */}
       {eligiblePackages.length > 0 && !fetchingOfferings && (
         <View
-          className="absolute bottom-0 left-0 right-0 bg-surface border-t border-forest/5"
+          className="absolute bottom-0 left-0 right-0 bg-surface/95 border-t border-forest/10"
           style={{
             paddingTop: 20,
             paddingHorizontal: 24,
-            paddingBottom: Math.max(insets.bottom, 20) + 12,
-            shadowColor: '#06290C',
-            shadowOffset: { width: 0, height: -10 },
-            shadowOpacity: 0.03,
-            shadowRadius: 15,
-            elevation: 10
+            paddingBottom: Math.max(insets.bottom, 12) + 12,
           }}
         >
           <CompassCTA
@@ -408,13 +436,34 @@ export default function Paywall() {
             disabled={!selectedPackageId || loading}
           />
 
-          <View className="flex-row items-center justify-center mt-5" style={{ gap: 24 }}>
-            <Pressable onPress={handleRestore} disabled={loading} hitSlop={15}>
-              <Text className="font-satoshi text-[13px] text-forest/40 underline">
+          <View className="mt-6 flex-row items-center justify-between px-1">
+            <Text className="font-satoshi text-[14px] text-forest/70">
+              One-time payment
+            </Text>
+            <Pressable onPress={handleRestore} disabled={loading} hitSlop={20}>
+              <Text className="font-satoshi text-[14px] text-forest/70 underline">
                 Restore Purchases
               </Text>
             </Pressable>
           </View>
+
+          <Text className="mt-5 text-center font-satoshi text-[12px] leading-[18px] text-forest/40 mx-4">
+            By continuing, you agree to our{' '}
+            <Text
+              className="text-forest/60 underline"
+              onPress={() => void openLink('https://recoverycompass.app/terms')}
+            >
+              Terms
+            </Text>{' '}
+            and{' '}
+            <Text
+              className="text-forest/60 underline"
+              onPress={() => void openLink('https://recoverycompass.app/privacy')}
+            >
+              Privacy
+            </Text>
+            . No subscriptions or recurring charges.
+          </Text>
         </View>
       )}
     </View>

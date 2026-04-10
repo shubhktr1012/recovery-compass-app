@@ -65,6 +65,7 @@
 - [x] Account / settings / statistics visual polish pass shipped
 - [x] Day-detail shell refreshed (editorial header, story-style progress rail, resume continuity, card handoff plumbing)
 - [x] Program reflection persistence foundation added (Supabase table + native API wiring)
+- [x] Day completion flow shipped (calendar-based unlock cadence, in-card close/completion UX, Supabase sync restored)
 
 ## In Progress
 
@@ -108,6 +109,7 @@
 - [ ] CALM/Ground full 10-min guided experience
 - [ ] Mentor routine system v1 (structured template library + rare custom one-off routines)
 - [ ] Day-in-program routine schema redesign (program/day-focused rather than generic task-focused)
+- [ ] Program progress sync hardening follow-up: replace launch-safe delete+insert sync with an atomic server-side or RLS-clean upsert path for stronger same-user multi-device concurrency
 - [ ] Calendar sync for mentor-assigned routines (Google / Apple Calendar integration)
 - [ ] Mentor workflow streamlining (structured input flow instead of free-text routine entry)
 - [ ] Sentry crash reporting
@@ -149,6 +151,7 @@ Launch → V4 Splash → Onboarding Carousel → Sign Up / Sign In
 ## Known Bugs
 
 - [ ] iOS purchase environment still noisy unless tested via Xcode StoreKit config or real-device sandbox
+- [ ] RevenueCat / App Store Connect production purchase path still blocked by `MISSING_METADATA` on all 6 iOS IAP products and noisy unused offerings (`default`, `main`, `main_android`)
 
 ## Latest Verification
 
@@ -165,6 +168,7 @@ Launch → V4 Splash → Onboarding Carousel → Sign Up / Sign In
 - [x] Questionnaire → recommendation → paywall → purchase → unlock sweep passed on iOS
 - [x] iOS auth QA passed for email, Google, and Apple sign-in
 - [x] Startup stale-session recovery verified end-to-end with forced invalid refresh-token state; app returns to Welcome and shows the session-expired notice
+- [x] Day completion now persists without the prior `program_progress` constraint/RLS runtime error; current launch-safe sync strategy is acceptable for launch volume, with stronger concurrency hardening deferred post-review
 - [ ] Real-device iPhone sandbox purchase verification still pending (borrowed device / TestFlight)
 - [x] Android internal-track Google Play purchase verification complete (Play install, tester account, Google Play purchase success, unlock path, restore path)
 - [x] Redesigned 4-tab bar routes verified on device (Home / Program / My Journal / Account)

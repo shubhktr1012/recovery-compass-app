@@ -853,13 +853,51 @@ function JournalCardView({
   );
 }
 
-function CloseCardView({ card }: { card: CloseCard; }) {
+function CloseCardViewWithState({
+  card,
+  isCompleted = false,
+  isFinalProgramDay = false,
+  completionDescription,
+  isCompleting = false,
+  onCompleteDay,
+  onBackToProgram,
+}: {
+  card: CloseCard;
+  isCompleted?: boolean;
+  isFinalProgramDay?: boolean;
+  completionDescription?: string | null;
+  isCompleting?: boolean;
+  onCompleteDay?: () => void;
+  onBackToProgram?: () => void;
+}) {
+  const actionLabel = isCompleted
+    ? 'Back to Program'
+    : isCompleting
+      ? 'Completing...'
+      : isFinalProgramDay
+        ? 'Complete Program Day'
+        : 'Complete Day';
+
   return (
-    <DarkCardShell eyebrow="Today's close" title={card.message}>
+    <DarkCardShell eyebrow={isCompleted ? 'Review mode' : "Today's close"} title={card.message}>
       {card.secondaryMessage ? (
         <Text style={styles.closeSub}>{card.secondaryMessage}</Text>
       ) : null}
-      <PrimaryVisualButton label="Complete Day" inverted />
+
+      {isCompleted && completionDescription ? (
+        <View style={styles.closeReviewBox}>
+          <Text style={styles.closeReviewLabel}>
+            {isFinalProgramDay ? 'Program status' : 'Next unlock'}
+          </Text>
+          <Text style={styles.closeReviewText}>{completionDescription}</Text>
+        </View>
+      ) : null}
+
+      <PrimaryVisualButton
+        label={actionLabel}
+        inverted
+        onPress={isCompleted ? onBackToProgram : onCompleteDay}
+      />
     </DarkCardShell>
   );
 }
@@ -870,6 +908,7 @@ export function CardRenderer({
   onContinue,
   journalStorageKey,
   programReflectionContext,
+  closeCardState,
 }: {
   card: ContentCard;
   programName?: string;
@@ -880,6 +919,14 @@ export function CardRenderer({
     programSlug: string;
     dayNumber: number;
     cardIndex: number;
+  };
+  closeCardState?: {
+    isCompleted?: boolean;
+    isFinalProgramDay?: boolean;
+    completionDescription?: string | null;
+    isCompleting?: boolean;
+    onCompleteDay?: () => void;
+    onBackToProgram?: () => void;
   };
 }) {
   switch (card.type) {
@@ -917,7 +964,7 @@ export function CardRenderer({
         />
       );
     case 'close':
-      return <CloseCardView card={card} />;
+      return <CloseCardViewWithState card={card} {...closeCardState} />;
     default:
       return (
         <CardShell eyebrow="Unsupported card" title="Card type not mapped">
@@ -1409,7 +1456,30 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 28,
     color: 'rgba(255, 255, 255, 0.6)',
-    marginBottom: 40,
+    marginBottom: 28,
+  },
+  closeReviewBox: {
+    marginBottom: 28,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: 'rgba(227, 243, 229, 0.16)',
+    backgroundColor: 'rgba(227, 243, 229, 0.08)',
+    paddingHorizontal: 18,
+    paddingVertical: 16,
+  },
+  closeReviewLabel: {
+    marginBottom: 8,
+    fontFamily: 'Satoshi-Bold',
+    fontSize: 11,
+    textTransform: 'uppercase',
+    letterSpacing: 1.1,
+    color: 'rgba(255, 255, 255, 0.45)',
+  },
+  closeReviewText: {
+    fontFamily: 'Satoshi',
+    fontSize: 15,
+    lineHeight: 25,
+    color: 'rgba(255, 255, 255, 0.78)',
   },
   closeDivider: {
     height: 1,

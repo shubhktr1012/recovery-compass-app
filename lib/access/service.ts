@@ -364,14 +364,22 @@ export class AccessService {
     }
   }
 
-  static async syncProgressRecordToSupabase(progress: ProgramProgressRecord) {
-    if (!progress.completedDays.length) {
-      return;
-    }
-
+  static async syncProgressRecordToSupabase(userId: string, progress: ProgramProgressRecord) {
     try {
+      const { error: deleteError } = await supabase
+        .from('program_progress')
+        .delete()
+        .eq('user_id', userId)
+        .eq('program_id', progress.programSlug);
+
+      if (deleteError) throw deleteError;
+
+      if (!progress.completedDays.length) {
+        return;
+      }
+
       const rows = progress.completedDays.map((dayNumber) => ({
-        user_id: progress.userId,
+        user_id: userId,
         program_id: progress.programSlug,
         day_id: dayNumber,
         status: 'COMPLETED',
@@ -381,9 +389,7 @@ export class AccessService {
         completed_days: progress.completedDays,
       }));
 
-      const { error } = await supabase.from('program_progress').upsert(rows, {
-        onConflict: 'user_id,program_id,day_id',
-      });
+      const { error } = await supabase.from('program_progress').insert(rows);
 
       if (error) throw error;
     } catch (error) {
@@ -399,7 +405,7 @@ export class AccessService {
     await this.syncAccessSnapshotToSupabase(userId, snapshot);
 
     if (progress) {
-      await this.syncProgressRecordToSupabase(progress);
+      await this.syncProgressRecordToSupabase(userId, progress);
     }
   }
 
@@ -514,6 +520,7 @@ export class AccessService {
       (await this.getProgressRecord()) ?? this.buildProgressRecord(userId, programSlug);
     const nextProgress = updater({
       ...currentProgress,
+      userId,
       programSlug,
     });
 

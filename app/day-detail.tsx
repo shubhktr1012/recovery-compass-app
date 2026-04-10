@@ -107,6 +107,7 @@ function SwipeDeckCard({
   onContinue,
   journalStorageKey,
   programReflectionContext,
+  closeCardState,
 }: {
   card: DayContent['cards'][number];
   index: number;
@@ -120,6 +121,14 @@ function SwipeDeckCard({
     programSlug: ProgramSlug;
     dayNumber: number;
     cardIndex: number;
+  };
+  closeCardState?: {
+    isCompleted?: boolean;
+    isFinalProgramDay?: boolean;
+    completionDescription?: string | null;
+    isCompleting?: boolean;
+    onCompleteDay?: () => void;
+    onBackToProgram?: () => void;
   };
 }) {
   const animatedStyle = useAnimatedStyle(() => {
@@ -146,6 +155,7 @@ function SwipeDeckCard({
             programName={programName}
             onContinue={onContinue}
             journalStorageKey={journalStorageKey}
+            closeCardState={closeCardState}
             programReflectionContext={
               card.type === 'journal' ? programReflectionContext : undefined
             }
@@ -289,8 +299,9 @@ export default function DayDetailScreen() {
   }, [access.completionState, access.currentDay, access.startedAt, program]);
 
   const isFutureLocked = Boolean(normalizedDayNumber && normalizedDayNumber > scheduledDay && !isDayCompleted);
+  const hasCloseCard = dayContent?.cards.some((card) => card.type === 'close') ?? false;
   const isLastCard = Boolean(dayContent && currentIndex === dayContent.cards.length - 1);
-  const shouldShowCompletionBar = isDayCompleted || isLastCard;
+  const shouldShowCompletionBar = !hasCloseCard && (isDayCompleted || isLastCard);
   const nextUnlockLabel = useMemo(() => {
     if (!program || access.completionState === 'completed') return null;
     return formatUnlockLabel(getProgramNextUnlockAt(access.startedAt, program.totalDays));
@@ -429,6 +440,16 @@ export default function DayDetailScreen() {
               programName={program.name}
               onContinue={handleContinueFromCard}
               journalStorageKey={`day-reflection:${dayContent.programSlug}:${dayContent.dayNumber}:${index}`}
+              closeCardState={{
+                isCompleted: isDayCompleted,
+                isFinalProgramDay,
+                completionDescription,
+                isCompleting: isCompletingDay,
+                onCompleteDay: () => {
+                  void handleCompleteCurrentDay();
+                },
+                onBackToProgram: () => router.replace('/(tabs)/program' as Href),
+              }}
               programReflectionContext={{
                 userId: user?.id,
                 programSlug: dayContent.programSlug,
