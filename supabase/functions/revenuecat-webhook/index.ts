@@ -1,8 +1,7 @@
-// deno-lint-ignore-file no-import-prefix
-import { serve } from "https://deno.land/std@0.177.0/http/server.ts"
-import { createClient } from "npm:@supabase/supabase-js@2"
+import { serve } from "std/http/server.ts";
+import { createClient } from "@supabase/supabase-js";
 
-console.log("RevenueCat Webhook Function Started!")
+console.log("RevenueCat Webhook Function Started!");
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL") as string;
 const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") as string;
