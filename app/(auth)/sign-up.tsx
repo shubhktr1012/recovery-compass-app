@@ -11,10 +11,14 @@ import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { AppColors } from '@/constants/theme';
+import { isStrongPassword, PASSWORD_REQUIREMENTS_HINT } from '@/lib/password';
+import { PasswordStrength } from '@/components/ui/PasswordStrength';
 
 const signUpSchema = z.object({
     email: z.string().email('Please enter a valid email'),
-    password: z.string().min(6, 'Password must be at least 6 characters'),
+    password: z.string().refine(isStrongPassword, {
+        message: PASSWORD_REQUIREMENTS_HINT,
+    }),
 });
 
 type SignUpFormData = z.infer<typeof signUpSchema>;
@@ -172,6 +176,7 @@ export default function SignUp() {
                                     value={value}
                                     isPassword
                                     autoCapitalize="none"
+                                    helperText={<PasswordStrength password={value} />}
                                     error={errors.password?.message}
                                 />
                             )}

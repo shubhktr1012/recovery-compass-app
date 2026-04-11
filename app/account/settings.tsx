@@ -3,6 +3,7 @@ import { Alert, ScrollView, Text, TouchableOpacity, View, Pressable } from 'reac
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
+import * as Linking from 'expo-linking';
 import { AppColors } from '@/constants/theme';
 import { useAuth } from '@/providers/auth';
 import { useProfile } from '@/providers/profile';
@@ -85,6 +86,14 @@ export default function SettingsScreen() {
     );
   };
 
+  const handleRequestDataDeletion = async () => {
+    try {
+      await Linking.openURL('https://recoverycompass.co/delete-account');
+    } catch (error: any) {
+      Alert.alert('Could not open link', error?.message ?? 'Please try again.');
+    }
+  };
+
   const activeProgramStatus = access.ownedProgram ? 'Active' : 'Free Tier';
 
   return (
@@ -147,6 +156,16 @@ export default function SettingsScreen() {
 
         {/* Danger Zone - Refined Text Link */}
         <View className="mt-8 pt-8 border-t border-forest/5 items-center">
+            <Pressable
+                onPress={() => void handleRequestDataDeletion()}
+                className="flex-row items-center opacity-70 active:opacity-100 mb-5"
+                hitSlop={12}
+            >
+                <IconSymbol name="link" size={14} color={AppColors.forest} />
+                <Text className="ml-2 font-satoshi-medium text-[13px] text-forest">
+                    Request Data Deletion
+                </Text>
+            </Pressable>
             <Pressable
                 onPress={handleDeleteAccount}
                 className="flex-row items-center opacity-40 active:opacity-100"

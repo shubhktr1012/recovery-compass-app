@@ -364,34 +364,59 @@ export class AccessService {
     }
   }
 
+  static async syncProgressRecordToSupabaseLegacy(userId: string, progress: ProgramProgressRecord) {
+    const { error: deleteError } = await supabase
+      .from('program_progress')
+      .delete()
+      .eq('user_id', userId)
+      .eq('program_id', progress.programSlug);
+
+    if (deleteError) throw deleteError;
+
+    if (!progress.completedDays.length) {
+      return;
+    }
+
+    const rows = progress.completedDays.map((dayNumber) => ({
+      user_id: userId,
+      program_id: progress.programSlug,
+      day_id: dayNumber,
+      status: 'COMPLETED',
+      content_completed: true,
+      completed_at: progress.completedAt ?? new Date().toISOString(),
+      current_day: progress.currentDay,
+      completed_days: progress.completedDays,
+    }));
+
+    const { error } = await supabase.from('program_progress').insert(rows);
+
+    if (error) throw error;
+  }
+
   static async syncProgressRecordToSupabase(userId: string, progress: ProgramProgressRecord) {
     try {
-      const { error: deleteError } = await supabase
-        .from('program_progress')
-        .delete()
-        .eq('user_id', userId)
-        .eq('program_id', progress.programSlug);
+      const { error } = await supabase.rpc('sync_program_progress', {
+        p_program_id: progress.programSlug,
+        p_current_day: progress.currentDay,
+        p_completed_days: progress.completedDays,
+        p_completed_at: progress.completedAt,
+        p_archived_at: progress.archivedAt,
+      });
 
-      if (deleteError) throw deleteError;
+      if (error) {
+        const errorMessage = error.message.toLowerCase();
+        const shouldFallback =
+          errorMessage.includes('sync_program_progress') ||
+          errorMessage.includes('function public.sync_program_progress') ||
+          errorMessage.includes('could not find the function');
 
-      if (!progress.completedDays.length) {
-        return;
+        if (shouldFallback) {
+          await this.syncProgressRecordToSupabaseLegacy(userId, progress);
+          return;
+        }
+
+        throw error;
       }
-
-      const rows = progress.completedDays.map((dayNumber) => ({
-        user_id: userId,
-        program_id: progress.programSlug,
-        day_id: dayNumber,
-        status: 'COMPLETED',
-        content_completed: true,
-        completed_at: progress.completedAt ?? new Date().toISOString(),
-        current_day: progress.currentDay,
-        completed_days: progress.completedDays,
-      }));
-
-      const { error } = await supabase.from('program_progress').insert(rows);
-
-      if (error) throw error;
     } catch (error) {
       console.error('Failed to sync program progress to Supabase', error);
     }

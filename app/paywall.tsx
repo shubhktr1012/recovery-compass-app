@@ -466,14 +466,14 @@ export default function Paywall() {
             By continuing, you agree to our{' '}
             <Text
               className="text-forest/60 underline"
-              onPress={() => void openLink('https://recoverycompass.app/terms')}
+              onPress={() => void openLink('https://recoverycompass.co/terms')}
             >
               Terms
             </Text>{' '}
             and{' '}
             <Text
               className="text-forest/60 underline"
-              onPress={() => void openLink('https://recoverycompass.app/privacy')}
+              onPress={() => void openLink('https://recoverycompass.co/privacy')}
             >
               Privacy
             </Text>

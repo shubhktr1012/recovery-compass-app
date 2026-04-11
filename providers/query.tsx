@@ -6,7 +6,15 @@ import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persi
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from '@react-native-community/netinfo';
 
+import { CONTENT_QUERY_GC_TIME, CONTENT_QUERY_STALE_TIME } from '@/hooks/contentQueryUtils';
+
 export const QUERY_PERSIST_STORAGE_KEY = 'REACT_QUERY_OFFLINE_CACHE';
+const DEFAULT_QUERY_STALE_TIME = 60 * 1000;
+const DEFAULT_QUERY_GC_TIME = 24 * 60 * 60 * 1000;
+const PROFILE_QUERY_STALE_TIME = 2 * 60 * 1000;
+const ONBOARDING_QUERY_STALE_TIME = 10 * 60 * 1000;
+const JOURNAL_QUERY_STALE_TIME = 60 * 1000;
+const PERSISTED_QUERY_MAX_AGE = 24 * 60 * 60 * 1000;
 
 // Set up the online manager with NetInfo to track true connectivity
 onlineManager.setEventListener((setOnline) => {
@@ -21,16 +29,59 @@ onlineManager.setEventListener((setOnline) => {
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes fresh
-      gcTime: 24 * 60 * 60 * 1000, // 24 hours of garbage collection time
-      retry: 2,
+      staleTime: DEFAULT_QUERY_STALE_TIME,
+      gcTime: DEFAULT_QUERY_GC_TIME,
+      retry: 1,
       refetchOnReconnect: true,
       refetchOnWindowFocus: true,
     },
     mutations: {
-      retry: 2,
+      retry: 1,
     },
   },
+});
+
+queryClient.setQueryDefaults(['profile'], {
+  staleTime: PROFILE_QUERY_STALE_TIME,
+  gcTime: DEFAULT_QUERY_GC_TIME,
+});
+
+queryClient.setQueryDefaults(['onboarding-response'], {
+  staleTime: ONBOARDING_QUERY_STALE_TIME,
+  gcTime: DEFAULT_QUERY_GC_TIME,
+});
+
+queryClient.setQueryDefaults(['programs'], {
+  staleTime: CONTENT_QUERY_STALE_TIME,
+  gcTime: CONTENT_QUERY_GC_TIME,
+  refetchOnWindowFocus: false,
+});
+
+queryClient.setQueryDefaults(['program'], {
+  staleTime: CONTENT_QUERY_STALE_TIME,
+  gcTime: CONTENT_QUERY_GC_TIME,
+  refetchOnWindowFocus: false,
+});
+
+queryClient.setQueryDefaults(['program-day'], {
+  staleTime: CONTENT_QUERY_STALE_TIME,
+  gcTime: CONTENT_QUERY_GC_TIME,
+  refetchOnWindowFocus: false,
+});
+
+queryClient.setQueryDefaults(['journal-today'], {
+  staleTime: JOURNAL_QUERY_STALE_TIME,
+  gcTime: DEFAULT_QUERY_GC_TIME,
+});
+
+queryClient.setQueryDefaults(['journal-entries'], {
+  staleTime: JOURNAL_QUERY_STALE_TIME,
+  gcTime: DEFAULT_QUERY_GC_TIME,
+});
+
+queryClient.setQueryDefaults(['journal-count'], {
+  staleTime: JOURNAL_QUERY_STALE_TIME,
+  gcTime: DEFAULT_QUERY_GC_TIME,
 });
 
 // Create the AsyncStorage persister
@@ -62,7 +113,7 @@ export function AppQueryProvider({ children }: { children: React.ReactNode }) {
       persistOptions={{
         persister: asyncStoragePersister,
         // Only persist exactly what we need (the profile data limits the size)
-        maxAge: 24 * 60 * 60 * 1000, // 24 hours explicit max age
+        maxAge: PERSISTED_QUERY_MAX_AGE,
         buster: 'v1.0.3', // bumped to invalidate persisted content cache after six_day_reset lesson refresh
         dehydrateOptions: {
           shouldDehydrateQuery: (query) => {

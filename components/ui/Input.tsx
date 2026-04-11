@@ -1,4 +1,4 @@
-import React, { forwardRef, useState } from 'react';
+import React, { forwardRef, useState, ReactNode } from 'react';
 import { TextInput, View, Text, TextInputProps, TouchableOpacity } from 'react-native';
 import { twMerge } from 'tailwind-merge';
 import { AppColors } from '@/constants/theme';
@@ -7,12 +7,13 @@ import { Ionicons } from '@expo/vector-icons';
 interface InputProps extends TextInputProps {
     label?: string;
     error?: string;
+    helperText?: string | ReactNode;
     containerClassName?: string;
     isPassword?: boolean;
 }
 
 export const Input = forwardRef<TextInput, InputProps>(
-    ({ label, error, className, containerClassName, isPassword, secureTextEntry, ...props }, ref) => {
+    ({ label, error, helperText, className, containerClassName, isPassword, secureTextEntry, ...props }, ref) => {
         const [showPassword, setShowPassword] = useState(false);
         const isSecure = isPassword && !showPassword;
 
@@ -56,6 +57,15 @@ export const Input = forwardRef<TextInput, InputProps>(
                         {error}
                     </Text>
                 )}
+                {!error && helperText ? (
+                    typeof helperText === 'string' ? (
+                        <Text className="text-forest/45 text-xs ml-1 font-satoshi">
+                            {helperText}
+                        </Text>
+                    ) : (
+                        helperText
+                    )
+                ) : null}
             </View>
         );
     }

@@ -329,22 +329,15 @@ export default function WelcomeScreen() {
                         By tapping Sign in or Create account, you agree to our{' '}
                         <ThemedText 
                             style={styles.legalLink} 
-                            onPress={() => openLink('https://recoverycompass.app/terms')}
+                            onPress={() => openLink('https://recoverycompass.co/terms')}
                         >
                             Terms of Service
                         </ThemedText>. Learn how we process your data in our{' '}
                         <ThemedText 
                             style={styles.legalLink}
-                            onPress={() => openLink('https://recoverycompass.app/privacy')}
+                            onPress={() => openLink('https://recoverycompass.co/privacy')}
                         >
                             Privacy Policy
-                        </ThemedText>{' '}
-                        and{' '}
-                        <ThemedText 
-                            style={styles.legalLink}
-                            onPress={() => openLink('https://recoverycompass.app/cookies')}
-                        >
-                            Cookies Policy
                         </ThemedText>.
                     </ThemedText>
 

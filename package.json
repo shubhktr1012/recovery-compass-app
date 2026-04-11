@@ -18,7 +18,8 @@
     "canonical:qa:all": "node ./scripts/canonical-quality-check.mjs",
     "canonical:seed": "node ./scripts/generate-program-seeds-from-canonical.mjs",
     "supabase:functions:list": "supabase functions list --workdir .",
-    "supabase:functions:deploy:delete-account": "supabase functions deploy delete-account --no-verify-jwt --use-api --workdir ."
+    "supabase:functions:deploy:delete-account": "supabase functions deploy delete-account --no-verify-jwt --use-api --import-map ./supabase/functions/deno.json --workdir .",
+    "supabase:functions:deploy:revenuecat-webhook": "supabase functions deploy revenuecat-webhook --no-verify-jwt --use-api --import-map ./supabase/functions/deno.json --workdir ."
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",

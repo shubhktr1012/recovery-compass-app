@@ -603,7 +603,34 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      consume_rate_limit: {
+        Args: {
+          p_bucket: string
+          p_identifier: string
+          p_max_requests: number
+          p_window_seconds: number
+        }
+        Returns: {
+          allowed: boolean
+          remaining: number
+          reset_at: string
+        }[]
+      }
+      sync_program_progress: {
+        Args: {
+          p_archived_at?: string | null
+          p_completed_at?: string | null
+          p_completed_days?: number[]
+          p_current_day: number
+          p_program_id: string
+        }
+        Returns: {
+          archived_at: string | null
+          completed_at: string | null
+          completed_days: number[]
+          current_day: number
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

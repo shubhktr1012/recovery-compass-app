@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "recovery-compass-app",
+    "name": "Recovery Compass",
     "slug": "recovery-compass-app",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -8,7 +8,7 @@
     "scheme": "recoverycompassapp",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "supportsTablet": true,
+      "supportsTablet": false,
       "bundleIdentifier": "com.recoverycompass.app"
     },
     "android": {

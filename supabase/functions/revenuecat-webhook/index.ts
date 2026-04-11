@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/no-unresolved -- resolved via supabase/functions/deno.json import map
 import { serve } from "std/http/server.ts";
 import { createClient } from "@supabase/supabase-js";
 
@@ -28,6 +29,23 @@ const NINETY_DAY_REVENUECAT_ALIASES = [
 ];
 
 const normalize = (value: string | null | undefined) => value?.trim().toLowerCase() ?? "";
+
+type RateLimitResult = {
+    allowed?: boolean;
+    reset_at?: string;
+};
+
+type SupabaseAdminClient = {
+    rpc: (
+        fn: string,
+        args: {
+            p_bucket: string;
+            p_identifier: string;
+            p_max_requests: number;
+            p_window_seconds: number;
+        },
+    ) => PromiseLike<{ data: RateLimitResult[] | RateLimitResult | null; error: { message?: string } | null }>;
+};
 
 const parseCandidates = (value: string | null | undefined, fallbacks: string[]) =>
     Array.from(
@@ -69,7 +87,7 @@ const isMatchingProduct = (productId: string | null | undefined, candidates: str
 
 const getProgramSlug = (event: Record<string, unknown>) => {
     const entitlements = Array.isArray(event.entitlements)
-        ? event.entitlements as Array<Record<string, unknown>>
+        ? event.entitlements as Record<string, unknown>[]
         : [];
 
     const hasNinetyDayEntitlement = entitlements.some((entry) => {
@@ -113,6 +131,42 @@ const getLegacyTier = (programSlug: string | null) => {
     return "free";
 };
 
+const enforceRateLimit = async (
+    supabase: SupabaseAdminClient,
+    bucket: string,
+    identifier: string,
+    maxRequests: number,
+    windowSeconds: number,
+) => {
+    try {
+        const { data, error } = await supabase.rpc("consume_rate_limit", {
+            p_bucket: bucket,
+            p_identifier: identifier,
+            p_max_requests: maxRequests,
+            p_window_seconds: windowSeconds,
+        });
+
+        if (error) {
+            throw error;
+        }
+
+        const result = Array.isArray(data) ? data[0] : data;
+        if (!result?.allowed) {
+            const resetAt = typeof result?.reset_at === "string" ? Date.parse(result.reset_at) : NaN;
+            const retryAfterSeconds = Number.isFinite(resetAt)
+                ? Math.max(1, Math.ceil((resetAt - Date.now()) / 1000))
+                : windowSeconds;
+
+            return { allowed: false, retryAfterSeconds };
+        }
+
+        return { allowed: true, retryAfterSeconds: 0 };
+    } catch (error) {
+        console.error("RevenueCat rate limit check failed:", error);
+        return { allowed: true, retryAfterSeconds: 0 };
+    }
+};
+
 serve(async (req: Request) => {
     if (req.method !== 'POST') {
         return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405 });
@@ -148,6 +202,27 @@ serve(async (req: Request) => {
 
         if (!appUserId) {
             return new Response('No app_user_id found in payload', { status: 400 });
+        }
+
+        const rateLimit = await enforceRateLimit(
+            supabase,
+            "revenuecat-webhook:user",
+            appUserId,
+            120,
+            60,
+        );
+
+        if (!rateLimit.allowed) {
+            return new Response(
+                JSON.stringify({
+                    error: "Rate limit exceeded",
+                    retryAfterSeconds: rateLimit.retryAfterSeconds,
+                }),
+                {
+                    headers: { "Content-Type": "application/json" },
+                    status: 429,
+                },
+            );
         }
 
         let newTier = getLegacyTier(purchasedProgram);

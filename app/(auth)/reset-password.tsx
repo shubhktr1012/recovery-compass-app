@@ -12,10 +12,14 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { useAuth } from '@/providers/auth';
 import { AppColors } from '@/constants/theme';
+import { isStrongPassword, PASSWORD_REQUIREMENTS_HINT } from '@/lib/password';
+import { PasswordStrength } from '@/components/ui/PasswordStrength';
 
 const resetPasswordSchema = z.object({
-    password: z.string().min(8, 'Password must be at least 8 characters'),
-    confirmPassword: z.string().min(8, 'Password must be at least 8 characters'),
+    password: z.string().refine(isStrongPassword, {
+        message: PASSWORD_REQUIREMENTS_HINT,
+    }),
+    confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
     message: 'Passwords do not match',
     path: ['confirmPassword'],
@@ -87,13 +91,14 @@ export default function ResetPassword() {
                                         label="New Password"
                                         placeholder="••••••••"
                                         onBlur={onBlur}
-                                        onChangeText={onChange}
-                                        value={value}
-                                        isPassword
-                                        autoCapitalize="none"
-                                        error={errors.password?.message}
-                                    />
-                                )}
+                                    onChangeText={onChange}
+                                    value={value}
+                                    isPassword
+                                    autoCapitalize="none"
+                                    helperText={<PasswordStrength password={value} />}
+                                    error={errors.password?.message}
+                                />
+                            )}
                             />
 
                             <Controller
