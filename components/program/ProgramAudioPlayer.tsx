@@ -1,6 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, AppState, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { setAudioModeAsync, useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
+import { useIsFocused } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 
 import { getCachedAudioUri, prefetchAudioAsset, resolvePlayableAudioUri } from '@/lib/audio-cache';
@@ -13,14 +14,80 @@ interface ProgramAudioPlayerProps {
   embeddedDark?: boolean;
 }
 
+let activePlayerOwner: symbol | null = null;
+let stopActivePlayer: null | (() => Promise<void>) = null;
+
 export function ProgramAudioPlayer({ audio, embeddedDark = false }: ProgramAudioPlayerProps) {
   const player = useAudioPlayer(null, { updateInterval: 250 });
   const status = useAudioPlayerStatus(player);
+  const isFocused = useIsFocused();
+  const instanceIdRef = useRef(Symbol(audio.storagePath));
   const pendingPlayRef = useRef(false);
+  const isMountedRef = useRef(true);
+  const loadRequestIdRef = useRef(0);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isCached, setIsCached] = useState(false);
   const [isPrefetching, setIsPrefetching] = useState(false);
+
+  const setIsLoadingIfMounted = useCallback((value: boolean) => {
+    if (isMountedRef.current) {
+      setIsLoading(value);
+    }
+  }, []);
+
+  const setErrorIfMounted = useCallback((value: string | null) => {
+    if (isMountedRef.current) {
+      setError(value);
+    }
+  }, []);
+
+  const releaseOwnership = useCallback(() => {
+    if (activePlayerOwner === instanceIdRef.current) {
+      activePlayerOwner = null;
+      stopActivePlayer = null;
+    }
+  }, []);
+
+  const stopPlayback = useCallback(async () => {
+    loadRequestIdRef.current += 1;
+    pendingPlayRef.current = false;
+    setIsLoadingIfMounted(false);
+
+    try {
+      if (player.isLoaded) {
+        if (player.playing || player.paused) {
+          player.pause();
+        }
+
+        if (player.currentTime > 0) {
+          try {
+            await player.seekTo(0);
+          } catch {
+            // Ignore seek failures while tearing down playback.
+          }
+        }
+
+        player.remove();
+      }
+    } finally {
+      releaseOwnership();
+    }
+  }, [player, releaseOwnership, setIsLoadingIfMounted]);
+
+  const claimPlaybackOwnership = useCallback(async () => {
+    if (activePlayerOwner === instanceIdRef.current) {
+      stopActivePlayer = stopPlayback;
+      return;
+    }
+
+    if (stopActivePlayer) {
+      await stopActivePlayer();
+    }
+
+    activePlayerOwner = instanceIdRef.current;
+    stopActivePlayer = stopPlayback;
+  }, [stopPlayback]);
 
   useEffect(() => {
     void setAudioModeAsync({
@@ -73,34 +140,77 @@ export function ProgramAudioPlayer({ audio, embeddedDark = false }: ProgramAudio
     if (!pendingPlayRef.current || !status.isLoaded) return;
 
     pendingPlayRef.current = false;
+    void claimPlaybackOwnership();
     player.play();
-    setIsLoading(false);
-  }, [player, status.isLoaded]);
+    setIsLoadingIfMounted(false);
+  }, [claimPlaybackOwnership, player, setIsLoadingIfMounted, status.isLoaded]);
+
+  useEffect(() => {
+    stopActivePlayer = activePlayerOwner === instanceIdRef.current ? stopPlayback : stopActivePlayer;
+  }, [stopPlayback]);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+
+    return () => {
+      isMountedRef.current = false;
+      void stopPlayback();
+    };
+  }, [stopPlayback]);
+
+  useEffect(() => {
+    if (!isFocused) {
+      void stopPlayback();
+    }
+  }, [isFocused, stopPlayback]);
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (nextState) => {
+      if (nextState !== 'active') {
+        void stopPlayback();
+      }
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, [stopPlayback]);
 
   const handleTogglePlayback = async () => {
     if (isLoading) return;
 
     try {
-      setError(null);
+      setErrorIfMounted(null);
 
       if (status.isLoaded) {
         if (status.playing) {
           player.pause();
+          releaseOwnership();
           return;
         }
 
+        await claimPlaybackOwnership();
         player.play();
         return;
       }
 
-      setIsLoading(true);
+      await claimPlaybackOwnership();
+      const requestId = loadRequestIdRef.current + 1;
+      loadRequestIdRef.current = requestId;
+      setIsLoadingIfMounted(true);
       const { uri, cached } = await resolvePlayableAudioUri(audio.storagePath);
+
+      if (!isMountedRef.current || loadRequestIdRef.current !== requestId) {
+        return;
+      }
+
       setIsCached(cached);
       pendingPlayRef.current = true;
       player.replace({ uri });
     } catch (playbackError) {
       pendingPlayRef.current = false;
-      setIsLoading(false);
+      releaseOwnership();
+      setIsLoadingIfMounted(false);
       console.error('Audio playback failed', playbackError);
       void captureError(playbackError, {
         source: 'audio',
@@ -108,7 +218,7 @@ export function ProgramAudioPlayer({ audio, embeddedDark = false }: ProgramAudio
           storagePath: audio.storagePath,
         },
       });
-      setError('Audio could not be played right now.');
+      setErrorIfMounted('Audio could not be played right now.');
     }
   };
 
