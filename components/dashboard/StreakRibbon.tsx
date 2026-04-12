@@ -8,7 +8,11 @@ import type { ProgramSlug } from '@/types/content';
 
 export function StreakRibbon() {
     const { access, progress } = useProfile();
-    const activeProgram = (access.ownedProgram ?? 'six_day_reset') as ProgramSlug;
+    if (!access.ownedProgram || access.purchaseState === 'not_owned') {
+        return null;
+    }
+
+    const activeProgram = access.ownedProgram as ProgramSlug;
     const programMeta = PROGRAM_METADATA[activeProgram];
     const totalDays = programMeta?.totalDays ?? 1;
 

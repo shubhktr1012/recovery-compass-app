@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, Alert, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
-import { useRouter, Href } from 'expo-router';
+import { useNavigation } from '@react-navigation/native';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -24,7 +24,7 @@ const signUpSchema = z.object({
 type SignUpFormData = z.infer<typeof signUpSchema>;
 
 export default function SignUp() {
-    const router = useRouter();
+    const navigation = useNavigation<any>();
     const [loading, setLoading] = useState(false);
 
     const { control, handleSubmit, formState: { errors } } = useForm<SignUpFormData>({
@@ -63,7 +63,7 @@ export default function SignUp() {
                     [
                         {
                             text: 'Continue',
-                            onPress: () => router.replace('/welcome' as Href),
+                            onPress: () => navigation.navigate('welcome'),
                         },
                         { text: 'Cancel', style: 'cancel' },
                     ]
@@ -86,15 +86,17 @@ export default function SignUp() {
 
                 if (profileError) throw profileError;
 
-                // Auto-confirm mode: session exists, user can continue.
-                router.replace('/personalization' as Href);
+                // Let the root auth gate route newly authenticated users after
+                // session/profile state has settled. Navigating immediately here
+                // can race the navigator tree on Android.
+                return;
             } else {
                 // Email confirmation mode: do not enter personalization until authenticated.
                 Alert.alert(
                     'Check your email',
                     'Verify your account, then sign in to continue setup. If this email was already used with Apple/Google, use Sign In instead.'
                 );
-                router.replace('/welcome' as Href);
+                navigation.navigate('welcome');
             }
 
         } catch (error: any) {
@@ -112,11 +114,11 @@ export default function SignUp() {
                     [
                         {
                             text: 'Reset Password',
-                            onPress: () => router.replace('/sign-in' as Href),
+                            onPress: () => navigation.navigate('sign-in'),
                         },
                         {
                             text: 'Sign In',
-                            onPress: () => router.replace('/sign-in' as Href),
+                            onPress: () => navigation.navigate('sign-in'),
                         },
                         { text: 'Cancel', style: 'cancel' },
                     ]
@@ -195,7 +197,7 @@ export default function SignUp() {
                         <Text style={styles.footerText}>Already have an account? </Text>
                         <Text
                             style={styles.footerLink}
-                            onPress={() => router.replace('/welcome' as Href)}
+                            onPress={() => navigation.navigate('welcome')}
                         >
                             Sign In
                         </Text>

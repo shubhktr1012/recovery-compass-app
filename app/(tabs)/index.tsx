@@ -1,4 +1,4 @@
-import { View, Text, ScrollView } from 'react-native';
+import { View, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Href } from 'expo-router';
@@ -14,16 +14,14 @@ import { DailyActionCard } from '@/components/dashboard/DailyActionCard';
 import { JournalPrompt } from '@/components/dashboard/JournalPrompt';
 import { MyPrograms } from '@/components/dashboard/MyPrograms';
 import { ExplorePrograms } from '@/components/dashboard/ExplorePrograms';
-import { PanicButton } from '@/components/dashboard/PanicButton';
 import { PaperGrain } from '@/components/ui/PaperGrain';
 import { getProgramScheduledDay } from '@/lib/programs/schedule';
 import { useProfile } from '@/providers/profile';
 import type { ProgramSlug } from '@/types/content';
 import { programDayQueryKey, programQueryKey } from '@/hooks/contentQueryUtils';
 
-export default function HomeScreen() {
+function HomeScreenContent({ activeProgram }: { activeProgram: ProgramSlug }) {
   const { access } = useProfile();
-  const activeProgram = (access.ownedProgram ?? 'six_day_reset') as ProgramSlug;
   const program = PROGRAM_METADATA[activeProgram];
   const currentDayNumber = access.completionState === 'completed'
     ? program.totalDays
@@ -74,8 +72,17 @@ export default function HomeScreen() {
           <MyPrograms />
           <ExplorePrograms />
         </ScrollView>
-        <PanicButton />
       </View>
     </SafeAreaView>
   );
+}
+
+export default function HomeScreen() {
+  const { access, isLoading } = useProfile();
+
+  if (isLoading || !access.ownedProgram || access.purchaseState === 'not_owned') {
+    return null;
+  }
+
+  return <HomeScreenContent activeProgram={access.ownedProgram as ProgramSlug} />;
 }

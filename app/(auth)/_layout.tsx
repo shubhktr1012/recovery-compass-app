@@ -6,6 +6,7 @@ export default function AuthLayout() {
         <Stack>
             <Stack.Screen name="welcome" options={{ headerShown: false }} />
             <Stack.Screen name="onboarding" options={{ headerShown: false }} />
+            <Stack.Screen name="paywall" options={{ headerShown: false, presentation: 'fullScreenModal', gestureEnabled: false }} />
             <Stack.Screen name="reset-password" options={{ headerShown: false }} />
             <Stack.Screen name="sign-in" options={{ headerShown: false }} />
             <Stack.Screen name="sign-up" options={{ headerShown: false }} />

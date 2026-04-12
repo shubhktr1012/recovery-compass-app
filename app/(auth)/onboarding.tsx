@@ -1,9 +1,10 @@
 import React, { useRef, useState } from 'react';
 import { View, FlatList, ViewToken, Text, StyleSheet } from 'react-native';
-import { Stack, useRouter, Href } from 'expo-router';
+import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import Animated, { useAnimatedScrollHandler, useSharedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
 
 import { ONBOARDING_DATA, OnboardingItem } from '@/components/onboarding/onboardingData';
 import { OnboardingSlide } from '@/components/onboarding/OnboardingSlide';
@@ -16,7 +17,7 @@ export default function OnboardingScreen() {
     const [currentIndex, setCurrentIndex] = useState(0);
     const scrollX = useSharedValue(0);
     const slidesRef = useRef<FlatList<OnboardingItem>>(null);
-    const router = useRouter();
+    const navigation = useNavigation<any>();
     const insets = useSafeAreaInsets();
 
     const onScroll = useAnimatedScrollHandler((event) => {
@@ -37,7 +38,7 @@ export default function OnboardingScreen() {
         } else {
             try {
                 await AppStorage.setItem('hasSeenOnboarding', 'true');
-                router.replace('/sign-in' as Href);
+                navigation.navigate('sign-in');
             } catch (err) {
                 console.log('Error @setItem: ', err);
             }

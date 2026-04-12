@@ -17,7 +17,7 @@ export function SurfaceSelectCard({ title, description, selected, onPress }: Sur
       duration: 200,
       useNativeDriver: true,
     }).start();
-  }, [selected]);
+  }, [opacity, selected]);
 
   return (
     <Pressable onPress={onPress} style={{ marginBottom: 12 }}>

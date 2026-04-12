@@ -1,11 +1,19 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Alert, Linking, Pressable, ScrollView, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  Animated as RNAnimated,
+  Linking,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+} from 'react-native';
 import { useRouter } from 'expo-router';
+import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import Purchases, { PurchasesPackage } from 'react-native-purchases';
-import Animated, { FadeIn } from 'react-native-reanimated';
-import { Animated as RNAnimated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import { PROGRAM_METADATA } from '@/content/programs/metadata';
@@ -58,7 +66,7 @@ function RadioIndicator({ isSelected }: { isSelected: boolean }) {
       duration: 200,
       useNativeDriver: true,
     }).start();
-  }, [isSelected]);
+  }, [isSelected, opacity]);
 
   return (
     <View className={`mt-1 h-6 w-6 rounded-full border-[1.5px] items-center justify-center ${isSelected ? 'border-forest/40 bg-white' : 'border-forest/20 bg-transparent'}`}>
@@ -69,6 +77,7 @@ function RadioIndicator({ isSelected }: { isSelected: boolean }) {
 
 export default function Paywall() {
   const router = useRouter();
+  const navigation = useNavigation<any>();
   const insets = useSafeAreaInsets();
   const { access, profile, refreshAccess, setProgramAccess } = useProfile();
 
@@ -131,34 +140,28 @@ export default function Paywall() {
     void getOfferings();
   }, [refreshAccess]);
 
-  const isUpgradeFlow =
-    access.ownedProgram === 'six_day_reset' &&
-    (access.purchaseState === 'owned_completed' || access.purchaseState === 'owned_archived');
   const recommendedProgram = profile?.recommended_program ?? null;
 
   const handleBack = () => {
-    if (isUpgradeFlow || access.ownedProgram) {
+    if (access.ownedProgram) {
       if (typeof router.canGoBack === 'function' && router.canGoBack()) {
         router.back();
         return;
       }
 
-      router.replace('/(tabs)/program');
+      router.navigate('/program');
       return;
     }
 
-    router.replace('/(auth)/personalization?resume=review');
+    navigation.navigate('personalization', { resume: 'review' });
   };
 
   const visibleProgramSlugs = useMemo(() => {
-    if (isUpgradeFlow) {
-      return ['ninety_day_transform'] as ProgramSlug[];
-    }
     if (access.ownedProgram) {
       return [] as ProgramSlug[];
     }
     return getRecommendedPrograms(recommendedProgram);
-  }, [access.ownedProgram, isUpgradeFlow, recommendedProgram]);
+  }, [access.ownedProgram, recommendedProgram]);
 
   const eligiblePackages = useMemo(() => {
     const matchingPackages = packages
@@ -187,26 +190,21 @@ export default function Paywall() {
   // Default select the primary package
   useEffect(() => {
     if (eligiblePackages.length > 0 && !selectedPackageId) {
-      const primary = eligiblePackages.find(p => getProgramSlugForPackage(p) === 'ninety_day_transform');
-      setSelectedPackageId(primary ? primary.identifier : eligiblePackages[0].identifier);
+      setSelectedPackageId(eligiblePackages[0].identifier);
     }
   }, [eligiblePackages, selectedPackageId]);
 
-  const headerTitle = isUpgradeFlow
-    ? 'Your Reset Is Complete'
-    : recommendedProgram === 'six_day_reset'
-      ? 'Choose Your Path'
-      : recommendedProgram
-        ? `${getDisplayNameForProgram(recommendedProgram)}`
-        : 'Your Recovery Path';
+  const headerTitle = access.ownedProgram
+    ? 'Program Already Unlocked'
+    : recommendedProgram
+      ? `${getDisplayNameForProgram(recommendedProgram)}`
+      : 'Your Recovery Path';
 
-  const headerBody = isUpgradeFlow
-    ? `Unlock ${getDisplayNameForProgram('ninety_day_transform')} to continue with daily guided recovery work.`
-    : recommendedProgram === 'six_day_reset'
-      ? 'Both plans are open. Select the level of support you need right now.'
-      : recommendedProgram
-        ? 'This program matches your assessment and is ready to begin.'
-        : 'Select the program that fits your journey.';
+  const headerBody = access.ownedProgram
+    ? 'Recovery Compass currently supports one active program at a time. Head to the Program tab to continue your journey.'
+    : recommendedProgram
+      ? 'This program matches your assessment and is ready to begin.'
+      : 'Select the program that fits your journey.';
 
   const activePackage = eligiblePackages.find(p => p.identifier === selectedPackageId);
 
@@ -237,7 +235,7 @@ export default function Paywall() {
       await refreshAccess();
 
       // No alert needed for success if we just drop them into the program smoothly
-      router.replace('/(tabs)/program');
+      router.navigate('/program');
     } catch (e: any) {
       const combinedErrorMessage = [e?.message, e?.underlyingErrorMessage]
         .filter((value): value is string => typeof value === 'string' && value.length > 0)
@@ -260,7 +258,7 @@ export default function Paywall() {
             'Already Unlocked',
             `This account already owns ${getDisplayNameForProgram(restoredProgram)}. Access has been restored.`
           );
-          router.replace('/(tabs)/program');
+          router.navigate('/program');
           return;
         }
 
@@ -276,7 +274,7 @@ export default function Paywall() {
 
         if (restoredProgram) {
           await setProgramAccess(restoredProgram);
-          router.replace('/(tabs)/program');
+          router.navigate('/program');
           return;
         }
       }
@@ -314,7 +312,7 @@ export default function Paywall() {
         return;
       }
       Alert.alert('Success', 'Purchases restored successfully!');
-      router.replace('/(tabs)/program');
+      router.navigate('/program');
     } catch (e: any) {
       void captureError(e, { source: 'paywall', metadata: { stage: 'restore' } });
       Alert.alert('Restore Failed', e.message);
@@ -366,7 +364,7 @@ export default function Paywall() {
         ) : eligiblePackages.length === 0 ? (
           <View className="items-center py-12 px-6 rounded-3xl bg-forest/5 border border-forest/10">
             <Text className="font-satoshi text-center text-[15px] text-forest/70 leading-[24px]">
-              {access.ownedProgram && !isUpgradeFlow
+              {access.ownedProgram
                 ? 'Your account has full access to Recovery Compass. Head to the Program tab to continue your journey.'
                 : 'No eligible setups are available right now. This usually means your account is already fully unlocked.'}
             </Text>

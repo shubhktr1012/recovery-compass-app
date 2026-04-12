@@ -21,6 +21,10 @@ export function ExplorePrograms() {
 
     const ownedSlug = access.ownedProgram as ProgramSlug | null;
 
+    if (ownedSlug) {
+        return null;
+    }
+
     // Filter to non-owned programs
     const allSlugs = Object.keys(PROGRAM_METADATA) as ProgramSlug[];
     const exploreSlugs = allSlugs.filter((slug) => slug !== ownedSlug);

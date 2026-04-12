@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, Alert, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
-import { useRouter, Href } from 'expo-router';
+import { useNavigation } from '@react-navigation/native';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -28,7 +28,7 @@ const resetPasswordSchema = z.object({
 type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
 
 export default function ResetPassword() {
-    const router = useRouter();
+    const navigation = useNavigation<any>();
     const { clearPasswordRecoveryState, isRecoveringPassword, session } = useAuth();
     const [loading, setLoading] = useState(false);
 
@@ -60,7 +60,7 @@ export default function ResetPassword() {
 
     const handleBackToSignIn = () => {
         clearPasswordRecoveryState();
-        router.replace('/sign-in' as Href);
+        navigation.navigate('sign-in');
     };
 
     const canResetPassword = isRecoveringPassword || !!session;

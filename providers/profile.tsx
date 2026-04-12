@@ -1,4 +1,5 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { Platform } from 'react-native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { PROGRAM_METADATA } from '@/content/programs/metadata';
 import { supabase } from '@/lib/supabase';
@@ -166,7 +167,11 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     },
     enabled: Boolean(userId),
   });
-  const shouldRegisterPush = Boolean(userId && profileQuery.data?.onboarding_complete);
+  const shouldRegisterPush = Boolean(
+    userId &&
+    profileQuery.data?.onboarding_complete &&
+    Platform.OS === 'ios'
+  );
   const { expoPushToken, permissionStatus, error: pushError } = usePushNotifications({
     enabled: shouldRegisterPush,
   });
@@ -272,11 +277,15 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
       return snapshot;
     } catch (error) {
       console.error('Error refreshing access state:', error);
-      return access;
+      const fallbackSnapshot = await AccessService.getAccessSnapshot();
+      const fallbackProgress = await AccessService.getProgressRecord();
+      setAccess(fallbackSnapshot);
+      setProgress(fallbackProgress);
+      return fallbackSnapshot;
     } finally {
       setIsAccessLoading(false);
     }
-  }, [access, userId]);
+  }, [userId]);
 
   const syncProfileActiveProgram = useCallback(
     async (
@@ -408,9 +417,13 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setIsAccessLoading(true);
 
     try {
-      const { snapshot: serverSnapshot, progress: serverProgress } = await AccessService.hydrateFromSupabase(userId);
-      setAccess(serverSnapshot);
-      setProgress(serverProgress);
+      const [cachedSnapshot, cachedProgress] = await Promise.all([
+        AccessService.getAccessSnapshot(),
+        AccessService.getProgressRecord(),
+      ]);
+
+      setAccess(cachedSnapshot);
+      setProgress(cachedProgress);
 
       const liveSnapshot = await AccessService.refreshFromDeviceStore(userId);
       const liveProgress = await AccessService.getProgressRecord();
@@ -606,10 +619,12 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     () => ({
       profile: profileQuery.data ?? null,
       isLoading: Boolean(userId) && (profileQuery.isPending || isAccessLoading),
-      isSubscribed: Boolean(access.ownedProgram),
+      isSubscribed:
+        Boolean(access.ownedProgram) && access.purchaseState !== 'not_owned',
       access,
       progress,
-      hasProgramAccess: Boolean(access.ownedProgram),
+      hasProgramAccess:
+        Boolean(access.ownedProgram) && access.purchaseState !== 'not_owned',
       refreshAccess,
       refreshProfile,
       setProgramAccess,

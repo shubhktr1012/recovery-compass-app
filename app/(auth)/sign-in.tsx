@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, Alert, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
-import { useRouter, Href } from 'expo-router';
+import { useNavigation } from '@react-navigation/native';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -23,7 +23,7 @@ const signInSchema = z.object({
 type SignInFormData = z.infer<typeof signInSchema>;
 
 export default function SignIn() {
-    const router = useRouter();
+    const navigation = useNavigation<any>();
     const [loading, setLoading] = useState(false);
     const [canResendVerification, setCanResendVerification] = useState(false);
 
@@ -48,8 +48,8 @@ export default function SignIn() {
 
             if (sessionData.user) {
                 await AsyncStorage.setItem(LAST_SIGN_IN_PROVIDER_KEY, 'email');
-                // Root layout guard handles post-login routing (tabs/paywall/personalization).
-                return;
+            // Root layout guard handles post-login routing (tabs/paywall/personalization).
+            return;
             }
 
         } catch (error: any) {
@@ -190,7 +190,7 @@ export default function SignIn() {
                         <Text style={styles.footerText}>Don&apos;t have an account? </Text>
                         <Text
                             style={styles.footerLink}
-                            onPress={() => router.replace('/sign-up' as Href)}
+                            onPress={() => navigation.navigate('sign-up')}
                         >
                             Sign Up
                         </Text>

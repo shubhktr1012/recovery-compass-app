@@ -107,10 +107,9 @@ const ProgramTimelineNode = memo(({
 });
 ProgramTimelineNode.displayName = 'ProgramTimelineNode';
 
-export default function ProgramScreen() {
+function ProgramScreenContent({ activeProgram }: { activeProgram: ProgramSlug }) {
   const router = useRouter();
   const { access, progress } = useProfile();
-  const activeProgram = (access.ownedProgram ?? 'six_day_reset') as ProgramSlug;
   const queryClient = useQueryClient();
   const { program } = useProgram(activeProgram);
   const totalDays = program?.totalDays ?? 1;
@@ -223,10 +222,10 @@ export default function ProgramScreen() {
           {isArchivedReset ? (
             <View className="mt-8 rounded-[20px] border border-forest/[0.08] bg-[#F6F7F4] px-5 py-5 shadow-sm shadow-[#06290C]/5">
               <Text className="font-satoshi-bold text-[10px] uppercase tracking-[2px] text-forest/50 mb-2">
-                Archived Path
+                Completed Path
               </Text>
               <Text className="font-satoshi text-[14px] leading-[22px] text-forest/70">
-                Your 6-Day Control has been archived. The next step is upgrading into the 90-Day Smoking Reset.
+                Your 6-Day Control journey is complete and archived. You can revisit any completed day whenever you want.
               </Text>
             </View>
           ) : null}
@@ -279,4 +278,14 @@ export default function ProgramScreen() {
       </ScrollView>
     </SafeAreaView>
   );
+}
+
+export default function ProgramScreen() {
+  const { access, isLoading } = useProfile();
+
+  if (isLoading || !access.ownedProgram || access.purchaseState === 'not_owned') {
+    return null;
+  }
+
+  return <ProgramScreenContent activeProgram={access.ownedProgram as ProgramSlug} />;
 }

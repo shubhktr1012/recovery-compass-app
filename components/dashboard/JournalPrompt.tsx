@@ -46,7 +46,7 @@ export function JournalPrompt() {
 
     return (
         <Pressable
-            onPress={() => router.push('/(tabs)/journal' as Href)}
+            onPress={() => router.push('/journal' as Href)}
             className="mb-6"
         >
             <View className="rounded-2xl bg-sage/50 border border-forest/5 px-5 py-4 flex-row items-center justify-between">

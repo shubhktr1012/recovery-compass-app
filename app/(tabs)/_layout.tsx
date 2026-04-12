@@ -129,12 +129,6 @@ export default function TabLayout() {
           ),
         }}
       />
-      <Tabs.Screen
-        name="test-cards"
-        options={{
-          href: null,
-        }}
-      />
     </Tabs>
   );
 }

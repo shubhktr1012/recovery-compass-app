@@ -19,7 +19,7 @@ export function DailyActionCard({
     description = 'Understand exactly what is happening in your brain right now, and why the cravings feel so intense. Knowledge is your first weapon.',
     duration = '5 min read',
     ctaLabel = 'Start Session',
-    route = '/(tabs)/program',
+    route = '/program',
 }: DailyActionCardProps) {
     const router = useRouter();
     const scale = useSharedValue(1);

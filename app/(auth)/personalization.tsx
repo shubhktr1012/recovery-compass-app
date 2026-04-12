@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Alert, Animated as RNAnimated, KeyboardAvoidingView, Platform, Text, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { Href, useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
 
 import {
@@ -381,7 +381,9 @@ export default function Personalization() {
       queryClient.setQueryData(ONBOARDING_RESPONSE_QUERY_KEY(user.id), persistedOnboarding);
       queryClient.setQueryData(PROFILE_QUERY_KEY(user.id), persistedProfile);
 
-      router.replace('/paywall' as Href);
+      // The root navigation gate will move authenticated but unsubscribed
+      // users to the paywall once onboarding state is persisted.
+      return;
     } catch (error: any) {
       Alert.alert('Could not save your onboarding', error?.message ?? 'Please try again.');
     } finally {

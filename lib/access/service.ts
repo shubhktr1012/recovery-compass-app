@@ -3,7 +3,7 @@ import Purchases, { CustomerInfo } from 'react-native-purchases';
 
 import { PROGRAM_METADATA } from '@/content/programs/metadata';
 import { getProgramScheduledDay } from '@/lib/programs/schedule';
-import { getOwnedProgramsFromCustomerInfo, getRevenueCatProgram } from '@/lib/revenuecat/config';
+import { getOwnedProgramsFromCustomerInfo } from '@/lib/revenuecat/config';
 import { supabase } from '@/lib/supabase';
 import {
   CompletionState,
@@ -198,6 +198,23 @@ function selectPreferredAccessRow(
 }
 
 export class AccessService {
+  static async isRevenueCatReadyForUser(userId: string) {
+    try {
+      const isConfigured = await Purchases.isConfigured();
+
+      if (!isConfigured) {
+        return false;
+      }
+
+      const revenueCatUserId = await Purchases.getAppUserID();
+
+      return Boolean(revenueCatUserId?.trim()) && revenueCatUserId === userId;
+    } catch (error) {
+      console.warn('Unable to verify RevenueCat app user state', error);
+      return false;
+    }
+  }
+
   static async getAccessSnapshot() {
     try {
       const rawValue = await AsyncStorage.getItem(ACCESS_STORAGE_KEY);
@@ -274,6 +291,8 @@ export class AccessService {
       if (error) throw error;
       const selectedRow = selectPreferredAccessRow((data ?? []) as ProgramAccessRow[], activeProgram);
       if (!selectedRow) return null;
+      if (!normalizeProgramSlug(selectedRow.owned_program)) return null;
+      if ((selectedRow.purchase_state as PurchaseState | null) === 'not_owned') return null;
 
       const snapshot: ProgramAccessSnapshot = {
         ownedProgram: normalizeProgramSlug(selectedRow.owned_program),
@@ -339,29 +358,10 @@ export class AccessService {
   }
 
   static async syncAccessSnapshotToSupabase(userId: string, snapshot: ProgramAccessSnapshot) {
-    try {
-      const revenueCatProductId = snapshot.ownedProgram
-        ? getRevenueCatProgram(snapshot.ownedProgram).productIds[0] ?? null
-        : null;
-      const { error } = await supabase.from('program_access').upsert(
-        {
-          user_id: userId,
-          owned_program: snapshot.ownedProgram,
-          purchase_state: snapshot.purchaseState,
-          completion_state: snapshot.completionState,
-          current_day: snapshot.currentDay,
-          started_at: snapshot.startedAt,
-          completed_at: snapshot.completedAt,
-          archived_at: snapshot.archivedAt,
-          revenuecat_product_id: revenueCatProductId,
-        },
-        { onConflict: 'user_id,owned_program' }
-      );
-
-      if (error) throw error;
-    } catch (error) {
-      console.error('Failed to sync program access to Supabase', error);
-    }
+    // Entitlement state is server-authoritative and written via RevenueCat webhook
+    // using service-role credentials. The client should not write program_access.
+    void userId;
+    void snapshot;
   }
 
   static async syncProgressRecordToSupabaseLegacy(userId: string, progress: ProgramProgressRecord) {
@@ -576,6 +576,12 @@ export class AccessService {
 
   static async refreshFromDeviceStore(userId: string) {
     try {
+      const isRevenueCatReady = await this.isRevenueCatReadyForUser(userId);
+
+      if (!isRevenueCatReady) {
+        return createDefaultSnapshot();
+      }
+
       const customerInfo = await Purchases.getCustomerInfo();
       return await this.syncFromRevenueCat(customerInfo, userId);
     } catch (error) {

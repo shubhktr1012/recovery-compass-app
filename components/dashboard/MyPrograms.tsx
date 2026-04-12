@@ -35,7 +35,7 @@ export function MyPrograms() {
             </Text>
 
             <Pressable
-                onPress={() => router.push('/(tabs)/program' as Href)}
+                onPress={() => router.push('/program' as Href)}
             >
                 <View className="rounded-2xl border border-forest/8 bg-white px-5 py-4 flex-row items-center justify-between">
                     <View className="flex-1 mr-4">

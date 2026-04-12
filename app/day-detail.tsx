@@ -64,7 +64,7 @@ function ErrorState({ message }: { message: string }) {
         <Text style={styles.errorDescription}>{message}</Text>
         <Button
           label="Back to Program"
-          onPress={() => router.replace('/(tabs)/program' as Href)}
+          onPress={() => router.navigate('/program' as Href)}
         />
       </View>
     </SafeAreaView>
@@ -378,7 +378,7 @@ export default function DayDetailScreen() {
           <Pressable
             accessibilityLabel="Back to program"
             style={styles.backButton}
-            onPress={() => router.replace('/(tabs)/program' as Href)}
+            onPress={() => router.navigate('/program' as Href)}
           >
             <Ionicons name="chevron-back" size={22} color="#FFFFFF" />
           </Pressable>
@@ -448,7 +448,7 @@ export default function DayDetailScreen() {
                 onCompleteDay: () => {
                   void handleCompleteCurrentDay();
                 },
-                onBackToProgram: () => router.replace('/(tabs)/program' as Href),
+                onBackToProgram: () => router.navigate('/program' as Href),
               }}
               programReflectionContext={{
                 userId: user?.id,
@@ -475,7 +475,7 @@ export default function DayDetailScreen() {
             <Button
               label="Back to Program"
               variant="secondary"
-              onPress={() => router.replace('/(tabs)/program' as Href)}
+              onPress={() => router.navigate('/program' as Href)}
             />
           ) : (
             <Button

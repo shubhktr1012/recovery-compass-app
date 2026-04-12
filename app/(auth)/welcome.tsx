@@ -3,10 +3,10 @@ import { View, StyleSheet, Linking, Platform, Alert } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Button } from '@/components/ui/Button';
-import { router } from 'expo-router';
 import { AppColors } from '@/constants/theme';
 import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '@/providers/auth';
 import { getPublicEnv } from '@/lib/env';
 import * as Google from 'expo-auth-session/providers/google';
@@ -30,7 +30,7 @@ const flatButtonStyle = {
     elevation: 0,
 };
 
-function getGoogleIosReversedClientScheme(clientId: string | null) {
+function getGoogleReversedClientScheme(clientId?: string | null) {
     if (!clientId) {
         return null;
     }
@@ -46,6 +46,7 @@ function getGoogleIosReversedClientScheme(clientId: string | null) {
 WebBrowser.maybeCompleteAuthSession();
 
 export default function WelcomeScreen() {
+    const navigation = useNavigation<any>();
     const insets = useSafeAreaInsets();
     const [authProviderLoading, setAuthProviderLoading] = useState<'google' | 'apple' | null>(null);
     const [lastSignInProvider, setLastSignInProvider] = useState<LastSignInProvider | null>(null);
@@ -57,12 +58,14 @@ export default function WelcomeScreen() {
         googleIosClientId,
         googleAndroidClientId,
     } = getPublicEnv();
-    const googleIosNativeScheme = getGoogleIosReversedClientScheme(googleIosClientId);
+    const googleNativeScheme =
+        Platform.OS === 'ios'
+            ? getGoogleReversedClientScheme(googleIosClientId)
+            : getGoogleReversedClientScheme(googleAndroidClientId);
     const googleRedirectUri = AuthSession.makeRedirectUri({
-        native:
-            Platform.OS === 'ios' && googleIosNativeScheme
-                ? `${googleIosNativeScheme}:/oauthredirect`
-                : 'recoverycompassapp:/oauthredirect',
+        native: googleNativeScheme
+            ? `${googleNativeScheme}:/oauthredirect`
+            : 'recoverycompassapp:/oauthredirect',
     });
     const hasGoogleConfig = Boolean(googleWebClientId || googleIosClientId || googleAndroidClientId);
     const [googleRequest, googleAuthResponse, promptGoogleSignIn] = Google.useAuthRequest({
@@ -221,7 +224,7 @@ export default function WelcomeScreen() {
     }, [googleAuthResponse, signInWithGoogleIdToken]);
 
     const handleCreateAccountPress = () => {
-        router.push('/(auth)/onboarding');
+        navigation.navigate('onboarding');
     };
 
     const openLink = (url: string) => {
@@ -393,7 +396,7 @@ export default function WelcomeScreen() {
                                     variant="primary"
                                     size="lg"
                                     label="Sign in with Email Address"
-                                    onPress={() => router.push('/(auth)/sign-in')}
+                                    onPress={() => navigation.navigate('sign-in')}
                                     style={flatButtonStyle}
                                 />
                             </View>

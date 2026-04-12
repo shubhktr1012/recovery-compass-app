@@ -1,6 +1,6 @@
 # Sprint Status — Recovery Compass
 
-> Last updated: April 10, 2026
+> Last updated: April 11, 2026
 > Branch: `rebuild/multi-program`
 > Questionnaire foundation: ready
 > Sellable catalog: 6 products configured in RevenueCat, final INR pricing entered in App Store Connect and Google Play, unified `main_production` offering live
@@ -11,9 +11,10 @@
 - [x] App icon from Anjan (1024x1024 PNG)
 - [x] App Store Connect iOS IAP setup + final INR pricing entry
 - [x] Google Play internal build uploaded + one-time products created
+- [x] App Store Connect / Google Play compliance forms completed (metadata, legal, DSA, health, data safety, app access, deletion URL)
 - [ ] Final QA sweep on Sleep / Energy / Men's Health program presentation in app
 - [x] Final QA sweep on questionnaire → paywall → purchase → program access
-- [ ] App Store submission package complete (metadata, screenshots, IAP review notes/screenshots)
+- [ ] App Store submission package complete (screenshots and IAP review assets still pending)
 - [ ] Android closed testing release published and 12-tester / 14-day clock started
 
 ## Completed
@@ -97,9 +98,10 @@
 - [ ] Store review prompt (after Day 3+)
 - [ ] EAS production build (iOS)
 - [ ] Google Play closed testing release (AAB) + tester onboarding
-- [ ] App Store Connect metadata + screenshots
-- [ ] Generate final store listing copy and screenshots
+- [ ] App Store Connect screenshots + IAP review assets
+- [ ] Generate final store listing screenshots
 - [ ] App Store Connect IAP review screenshots + notes for all 6 products
+- [ ] Google Play tablet screenshots / listing assets
 
 ## Not Started — Can Ship After Launch
 
@@ -124,7 +126,7 @@
 ## Current App Flow (what the user sees today)
 
 ```
-Launch → Splash (Expo default) → Sign In / Sign Up
+Launch → White splash with primary logo → Sign In / Sign Up
 → Adaptive multi-program questionnaire
   Quick profile → self-select or guided path → branched questions
 → Recommendation screen (guided path only)
@@ -176,3 +178,4 @@ Launch → V4 Splash → Onboarding Carousel → Sign Up / Sign In
 - [x] Redesigned 4-tab bar routes verified on device (Home / Program / My Journal / Account)
 - [x] Redesigned 4-tab bar shows no clipping near the home indicator on device
 - [ ] Redesigned 4-tab bar keyboard-hide behavior still needs explicit on-device confirmation
+- [x] Apple Store Connect + Google Play compliance forms filled out; remaining store work is now screenshot and submission packaging only

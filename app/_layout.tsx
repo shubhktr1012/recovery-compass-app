@@ -62,7 +62,7 @@ function NavigationGate({
 
         const inAuthGroup = segments[0] === '(auth)';
         const inTabsGroup = segments[0] === '(tabs)';
-        const inPaywall = (segments[0] as string) === 'paywall';
+        const inPaywall = inAuthGroup && (segments[1] as string) === 'paywall';
         const inDayDetail = (segments[0] as string) === 'day-detail';
         const inResetPassword = inAuthGroup && (segments[1] as string) === 'reset-password';
         const inPersonalization = inAuthGroup && (segments[1] as string) === 'personalization';
@@ -76,22 +76,22 @@ function NavigationGate({
 
                 if (isRecoveringPassword) {
                     if (!inResetPassword) {
-                        target = '/(auth)/reset-password' as Href;
+                        target = '/reset-password' as Href;
                     }
                 } else if (!session) {
                     if (!inAuthGroup) {
-                        target = '/(auth)/welcome' as Href;
+                        target = '/welcome' as Href;
                     }
         } else if (!profile || !profile.onboarding_complete) {
           if ((segments[1] as string) !== 'personalization') {
-            target = '/(auth)/personalization' as Href;
+            target = '/personalization' as Href;
           }
         } else if (!isSubscribed) {
-          if (!inPaywall && !inPersonalization) {
+          if (!inPaywall) {
             target = '/paywall' as Href;
           }
         } else if (!inTabsGroup && !inDayDetail && !inAccountStack) {
-          target = '/(tabs)' as Href;
+          target = '/' as Href;
         }
 
         if (!target) {
@@ -101,7 +101,7 @@ function NavigationGate({
 
         if (pendingRedirectRef.current === target) return;
         pendingRedirectRef.current = target;
-        router.replace(target);
+        router.navigate(target);
       } catch (routingError) {
         pendingRedirectRef.current = null;
         console.warn('Route guard skipped due to navigation not being ready yet.', routingError);
@@ -146,23 +146,29 @@ function RootLayoutContent() {
 
   // Initialize RevenueCat once.
   useEffect(() => {
+    if (isAuthLoading) return;
     if (hasConfiguredPurchasesRef.current) return;
 
     Purchases.setLogLevel(LOG_LEVEL.VERBOSE);
 
     const iosApiKey = publicEnv.revenueCatAppleKey;
     const androidApiKey = publicEnv.revenueCatGoogleKey;
+    const revenueCatUserId = session?.user?.id;
+    const revenueCatConfiguration = {
+      appUserID: revenueCatUserId,
+      shouldShowInAppMessagesAutomatically: false,
+    };
 
     if (Platform.OS === 'ios' && iosApiKey) {
-      Purchases.configure({ apiKey: iosApiKey });
+      Purchases.configure({ apiKey: iosApiKey, ...revenueCatConfiguration });
       hasConfiguredPurchasesRef.current = true;
     } else if (Platform.OS === 'android' && androidApiKey) {
-      Purchases.configure({ apiKey: androidApiKey });
+      Purchases.configure({ apiKey: androidApiKey, ...revenueCatConfiguration });
       hasConfiguredPurchasesRef.current = true;
     } else {
       console.warn('RevenueCat API key missing for current platform.');
     }
-  }, []);
+  }, [isAuthLoading, session?.user?.id]);
 
   // Log in RevenueCat user after SDK is configured.
   useEffect(() => {
@@ -201,8 +207,6 @@ function RootLayoutContent() {
         <Stack.Screen name="(auth)" />
         <Stack.Screen name="account" />
         <Stack.Screen name="day-detail" />
-        <Stack.Screen name="paywall" options={{ presentation: 'fullScreenModal', gestureEnabled: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
       </Stack>
       <NavigationGate
         isNavigationReady={isNavigationReady}

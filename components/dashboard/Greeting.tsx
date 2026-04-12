@@ -104,7 +104,7 @@ export function Greeting() {
             {/* Top row: Avatar + Date */}
             <View className="mb-5 flex-row items-center justify-between">
                 <Pressable
-                    onPress={() => router.push('/(tabs)/profile' as Href)}
+                    onPress={() => router.push('/profile' as Href)}
                     hitSlop={8}
                 >
                     <View

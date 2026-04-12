@@ -31,6 +31,7 @@ export default function JournalScreen() {
   const [mood, setMood] = useState('');
   const [cravingsLevel, setCravingsLevel] = useState<number | null>(null);
   const [reflection, setReflection] = useState('');
+  const trimmedReflection = reflection.trim();
 
   const journalQuery = useQuery({
     queryKey: JOURNAL_QUERY_KEY(userId),
@@ -89,6 +90,7 @@ export default function JournalScreen() {
   }, []);
 
   const entries = journalQuery.data ?? [];
+  const canSaveEntry = trimmedReflection.length > 0 && !saveEntryMutation.isPending;
 
   // Save button physics
   const btnScale = useSharedValue(1);
@@ -168,17 +170,21 @@ export default function JournalScreen() {
             {/* Save Entry — SquishPressable */}
             <Pressable
               onPressIn={() => {
+                if (!canSaveEntry) return;
                 btnScale.value = withTiming(0.96, { duration: 180, easing: Easing.inOut(Easing.cubic) });
               }}
               onPressOut={() => {
+                if (!canSaveEntry) return;
                 btnScale.value = withTiming(1, { duration: 240, easing: Easing.inOut(Easing.cubic) });
               }}
               onPress={() => saveEntryMutation.mutate()}
-              disabled={saveEntryMutation.isPending}
+              disabled={!canSaveEntry}
             >
               <Animated.View
                 style={btnStyle}
-                className="w-full bg-forest rounded-full py-[18px] items-center justify-center"
+                className={`w-full rounded-full py-[18px] items-center justify-center ${
+                  canSaveEntry ? 'bg-forest' : 'bg-forest/30'
+                }`}
               >
                 <Text className="font-satoshi-bold text-[16px] text-white tracking-[0.5px]">
                   {saveEntryMutation.isPending ? 'Saving...' : 'Save Entry'}
