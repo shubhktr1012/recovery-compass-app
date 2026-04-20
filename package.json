@@ -17,6 +17,7 @@
     "canonical:qa": "node ./scripts/canonical-quality-check.mjs --exclude ninety_day_transform",
     "canonical:qa:all": "node ./scripts/canonical-quality-check.mjs",
     "canonical:seed": "node ./scripts/generate-program-seeds-from-canonical.mjs",
+    "supabase:types:gen": "supabase gen types --linked --lang typescript --schema public > types/database.types.ts",
     "supabase:functions:list": "supabase functions list --workdir .",
     "supabase:functions:deploy:delete-account": "supabase functions deploy delete-account --no-verify-jwt --use-api --import-map ./supabase/functions/deno.json --workdir .",
     "supabase:functions:deploy:revenuecat-webhook": "supabase functions deploy revenuecat-webhook --no-verify-jwt --use-api --import-map ./supabase/functions/deno.json --workdir ."

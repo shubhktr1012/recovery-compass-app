@@ -47,6 +47,33 @@ export type Database = {
         }
         Relationships: []
       }
+      edge_rate_limits: {
+        Row: {
+          bucket: string
+          created_at: string
+          identifier: string
+          request_count: number
+          updated_at: string
+          window_start: string
+        }
+        Insert: {
+          bucket: string
+          created_at?: string
+          identifier: string
+          request_count?: number
+          updated_at?: string
+          window_start: string
+        }
+        Update: {
+          bucket?: string
+          created_at?: string
+          identifier?: string
+          request_count?: number
+          updated_at?: string
+          window_start?: string
+        }
+        Relationships: []
+      }
       journal_entries: {
         Row: {
           cravings_level: number | null
@@ -124,6 +151,48 @@ export type Database = {
           },
         ]
       }
+      questionnaire_runs: {
+        Row: {
+          completed_at: string
+          created_at: string
+          id: string
+          journey_key: string
+          primary_concern_label: string | null
+          questionnaire_answers: Json
+          questionnaire_version: string
+          recommended_program: string
+          source: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string
+          created_at?: string
+          id?: string
+          journey_key: string
+          primary_concern_label?: string | null
+          questionnaire_answers: Json
+          questionnaire_version: string
+          recommended_program: string
+          source: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string
+          created_at?: string
+          id?: string
+          journey_key?: string
+          primary_concern_label?: string | null
+          questionnaire_answers?: Json
+          questionnaire_version?: string
+          recommended_program?: string
+          source?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       onboarding_responses: {
         Row: {
           age: number | null
@@ -183,7 +252,6 @@ export type Database = {
       }
       profiles: {
         Row: {
-          active_program: string | null
           avatar_url: string | null
           created_at: string | null
           display_name: string | null
@@ -191,18 +259,15 @@ export type Database = {
           expo_push_token: string | null
           id: string
           onboarding_complete: boolean | null
-          preferred_push_hour: number
+          onboarding_completed_at: string | null
           push_opt_in: boolean
-          quiet_hours_end: number
-          quiet_hours_start: number
+          questionnaire_answers: Json | null
+          recommended_program: string | null
           revenuecat_app_user_id: string | null
-          subscription_status: string | null
-          subscription_tier: string | null
           timezone: string
           updated_at: string | null
         }
         Insert: {
-          active_program?: string | null
           avatar_url?: string | null
           created_at?: string | null
           display_name?: string | null
@@ -210,18 +275,15 @@ export type Database = {
           expo_push_token?: string | null
           id: string
           onboarding_complete?: boolean | null
-          preferred_push_hour?: number
+          onboarding_completed_at?: string | null
           push_opt_in?: boolean
-          quiet_hours_end?: number
-          quiet_hours_start?: number
+          questionnaire_answers?: Json | null
+          recommended_program?: string | null
           revenuecat_app_user_id?: string | null
-          subscription_status?: string | null
-          subscription_tier?: string | null
           timezone?: string
           updated_at?: string | null
         }
         Update: {
-          active_program?: string | null
           avatar_url?: string | null
           created_at?: string | null
           display_name?: string | null
@@ -229,13 +291,11 @@ export type Database = {
           expo_push_token?: string | null
           id?: string
           onboarding_complete?: boolean | null
-          preferred_push_hour?: number
+          onboarding_completed_at?: string | null
           push_opt_in?: boolean
-          quiet_hours_end?: number
-          quiet_hours_start?: number
+          questionnaire_answers?: Json | null
+          recommended_program?: string | null
           revenuecat_app_user_id?: string | null
-          subscription_status?: string | null
-          subscription_tier?: string | null
           timezone?: string
           updated_at?: string | null
         }
@@ -244,10 +304,11 @@ export type Database = {
       program_access: {
         Row: {
           archived_at: string | null
-          completion_state: string
           completed_at: string | null
+          completion_state: string
           created_at: string
           current_day: number | null
+          id: string
           owned_program: string | null
           purchase_state: string
           revenuecat_product_id: string | null
@@ -257,10 +318,11 @@ export type Database = {
         }
         Insert: {
           archived_at?: string | null
-          completion_state?: string
           completed_at?: string | null
+          completion_state?: string
           created_at?: string
           current_day?: number | null
+          id?: string
           owned_program?: string | null
           purchase_state?: string
           revenuecat_product_id?: string | null
@@ -270,10 +332,11 @@ export type Database = {
         }
         Update: {
           archived_at?: string | null
-          completion_state?: string
           completed_at?: string | null
+          completion_state?: string
           created_at?: string
           current_day?: number | null
+          id?: string
           owned_program?: string | null
           purchase_state?: string
           revenuecat_product_id?: string | null
@@ -285,32 +348,38 @@ export type Database = {
       }
       program_days: {
         Row: {
-          audio_url: string | null
+          cards: Json | null
           created_at: string | null
           day_number: number
-          duration_minutes: number | null
+          day_title: string | null
+          estimated_minutes: number | null
           id: string
           program_id: string
+          program_slug: string | null
           title: string
           updated_at: string | null
         }
         Insert: {
-          audio_url?: string | null
+          cards?: Json | null
           created_at?: string | null
           day_number: number
-          duration_minutes?: number | null
+          day_title?: string | null
+          estimated_minutes?: number | null
           id?: string
           program_id: string
+          program_slug?: string | null
           title: string
           updated_at?: string | null
         }
         Update: {
-          audio_url?: string | null
+          cards?: Json | null
           created_at?: string | null
           day_number?: number
-          duration_minutes?: number | null
+          day_title?: string | null
+          estimated_minutes?: number | null
           id?: string
           program_id?: string
+          program_slug?: string | null
           title?: string
           updated_at?: string | null
         }
@@ -334,7 +403,6 @@ export type Database = {
           day_id: number
           id: string
           program_id: string
-          program_uuid: string | null
           status: string
           time_spent_seconds: number | null
           updated_at: string
@@ -349,7 +417,6 @@ export type Database = {
           day_id: number
           id?: string
           program_id: string
-          program_uuid?: string | null
           status?: string
           time_spent_seconds?: number | null
           updated_at?: string
@@ -364,21 +431,12 @@ export type Database = {
           day_id?: number
           id?: string
           program_id?: string
-          program_uuid?: string | null
           status?: string
           time_spent_seconds?: number | null
           updated_at?: string
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "program_progress_program_uuid_fkey"
-            columns: ["program_uuid"]
-            isOneToOne: false
-            referencedRelation: "programs"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       program_reflections: {
         Row: {
@@ -421,30 +479,42 @@ export type Database = {
       }
       programs: {
         Row: {
+          category: string | null
           created_at: string | null
           description: string | null
-          duration_days: number
+          display_order: number | null
+          has_audio: boolean | null
           id: string
-          requires_audio: boolean | null
+          is_active: boolean | null
+          slug: string | null
           title: string
+          total_days: number | null
           updated_at: string | null
         }
         Insert: {
+          category?: string | null
           created_at?: string | null
           description?: string | null
-          duration_days: number
+          display_order?: number | null
+          has_audio?: boolean | null
           id?: string
-          requires_audio?: boolean | null
+          is_active?: boolean | null
+          slug?: string | null
           title: string
+          total_days?: number | null
           updated_at?: string | null
         }
         Update: {
+          category?: string | null
           created_at?: string | null
           description?: string | null
-          duration_days?: number
+          display_order?: number | null
+          has_audio?: boolean | null
           id?: string
-          requires_audio?: boolean | null
+          is_active?: boolean | null
+          slug?: string | null
           title?: string
+          total_days?: number | null
           updated_at?: string | null
         }
         Relationships: []
@@ -508,6 +578,39 @@ export type Database = {
           },
         ]
       }
+      smart_notification_queue: {
+        Row: {
+          created_at: string | null
+          id: string
+          payload: Json | null
+          scheduled_for: string
+          status: string | null
+          trigger_type: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          payload?: Json | null
+          scheduled_for: string
+          status?: string | null
+          trigger_type: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          payload?: Json | null
+          scheduled_for?: string
+          status?: string | null
+          trigger_type?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       sos_events: {
         Row: {
           craving_level_after: number | null
@@ -535,6 +638,57 @@ export type Database = {
           id?: string
           tool_used?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          fulfillment_status: string
+          id: string
+          items: Json
+          metadata: Json | null
+          payment_status: string
+          provider: string
+          provider_order_id: string
+          provider_payment_id: string | null
+          provider_signature: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string
+          fulfillment_status?: string
+          id?: string
+          items?: Json
+          metadata?: Json | null
+          payment_status?: string
+          provider?: string
+          provider_order_id: string
+          provider_payment_id?: string | null
+          provider_signature?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          fulfillment_status?: string
+          id?: string
+          items?: Json
+          metadata?: Json | null
+          payment_status?: string
+          provider?: string
+          provider_order_id?: string
+          provider_payment_id?: string | null
+          provider_signature?: string | null
+          updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -618,15 +772,15 @@ export type Database = {
       }
       sync_program_progress: {
         Args: {
-          p_archived_at?: string | null
-          p_completed_at?: string | null
+          p_archived_at?: string
+          p_completed_at?: string
           p_completed_days?: number[]
           p_current_day: number
           p_program_id: string
         }
         Returns: {
-          archived_at: string | null
-          completed_at: string | null
+          archived_at: string
+          completed_at: string
           completed_days: number[]
           current_day: number
         }[]

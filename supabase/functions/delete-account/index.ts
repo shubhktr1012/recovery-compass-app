@@ -17,8 +17,50 @@ function jsonResponse(body: Record<string, unknown>, status = 200) {
   });
 }
 
+async function safeDeleteBy(
+  supabaseAdmin: any,
+  table: string,
+  column: string,
+  value: string,
+) {
+  const { error } = await supabaseAdmin
+    .from(table)
+    .delete()
+    .eq(column, value);
+
+  if (error) {
+    // If the table doesn't exist in a given environment, treat it as a no-op.
+    // (PostgREST uses code like PGRST205 for missing relations.)
+    if (typeof (error as any)?.code === "string" && (error as any).code === "PGRST205") {
+      return;
+    }
+
+    throw new Error(`${table} delete failed: ${error.message}`);
+  }
+}
+
+async function safeUpdateNullUserId(
+  supabaseAdmin: any,
+  table: string,
+  column: string,
+  userId: string,
+) {
+  const { error } = await supabaseAdmin
+    .from(table)
+    .update({ [column]: null })
+    .eq(column, userId);
+
+  if (error) {
+    if (typeof (error as any)?.code === "string" && (error as any).code === "PGRST205") {
+      return;
+    }
+
+    throw new Error(`${table} update failed: ${error.message}`);
+  }
+}
+
 async function enforceRateLimit(
-  supabaseAdmin: ReturnType<typeof createClient>,
+  supabaseAdmin: any,
   bucket: string,
   identifier: string,
   maxRequests: number,
@@ -36,7 +78,10 @@ async function enforceRateLimit(
       throw error;
     }
 
-    const result = Array.isArray(data) ? data[0] : data;
+    const result = (Array.isArray(data) ? data[0] : data) as
+      | { allowed?: boolean; reset_at?: string }
+      | null
+      | undefined;
     if (!result?.allowed) {
       const resetAt = typeof result?.reset_at === "string" ? Date.parse(result.reset_at) : NaN;
       const retryAfterSeconds = Number.isFinite(resetAt)
@@ -112,6 +157,37 @@ serve(async (req: Request) => {
       },
       429,
     );
+  }
+
+  // Delete-account should be resilient even if auth-side cascades fail.
+  // We explicitly purge user-owned rows in public schema using service_role,
+  // then delete the auth user as the final step.
+  try {
+    // Keep commerce history but de-identify.
+    await safeUpdateNullUserId(supabaseAdmin, "transactions", "user_id", user.id);
+
+    // Children first where FKs exist.
+    await safeDeleteBy(supabaseAdmin, "notification_logs", "user_id", user.id);
+    await safeDeleteBy(supabaseAdmin, "smart_notification_queue", "user_id", user.id);
+
+    await safeDeleteBy(supabaseAdmin, "routine_checkins", "user_id", user.id);
+    await safeDeleteBy(supabaseAdmin, "user_routines", "user_id", user.id);
+
+    await safeDeleteBy(supabaseAdmin, "sos_events", "user_id", user.id);
+    await safeDeleteBy(supabaseAdmin, "relapse_logs", "user_id", user.id);
+
+    await safeDeleteBy(supabaseAdmin, "program_reflections", "user_id", user.id);
+    await safeDeleteBy(supabaseAdmin, "journal_entries", "user_id", user.id);
+    await safeDeleteBy(supabaseAdmin, "onboarding_responses", "user_id", user.id);
+    await safeDeleteBy(supabaseAdmin, "questionnaire_runs", "user_id", user.id);
+
+    await safeDeleteBy(supabaseAdmin, "program_progress", "user_id", user.id);
+    await safeDeleteBy(supabaseAdmin, "program_access", "user_id", user.id);
+
+    await safeDeleteBy(supabaseAdmin, "profiles", "id", user.id);
+  } catch (cleanupError) {
+    console.error("Delete account cleanup error:", cleanupError);
+    return jsonResponse({ error: "Database error deleting user" }, 500);
   }
 
   const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(user.id);

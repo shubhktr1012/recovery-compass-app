@@ -113,7 +113,7 @@
 - [ ] CALM/Ground full 10-min guided experience
 - [ ] Mentor routine system v1 (structured template library + rare custom one-off routines)
 - [ ] Day-in-program routine schema redesign (program/day-focused rather than generic task-focused)
-- [ ] Program progress sync hardening follow-up: replace launch-safe delete+insert sync with an atomic server-side or RLS-clean upsert path for stronger same-user multi-device concurrency
+- [ ] Program progress sync hardening follow-up: strengthen the launch-safe server RPC path for same-user multi-device concurrency after review
 - [ ] Calendar sync for mentor-assigned routines (Google / Apple Calendar integration)
 - [ ] Mentor workflow streamlining (structured input flow instead of free-text routine entry)
 - [ ] Sentry crash reporting
@@ -172,7 +172,9 @@ Launch → V4 Splash → Onboarding Carousel → Sign Up / Sign In
 - [x] Questionnaire → recommendation → paywall → purchase → unlock sweep passed on iOS
 - [x] iOS auth QA passed for email, Google, and Apple sign-in
 - [x] Startup stale-session recovery verified end-to-end with forced invalid refresh-token state; app returns to Welcome and shows the session-expired notice
-- [x] Day completion now persists without the prior `program_progress` constraint/RLS runtime error; current launch-safe sync strategy is acceptable for launch volume, with stronger concurrency hardening deferred post-review
+- [x] Day completion now persists without the prior `program_progress` constraint/RLS runtime error; current launch-safe server RPC sync strategy is acceptable for launch volume, with stronger concurrency hardening deferred post-review
+- [x] `sync_program_progress` correctness hardening: preserve earliest per-day `completed_at` timestamps (avoids rewriting historical completion times on subsequent syncs)
+- [x] `program_progress` cleanup audit complete: app flow is RPC-only, hydration aligns with `program_access`, and remaining work is post-launch concurrency hardening plus schema type regeneration
 - [ ] Real-device iPhone sandbox purchase verification still pending (borrowed device / TestFlight)
 - [x] Android internal-track Google Play purchase verification complete (Play install, tester account, Google Play purchase success, unlock path, restore path)
 - [x] Redesigned 4-tab bar routes verified on device (Home / Program / My Journal / Account)
