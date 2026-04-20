@@ -159,6 +159,36 @@ export function buildOnboardingSteps(answers: OnboardingAnswers): OnboardingStep
   return steps;
 }
 
+export function buildOnboardingRealignmentSteps(answers: OnboardingAnswers): OnboardingStep[] {
+  const journey = getActiveJourney(answers);
+  if (!journey) {
+    return buildOnboardingSteps(answers);
+  }
+
+  const steps: OnboardingStep[] = [];
+
+  if (!answers.name.trim() || !answers.age.trim() || !answers.gender) {
+    steps.push({
+      id: 'quick_profile',
+      type: 'quick_profile',
+      title: 'A couple of details first.',
+      description: 'We only need the basics so we can tailor your unlocked program properly.',
+    });
+  }
+
+  getActiveQuestionSequence(answers).forEach((question) => {
+    steps.push({
+      id: question.id,
+      type: 'question',
+      title: question.title,
+      description: question.description,
+      question,
+    });
+  });
+
+  return steps;
+}
+
 export function getOnboardingResolution(answers: OnboardingAnswers): OnboardingResolution {
   const journey = getActiveJourney(answers);
   if (!journey) {

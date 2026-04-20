@@ -18,14 +18,22 @@ import {
   StepPill,
   SurfaceSelectCard,
 } from '@/components/onboarding/intake';
+import { PROGRAM_METADATA } from '@/content/programs/metadata';
 import { ONBOARDING_RESPONSE_QUERY_KEY } from '@/hooks/useOnboardingResponse';
-import { buildOnboardingSteps, createInitialOnboardingAnswers, getOnboardingResolution } from '@/lib/onboarding.flow';
+import {
+  buildOnboardingRealignmentSteps,
+  buildOnboardingSteps,
+  createInitialOnboardingAnswers,
+  getOnboardingResolution,
+} from '@/lib/onboarding.flow';
 import { hasMeaningfulOnboardingDraft, loadOnboardingDraft, saveOnboardingDraft, saveOnboardingQuestionnaire } from '@/lib/onboarding.persistence';
+import { buildRealignmentAnswers } from '@/lib/onboarding.realignment';
 import { AppStorage } from '@/lib/storage';
 import { GENDER_OPTIONS } from '@/lib/onboarding.types';
 import type { GenderOption, GuidedIssueId, JourneyKey, OnboardingPath, OnboardingStep, QuestionDefinition } from '@/lib/onboarding.types';
 import { useAuth } from '@/providers/auth';
-import { PROFILE_QUERY_KEY } from '@/providers/profile';
+import { PROFILE_QUERY_KEY, useProfile } from '@/providers/profile';
+import type { ProgramSlug } from '@/lib/programs/types';
 
 // ─── Pill label mapping (spec §3) ──────────────────────────────────────────
 const STEP_PILL_LABELS: Record<OnboardingStep['type'], string> = {
@@ -53,17 +61,26 @@ export default function Personalization() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { user } = useAuth();
-  const params = useLocalSearchParams<{ resume?: string | string[] }>();
+  const { access, profile } = useProfile();
+  const params = useLocalSearchParams<{ mode?: string | string[]; resume?: string | string[] }>();
   const [didRestoreDraft, setDidRestoreDraft] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
   const [isDraftReady, setIsDraftReady] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [answers, setAnswers] = useState(createInitialOnboardingAnswers);
   const resumeMode = Array.isArray(params.resume) ? params.resume[0] : params.resume;
+  const mode = Array.isArray(params.mode) ? params.mode[0] : params.mode;
+  const isRealignmentMode = mode === 'realign';
+  const ownedProgram = access.ownedProgram as ProgramSlug | null;
 
-  const steps = useMemo(() => buildOnboardingSteps(answers), [answers]);
+  const steps = useMemo(
+    () => (isRealignmentMode ? buildOnboardingRealignmentSteps(answers) : buildOnboardingSteps(answers)),
+    [answers, isRealignmentMode]
+  );
   const currentStep = steps[Math.min(stepIndex, steps.length - 1)];
   const resolution = useMemo(() => getOnboardingResolution(answers), [answers]);
+  const realignmentProgramName =
+    isRealignmentMode && ownedProgram ? PROGRAM_METADATA[ownedProgram]?.name ?? null : null;
 
   const stepFadeAnim = React.useRef(new RNAnimated.Value(1)).current;
 
@@ -96,6 +113,28 @@ export default function Personalization() {
       }
 
       try {
+        if (isRealignmentMode) {
+          if (!ownedProgram) {
+            if (isMounted) {
+              setIsDraftReady(true);
+            }
+            return;
+          }
+
+          const nextAnswers = buildRealignmentAnswers({
+            ownedProgram,
+            questionnaireAnswers: profile?.questionnaire_answers ?? null,
+          });
+
+          if (!isMounted) {
+            return;
+          }
+
+          setAnswers(nextAnswers);
+          setStepIndex(0);
+          return;
+        }
+
         const shouldRestorePaywallReturn = resumeMode === 'review';
 
         if (shouldRestorePaywallReturn) {
@@ -168,11 +207,11 @@ export default function Personalization() {
     return () => {
       isMounted = false;
     };
-  }, [resumeMode, user]);
+  }, [isRealignmentMode, ownedProgram, profile?.questionnaire_answers, resumeMode, user]);
 
   // ─── Auto-save draft ───────────────────────────────────────────────────
   useEffect(() => {
-    if (!isDraftReady || !user || isSaving) {
+    if (!isDraftReady || !user || isSaving || isRealignmentMode) {
       return;
     }
 
@@ -195,7 +234,7 @@ export default function Personalization() {
     return () => {
       clearTimeout(timer);
     };
-  }, [answers, currentStep.id, isDraftReady, isSaving, stepIndex, user]);
+  }, [answers, currentStep.id, isDraftReady, isRealignmentMode, isSaving, stepIndex, user]);
 
   // ─── Draft restored alert ──────────────────────────────────────────────
   useEffect(() => {
@@ -362,27 +401,37 @@ export default function Personalization() {
     setIsSaving(true);
 
     try {
-      await AppStorage.setItem(
-        getPaywallReturnStateKey(user.id),
-        JSON.stringify({
-          version: PAYWALL_RETURN_STATE_VERSION,
-          currentStepId: currentStep.id,
-          currentStepIndex: stepIndex,
-          answers,
-        })
-      );
+      if (isRealignmentMode) {
+        await AppStorage.removeItem(getPaywallReturnStateKey(user.id));
+      } else {
+        await AppStorage.setItem(
+          getPaywallReturnStateKey(user.id),
+          JSON.stringify({
+            version: PAYWALL_RETURN_STATE_VERSION,
+            currentStepId: currentStep.id,
+            currentStepIndex: stepIndex,
+            answers,
+          })
+        );
+      }
 
       const { persistedOnboarding, persistedProfile } = await saveOnboardingQuestionnaire({
         answers,
         email: user.email,
+        source: isRealignmentMode ? 'realignment' : undefined,
         userId: user.id,
       });
 
       queryClient.setQueryData(ONBOARDING_RESPONSE_QUERY_KEY(user.id), persistedOnboarding);
       queryClient.setQueryData(PROFILE_QUERY_KEY(user.id), persistedProfile);
 
-      // The root navigation gate will move authenticated but unsubscribed
-      // users to the paywall once onboarding state is persisted.
+      if (isRealignmentMode && ownedProgram) {
+        router.replace('/(tabs)/program');
+        return;
+      }
+
+      // The root navigation gate will move authenticated users to the right
+      // next step once onboarding state is persisted.
       return;
     } catch (error: any) {
       Alert.alert('Could not save your onboarding', error?.message ?? 'Please try again.');
@@ -638,7 +687,12 @@ export default function Personalization() {
   };
 
   // ─── CTA label ─────────────────────────────────────────────────────────
-  const ctaLabel = currentStep.type === 'recommendation' ? 'See plans' : 'Continue';
+  const ctaLabel =
+    isRealignmentMode && stepIndex === steps.length - 1
+      ? 'Save and continue'
+      : currentStep.type === 'recommendation'
+        ? 'See plans'
+        : 'Continue';
 
   // ─── Loading state ─────────────────────────────────────────────────────
   if (!isDraftReady) {
@@ -646,10 +700,12 @@ export default function Personalization() {
       <View className="flex-1 items-center justify-center bg-surface px-8">
         <StatusBar style="dark" />
         <Text className="font-erode-semibold text-[28px] leading-[34px] text-forest text-center">
-          Restoring your progress
+          {isRealignmentMode ? 'Preparing your program' : 'Restoring your progress'}
         </Text>
         <Text className="mt-3 max-w-[280px] font-satoshi text-[15px] leading-[24px] text-forest/50 text-center">
-          We are picking up your questionnaire from where you left off.
+          {isRealignmentMode
+            ? 'We are loading a few questions so your unlocked program matches your profile.'
+            : 'We are picking up your questionnaire from where you left off.'}
         </Text>
       </View>
     );
@@ -695,6 +751,19 @@ export default function Personalization() {
             title={currentStep.title}
             description={currentStep.description}
           />
+
+          {isRealignmentMode ? (
+            <View className="mt-6 rounded-3xl border border-forest/10 bg-white/80 px-5 py-4">
+              <Text className="font-satoshi-bold text-[14px] text-forest">
+                {realignmentProgramName
+                  ? `${realignmentProgramName} is already unlocked`
+                  : 'Your program is already unlocked'}
+              </Text>
+              <Text className="mt-2 font-satoshi text-[14px] leading-[22px] text-forest/60">
+                Answer a few quick questions so we can tailor this program to the path you actually chose.
+              </Text>
+            </View>
+          ) : null}
 
           {/* Interaction zone */}
           {renderCurrentStep()}

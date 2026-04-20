@@ -4,6 +4,7 @@ import {
   Alert,
   Animated as RNAnimated,
   Linking,
+  Platform,
   Pressable,
   ScrollView,
   Text,
@@ -24,6 +25,7 @@ import {
   getOwnedProgramsFromCustomerInfo,
   getProgramSlugForPackage,
 } from '@/lib/revenuecat/config';
+import { hasOnboardingContextMismatch } from '@/lib/onboarding.realignment';
 import { useProfile } from '@/providers/profile';
 
 // Reusing intake components for the premium aesthetic
@@ -32,6 +34,8 @@ import { FocusPointRow } from '@/components/onboarding/intake/FocusPointRow';
 
 const ACCESS_CONFIRMATION_RETRY_DELAY_MS = 1500;
 const ACCESS_CONFIRMATION_RETRY_COUNT = 4;
+const PROGRAM_TAB_ROUTE = '/(tabs)/program' as const;
+const REALIGNMENT_ROUTE = '/personalization?mode=realign' as const;
 
 function wait(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -55,6 +59,26 @@ function getRecommendedPrograms(programSlug: ProgramSlug | null | undefined): Pr
   }
 
   return [programSlug];
+}
+
+function getPreferredOffering(
+  offerings: Awaited<ReturnType<typeof Purchases.getOfferings>>
+) {
+  const preferredKeys =
+    Platform.OS === 'ios'
+      ? ['main_ios', 'main_production', 'main', 'default']
+      : Platform.OS === 'android'
+        ? ['main_android', 'main_production', 'main', 'default']
+        : ['main_production', 'main', 'default'];
+
+  for (const key of preferredKeys) {
+    const offering = offerings.all[key];
+    if (offering?.availablePackages?.length) {
+      return offering;
+    }
+  }
+
+  return offerings.current ?? null;
 }
 
 function RadioIndicator({ isSelected }: { isSelected: boolean }) {
@@ -89,6 +113,13 @@ export default function Paywall() {
   const confirmUnlockedProgram = async (expectedProgram: ProgramSlug | null) => {
     for (let attempt = 0; attempt < ACCESS_CONFIRMATION_RETRY_COUNT; attempt += 1) {
       const snapshot = await refreshAccess();
+      console.log('[Paywall] confirmUnlockedProgram:attempt', {
+        attempt: attempt + 1,
+        expectedProgram,
+        snapshotOwnedProgram: snapshot.ownedProgram,
+        snapshotPurchaseState: snapshot.purchaseState,
+        snapshotOwnerUserId: snapshot.ownerUserId ?? null,
+      });
       const confirmedProgram =
         expectedProgram && snapshot.ownedProgram === expectedProgram
           ? expectedProgram
@@ -108,6 +139,7 @@ export default function Paywall() {
 
   const restoreOwnedPurchase = async (expectedProgram: ProgramSlug | null) => {
     try {
+      console.log('[Paywall] restoreOwnedPurchase:start', { expectedProgram });
       await Purchases.restorePurchases();
     } catch (error) {
       console.warn('Restore attempt after purchase issue failed', error);
@@ -121,7 +153,15 @@ export default function Paywall() {
       try {
         await refreshAccess();
         const offerings = await Purchases.getOfferings();
-        const currentOffering = offerings.current ?? null;
+        const currentOffering = getPreferredOffering(offerings);
+
+        console.log('[Paywall] getOfferings:resolved', {
+          platform: Platform.OS,
+          currentOfferingIdentifier: offerings.current?.identifier ?? null,
+          selectedOfferingIdentifier: currentOffering?.identifier ?? null,
+          selectedPackageCount: currentOffering?.availablePackages?.length ?? 0,
+          availableOfferingKeys: Object.keys(offerings.all),
+        });
 
         if (currentOffering && currentOffering.availablePackages.length > 0) {
           setPackages(currentOffering.availablePackages);
@@ -141,15 +181,24 @@ export default function Paywall() {
   }, [refreshAccess]);
 
   const recommendedProgram = profile?.recommended_program ?? null;
+  const needsOnboardingRealignment = hasOnboardingContextMismatch({
+    onboardingComplete: profile?.onboarding_complete,
+    ownedProgram: access.ownedProgram,
+    questionnaireAnswers: profile?.questionnaire_answers ?? null,
+    recommendedProgram,
+  });
+
+  useEffect(() => {
+    if (!access.ownedProgram) {
+      return;
+    }
+
+    router.replace(needsOnboardingRealignment ? REALIGNMENT_ROUTE : PROGRAM_TAB_ROUTE);
+  }, [access.ownedProgram, needsOnboardingRealignment, router]);
 
   const handleBack = () => {
     if (access.ownedProgram) {
-      if (typeof router.canGoBack === 'function' && router.canGoBack()) {
-        router.back();
-        return;
-      }
-
-      router.navigate('/program');
+      router.replace(needsOnboardingRealignment ? REALIGNMENT_ROUTE : PROGRAM_TAB_ROUTE);
       return;
     }
 
@@ -217,6 +266,11 @@ export default function Paywall() {
     try {
       const result = await Purchases.purchasePackage(pack);
       const ownedPrograms = getOwnedProgramsFromCustomerInfo(result.customerInfo);
+      console.log('[Paywall] purchasePackage:result', {
+        selectedProgram: programSlug,
+        ownedPrograms,
+        revenueCatAppUserId: result.customerInfo.originalAppUserId,
+      });
       let confirmedProgram = programSlug && ownedPrograms.includes(programSlug) ? programSlug : null;
 
       if (!confirmedProgram) {
@@ -235,7 +289,7 @@ export default function Paywall() {
       await refreshAccess();
 
       // No alert needed for success if we just drop them into the program smoothly
-      router.navigate('/program');
+      router.replace(PROGRAM_TAB_ROUTE);
     } catch (e: any) {
       const combinedErrorMessage = [e?.message, e?.underlyingErrorMessage]
         .filter((value): value is string => typeof value === 'string' && value.length > 0)
@@ -250,6 +304,10 @@ export default function Paywall() {
         combinedErrorMessage.includes('invalid credentials');
 
       if (isAlreadyOwnedError) {
+        console.log('[Paywall] purchasePackage:alreadyOwned', {
+          selectedProgram: programSlug,
+          errorMessage: combinedErrorMessage,
+        });
         const restoredProgram = await restoreOwnedPurchase(programSlug);
 
         if (restoredProgram) {
@@ -258,7 +316,7 @@ export default function Paywall() {
             'Already Unlocked',
             `This account already owns ${getDisplayNameForProgram(restoredProgram)}. Access has been restored.`
           );
-          router.navigate('/program');
+          router.replace(PROGRAM_TAB_ROUTE);
           return;
         }
 
@@ -274,7 +332,7 @@ export default function Paywall() {
 
         if (restoredProgram) {
           await setProgramAccess(restoredProgram);
-          router.navigate('/program');
+          router.replace(PROGRAM_TAB_ROUTE);
           return;
         }
       }
@@ -305,14 +363,24 @@ export default function Paywall() {
   const handleRestore = async () => {
     setLoading(true);
     try {
+      console.log('[Paywall] handleRestore:start', {
+        recommendedProgram,
+        accessOwnedProgram: access.ownedProgram,
+      });
       await Purchases.restorePurchases();
       const snapshot = await refreshAccess();
+      console.log('[Paywall] handleRestore:resolved', {
+        recommendedProgram,
+        snapshotOwnedProgram: snapshot?.ownedProgram ?? null,
+        snapshotPurchaseState: snapshot?.purchaseState ?? null,
+        snapshotOwnerUserId: snapshot?.ownerUserId ?? null,
+      });
       if (!snapshot?.ownedProgram) {
         Alert.alert('Restore Failed', 'No eligible Recovery Compass purchase was found for this account.');
         return;
       }
       Alert.alert('Success', 'Purchases restored successfully!');
-      router.navigate('/program');
+      router.replace(PROGRAM_TAB_ROUTE);
     } catch (e: any) {
       void captureError(e, { source: 'paywall', metadata: { stage: 'restore' } });
       Alert.alert('Restore Failed', e.message);

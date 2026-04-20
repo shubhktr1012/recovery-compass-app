@@ -9,6 +9,7 @@ import {
 import type {
   OnboardingAnswers,
   QuestionDefinition,
+  JourneyKey,
   SelectionOption,
 } from '@/lib/onboarding.types';
 
@@ -20,6 +21,10 @@ export interface OnboardingDraftPayload {
   updatedAt: string;
   answers: OnboardingAnswers;
 }
+
+type QuestionnaireRunSource = 'self_select' | 'guided_recommendation' | 'realignment';
+
+const QUESTIONNAIRE_VERSION = 'onboarding_redesign_v1';
 
 function getOptionLabel(options: SelectionOption[] | undefined, value: string | null | undefined) {
   if (!options || !value) return null;
@@ -129,8 +134,6 @@ export async function saveOnboardingDraft(args: {
     {
       id: userId,
       email: email ?? null,
-      onboarding_complete: false,
-      questionnaire_completed: false,
       questionnaire_answers: draftPayload,
       updated_at: updatedAt,
     },
@@ -147,9 +150,10 @@ export async function saveOnboardingDraft(args: {
 export async function saveOnboardingQuestionnaire(args: {
   answers: OnboardingAnswers;
   email: string | null | undefined;
+  source?: QuestionnaireRunSource;
   userId: string;
 }) {
-  const { answers, email, userId } = args;
+  const { answers, email, source, userId } = args;
   const resolution = getOnboardingResolution(answers);
 
   if (!resolution.journey || !resolution.recommendedProgram || !resolution.primaryConcernLabel) {
@@ -187,7 +191,7 @@ export async function saveOnboardingQuestionnaire(args: {
     : null;
 
   const questionnaireAnswers = {
-    version: 'onboarding_redesign_v1',
+    version: QUESTIONNAIRE_VERSION,
     path: answers.path,
     quickProfile: {
       name: answers.name.trim(),
@@ -225,6 +229,18 @@ export async function saveOnboardingQuestionnaire(args: {
     updated_at: updatedAt,
   };
 
+  const questionnaireRunPayload = {
+    user_id: userId,
+    source: source ?? (answers.path === 'guided_recommendation' ? 'guided_recommendation' : 'self_select'),
+    questionnaire_version: QUESTIONNAIRE_VERSION,
+    journey_key: resolution.journey as JourneyKey,
+    recommended_program: resolution.recommendedProgram,
+    primary_concern_label: resolution.primaryConcernLabel,
+    questionnaire_answers: questionnaireAnswers,
+    completed_at: updatedAt,
+    updated_at: updatedAt,
+  };
+
   const supabaseAny = supabase as any;
 
   const [{ data: persistedOnboarding, error: onboardingError }, { data: persistedProfile, error: profileError }] =
@@ -243,8 +259,6 @@ export async function saveOnboardingQuestionnaire(args: {
             id: userId,
             email: email ?? null,
             onboarding_complete: true,
-            questionnaire_completed: true,
-            primary_concern: resolution.primaryConcernLabel,
             recommended_program: resolution.recommendedProgram,
             questionnaire_answers: questionnaireAnswers,
             onboarding_completed_at: updatedAt,
@@ -253,7 +267,7 @@ export async function saveOnboardingQuestionnaire(args: {
           { onConflict: 'id' }
         )
         .select(
-          'id, email, onboarding_complete, questionnaire_answers, recommended_program, created_at, updated_at, active_program, expo_push_token, push_opt_in'
+          'id, email, onboarding_complete, questionnaire_answers, recommended_program, created_at, updated_at, expo_push_token, push_opt_in'
         )
         .single(),
     ]);
@@ -264,6 +278,18 @@ export async function saveOnboardingQuestionnaire(args: {
 
   if (profileError) {
     throw profileError;
+  }
+
+  try {
+    const { error: questionnaireRunError } = await supabaseAny
+      .from('questionnaire_runs')
+      .insert(questionnaireRunPayload);
+
+    if (questionnaireRunError) {
+      throw questionnaireRunError;
+    }
+  } catch (error) {
+    console.error('Failed to save questionnaire run history', error);
   }
 
   await AppStorage.setItem('hasSeenOnboarding', 'true');

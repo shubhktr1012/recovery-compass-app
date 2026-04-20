@@ -14,6 +14,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { AppErrorBoundary } from '@/components/AppErrorBoundary';
 import { getPublicEnvState } from '@/lib/env';
 import { installGlobalErrorHandler } from '@/lib/monitoring';
+import { hasOnboardingContextMismatch } from '@/lib/onboarding.realignment';
 import { Session } from '@supabase/supabase-js';
 import ErodeRegular from '@/assets/fonts/Erode-Regular.otf';
 import ErodeItalic from '@/assets/fonts/Erode-Italic.otf';
@@ -40,12 +41,14 @@ const publicEnv = publicEnvState.env;
 const uninstallGlobalErrorHandler = installGlobalErrorHandler();
 
 function NavigationGate({
+    needsOnboardingRealignment,
     isNavigationReady,
     isRecoveringPassword,
     isSubscribed,
     profile,
     session,
 }: {
+    needsOnboardingRealignment: boolean;
     isNavigationReady: boolean;
     isRecoveringPassword: boolean;
     isSubscribed: boolean;
@@ -82,6 +85,10 @@ function NavigationGate({
                     if (!inAuthGroup) {
                         target = '/welcome' as Href;
                     }
+        } else if (needsOnboardingRealignment) {
+          if (!inPersonalization) {
+            target = '/personalization?mode=realign' as Href;
+          }
         } else if (!profile || !profile.onboarding_complete) {
           if ((segments[1] as string) !== 'personalization') {
             target = '/personalization' as Href;
@@ -109,14 +116,14 @@ function NavigationGate({
     };
 
     void checkRouting();
-    }, [isNavigationReady, rootNavigationState?.key, session, profile, isSubscribed, isRecoveringPassword, router, segments]);
+    }, [isNavigationReady, needsOnboardingRealignment, rootNavigationState?.key, session, profile, isSubscribed, isRecoveringPassword, router, segments]);
 
   return null;
 }
 
 function RootLayoutContent() {
   const { session, isLoading: isAuthLoading, isRecoveringPassword } = useAuth();
-  const { profile, isSubscribed, isLoading: isProfileLoading } = useProfile();
+  const { access, profile, isSubscribed, isLoading: isProfileLoading } = useProfile();
   const [fontsLoaded] = useFonts({
     'Erode-Regular': ErodeRegular,
     'Erode-Italic': ErodeItalic,
@@ -134,6 +141,12 @@ function RootLayoutContent() {
   });
 
   const isLoading = isAuthLoading || (session ? isProfileLoading : false);
+  const needsOnboardingRealignment = hasOnboardingContextMismatch({
+    onboardingComplete: profile?.onboarding_complete,
+    ownedProgram: access.ownedProgram,
+    questionnaireAnswers: profile?.questionnaire_answers ?? null,
+    recommendedProgram: profile?.recommended_program ?? null,
+  });
   const isNavigationReady = fontsLoaded && !isLoading;
   const hasConfiguredPurchasesRef = useRef(false);
   const revenueCatLoginInFlightRef = useRef<string | null>(null);
@@ -212,6 +225,7 @@ function RootLayoutContent() {
         isNavigationReady={isNavigationReady}
         isRecoveringPassword={isRecoveringPassword}
         isSubscribed={isSubscribed}
+        needsOnboardingRealignment={needsOnboardingRealignment}
         profile={profile}
         session={session}
       />
