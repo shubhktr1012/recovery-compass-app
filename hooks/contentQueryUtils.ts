@@ -35,10 +35,8 @@ export type ProgramRow = {
   slug: string | null;
   title: string;
   description: string | null;
-  duration_days: number | null;
   total_days: number | null;
   category: string | null;
-  requires_audio: boolean | null;
   has_audio: boolean | null;
   display_order: number | null;
   is_active: boolean | null;
@@ -53,8 +51,6 @@ export type ProgramDayRow = {
   day_number: number;
   title: string;
   day_title: string | null;
-  audio_url: string | null;
-  duration_minutes: number | null;
   estimated_minutes: number | null;
   cards: unknown;
   created_at: string | null;
@@ -153,7 +149,7 @@ export function mapProgramDayRowToDayContent(
     programSlug,
     dayNumber: row.day_number,
     dayTitle: row.day_title ?? row.title ?? fallbackDay?.dayTitle ?? `Day ${row.day_number}`,
-    estimatedMinutes: row.estimated_minutes ?? row.duration_minutes ?? fallbackDay?.estimatedMinutes,
+    estimatedMinutes: row.estimated_minutes ?? fallbackDay?.estimatedMinutes,
     cards: parseCards(row.cards),
   };
 }
@@ -173,9 +169,9 @@ export function mapProgramRowToProgramContent(
     slug: row.slug,
     name: row.title ?? fallbackProgram.name,
     description: row.description ?? fallbackProgram.description,
-    totalDays: row.total_days ?? row.duration_days ?? fallbackProgram.totalDays,
+    totalDays: row.total_days ?? fallbackProgram.totalDays,
     category: isProgramCategory(row.category) ? row.category : fallbackProgram.category,
-    hasAudio: row.has_audio ?? row.requires_audio ?? fallbackProgram.hasAudio,
+    hasAudio: row.has_audio ?? fallbackProgram.hasAudio,
     contentStatus: resolveContentStatus(row.slug, mergedDays),
   };
 

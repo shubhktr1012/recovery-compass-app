@@ -14,6 +14,7 @@ interface ProgramCardProps {
   day: ProgramCardDay;
   isLocked: boolean;
   isCompleted: boolean;
+  isPartial?: boolean;
   isCurrent: boolean;
   isReturningUser?: boolean;
   availabilityLabel?: string | null;
@@ -23,6 +24,7 @@ export function ProgramCard({
   day,
   isLocked,
   isCompleted,
+  isPartial = false,
   isCurrent,
   isReturningUser = false,
   availabilityLabel,
@@ -47,7 +49,7 @@ export function ProgramCard({
             Day {day.id}
           </Text>
           <Text className="font-satoshi-bold text-[10px] uppercase tracking-[2px] text-forest">
-            {isReturningUser ? 'WELCOME BACK' : 'TODAY'}
+            {isPartial ? 'PARTIAL' : isReturningUser ? 'WELCOME BACK' : 'TODAY'}
           </Text>
         </View>
         <Text className="font-satoshi-medium text-[20px] leading-[26px] text-forest mb-2.5">
@@ -96,6 +98,27 @@ export function ProgramCard({
         </Text>
         <Text className="font-satoshi text-[14px] leading-[22px] text-forest/50 ml-5" numberOfLines={2}>
           {day.description}
+        </Text>
+      </View>
+    );
+  }
+
+  if (isPartial) {
+    return (
+      <View className="px-2 py-4 opacity-85">
+        <View className="mb-2 flex-row items-center justify-between">
+          <Text className="font-erode-medium text-[22px] text-forest">
+            Day {day.id}
+          </Text>
+          <Text className="font-satoshi-bold text-[10px] uppercase tracking-[2px] text-forest/50">
+            PARTIAL
+          </Text>
+        </View>
+        <Text className="font-satoshi-medium text-[16px] leading-[24px] text-forest ml-5 mb-1.5">
+          {day.title}
+        </Text>
+        <Text className="font-satoshi text-[14px] leading-[22px] text-forest/55 ml-5" numberOfLines={2}>
+          Revisit this day whenever you're ready and mark it fully complete.
         </Text>
       </View>
     );

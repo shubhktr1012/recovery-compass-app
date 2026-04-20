@@ -32,6 +32,7 @@ export function StreakRibbon() {
 
     const { dots, completedCount } = useMemo(() => {
         const completedDays = progress?.completedDays ?? [];
+        const partialDays = progress?.partialDays ?? [];
         const currentScheduledDay = access.startedAt
             ? getProgramScheduledDay(access.startedAt, totalDays)
             : access.currentDay ?? 1;
@@ -41,7 +42,7 @@ export function StreakRibbon() {
         const windowSize = Math.min(7, currentScheduledDay);
         const startDay = currentScheduledDay - windowSize + 1;
 
-        const result: Array<{ dayNumber: number; status: 'completed' | 'today' | 'missed' }> = [];
+        const result: Array<{ dayNumber: number; status: 'completed' | 'partial' | 'today' | 'missed' }> = [];
         let completed = 0;
 
         for (let dayNum = startDay; dayNum <= currentScheduledDay; dayNum++) {
@@ -50,19 +51,23 @@ export function StreakRibbon() {
                 if (isCompleted) {
                     result.push({ dayNumber: dayNum, status: 'completed' });
                     completed++;
+                } else if (partialDays.includes(dayNum)) {
+                    result.push({ dayNumber: dayNum, status: 'partial' });
                 } else {
                     result.push({ dayNumber: dayNum, status: 'today' });
                 }
             } else if (completedDays.includes(dayNum)) {
                 result.push({ dayNumber: dayNum, status: 'completed' });
                 completed++;
+            } else if (partialDays.includes(dayNum)) {
+                result.push({ dayNumber: dayNum, status: 'partial' });
             } else {
                 result.push({ dayNumber: dayNum, status: 'missed' });
             }
         }
 
         return { dots: result, completedCount: completed };
-    }, [progress?.completedDays, access.startedAt, access.currentDay, totalDays]);
+    }, [progress?.completedDays, progress?.partialDays, access.startedAt, access.currentDay, totalDays]);
 
     const windowLabel = dots.length < 7
         ? `${completedCount} of ${dots.length} day${dots.length === 1 ? '' : 's'} completed`
@@ -78,6 +83,14 @@ export function StreakRibbon() {
                             <View
                                 key={index}
                                 className="w-4 h-4 rounded-full bg-success"
+                            />
+                        );
+                    }
+                    if (dot.status === 'partial') {
+                        return (
+                            <View
+                                key={index}
+                                className="w-4 h-4 rounded-full border-2 border-forest/50 bg-forest/10"
                             />
                         );
                     }

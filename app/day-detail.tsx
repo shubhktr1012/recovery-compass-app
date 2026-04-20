@@ -16,7 +16,7 @@ import Animated, {
 import type { SharedValue } from 'react-native-reanimated';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { CardRenderer } from '@/components/cards/CardRenderer';
 import { Button } from '@/components/ui/Button';
@@ -43,6 +43,56 @@ function isProgramSlug(value: string | null | undefined): value is ProgramSlug {
 
 function getProgressStorageKey(programSlug: ProgramSlug, dayNumber: number) {
   return `progress:${programSlug}:${dayNumber}`;
+}
+
+function getRoutineStorageKey(programSlug: ProgramSlug, dayNumber: number, cardIndex: number) {
+  return `day-routine:${programSlug}:${dayNumber}:${cardIndex}`;
+}
+
+function getRoutineItemKey(name: string, index: number) {
+  return `${name}-${index}`;
+}
+
+async function getDayRoutineCompletionSummary(day: DayContent) {
+  const routineCards = day.cards
+    .map((card, index) => ({ card, index }))
+    .filter(
+      (entry): entry is { card: Extract<DayContent['cards'][number], { type: 'exercise_routine' }>; index: number } =>
+        entry.card.type === 'exercise_routine'
+    );
+
+  if (!routineCards.length) {
+    return {
+      hasRequiredRoutines: false,
+      allRequiredRoutinesComplete: true,
+    };
+  }
+
+  const rawValues = await Promise.all(
+    routineCards.map(({ index }) =>
+      AsyncStorage.getItem(getRoutineStorageKey(day.programSlug, day.dayNumber, index))
+    )
+  );
+
+  const allRequiredRoutinesComplete = routineCards.every(({ card }, index) => {
+    const parsedValue = rawValues[index];
+    const completedItems = (() => {
+      try {
+        const parsed = parsedValue ? JSON.parse(parsedValue) : [];
+        return new Set(Array.isArray(parsed) ? parsed.filter((value): value is string => typeof value === 'string') : []);
+      } catch {
+        return new Set<string>();
+      }
+    })();
+
+    const requiredItems = card.exercises.map((item, itemIndex) => getRoutineItemKey(item.name, itemIndex));
+    return requiredItems.every((itemKey) => completedItems.has(itemKey));
+  });
+
+  return {
+    hasRequiredRoutines: true,
+    allRequiredRoutinesComplete,
+  };
 }
 
 function normalizeRouteParam(value: string | string[] | undefined) {
@@ -98,15 +148,17 @@ function ResumeToast() {
   );
 }
 
-function SwipeDeckCard({
+const SwipeDeckCard = memo(function SwipeDeckCard({
   card,
   index,
   totalCards,
   progress,
   programName,
   onContinue,
-  journalStorageKey,
+  reflectionStorageKey,
+  routineStorageKey,
   programReflectionContext,
+  onRoutineProgressChange,
   closeCardState,
 }: {
   card: DayContent['cards'][number];
@@ -115,18 +167,22 @@ function SwipeDeckCard({
   progress: SharedValue<number>;
   programName?: string;
   onContinue?: () => void;
-  journalStorageKey?: string;
+  reflectionStorageKey?: string;
+  routineStorageKey?: string;
   programReflectionContext?: {
     userId?: string;
     programSlug: ProgramSlug;
     dayNumber: number;
     cardIndex: number;
   };
+  onRoutineProgressChange?: () => void;
   closeCardState?: {
     isCompleted?: boolean;
+    isPartial?: boolean;
     isFinalProgramDay?: boolean;
     completionDescription?: string | null;
     isCompleting?: boolean;
+    primaryActionLabel?: string;
     onCompleteDay?: () => void;
     onBackToProgram?: () => void;
   };
@@ -151,11 +207,13 @@ function SwipeDeckCard({
           style={[styles.animatedCardContainer, animatedStyle]}
         >
           <CardRenderer
-            card={card}
-            programName={programName}
-            onContinue={onContinue}
-            journalStorageKey={journalStorageKey}
-            closeCardState={closeCardState}
+          card={card}
+          programName={programName}
+          onContinue={onContinue}
+          reflectionStorageKey={reflectionStorageKey}
+          routineStorageKey={routineStorageKey}
+          onRoutineProgressChange={onRoutineProgressChange}
+          closeCardState={closeCardState}
             programReflectionContext={
               card.type === 'journal' ? programReflectionContext : undefined
             }
@@ -164,20 +222,24 @@ function SwipeDeckCard({
       </View>
     </SafeAreaView>
   );
-}
+});
 
 export default function DayDetailScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const pagerRef = useRef<PagerView>(null);
   const { user } = useAuth();
-  const { access, progress, completeProgramDay } = useProfile();
+  const { access, progress, completeProgramDay, savePartialProgramDay } = useProfile();
   const params = useLocalSearchParams<{ dayNumber?: string | string[]; programSlug?: string | string[] }>();
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isRestored, setIsRestored] = useState(false);
   const [showResumeToast, setShowResumeToast] = useState(false);
   const [isCompletingDay, setIsCompletingDay] = useState(false);
+  const [routineSummary, setRoutineSummary] = useState({
+    hasRequiredRoutines: false,
+    allRequiredRoutinesComplete: true,
+  });
   const swipeProgress = useSharedValue(0);
 
   const rawProgramSlug = normalizeRouteParam(params.programSlug);
@@ -283,7 +345,9 @@ export default function DayDetailScreen() {
   };
 
   const completedDays = progress?.completedDays ?? [];
+  const partialDays = progress?.partialDays ?? [];
   const isDayCompleted = normalizedDayNumber ? completedDays.includes(normalizedDayNumber) : false;
+  const isDayPartial = normalizedDayNumber ? partialDays.includes(normalizedDayNumber) : false;
   const scheduledDay = useMemo(() => {
     if (!program) {
       return access.currentDay ?? 1;
@@ -301,11 +365,58 @@ export default function DayDetailScreen() {
   const isFutureLocked = Boolean(normalizedDayNumber && normalizedDayNumber > scheduledDay && !isDayCompleted);
   const hasCloseCard = dayContent?.cards.some((card) => card.type === 'close') ?? false;
   const isLastCard = Boolean(dayContent && currentIndex === dayContent.cards.length - 1);
-  const shouldShowCompletionBar = !hasCloseCard && (isDayCompleted || isLastCard);
+  const shouldShowCompletionBar = !hasCloseCard && (isDayCompleted || isDayPartial || isLastCard);
   const nextUnlockLabel = useMemo(() => {
     if (!program || access.completionState === 'completed') return null;
     return formatUnlockLabel(getProgramNextUnlockAt(access.startedAt, program.totalDays));
   }, [access.completionState, access.startedAt, program]);
+
+  const refreshRoutineSummary = useCallback(async () => {
+    if (!dayContent) {
+      setRoutineSummary({
+        hasRequiredRoutines: false,
+        allRequiredRoutinesComplete: true,
+      });
+      return;
+    }
+
+    try {
+      const nextSummary = await getDayRoutineCompletionSummary(dayContent);
+      setRoutineSummary((currentSummary) => {
+        if (
+          currentSummary.hasRequiredRoutines === nextSummary.hasRequiredRoutines &&
+          currentSummary.allRequiredRoutinesComplete === nextSummary.allRequiredRoutinesComplete
+        ) {
+          return currentSummary;
+        }
+
+        return nextSummary;
+      });
+    } catch (error) {
+      console.error('Failed to evaluate routine completion summary', error);
+      setRoutineSummary((currentSummary) => {
+        if (
+          currentSummary.hasRequiredRoutines === false &&
+          currentSummary.allRequiredRoutinesComplete === true
+        ) {
+          return currentSummary;
+        }
+
+        return {
+          hasRequiredRoutines: false,
+          allRequiredRoutinesComplete: true,
+        };
+      });
+    }
+  }, [dayContent]);
+
+  const handleRoutineProgressChange = useCallback(() => {
+    void refreshRoutineSummary();
+  }, [refreshRoutineSummary]);
+
+  useEffect(() => {
+    void refreshRoutineSummary();
+  }, [refreshRoutineSummary]);
 
   const handleCompleteCurrentDay = async () => {
     if (!programSlug || !dayContent || isDayCompleted || isCompletingDay) {
@@ -320,6 +431,39 @@ export default function DayDetailScreen() {
     } finally {
       setIsCompletingDay(false);
     }
+  };
+
+  const handleSaveCurrentDayAsPartial = async () => {
+    if (!programSlug || !dayContent || isDayCompleted || isCompletingDay) {
+      return;
+    }
+
+    try {
+      setIsCompletingDay(true);
+      await savePartialProgramDay(programSlug, dayContent.dayNumber);
+    } catch (error) {
+      console.error('Failed to save partial day', error);
+    } finally {
+      setIsCompletingDay(false);
+    }
+  };
+
+  const handlePrimaryDayAction = async () => {
+    if (isDayCompleted || isCompletingDay) {
+      return;
+    }
+
+    if (isDayPartial) {
+      await handleCompleteCurrentDay();
+      return;
+    }
+
+    if (routineSummary.hasRequiredRoutines && !routineSummary.allRequiredRoutinesComplete) {
+      await handleSaveCurrentDayAsPartial();
+      return;
+    }
+
+    await handleCompleteCurrentDay();
   };
 
   if (!programSlug || !Number.isInteger(dayNumber) || dayNumber < 1) {
@@ -354,6 +498,8 @@ export default function DayDetailScreen() {
     ? isFinalProgramDay
       ? 'Program day complete'
       : 'Day complete'
+    : isDayPartial
+      ? 'Day saved as partial'
     : isCurrentScheduledDay
       ? 'Ready to close today?'
       : 'Ready to mark this day complete?';
@@ -363,11 +509,22 @@ export default function DayDetailScreen() {
       : nextUnlockLabel
         ? `${nextUnlockLabel}. You can revisit this day anytime.`
         : 'You can revisit this day anytime.'
+    : isDayPartial
+      ? 'This day unlocked your onward schedule, but it does not count as fully completed yet. Revisit it anytime and mark it fully complete when you are ready.'
     : isCurrentScheduledDay
       ? nextUnlockLabel
         ? `${nextUnlockLabel}. Earlier practices will stay available if you want to revisit them.`
-        : 'When you are ready, mark today complete.'
+        : routineSummary.hasRequiredRoutines && !routineSummary.allRequiredRoutinesComplete
+          ? 'Required routine steps are still unfinished. You can save this day as partial and come back later.'
+          : 'When you are ready, mark today complete.'
       : 'This earlier practice will stay available even after you complete it.';
+  const primaryCompletionLabel = isDayPartial
+    ? 'Mark fully complete'
+    : routineSummary.hasRequiredRoutines && !routineSummary.allRequiredRoutinesComplete
+      ? 'Save as partial'
+      : isFinalProgramDay
+        ? 'Complete program day'
+        : 'Complete day';
 
   return (
     <SafeAreaView style={styles.container}>
@@ -439,14 +596,18 @@ export default function DayDetailScreen() {
               progress={swipeProgress}
               programName={program.name}
               onContinue={handleContinueFromCard}
-              journalStorageKey={`day-reflection:${dayContent.programSlug}:${dayContent.dayNumber}:${index}`}
+              reflectionStorageKey={`day-reflection:${dayContent.programSlug}:${dayContent.dayNumber}:${index}`}
+              routineStorageKey={getRoutineStorageKey(dayContent.programSlug, dayContent.dayNumber, index)}
+              onRoutineProgressChange={handleRoutineProgressChange}
               closeCardState={{
                 isCompleted: isDayCompleted,
+                isPartial: isDayPartial,
                 isFinalProgramDay,
                 completionDescription,
                 isCompleting: isCompletingDay,
+                primaryActionLabel: primaryCompletionLabel,
                 onCompleteDay: () => {
-                  void handleCompleteCurrentDay();
+                  void handlePrimaryDayAction();
                 },
                 onBackToProgram: () => router.navigate('/program' as Href),
               }}
@@ -479,8 +640,8 @@ export default function DayDetailScreen() {
             />
           ) : (
             <Button
-              label={isFinalProgramDay ? 'Complete program day' : 'Complete day'}
-              onPress={handleCompleteCurrentDay}
+              label={primaryCompletionLabel}
+              onPress={handlePrimaryDayAction}
               loading={isCompletingDay}
             />
           )}

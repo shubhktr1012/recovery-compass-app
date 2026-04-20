@@ -531,9 +531,88 @@ function MindfulExerciseCardView({ card }: { card: MindfulnessExerciseCard | Bre
   );
 }
 
-function ExerciseRoutineCardView({ card }: { card: ExerciseRoutineCard; }) {
+function ExerciseRoutineCardView({
+  card,
+  routineStorageKey,
+  onProgressChange,
+}: {
+  card: ExerciseRoutineCard;
+  routineStorageKey?: string;
+  onProgressChange?: () => void;
+}) {
   const [completedItems, setCompletedItems] = useState<Set<string>>(new Set());
+  const [hasRestored, setHasRestored] = useState(false);
   const routineItems = card.exercises ?? [];
+
+  React.useEffect(() => {
+    let isCancelled = false;
+
+    const restoreProgress = async () => {
+      if (!routineStorageKey) {
+        if (!isCancelled) {
+          setCompletedItems(new Set());
+          setHasRestored(true);
+        }
+        return;
+      }
+
+      try {
+        const rawValue = await AsyncStorage.getItem(routineStorageKey);
+        if (isCancelled) return;
+
+        if (!rawValue) {
+          setCompletedItems(new Set());
+          setHasRestored(true);
+          return;
+        }
+
+        const parsed = JSON.parse(rawValue);
+        const nextItems = Array.isArray(parsed)
+          ? parsed.filter((value): value is string => typeof value === 'string')
+          : [];
+
+        setCompletedItems(new Set(nextItems));
+      } catch (error) {
+        console.error('Failed to restore routine checklist progress', error);
+        if (!isCancelled) {
+          setCompletedItems(new Set());
+        }
+      } finally {
+        if (!isCancelled) {
+          setHasRestored(true);
+        }
+      }
+    };
+
+    void restoreProgress();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [routineStorageKey]);
+
+  React.useEffect(() => {
+    if (!hasRestored) {
+      return;
+    }
+
+    const persistProgress = async () => {
+      if (!routineStorageKey) {
+        onProgressChange?.();
+        return;
+      }
+
+      try {
+        await AsyncStorage.setItem(routineStorageKey, JSON.stringify(Array.from(completedItems)));
+      } catch (error) {
+        console.error('Failed to persist routine checklist progress', error);
+      } finally {
+        onProgressChange?.();
+      }
+    };
+
+    void persistProgress();
+  }, [completedItems, hasRestored, onProgressChange, routineStorageKey]);
 
   const toggleItem = (id: string) => {
     setCompletedItems((prev) => {
@@ -655,12 +734,12 @@ function CalmTriggerCardView({ card }: { card: CalmTriggerCard; }) {
 function JournalCardView({
   card,
   onContinue,
-  journalStorageKey,
+  reflectionStorageKey,
   programReflectionIdentity,
 }: {
   card: JournalCard;
   onContinue?: () => void;
-  journalStorageKey?: string;
+  reflectionStorageKey?: string;
   programReflectionIdentity?: ProgramReflectionIdentity;
 }) {
   const [value, setValue] = useState('');
@@ -713,14 +792,14 @@ function JournalCardView({
   }, []);
 
   React.useEffect(() => {
-    if (!journalStorageKey && !remoteIdentity) return;
+    if (!reflectionStorageKey && !remoteIdentity) return;
 
     let isCancelled = false;
 
     const restoreReflection = async () => {
       try {
-        if (journalStorageKey) {
-          const storedReflection = await AsyncStorage.getItem(journalStorageKey);
+        if (reflectionStorageKey) {
+          const storedReflection = await AsyncStorage.getItem(reflectionStorageKey);
           if (!isCancelled && storedReflection) {
             applySavedReflection(storedReflection);
           }
@@ -730,8 +809,8 @@ function JournalCardView({
           const remoteReflection = await getProgramReflection(remoteIdentity);
           if (!isCancelled && remoteReflection?.reflection) {
             applySavedReflection(remoteReflection.reflection);
-            if (journalStorageKey) {
-              await AsyncStorage.setItem(journalStorageKey, remoteReflection.reflection);
+            if (reflectionStorageKey) {
+              await AsyncStorage.setItem(reflectionStorageKey, remoteReflection.reflection);
             }
           }
         }
@@ -745,7 +824,7 @@ function JournalCardView({
     return () => {
       isCancelled = true;
     };
-  }, [applySavedReflection, journalStorageKey, remoteIdentity]);
+  }, [applySavedReflection, reflectionStorageKey, remoteIdentity]);
 
   const handleSaveAndContinue = async () => {
     if (!shouldSaveDraft) {
@@ -757,8 +836,8 @@ function JournalCardView({
     setSaveError(null);
 
     try {
-      if (journalStorageKey) {
-        await AsyncStorage.setItem(journalStorageKey, trimmedValue);
+      if (reflectionStorageKey) {
+        await AsyncStorage.setItem(reflectionStorageKey, trimmedValue);
       }
 
       if (remoteIdentity) {
@@ -858,22 +937,30 @@ function JournalCardView({
 function CloseCardViewWithState({
   card,
   isCompleted = false,
+  isPartial = false,
   isFinalProgramDay = false,
   completionDescription,
   isCompleting = false,
+  primaryActionLabel,
   onCompleteDay,
   onBackToProgram,
 }: {
   card: CloseCard;
   isCompleted?: boolean;
+  isPartial?: boolean;
   isFinalProgramDay?: boolean;
   completionDescription?: string | null;
   isCompleting?: boolean;
+  primaryActionLabel?: string;
   onCompleteDay?: () => void;
   onBackToProgram?: () => void;
 }) {
   const actionLabel = isCompleted
     ? 'Back to Program'
+    : primaryActionLabel
+      ? primaryActionLabel
+    : isPartial
+      ? 'Mark Fully Complete'
     : isCompleting
       ? 'Completing...'
       : isFinalProgramDay
@@ -881,15 +968,15 @@ function CloseCardViewWithState({
         : 'Complete Day';
 
   return (
-    <DarkCardShell eyebrow={isCompleted ? 'Review mode' : "Today's close"} title={card.message}>
+    <DarkCardShell eyebrow={isCompleted ? 'Review mode' : isPartial ? 'Saved as partial' : "Today's close"} title={card.message}>
       {card.secondaryMessage ? (
         <Text style={styles.closeSub}>{card.secondaryMessage}</Text>
       ) : null}
 
-      {isCompleted && completionDescription ? (
+      {(isCompleted || isPartial) && completionDescription ? (
         <View style={styles.closeReviewBox}>
           <Text style={styles.closeReviewLabel}>
-            {isFinalProgramDay ? 'Program status' : 'Next unlock'}
+            {isCompleted ? (isFinalProgramDay ? 'Program status' : 'Next unlock') : 'Day status'}
           </Text>
           <Text style={styles.closeReviewText}>{completionDescription}</Text>
         </View>
@@ -908,25 +995,31 @@ export function CardRenderer({
   card,
   programName,
   onContinue,
-  journalStorageKey,
+  reflectionStorageKey,
+  routineStorageKey,
   programReflectionContext,
+  onRoutineProgressChange,
   closeCardState,
 }: {
   card: ContentCard;
   programName?: string;
   onContinue?: () => void;
-  journalStorageKey?: string;
+  reflectionStorageKey?: string;
+  routineStorageKey?: string;
   programReflectionContext?: {
     userId?: string;
     programSlug: string;
     dayNumber: number;
     cardIndex: number;
   };
+  onRoutineProgressChange?: () => void;
   closeCardState?: {
     isCompleted?: boolean;
+    isPartial?: boolean;
     isFinalProgramDay?: boolean;
     completionDescription?: string | null;
     isCompleting?: boolean;
+    primaryActionLabel?: string;
     onCompleteDay?: () => void;
     onBackToProgram?: () => void;
   };
@@ -942,7 +1035,13 @@ export function CardRenderer({
     case 'breathing_exercise':
       return <MindfulExerciseCardView card={card} />;
     case 'exercise_routine':
-      return <ExerciseRoutineCardView card={card} />;
+      return (
+        <ExerciseRoutineCardView
+          card={card}
+          routineStorageKey={routineStorageKey}
+          onProgressChange={onRoutineProgressChange}
+        />
+      );
     case 'audio':
       return <AudioCardView card={card} />;
     case 'calm_trigger':
@@ -952,7 +1051,7 @@ export function CardRenderer({
         <JournalCardView
           card={card}
           onContinue={onContinue}
-          journalStorageKey={journalStorageKey}
+          reflectionStorageKey={reflectionStorageKey}
           programReflectionIdentity={
             programReflectionContext?.userId
               ? {

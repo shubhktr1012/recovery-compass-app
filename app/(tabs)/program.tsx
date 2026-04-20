@@ -66,6 +66,7 @@ const ProgramTimelineNode = memo(({
   isLast, 
   isLocked, 
   isCompleted, 
+  isPartial,
   isCurrent, 
   isReturningUser, 
   activeProgram,
@@ -80,6 +81,7 @@ const ProgramTimelineNode = memo(({
       isLast={isLast}
       isLocked={isLocked}
       isCompleted={isCompleted}
+      isPartial={isPartial}
       isCurrent={isCurrent}
       onLayout={onLayout}
     >
@@ -97,6 +99,7 @@ const ProgramTimelineNode = memo(({
           }}
           isLocked={isLocked}
           isCompleted={isCompleted}
+          isPartial={isPartial}
           isCurrent={isCurrent}
           isReturningUser={isReturningUser}
           availabilityLabel={availabilityLabel}
@@ -120,7 +123,7 @@ function ProgramScreenContent({ activeProgram }: { activeProgram: ProgramSlug })
     }, [activeProgram, queryClient])
   );
 
-  const { completedDays, currentDay } = useMemo(() => {
+  const { completedDays, partialDays, currentDay } = useMemo(() => {
     const derivedCurrentDay = access.startedAt
       ? getProgramScheduledDay(access.startedAt, totalDays)
       : access.currentDay ?? 1;
@@ -128,8 +131,9 @@ function ProgramScreenContent({ activeProgram }: { activeProgram: ProgramSlug })
     return {
       currentDay: access.completionState === 'completed' ? totalDays : derivedCurrentDay,
       completedDays: progress?.completedDays ?? [],
+      partialDays: progress?.partialDays ?? [],
     };
-  }, [access.completionState, access.currentDay, access.startedAt, progress?.completedDays, totalDays]);
+  }, [access.completionState, access.currentDay, access.startedAt, progress?.completedDays, progress?.partialDays, totalDays]);
   const isArchivedReset = activeProgram === 'six_day_reset' && access.purchaseState === 'owned_archived';
   const completedCount = completedDays.length;
   const progressPercent = Math.max(0, Math.min(100, Math.round((completedCount / totalDays) * 100)));
@@ -244,6 +248,7 @@ function ProgramScreenContent({ activeProgram }: { activeProgram: ProgramSlug })
             </Text>
             {program.days.map((day, index) => {
               const isCompleted = completedDays.includes(day.dayNumber);
+              const isPartial = partialDays.includes(day.dayNumber) && !isCompleted;
               const isLocked = isArchivedReset || day.dayNumber > currentDay;
               const isCurrent = day.dayNumber === currentDay && !isCompleted;
               const availabilityLabel =
@@ -259,6 +264,7 @@ function ProgramScreenContent({ activeProgram }: { activeProgram: ProgramSlug })
                   isLast={index === program.days.length - 1}
                   isLocked={isLocked}
                   isCompleted={isCompleted}
+                  isPartial={isPartial}
                   isCurrent={isCurrent}
                   isReturningUser={isReturningUser}
                   activeProgram={activeProgram}

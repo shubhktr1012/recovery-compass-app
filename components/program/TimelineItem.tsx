@@ -14,6 +14,7 @@ interface TimelineItemProps {
   isLast: boolean;
   isLocked: boolean;
   isCompleted: boolean;
+  isPartial?: boolean;
   isCurrent: boolean;
   onLayout?: (event: import('react-native').LayoutChangeEvent) => void;
 }
@@ -24,18 +25,21 @@ export function TimelineItem({
   isLast,
   isLocked,
   isCompleted,
+  isPartial = false,
   isCurrent,
   onLayout,
 }: TimelineItemProps) {
   // Line logic: Top line connects from previous. Bottom line connects to next.
   const topConnectorColor = isLocked ? 'bg-forest/10' : 'bg-forest';
   // Bottom line is only solid forest if THIS item is fully completed, mapping to the next.
-  const bottomConnectorColor = isCompleted ? 'bg-forest' : 'bg-forest/10';
+  const bottomConnectorColor = isCompleted ? 'bg-forest' : isPartial ? 'bg-forest/30' : 'bg-forest/10';
 
   const dotClassName = isLocked
     ? 'bg-transparent border border-forest/20 w-2 h-2 rounded-full'
     : isCurrent
       ? 'bg-forest w-2.5 h-2.5 rounded-full'
+      : isPartial
+        ? 'bg-[#D8E7D9] border border-forest/50 w-2 h-2 rounded-full'
       : isCompleted
         ? 'bg-forest/40 w-2 h-2 rounded-full'
         : 'bg-surface border border-forest/40 w-2 h-2 rounded-full';

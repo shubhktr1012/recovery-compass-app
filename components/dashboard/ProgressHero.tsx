@@ -3,9 +3,10 @@ import { useEffect, useMemo, useState } from 'react';
 import { useOnboardingResponse } from '@/hooks/useOnboardingResponse';
 import { formatInr, getOnboardingProjection } from '@/lib/onboarding-metrics';
 import { useProfile } from '@/providers/profile';
+import { PROGRAM_METADATA } from '@/content/programs/metadata';
 
 export function ProgressHero() {
-    const { profile } = useProfile();
+    const { access, profile } = useProfile();
     const onboardingQuery = useOnboardingResponse();
     const [nowMs, setNowMs] = useState(Date.now());
 
@@ -41,6 +42,7 @@ export function ProgressHero() {
             ? 'Cigarettes avoided'
             : 'Vices sidestepped';
     const hasMoneyProjection = metrics.projectedSavings90Days > 0;
+    const activeProgramName = access.ownedProgram ? PROGRAM_METADATA[access.ownedProgram]?.name ?? null : null;
 
     return (
         <View className="mb-6">
@@ -63,7 +65,7 @@ export function ProgressHero() {
                         Your Path
                     </Text>
                     <Text className="font-erode-medium text-[32px] leading-[38px] tracking-tight text-forest">
-                        {metrics.targetSelection ?? 'Recovery'}
+                        {activeProgramName ?? metrics.targetSelection ?? 'Recovery'}
                     </Text>
                 </View>
             )}

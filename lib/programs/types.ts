@@ -52,6 +52,7 @@ export interface ProgramContent {
 export type EligibleProduct = ProgramSlug;
 
 export interface ProgramAccessSnapshot {
+  ownerUserId?: string | null;
   ownedProgram: ProgramSlug | null;
   purchaseState: PurchaseState;
   completionState: CompletionState;
@@ -68,6 +69,7 @@ export interface ProgramProgressRecord {
   programSlug: ProgramSlug;
   currentDay: number;
   completedDays: number[];
+  partialDays: number[];
   completedAt: string | null;
   archivedAt: string | null;
   updatedAt: string;

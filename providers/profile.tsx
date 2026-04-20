@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { Platform } from 'react-native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { PROGRAM_METADATA } from '@/content/programs/metadata';
@@ -16,7 +16,6 @@ import { decode } from 'base64-arraybuffer';
 import * as FileSystem from 'expo-file-system/legacy';
 
 export interface UserProfile {
-  active_program?: string | null;
   id: string;
   email: string | null;
   onboarding_complete: boolean;
@@ -40,13 +39,14 @@ interface ProfileContextType {
   refreshAccess: () => Promise<ProgramAccessSnapshot>;
   refreshProfile: () => Promise<void>;
   setProgramAccess: (program: ProgramSlug | null) => Promise<void>;
+  savePartialProgramDay: (program: ProgramSlug, dayNumber: number) => Promise<void>;
   completeProgramDay: (program: ProgramSlug, dayNumber: number) => Promise<void>;
   updateProfile: (fields: { display_name?: string | null }) => Promise<void>;
   uploadAvatar: (imageUri: string) => Promise<string | null>;
 }
 
 const PROFILE_COLUMNS =
-  'id, email, onboarding_complete, questionnaire_answers, recommended_program, created_at, updated_at, active_program, expo_push_token, push_opt_in, display_name, avatar_url';
+  'id, email, onboarding_complete, questionnaire_answers, recommended_program, created_at, updated_at, expo_push_token, push_opt_in, display_name, avatar_url';
 export const PROFILE_QUERY_KEY = (userId: string | null) => ['profile', userId];
 const PROFILE_IMAGE_BUCKET = 'profile-images';
 const PROFILE_IMAGE_SIGNED_URL_TTL_SECONDS = 60 * 60 * 24 * 7;
@@ -110,6 +110,7 @@ const ProfileContext = createContext<ProfileContextType>({
   }),
   refreshProfile: async () => { },
   setProgramAccess: async () => { },
+  savePartialProgramDay: async () => { },
   completeProgramDay: async () => { },
   updateProfile: async () => { },
   uploadAvatar: async () => null,
@@ -159,6 +160,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
   });
   const [progress, setProgress] = useState<ProgramProgressRecord | null>(null);
   const userId = user?.id ?? null;
+  const previousUserIdRef = useRef<string | null>(null);
   const profileQuery = useQuery({
     queryKey: PROFILE_QUERY_KEY(userId),
     queryFn: () => {
@@ -255,6 +257,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const refreshAccess = useCallback(async () => {
     if (!userId) {
       return {
+        ownerUserId: null,
         ownedProgram: null,
         purchaseState: 'not_owned',
         completionState: 'not_started',
@@ -272,6 +275,14 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     try {
       const snapshot = await AccessService.refreshFromDeviceStore(userId);
       const nextProgress = await AccessService.getProgressRecord();
+      console.log('[ProfileProvider] refreshAccess:resolved', {
+        userId,
+        snapshotOwnerUserId: snapshot.ownerUserId ?? null,
+        snapshotOwnedProgram: snapshot.ownedProgram,
+        snapshotPurchaseState: snapshot.purchaseState,
+        progressUserId: nextProgress?.userId ?? null,
+        progressProgramSlug: nextProgress?.programSlug ?? null,
+      });
       setAccess(snapshot);
       setProgress(nextProgress);
       return snapshot;
@@ -287,46 +298,6 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   }, [userId]);
 
-  const syncProfileActiveProgram = useCallback(
-    async (
-      snapshot: Pick<ProgramAccessSnapshot, 'ownedProgram' | 'source'>,
-      options?: { allowLocal?: boolean }
-    ) => {
-      if (!userId) return;
-      if (snapshot.source === 'local' && !options?.allowLocal) return;
-
-      const nextProgram = snapshot.ownedProgram;
-
-      if (profileQuery.data?.active_program === nextProgram) {
-        return;
-      }
-
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          active_program: nextProgram,
-        })
-        .eq('id', userId);
-
-      if (error) {
-        console.error('Failed to sync active program', error);
-        return;
-      }
-
-      queryClient.setQueryData<UserProfile | null>(
-        PROFILE_QUERY_KEY(userId),
-        (currentProfile) =>
-          currentProfile
-            ? {
-                ...currentProfile,
-                active_program: nextProgram,
-              }
-            : currentProfile
-      );
-    },
-    [profileQuery.data?.active_program, queryClient, userId]
-  );
-
   const setProgramAccess = useCallback(
     async (program: ProgramSlug | null) => {
       if (!userId || !program) {
@@ -334,6 +305,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
       }
 
       const nextSnapshot = {
+        ownerUserId: userId,
         ownedProgram: program,
         purchaseState: 'owned_active',
         completionState: 'in_progress',
@@ -349,14 +321,13 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
       await Promise.all([
         AccessService.saveAccessSnapshot(nextSnapshot),
         AccessService.saveProgressRecord(nextProgress),
-        AccessService.syncStateToSupabase(userId, nextSnapshot, nextProgress),
-        syncProfileActiveProgram(nextSnapshot, { allowLocal: true }),
+        AccessService.syncStateToSupabase(nextProgress),
       ]);
 
       setAccess(nextSnapshot);
       setProgress(nextProgress);
     },
-    [syncProfileActiveProgram, userId]
+    [userId]
   );
 
   const completeProgramDay = useCallback(
@@ -373,6 +344,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
           const completedDays = current.completedDays.includes(dayNumber)
             ? current.completedDays
             : [...current.completedDays, dayNumber].sort((a, b) => a - b);
+          const partialDays = current.partialDays.filter((existingDay) => existingDay !== dayNumber);
           const hasCompletedProgram = dayNumber >= totalDays;
           const isSixDayArchive = program === 'six_day_reset' && hasCompletedProgram;
 
@@ -380,6 +352,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
             ...current,
             currentDay: current.currentDay,
             completedDays,
+            partialDays,
             completedAt: hasCompletedProgram ? new Date().toISOString() : current.completedAt,
             archivedAt: isSixDayArchive ? new Date().toISOString() : current.archivedAt,
           };
@@ -389,16 +362,53 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
       setProgress(nextProgress);
       setAccess(nextSnapshot);
       await Promise.all([
-        AccessService.syncStateToSupabase(userId, nextSnapshot, nextProgress),
-        syncProfileActiveProgram(nextSnapshot),
+        AccessService.syncStateToSupabase(nextProgress),
       ]);
     },
-    [syncProfileActiveProgram, userId]
+    [userId]
+  );
+
+  const savePartialProgramDay = useCallback(
+    async (program: ProgramSlug, dayNumber: number) => {
+      if (!userId) {
+        return;
+      }
+
+      const { progress: nextProgress, snapshot: nextSnapshot } = await AccessService.updateProgress(
+        userId,
+        program,
+        (current) => {
+          if (current.completedDays.includes(dayNumber)) {
+            return current;
+          }
+
+          const partialDays = current.partialDays.includes(dayNumber)
+            ? current.partialDays
+            : [...current.partialDays, dayNumber].sort((a, b) => a - b);
+
+          return {
+            ...current,
+            currentDay: current.currentDay,
+            partialDays,
+            completedAt: current.completedAt,
+            archivedAt: current.archivedAt,
+          };
+        }
+      );
+
+      setProgress(nextProgress);
+      setAccess(nextSnapshot);
+      await Promise.all([
+        AccessService.syncStateToSupabase(nextProgress),
+      ]);
+    },
+    [userId]
   );
 
   const bootstrapAccessState = useCallback(async () => {
     if (!userId) {
       setAccess({
+        ownerUserId: null,
         ownedProgram: null,
         purchaseState: 'not_owned',
         completionState: 'not_started',
@@ -422,20 +432,54 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         AccessService.getProgressRecord(),
       ]);
 
-      setAccess(cachedSnapshot);
-      setProgress(cachedProgress);
+      const safeCachedProgress = cachedProgress?.userId === userId ? cachedProgress : null;
+      const safeCachedSnapshot =
+        cachedSnapshot.ownerUserId && cachedSnapshot.ownerUserId === userId
+          ? cachedSnapshot
+          : {
+              ownerUserId: userId,
+              ownedProgram: null,
+              purchaseState: 'not_owned',
+              completionState: 'not_started',
+              currentDay: null,
+              startedAt: null,
+              completedAt: null,
+              archivedAt: null,
+              eligibleProducts: ['six_day_reset', 'ninety_day_transform'],
+              source: 'local',
+            } satisfies ProgramAccessSnapshot;
+
+      console.log('[ProfileProvider] bootstrapAccessState:cached', {
+        userId,
+        cachedSnapshotOwnerUserId: cachedSnapshot.ownerUserId ?? null,
+        cachedSnapshotOwnedProgram: cachedSnapshot.ownedProgram,
+        cachedProgressUserId: cachedProgress?.userId ?? null,
+        cachedProgressProgramSlug: cachedProgress?.programSlug ?? null,
+        safeCachedSnapshotOwnedProgram: safeCachedSnapshot.ownedProgram,
+        safeCachedProgressProgramSlug: safeCachedProgress?.programSlug ?? null,
+      });
+
+      setAccess(safeCachedSnapshot);
+      setProgress(safeCachedProgress);
 
       const liveSnapshot = await AccessService.refreshFromDeviceStore(userId);
       const liveProgress = await AccessService.getProgressRecord();
+      console.log('[ProfileProvider] bootstrapAccessState:live', {
+        userId,
+        liveSnapshotOwnerUserId: liveSnapshot.ownerUserId ?? null,
+        liveSnapshotOwnedProgram: liveSnapshot.ownedProgram,
+        liveSnapshotPurchaseState: liveSnapshot.purchaseState,
+        liveProgressUserId: liveProgress?.userId ?? null,
+        liveProgressProgramSlug: liveProgress?.programSlug ?? null,
+      });
       setAccess(liveSnapshot);
       setProgress(liveProgress);
-      await syncProfileActiveProgram(liveSnapshot);
     } catch (error) {
       console.error('Error bootstrapping access state', error);
     } finally {
       setIsAccessLoading(false);
     }
-  }, [syncProfileActiveProgram, userId]);
+  }, [userId]);
 
   useEffect(() => {
     void bootstrapAccessState();
@@ -447,9 +491,17 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const updateListener = (customerInfo: CustomerInfo) => {
       void AccessService.syncFromRevenueCat(customerInfo, userId)
         .then(async (snapshot) => {
+          const nextProgress = await AccessService.getProgressRecord();
+          console.log('[ProfileProvider] customerInfoUpdate', {
+            userId,
+            snapshotOwnerUserId: snapshot.ownerUserId ?? null,
+            snapshotOwnedProgram: snapshot.ownedProgram,
+            snapshotPurchaseState: snapshot.purchaseState,
+            progressUserId: nextProgress?.userId ?? null,
+            progressProgramSlug: nextProgress?.programSlug ?? null,
+          });
           setAccess(snapshot);
-          setProgress(await AccessService.getProgressRecord());
-          await syncProfileActiveProgram(snapshot);
+          setProgress(nextProgress);
         })
         .catch((error) => {
           console.error('Error syncing RevenueCat access update', error);
@@ -461,7 +513,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     return () => {
       Purchases.removeCustomerInfoUpdateListener(updateListener);
     };
-  }, [bootstrapAccessState, syncProfileActiveProgram, userId]);
+  }, [bootstrapAccessState, userId]);
 
   const refreshProfile = useCallback(
     async () => {
@@ -474,6 +526,30 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     },
     [queryClient, userId]
   );
+
+  useEffect(() => {
+    const previousUserId = previousUserIdRef.current;
+    previousUserIdRef.current = userId;
+
+    if (!previousUserId || !userId || previousUserId === userId) {
+      return;
+    }
+
+    setAccess({
+      ownerUserId: null,
+      ownedProgram: null,
+      purchaseState: 'not_owned',
+      completionState: 'not_started',
+      currentDay: null,
+      startedAt: null,
+      completedAt: null,
+      archivedAt: null,
+      eligibleProducts: ['six_day_reset', 'ninety_day_transform'],
+      source: 'local',
+    });
+    setProgress(null);
+    void AccessService.clear();
+  }, [userId]);
 
   useEffect(() => {
     if (!userId) {
@@ -518,7 +594,6 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
           {
             id: userId,
             email: user?.email ?? null,
-            onboarding_complete: false,
             updated_at: new Date().toISOString(),
           },
           { onConflict: 'id' }
@@ -628,6 +703,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
       refreshAccess,
       refreshProfile,
       setProgramAccess,
+      savePartialProgramDay,
       completeProgramDay,
       updateProfile,
       uploadAvatar,
@@ -641,6 +717,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
       refreshAccess,
       refreshProfile,
       setProgramAccess,
+      savePartialProgramDay,
       updateProfile,
       uploadAvatar,
       userId,
