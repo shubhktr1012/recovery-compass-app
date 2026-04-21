@@ -210,6 +210,7 @@ const SwipeDeckCard = memo(function SwipeDeckCard({
             <CardRenderer
             card={card}
             programName={programName}
+            totalCards={totalCards}
             onContinue={onContinue}
             reflectionStorageKey={reflectionStorageKey}
             routineStorageKey={routineStorageKey}
@@ -530,43 +531,55 @@ export default function DayDetailScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar style="dark" />
+      <StatusBar style="light" />
 
+      {/* ── Header ────────────────────────────────────────────────── */}
       <View style={styles.header}>
         <View style={styles.headerRow}>
+          {/* Ghost back button — translucent on dark shell */}
           <Pressable
             accessibilityLabel="Back to program"
             style={styles.backButton}
             onPress={() => router.navigate('/program' as Href)}
           >
-            <Ionicons name="chevron-back" size={22} color="#FFFFFF" />
+            <Ionicons name="chevron-back" size={20} color="rgba(227,243,229,0.9)" />
           </Pressable>
 
           <View style={styles.headerTitleContainer}>
+            {/* Eyebrow: program name */}
             <Text style={styles.headerSubtitle}>
               {program.name}
             </Text>
+            {/* Title: Day number, prominent serif */}
             <Text style={styles.headerTitle}>
               Day {dayContent.dayNumber}
             </Text>
           </View>
 
+          {/* Spacer to keep title centered */}
           <View style={styles.dummyBox} />
         </View>
       </View>
 
-      {/* Instagram Stories Style Screen-Level Progress Bar */}
+      {/* ── Segmented Progress Bar ─────────────────────────────────── */}
+      {/* 3 px height · 3 px gap · borderRadius 999                   */}
+      {/* done: rgba(227,243,229,0.9) · active: 0.55 · todo: 0.2    */}
       <View style={styles.progressBarContainer}>
-        {dayContent.cards.map((_, index) => (
-          <View key={`progress-${index}`} style={styles.progressTrack}>
+        {dayContent.cards.map((_, index) => {
+          const isDone   = index < currentIndex;
+          const isActive = index === currentIndex;
+          return (
             <View
+              key={`seg-${index}`}
               style={[
-                styles.progressFill,
-                index <= currentIndex && styles.progressFillActive
+                styles.progressSegment,
+                isDone   ? styles.progressSegmentDone
+                : isActive ? styles.progressSegmentActive
+                : styles.progressSegmentTodo,
               ]}
             />
-          </View>
-        ))}
+          );
+        })}
       </View>
 
       {showResumeToast ? <ResumeToast /> : null}
@@ -656,10 +669,12 @@ export default function DayDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#E3F3E5', // sage
+    backgroundColor: '#06290C', // forest green — immersive shell
   },
+
+  // ── Header ──────────────────────────────────────────────────────
   header: {
-    paddingHorizontal: 24,
+    paddingHorizontal: 20,
     paddingBottom: 4,
     paddingTop: 12,
   },
@@ -668,56 +683,66 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
+  // Ghost pill back button — translucent sage on dark bg
   backButton: {
-    height: 44,
-    width: 44,
+    height: 36,
+    width: 36,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 22,
-    backgroundColor: '#06290C', // forest
+    borderRadius: 18,
+    backgroundColor: 'rgba(227, 243, 229, 0.14)',
+    borderWidth: 1,
+    borderColor: 'rgba(227, 243, 229, 0.24)',
   },
   headerTitleContainer: {
     flex: 1,
-    paddingHorizontal: 16,
+    paddingHorizontal: 12,
   },
+  // Program name eyebrow — sage/55
   headerSubtitle: {
     textAlign: 'center',
     fontFamily: 'Satoshi-Bold',
-    fontSize: 12,
+    fontSize: 9,
     textTransform: 'uppercase',
-    letterSpacing: 1,
-    color: 'rgba(6, 41, 12, 0.6)',
+    letterSpacing: 1.6,
+    color: 'rgba(227, 243, 229, 0.55)',
   },
+  // Day number — white, serif weight
   headerTitle: {
-    marginTop: 4,
+    marginTop: 3,
     textAlign: 'center',
-    fontFamily: 'Satoshi',
-    fontSize: 14,
-    color: '#4B5563', // gray-600
+    fontFamily: 'Erode-Medium',
+    fontSize: 20,
+    letterSpacing: -0.3,
+    color: '#FFFFFF',
   },
   dummyBox: {
-    height: 44,
-    width: 44,
+    height: 36,
+    width: 36,
   },
+
+  // ── Segmented Progress Bar ───────────────────────────────────────
   progressBarContainer: {
     flexDirection: 'row',
-    gap: 6,
-    paddingHorizontal: 24,
-    marginTop: 16,
+    gap: 3,
+    paddingHorizontal: 20,
+    marginTop: 12,
     marginBottom: 8,
   },
-  progressTrack: {
+  // Each segment: flex-1 so they distribute evenly
+  progressSegment: {
     flex: 1,
     height: 3,
-    borderRadius: 1.5,
-    backgroundColor: 'rgba(6, 41, 12, 0.1)',
+    borderRadius: 999,
   },
-  progressFill: {
-    height: '100%',
-    borderRadius: 1.5,
+  progressSegmentDone: {
+    backgroundColor: 'rgba(227, 243, 229, 0.90)',
   },
-  progressFillActive: {
-    backgroundColor: '#06290C',
+  progressSegmentActive: {
+    backgroundColor: 'rgba(227, 243, 229, 0.55)',
+  },
+  progressSegmentTodo: {
+    backgroundColor: 'rgba(227, 243, 229, 0.20)',
   },
   pager: {
     flex: 1,
@@ -739,40 +764,43 @@ const styles = StyleSheet.create({
     width: '100%',
     flex: 1,
   },
-  // Toast
+  // ── Resume Toast ─────────────────────────────────────────────────
+  // Sits above the pager, legible on both dark shell and card
   toastWrapper: {
     position: 'absolute',
-    bottom: 48,
+    top: 100, // below progress bar
     left: 0,
     right: 0,
     alignItems: 'center',
     zIndex: 50,
     shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
+    shadowOpacity: 0.18,
+    shadowRadius: 16,
     shadowOffset: { width: 0, height: 6 },
-    elevation: 4,
+    elevation: 6,
   },
   toastBlur: {
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: 'rgba(6, 41, 12, 0.1)',
+    borderColor: 'rgba(227, 243, 229, 0.2)',
     paddingHorizontal: 20,
     paddingVertical: 10,
     overflow: 'hidden',
-    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    backgroundColor: 'rgba(6, 41, 12, 0.7)',
   },
   toastText: {
     textAlign: 'center',
     fontFamily: 'Satoshi-Medium',
     fontSize: 13,
-    color: 'rgba(6, 41, 12, 0.9)',
+    color: 'rgba(227, 243, 229, 0.9)',
     letterSpacing: 0.25,
   },
+
+  // ── Completion Bar (no close card) ───────────────────────────────
   completionBar: {
     borderTopWidth: 1,
-    borderTopColor: 'rgba(6, 41, 12, 0.08)',
-    backgroundColor: 'rgba(252, 250, 246, 0.96)',
+    borderTopColor: 'rgba(6, 41, 12, 0.12)',
+    backgroundColor: 'rgba(6, 41, 12, 0.96)',
     paddingHorizontal: 24,
     paddingTop: 16,
     paddingBottom: 20,
@@ -783,23 +811,24 @@ const styles = StyleSheet.create({
   },
   completionEyebrow: {
     fontFamily: 'Satoshi-Bold',
-    fontSize: 11,
-    letterSpacing: 1.2,
+    fontSize: 9,
+    letterSpacing: 1.6,
     textTransform: 'uppercase',
-    color: 'rgba(6, 41, 12, 0.55)',
+    color: 'rgba(227, 243, 229, 0.55)',
   },
   completionTitle: {
-    fontFamily: 'Erode-Semibold',
-    fontSize: 26,
-    color: '#06290C',
+    fontFamily: 'Erode-Medium',
+    fontSize: 24,
+    color: '#FFFFFF',
+    letterSpacing: -0.3,
   },
   completionDescription: {
     fontFamily: 'Satoshi',
-    fontSize: 14,
-    lineHeight: 22,
-    color: 'rgba(6, 41, 12, 0.72)',
+    fontSize: 13,
+    lineHeight: 20,
+    color: 'rgba(227, 243, 229, 0.65)',
   },
-  // Error / Loading
+  // ── Error / Loading states ───────────────────────────────────────
   centerContainer: {
     flex: 1,
     alignItems: 'center',
@@ -808,21 +837,22 @@ const styles = StyleSheet.create({
   },
   errorTitle: {
     marginBottom: 12,
-    fontFamily: 'Erode-Bold',
-    fontSize: 30,
-    color: '#06290C',
+    fontFamily: 'Erode-Medium',
+    fontSize: 28,
+    color: '#FFFFFF',
+    letterSpacing: -0.3,
   },
   errorDescription: {
     marginBottom: 24,
     textAlign: 'center',
     fontFamily: 'Satoshi',
-    fontSize: 16,
-    lineHeight: 28,
-    color: '#4B5563',
+    fontSize: 15,
+    lineHeight: 24,
+    color: 'rgba(227, 243, 229, 0.65)',
   },
   loadingText: {
     fontFamily: 'Satoshi',
-    fontSize: 16,
-    color: '#4B5563',
+    fontSize: 15,
+    color: 'rgba(227, 243, 229, 0.65)',
   }
 });

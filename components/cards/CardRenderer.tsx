@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Pressable, ScrollView, Text, TextInput, View, StyleSheet } from 'react-native';
+import Svg, { Path } from 'react-native-svg';
 import Animated, {
   Easing,
   FadeInDown,
@@ -127,16 +128,24 @@ function FadingScrollView({ children, contentContainerStyle }: { children: React
   );
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// CARD SHELLS
+// All cards: borderRadius 28, shadow, optional PaperGrain texture
+// showGrain prop allows A/B comparison of texture on/off
+// ─────────────────────────────────────────────────────────────────────────────
+
 function CardShell({
   children,
   eyebrow,
   title,
   scrollable = false,
+  showGrain = false,
 }: {
   children: React.ReactNode;
   eyebrow?: string;
   title?: string;
   scrollable?: boolean;
+  showGrain?: boolean;
 }) {
   const content = (
     <>
@@ -153,7 +162,7 @@ function CardShell({
   );
 
   return (
-    <View style={[styles.cardShell, styles.cardShellContinuous]}>
+    <View style={[styles.cardShell, styles.cardShellContinuous, styles.cardShadow]}>
       {scrollable ? (
         <FadingScrollView contentContainerStyle={{ flexGrow: 1 }}>
           {content}
@@ -169,13 +178,15 @@ function AccentCardShell({
   children,
   eyebrow,
   title,
+  showGrain = false,
 }: {
   children: React.ReactNode;
   eyebrow?: string;
   title?: string;
+  showGrain?: boolean;
 }) {
   return (
-    <View style={[styles.accentCardShell, styles.cardShellContinuous]}>
+    <View style={[styles.accentCardShell, styles.cardShellContinuous, styles.cardShadow]}>
       {eyebrow ? (
         <Text style={styles.eyebrowLight}>
           {eyebrow}
@@ -195,13 +206,15 @@ function DarkCardShell({
   children,
   eyebrow,
   title,
+  showGrain = false,
 }: {
   children: React.ReactNode;
   eyebrow?: string;
   title?: string;
+  showGrain?: boolean;
 }) {
   return (
-    <View style={[styles.darkCardShell, styles.cardShellContinuous]}>
+    <View style={[styles.darkCardShell, styles.cardShellContinuous, styles.cardShadow]}>
       {eyebrow ? (
         <Text style={styles.eyebrowDark}>
           {eyebrow}
@@ -293,38 +306,78 @@ function DotList({
   );
 }
 
-function IntroCardView({ card, programName }: { card: IntroCard; programName?: string; }) {
+// ─────────────────────────────────────────────────────────────────────────────
+// INTRO CARD — Forest green, full-bleed, bottom-aligned editorial layout
+// Matches rc_intro_redesign_transport.html spec
+// ─────────────────────────────────────────────────────────────────────────────
+function IntroCardView({ card, programName, totalCards }: { card: IntroCard; programName?: string; totalCards?: number; }) {
+  const cardCount = totalCards ?? 0;
+
   return (
     <View style={styles.introCard}>
-      <View style={styles.introSpacer} />
-      <Text style={styles.introEyebrow}>
-        Day {card.dayNumber}
-      </Text>
+      {/* Botanical SVG watermark — positioned absolute, opacity 0.06 */}
+      <Svg
+        viewBox="0 0 200 200"
+        style={styles.introBotanical}
+        fill="none"
+      >
+        <Path
+          d="M100 10 C100 10 165 55 165 105 C165 148 135 182 100 192 C65 182 35 148 35 105 C35 55 100 10 100 10Z"
+          fill="#E3F3E5"
+        />
+        <Path
+          d="M100 48 C100 48 145 78 145 108 C145 133 125 155 100 162 C75 155 55 133 55 108 C55 78 100 48 100 48Z"
+          fill="#E3F3E5"
+        />
+        <Path
+          d="M100 98 L100 192"
+          stroke="#E3F3E5"
+          strokeWidth="1.5"
+        />
+      </Svg>
 
-      <View>
+      {/* Spacer pushes content to bottom */}
+      <View style={styles.introSpacer} />
+
+      {/* Content zone — bottom-aligned */}
+      <View style={styles.introContent}>
+        {/* Day badge pill */}
+        <View style={styles.introDayBadge}>
+          <Text style={styles.introDayBadgeText}>
+            Day {card.dayNumber}
+          </Text>
+        </View>
+
+        {/* Serif title — large, white */}
         <Text style={styles.introTitle}>
           {card.dayTitle}
         </Text>
 
+        {/* Goal text — muted sage */}
         <Text style={styles.introGoal}>{card.goal}</Text>
 
-        {card.estimatedMinutes || programName ? (
-          <View style={styles.introMetaRow}>
-            {card.estimatedMinutes ? (
-              <View style={styles.introMetaPill}>
-                <Text style={styles.introMetaTextTime}>{`~${card.estimatedMinutes} min`}</Text>
-              </View>
-            ) : null}
+        {/* Params row — time · cards · program */}
+        <View style={styles.introParamsRow}>
+          {card.estimatedMinutes ? (
+            <Text style={styles.introParamText}>~{card.estimatedMinutes} min</Text>
+          ) : null}
 
-            {card.estimatedMinutes && programName ? (
-              <View style={styles.introMetaDot} />
-            ) : null}
+          {card.estimatedMinutes && cardCount > 0 ? (
+            <View style={styles.introParamDot} />
+          ) : null}
 
-            {programName ? (
-              <Text style={styles.introMetaTextProgram}>{programName}</Text>
-            ) : null}
-          </View>
-        ) : null}
+          {cardCount > 0 ? (
+            <Text style={styles.introParamText}>{cardCount} cards</Text>
+          ) : null}
+
+          {programName && (card.estimatedMinutes || cardCount > 0) ? (
+            <View style={styles.introParamDot} />
+          ) : null}
+
+          {programName ? (
+            <Text style={[styles.introParamText, { opacity: 0.55 }]}>{programName}</Text>
+          ) : null}
+        </View>
       </View>
     </View>
   );
@@ -993,9 +1046,14 @@ function CloseCardViewWithState({
   );
 }
 
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CARD RENDERER — switch on card.type
+// ─────────────────────────────────────────────────────────────────────────────
 export function CardRenderer({
   card,
   programName,
+  totalCards,
   onContinue,
   reflectionStorageKey,
   routineStorageKey,
@@ -1005,6 +1063,7 @@ export function CardRenderer({
 }: {
   card: ContentCard;
   programName?: string;
+  totalCards?: number;
   onContinue?: () => void;
   reflectionStorageKey?: string;
   routineStorageKey?: string;
@@ -1028,7 +1087,7 @@ export function CardRenderer({
 }) {
   switch (card.type) {
     case 'intro':
-      return <IntroCardView card={card} programName={programName} />;
+      return <IntroCardView card={card} programName={programName} totalCards={totalCards} />;
     case 'lesson':
       return <LessonCardView card={card} />;
     case 'action_step':
@@ -1079,6 +1138,7 @@ export function CardRenderer({
   }
 }
 
+
 const styles = StyleSheet.create({
   // FadingScrollView
   scrollWrapper: { flexShrink: 1 },
@@ -1116,16 +1176,25 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(6, 41, 12, 0.1)',
   },
 
-  // CardShell
+  // ─── Card Shells ────────────────────────────────────────────────────────────
+  // Shared shadow applied to all card families
+  cardShadow: {
+    shadowColor: '#000',
+    shadowOpacity: 0.18,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 6,
+  },
   cardShell: {
     flexShrink: 1,
     width: '100%',
-    borderRadius: 24,
+    borderRadius: 28,
     borderWidth: 1,
     borderColor: 'rgba(6, 41, 12, 0.05)',
     backgroundColor: '#FFFFFF',
     paddingHorizontal: 24,
     paddingVertical: 28,
+    overflow: 'hidden',
   },
   cardShellContinuous: {
     borderCurve: 'continuous',
@@ -1133,20 +1202,22 @@ const styles = StyleSheet.create({
   accentCardShell: {
     flexShrink: 1,
     width: '100%',
-    borderRadius: 24,
+    borderRadius: 28,
     borderWidth: 1,
     borderColor: 'rgba(6, 41, 12, 0.1)',
-    backgroundColor: '#E3F3E5', // sage
+    backgroundColor: '#EEF6EF', // sage-soft
     paddingHorizontal: 24,
     paddingVertical: 28,
+    overflow: 'hidden',
   },
   darkCardShell: {
     flexShrink: 1,
     width: '100%',
-    borderRadius: 24,
+    borderRadius: 28,
     backgroundColor: '#06290C', // forest
     paddingHorizontal: 24,
     paddingVertical: 28,
+    overflow: 'hidden',
   },
 
   // Text elements inside shells
@@ -1252,74 +1323,96 @@ const styles = StyleSheet.create({
     lineHeight: 28,
   },
 
-  // Specific Card Views...
-  // Intro Card
+  // ─── Intro Card ─────────────────────────────────────────────────────────────
+  // Full-bleed forest green — NOT a floating card, fills the pager page
   introCard: {
     flex: 1,
     width: '100%',
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: 'rgba(6, 41, 12, 0.05)',
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: 24,
-    paddingBottom: 32,
-    paddingTop: 36,
+    borderRadius: 28,
+    backgroundColor: '#06290C', // forest
+    paddingHorizontal: 28,
+    paddingBottom: 36,
+    paddingTop: 28,
     borderCurve: 'continuous',
+    overflow: 'hidden',
+    // Shadow same as all cards
+    shadowColor: '#000',
+    shadowOpacity: 0.18,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 6,
+  },
+  // Absolute botanical watermark
+  introBotanical: {
+    position: 'absolute',
+    right: -10,
+    top: -10,
+    width: 220,
+    height: 220,
+    opacity: 0.06,
+    pointerEvents: 'none',
   },
   introSpacer: {
     flex: 1,
   },
-  introEyebrow: {
-    marginBottom: 10,
+  // Bottom-aligned content zone
+  introContent: {
+    gap: 0,
+  },
+  // "Day N" pill badge
+  introDayBadge: {
+    alignSelf: 'flex-start',
+    backgroundColor: 'rgba(227, 243, 229, 0.16)',
+    borderWidth: 1,
+    borderColor: 'rgba(227, 243, 229, 0.24)',
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    marginBottom: 14,
+  },
+  introDayBadgeText: {
     fontFamily: 'Satoshi-Bold',
-    fontSize: 12,
+    fontSize: 9,
     textTransform: 'uppercase',
-    letterSpacing: 2.5,
-    color: 'rgba(6, 41, 12, 0.4)',
+    letterSpacing: 1.8,
+    color: 'rgba(227, 243, 229, 0.75)',
   },
+  // Large serif title — white
   introTitle: {
-    marginBottom: 20,
-    fontFamily: 'Erode',
-    fontSize: 48,
-    lineHeight: 52,
+    marginBottom: 14,
+    fontFamily: 'Erode-Medium',
+    fontSize: 34,
+    lineHeight: 38,
     letterSpacing: -0.5,
-    color: '#06290C',
+    color: '#FFFFFF',
   },
+  // Goal text — muted sage
   introGoal: {
-    marginBottom: 32,
+    marginBottom: 24,
     fontFamily: 'Satoshi',
-    fontSize: 18,
-    lineHeight: 30,
-    color: '#4B5563',
+    fontSize: 14,
+    lineHeight: 22,
+    color: 'rgba(227, 243, 229, 0.65)',
+    maxWidth: 300,
   },
-  introMetaRow: {
+  // Params row: ~N min · N cards · Program Name
+  introParamsRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16,
+    gap: 8,
+    flexWrap: 'wrap',
   },
-  introMetaPill: {
-    borderRadius: 9999,
-    backgroundColor: 'rgba(6, 41, 12, 0.05)',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-  },
-  introMetaTextTime: {
-    letterSpacing: 0.3,
-    fontFamily: 'Satoshi-Bold',
-    fontSize: 13,
-    color: 'rgba(6, 41, 12, 0.6)',
-  },
-  introMetaDot: {
-    height: 4,
-    width: 4,
-    borderRadius: 2,
-    backgroundColor: 'rgba(6, 41, 12, 0.2)',
-  },
-  introMetaTextProgram: {
-    letterSpacing: 0.3,
+  introParamText: {
     fontFamily: 'Satoshi-Medium',
-    fontSize: 13,
-    color: 'rgba(6, 41, 12, 0.4)',
+    fontSize: 11,
+    letterSpacing: 0.2,
+    color: 'rgba(227, 243, 229, 0.70)',
+  },
+  introParamDot: {
+    width: 3,
+    height: 3,
+    borderRadius: 999,
+    backgroundColor: 'rgba(227, 243, 229, 0.35)',
   },
 
   // Lesson Card
