@@ -8,7 +8,7 @@ export const ExpoSecureStoreAdapter = {
             if (typeof localStorage === 'undefined') return Promise.resolve(null);
             return Promise.resolve(localStorage.getItem(key));
         }
-        return SecureStore.getItemAsync(key);
+        return AsyncStorage.getItem(key);
     },
     setItem: (key: string, value: string) => {
         if (Platform.OS === 'web') {
@@ -16,7 +16,7 @@ export const ExpoSecureStoreAdapter = {
             localStorage.setItem(key, value);
             return Promise.resolve();
         }
-        return SecureStore.setItemAsync(key, value);
+        return AsyncStorage.setItem(key, value);
     },
     removeItem: (key: string) => {
         if (Platform.OS === 'web') {
@@ -24,8 +24,14 @@ export const ExpoSecureStoreAdapter = {
             localStorage.removeItem(key);
             return Promise.resolve();
         }
-        return SecureStore.deleteItemAsync(key);
+        return AsyncStorage.removeItem(key);
     },
+};
+
+export const SecureStorage = {
+    getItem: (key: string) => SecureStore.getItemAsync(key),
+    setItem: (key: string, value: string) => SecureStore.setItemAsync(key, value),
+    removeItem: (key: string) => SecureStore.deleteItemAsync(key),
 };
 
 export const AppStorage = {

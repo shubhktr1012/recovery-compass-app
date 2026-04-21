@@ -204,20 +204,22 @@ const SwipeDeckCard = memo(function SwipeDeckCard({
       <View style={styles.cardInner}>
         <Animated.View
           entering={FadeInDown.springify().damping(18).stiffness(140)}
-          style={[styles.animatedCardContainer, animatedStyle]}
+          style={styles.animatedCardContainer}
         >
-          <CardRenderer
-          card={card}
-          programName={programName}
-          onContinue={onContinue}
-          reflectionStorageKey={reflectionStorageKey}
-          routineStorageKey={routineStorageKey}
-          onRoutineProgressChange={onRoutineProgressChange}
-          closeCardState={closeCardState}
-            programReflectionContext={
-              card.type === 'journal' ? programReflectionContext : undefined
-            }
-          />
+          <Animated.View style={animatedStyle}>
+            <CardRenderer
+            card={card}
+            programName={programName}
+            onContinue={onContinue}
+            reflectionStorageKey={reflectionStorageKey}
+            routineStorageKey={routineStorageKey}
+            onRoutineProgressChange={onRoutineProgressChange}
+            closeCardState={closeCardState}
+              programReflectionContext={
+                card.type === 'journal' ? programReflectionContext : undefined
+              }
+            />
+          </Animated.View>
         </Animated.View>
       </View>
     </SafeAreaView>

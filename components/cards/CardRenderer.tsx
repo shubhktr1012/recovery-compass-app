@@ -99,26 +99,27 @@ function FadingScrollView({ children, contentContainerStyle }: { children: React
         >
           <Animated.View
             entering={FadeInDown.delay(600).springify().damping(16).stiffness(150)}
-            style={!isAtBottom ? bounceStyle : undefined}
           >
-            <Pressable
-              onPress={() => {
-                if (isAtBottom) {
-                  scrollViewRef.current?.scrollTo({ y: 0, animated: true });
-                } else {
-                  scrollViewRef.current?.scrollToEnd({ animated: true });
-                }
-              }}
-              style={styles.fabShadow}
-            >
-              <BlurView
-                intensity={80}
-                tint="light"
-                style={styles.fabBlur}
+            <Animated.View style={!isAtBottom ? bounceStyle : undefined}>
+              <Pressable
+                onPress={() => {
+                  if (isAtBottom) {
+                    scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+                  } else {
+                    scrollViewRef.current?.scrollToEnd({ animated: true });
+                  }
+                }}
+                style={styles.fabShadow}
               >
-                <Ionicons name={isAtBottom ? "arrow-up" : "arrow-down"} size={16} color="rgba(5, 41, 12, 0.7)" />
-              </BlurView>
-            </Pressable>
+                <BlurView
+                  intensity={80}
+                  tint="light"
+                  style={styles.fabBlur}
+                >
+                  <Ionicons name={isAtBottom ? "arrow-up" : "arrow-down"} size={16} color="rgba(5, 41, 12, 0.7)" />
+                </BlurView>
+              </Pressable>
+            </Animated.View>
           </Animated.View>
         </View>
       ) : null}
