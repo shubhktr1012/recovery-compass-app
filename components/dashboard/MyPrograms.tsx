@@ -22,7 +22,7 @@ export function MyPrograms({
     <View className="mt-1">
       <View className="flex-row justify-between items-baseline px-0.5 mb-3">
         <Text className="font-erode-medium text-[20px] text-forest tracking-[-0.01em]">My Programs</Text>
-        <Pressable onPress={() => router.push('/(tabs)/program')}>
+        <Pressable onPress={() => router.push('/account/programs')}>
           <Text className="font-satoshi-medium text-[11px] text-forest/45 tracking-[0.04em]">View all</Text>
         </Pressable>
       </View>

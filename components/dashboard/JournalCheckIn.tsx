@@ -2,7 +2,12 @@ import { View, Text, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Svg, Path } from 'react-native-svg';
 
-export function JournalCheckIn() {
+interface JournalCheckInProps {
+  prompt: string;
+  eyebrow?: string;
+}
+
+export function JournalCheckIn({ prompt, eyebrow = 'Daily check-in' }: JournalCheckInProps) {
   const router = useRouter();
   return (
     <Pressable onPress={() => router.push('/(tabs)/journal')} className="bg-[#EEF6EF] rounded-[20px] p-4 flex-row items-center gap-3.5">
@@ -12,9 +17,9 @@ export function JournalCheckIn() {
         </Svg>
       </View>
       <View className="flex-1">
-        <Text className="font-satoshi-bold uppercase text-[9px] tracking-[0.18em] text-forest/45">Daily check-in</Text>
+        <Text className="font-satoshi-bold uppercase text-[9px] tracking-[0.18em] text-forest/45">{eyebrow}</Text>
         <Text className="font-erode-medium text-[15px] text-forest leading-snug mt-0.5">
-          How are you <Text className="font-erode-medium-italic">feeling</Text> right now?
+          {prompt}
         </Text>
       </View>
       <View className="w-[30px] h-[30px] rounded-full bg-forest items-center justify-center shrink-0">

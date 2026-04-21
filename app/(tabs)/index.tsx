@@ -1,13 +1,10 @@
-import { View, ScrollView, Text, Pressable, Platform } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { View, ScrollView, Text } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { useQueryClient } from '@tanstack/react-query';
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 
-import { useDay } from '@/content';
-import { PROGRAM_METADATA } from '@/content/programs/metadata';
+import { useDay, useProgram, usePrograms } from '@/content';
 import { getProgramScheduledDay } from '@/lib/programs/schedule';
 import { useProfile } from '@/providers/profile';
 
@@ -21,17 +18,38 @@ import { ExplorePrograms } from '@/components/dashboard/ExplorePrograms';
 import type { ProgramSlug } from '@/types/content';
 import { programDayQueryKey, programQueryKey } from '@/hooks/contentQueryUtils';
 import { useOnboardingResponse } from '@/hooks/useOnboardingResponse';
-import { getOnboardingProjection, formatInr } from '@/lib/onboarding-metrics';
+import { useOwnedPrograms } from '@/hooks/useOwnedPrograms';
+import { getJourneyConfig } from '@/lib/onboarding.config';
+import { resolveDashboardStatItems } from '@/lib/dashboard-statistics';
+import type { QuestionnaireAnswersSnapshot } from '@/lib/program-statistics';
 
+function getGreetingLabel() {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'Good morning';
+  if (hour < 17) return 'Good afternoon';
+  return 'Good evening';
+}
 
+function getJourneyForProgram(programSlug: ProgramSlug): 'smoking' | 'sleep_disorder_reset' | 'energy_vitality' | 'age_reversal' | 'male_sexual_health' {
+  if (programSlug === 'six_day_reset' || programSlug === 'ninety_day_transform') {
+    return 'smoking';
+  }
+
+  return programSlug;
+}
 
 function HomeScreenContent({ activeProgram }: { activeProgram: ProgramSlug }) {
-  const router = useRouter();
-  const insets = useSafeAreaInsets();
-  const { access } = useProfile();
-  const program = PROGRAM_METADATA[activeProgram];
-  const { data: onboardingResponse } = useOnboardingResponse();
+  const { access, profile, progress } = useProfile();
+  const onboardingQuery = useOnboardingResponse();
+  const onboardingResponse = onboardingQuery.data ?? null;
+  const { program } = useProgram(activeProgram);
+  const { programs } = usePrograms();
+  const { ownedPrograms, isLoading: isOwnedProgramsLoading } = useOwnedPrograms();
   const queryClient = useQueryClient();
+
+  if (!program) {
+    return null;
+  }
 
   const currentDayNumber = access.completionState === 'completed'
     ? program.totalDays
@@ -60,10 +78,55 @@ function HomeScreenContent({ activeProgram }: { activeProgram: ProgramSlug }) {
     return program.description;
   })();
 
-  const projection = getOnboardingProjection(onboardingResponse ?? null);
-  const firstName = projection.firstName || 'Friend';
+  const journalCard = currentDay?.cards.find((card) => card.type === 'journal');
+  const firstName =
+    profile?.display_name?.trim().split(/\s+/)[0] ||
+    onboardingResponse?.full_name?.trim().split(/\s+/)[0] ||
+    'Friend';
   const avatarLetter = firstName[0]?.toUpperCase() ?? 'S';
   const percentageComplete = Math.min(100, Math.round((currentDayNumber / program.totalDays) * 100));
+  const statsItems = useMemo(
+    () =>
+      resolveDashboardStatItems({
+        programSlug: activeProgram,
+        currentDayNumber,
+        totalDays: program.totalDays,
+        completedDays: progress?.completedDays ?? [],
+        partialDays: progress?.partialDays ?? [],
+        hasAudio: program.hasAudio,
+        onboardingResponse,
+        questionnaireAnswers:
+          (profile?.questionnaire_answers as QuestionnaireAnswersSnapshot | null) ?? null,
+        isBaselineLoading:
+          onboardingQuery.isLoading &&
+          !onboardingResponse &&
+          !profile?.questionnaire_answers,
+      }),
+    [
+      activeProgram,
+      currentDayNumber,
+      onboardingQuery.isLoading,
+      onboardingResponse,
+      profile?.questionnaire_answers,
+      program.hasAudio,
+      program.totalDays,
+      progress?.completedDays,
+      progress?.partialDays,
+    ]
+  );
+  const journeyGoal =
+    onboardingResponse?.primary_goal ??
+    getJourneyConfig(getJourneyForProgram(activeProgram)).primaryGoal;
+  const ownedProgramSlugSet = new Set([
+    activeProgram,
+    ...ownedPrograms.map((entry) => entry.slug),
+  ]);
+  const explorePrograms = isOwnedProgramsLoading
+    ? []
+    : programs.filter((entry) => !ownedProgramSlugSet.has(entry.slug));
+  const secondaryPillLabel = program.hasAudio
+    ? 'Guided audio included'
+    : `${program.totalDays}-day structured plan`;
 
   return (
     <View className="flex-1 bg-surface">
@@ -72,12 +135,11 @@ function HomeScreenContent({ activeProgram }: { activeProgram: ProgramSlug }) {
         
         {/* HEADER */}
         <DashboardHeader
+          greetingLabel={getGreetingLabel()}
           firstName={firstName}
           avatarLetter={avatarLetter}
-          currentDayNumber={currentDayNumber}
-          percentageComplete={percentageComplete}
-          totalDays={program.totalDays}
-          projectedSavings90Days={projection.projectedSavings90Days}
+          progressLabel={`Day ${currentDayNumber} of ${program.totalDays}`}
+          secondaryPillLabel={secondaryPillLabel}
         />
 
         {/* CONTENT AREA */}
@@ -102,13 +164,18 @@ function HomeScreenContent({ activeProgram }: { activeProgram: ProgramSlug }) {
           />
 
           <StatsRow
-            currentDayNumber={currentDayNumber}
-            monthlySpend={projection.monthlySpend}
+            items={statsItems}
           />
 
-          <JournalCheckIn />
+          <JournalCheckIn
+            prompt={
+              journalCard?.type === 'journal'
+                ? journalCard.prompt
+                : 'Take a minute to note what stood out today.'
+            }
+          />
           
-          <WhyThisMatters />
+          <WhyThisMatters copy={journeyGoal} />
 
           <MyPrograms
             programName={program.name}
@@ -118,7 +185,11 @@ function HomeScreenContent({ activeProgram }: { activeProgram: ProgramSlug }) {
             percentageComplete={percentageComplete}
           />
 
-          <ExplorePrograms />
+          <ExplorePrograms
+            programs={explorePrograms}
+            isLoading={isOwnedProgramsLoading}
+            isPurchaseLocked={Boolean(access.ownedProgram)}
+          />
 
         </View>
       </ScrollView>

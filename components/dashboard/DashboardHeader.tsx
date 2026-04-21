@@ -1,24 +1,21 @@
 import { View, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Svg, Path, G, Ellipse, Rect, Polygon } from 'react-native-svg';
-import { formatInr } from '@/lib/onboarding-metrics';
 
 interface DashboardHeaderProps {
+  greetingLabel: string;
   firstName: string;
   avatarLetter: string;
-  currentDayNumber: number;
-  percentageComplete: number;
-  totalDays: number;
-  projectedSavings90Days: number;
+  progressLabel: string;
+  secondaryPillLabel?: string | null;
 }
 
 export function DashboardHeader({
+  greetingLabel,
   firstName,
   avatarLetter,
-  currentDayNumber,
-  percentageComplete,
-  totalDays,
-  projectedSavings90Days,
+  progressLabel,
+  secondaryPillLabel,
 }: DashboardHeaderProps) {
   return (
     <SafeAreaView edges={['top']} className="bg-forest">
@@ -88,7 +85,7 @@ export function DashboardHeader({
           </View>
         </View>
 
-        <Text className="font-satoshi text-[11px] font-medium tracking-[0.12em] uppercase text-sage/55 relative z-10">Good morning</Text>
+        <Text className="font-satoshi text-[11px] font-medium tracking-[0.12em] uppercase text-sage/55 relative z-10">{greetingLabel}</Text>
         <Text className="font-erode-medium text-[36px] text-white leading-tight tracking-[-0.02em] relative z-10 mt-0.5">
           Welcome back, <Text className="font-erode-medium-italic">{firstName}.</Text>
         </Text>
@@ -97,24 +94,15 @@ export function DashboardHeader({
         <View className="flex-row items-center gap-2 mt-4 relative z-10">
           <View className="flex-row items-center gap-1.5 bg-sage/10 border border-sage/20 rounded-full px-3 py-1.5">
             <View className="w-1.5 h-1.5 rounded-full bg-success shadow-[0_0_0_3px_rgba(93,207,122,0.22)]" />
-            <Text className="font-satoshi text-[11px] font-medium text-sage/90 tracking-[0.03em]">Day {currentDayNumber} in motion</Text>
+            <Text className="font-satoshi text-[11px] font-medium text-sage/90 tracking-[0.03em]">{progressLabel}</Text>
           </View>
-          <View className="flex-row items-center gap-1.5 bg-sage/5 border border-sage/15 rounded-full px-3 py-1.5">
-            <Text className="font-satoshi text-[11px] font-medium text-sage/90 tracking-[0.03em]">
-              {formatInr(projectedSavings90Days > 0 ? projectedSavings90Days : 1820)} saved
-            </Text>
-          </View>
-        </View>
-
-        {/* PROGRESS BAR */}
-        <View className="mt-3.5 relative z-10">
-          <View className="h-[3px] bg-sage/20 rounded-full overflow-hidden">
-            <View className="h-[3px] bg-sage rounded-full" style={{ width: `${percentageComplete}%` }} />
-          </View>
-          <View className="flex-row justify-between mt-1.5">
-            <Text className="font-satoshi text-[10px] text-sage/45 tracking-[0.08em] uppercase">Day {currentDayNumber} of {totalDays}</Text>
-            <Text className="font-satoshi text-[10px] text-sage/45 tracking-[0.08em] uppercase">{percentageComplete}% complete</Text>
-          </View>
+          {secondaryPillLabel ? (
+            <View className="flex-row items-center gap-1.5 bg-sage/5 border border-sage/15 rounded-full px-3 py-1.5">
+              <Text className="font-satoshi text-[11px] font-medium text-sage/90 tracking-[0.03em]">
+                {secondaryPillLabel}
+              </Text>
+            </View>
+          ) : null}
         </View>
       </View>
     </SafeAreaView>
