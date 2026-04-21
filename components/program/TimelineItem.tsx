@@ -7,12 +7,14 @@ import Animated, {
   withTiming,
   Easing,
 } from 'react-native-reanimated';
+import Svg, { Polyline } from 'react-native-svg';
 
 interface TimelineItemProps {
   children: React.ReactNode;
   isFirst: boolean;
   isLast: boolean;
   isLocked: boolean;
+  isNextLocked?: boolean;
   isCompleted: boolean;
   isPartial?: boolean;
   isCurrent: boolean;
@@ -24,25 +26,24 @@ export function TimelineItem({
   isFirst,
   isLast,
   isLocked,
+  isNextLocked,
   isCompleted,
   isPartial = false,
   isCurrent,
   onLayout,
 }: TimelineItemProps) {
-  // Line logic: Top line connects from previous. Bottom line connects to next.
-  const topConnectorColor = isLocked ? 'bg-forest/10' : 'bg-forest';
-  // Bottom line is only solid forest if THIS item is fully completed, mapping to the next.
-  const bottomConnectorColor = isCompleted ? 'bg-forest' : isPartial ? 'bg-forest/30' : 'bg-forest/10';
+  // Connector Line
+  const connectorColor = isCompleted ? 'bg-forest/18' : 'bg-forest/[0.08]';
 
-  const dotClassName = isLocked
-    ? 'bg-transparent border border-forest/20 w-2 h-2 rounded-full'
-    : isCurrent
-      ? 'bg-forest w-2.5 h-2.5 rounded-full'
+  // Node styles
+  const isLockedOrNext = isLocked || isNextLocked;
+  const dotColorClass = isCurrent
+    ? 'bg-forest'
+    : isCompleted
+      ? 'bg-forest'
       : isPartial
-        ? 'bg-[#D8E7D9] border border-forest/50 w-2 h-2 rounded-full'
-      : isCompleted
-        ? 'bg-forest/40 w-2 h-2 rounded-full'
-        : 'bg-surface border border-forest/40 w-2 h-2 rounded-full';
+        ? 'bg-[#D8E7D9] border-2 border-forest/50'
+        : 'bg-transparent border-2 border-forest/20';
 
   // Pulse animation for Current Day
   const scale = useSharedValue(1);
@@ -51,7 +52,7 @@ export function TimelineItem({
   useEffect(() => {
     if (isCurrent) {
       scale.value = withRepeat(
-        withTiming(1.8, { duration: 1500, easing: Easing.out(Easing.quad) }),
+        withTiming(1.6, { duration: 1500, easing: Easing.out(Easing.quad) }),
         -1,
         false
       );
@@ -63,38 +64,77 @@ export function TimelineItem({
     }
   }, [isCurrent, scale, opacity]);
 
-  const animatedRingStyle = useAnimatedStyle(() => ({
+  const animatedRingStyle1 = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
     opacity: opacity.value,
+  }));
+  const animatedRingStyle2 = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value * 1.3 }],
+    opacity: opacity.value * 0.4,
   }));
 
   return (
     <View 
-      className="flex-row" 
+      className="flex-row items-start relative mb-4" 
       onLayout={onLayout}
+      style={{ zIndex: isCurrent ? 10 : 1 }}
     >
-      <View className="items-center w-6 mr-5">
-        {!isFirst && <View className={`w-[2px] h-6 ${topConnectorColor}`} />}
-        <View className="w-6 h-6 items-center justify-center my-1 relative">
-          {isCurrent && (
+      {/* 
+        Vertical connector line. Maps to CSS: 
+        left: 9px, top: 28px, bottom: -16px, width: 2px 
+      */}
+      {!isLast && (
+        <View 
+          className={`absolute left-[9px] top-[28px] -bottom-[16px] w-[2px] rounded-full ${connectorColor}`} 
+        />
+      )}
+
+      {/* Node column: 20px wide */}
+      <View className="w-[20px] mt-[18px] items-center justify-center relative z-10 mr-[14px]">
+        {/* Pulsing rings for Current Day */}
+        {isCurrent && (
+          <View className="absolute items-center justify-center">
+             <Animated.View
+               style={[
+                 animatedRingStyle2,
+                 {
+                   position: 'absolute',
+                   width: 20,
+                   height: 20,
+                   borderRadius: 10,
+                   backgroundColor: '#06290C',
+                 },
+               ]}
+             />
             <Animated.View
-              style={[
-                animatedRingStyle,
-                {
-                  position: 'absolute',
-                  width: 20,
-                  height: 20,
-                  borderRadius: 10,
-                  backgroundColor: '#06290C',
-                },
-              ]}
-            />
+               style={[
+                 animatedRingStyle1,
+                 {
+                   position: 'absolute',
+                   width: 20,
+                   height: 20,
+                   borderRadius: 10,
+                   backgroundColor: '#06290C',
+                 },
+               ]}
+             />
+          </View>
+        )}
+        
+        {/* Actual Node */}
+        <View className={`w-5 h-5 rounded-full items-center justify-center ${dotColorClass}`}>
+          {isCompleted && (
+            <Svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#E3F3E5" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <Polyline points="20,6 9,17 4,12" />
+            </Svg>
           )}
-          <View className={`z-10 ${dotClassName}`} />
         </View>
-        {!isLast && <View className={`w-[2px] flex-1 min-h-[48px] ${bottomConnectorColor}`} />}
       </View>
-      <View className="flex-1 pb-10">{children}</View>
+
+      {/* Card column */}
+      <View className="flex-1">
+        {children}
+      </View>
     </View>
   );
 }

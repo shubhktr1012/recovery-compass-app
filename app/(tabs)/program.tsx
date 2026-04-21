@@ -1,12 +1,13 @@
 import React, { useCallback, useMemo, useRef, memo } from 'react';
-import { NativeSyntheticEvent, NativeScrollEvent, ScrollView, Text, Pressable, View } from 'react-native';
+import { NativeSyntheticEvent, NativeScrollEvent, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Href, useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { useQueryClient } from '@tanstack/react-query';
 import * as Haptics from 'expo-haptics';
-import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing } from 'react-native-reanimated';
+import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
+import Svg, { Path, Circle } from 'react-native-svg';
 
 import { useProgram } from '@/content';
 import { useProfile } from '@/providers/profile';
@@ -31,34 +32,7 @@ function getDayPreview(day: DayContent) {
   return 'Open today’s guidance and keep moving.';
 }
 
-const SquishPressable = ({ children, disabled, onPress, className }: any) => {
-  const scale = useSharedValue(1);
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
-
-  const handlePressIn = () => {
-    if (!disabled) scale.value = withTiming(0.97, { duration: 180, easing: Easing.inOut(Easing.cubic) });
-  };
-  const handlePressOut = () => {
-    if (!disabled) scale.value = withTiming(1, { duration: 240, easing: Easing.inOut(Easing.cubic) });
-  };
-
-  return (
-    <Pressable
-      onPressIn={handlePressIn}
-      onPressOut={handlePressOut}
-      onPress={onPress}
-      disabled={disabled}
-      className={className}
-    >
-      <Animated.View style={animatedStyle}>
-        {children}
-      </Animated.View>
-    </Pressable>
-  );
-};
 
 const ProgramTimelineNode = memo(({ 
   day, 
@@ -70,6 +44,7 @@ const ProgramTimelineNode = memo(({
   isCurrent, 
   isReturningUser, 
   activeProgram,
+  nextLockedDayNumber,
   availabilityLabel,
   onLayout,
   onPress,
@@ -80,31 +55,28 @@ const ProgramTimelineNode = memo(({
       isFirst={isFirst}
       isLast={isLast}
       isLocked={isLocked}
+      isNextLocked={isLocked && day.dayNumber === nextLockedDayNumber}
       isCompleted={isCompleted}
       isPartial={isPartial}
       isCurrent={isCurrent}
       onLayout={onLayout}
     >
-      <SquishPressable
-        disabled={isLocked}
-        onPress={onPress}
-        className={isLocked ? "opacity-70" : ""}
-      >
-        <ProgramCard
-          day={{
-            id: day.dayNumber,
-            title: day.dayTitle,
-            description: getDayPreview(day),
-            durationMinutes: day.estimatedMinutes ?? 5,
-          }}
-          isLocked={isLocked}
-          isCompleted={isCompleted}
-          isPartial={isPartial}
-          isCurrent={isCurrent}
-          isReturningUser={isReturningUser}
-          availabilityLabel={availabilityLabel}
-        />
-      </SquishPressable>
+      <ProgramCard
+        day={{
+          id: day.dayNumber,
+          title: day.dayTitle,
+          description: getDayPreview(day),
+          durationMinutes: day.estimatedMinutes ?? 5,
+        }}
+        isLocked={isLocked}
+        isNextLocked={isLocked && day.dayNumber === nextLockedDayNumber}
+        isCompleted={isCompleted}
+        isPartial={isPartial}
+        isCurrent={isCurrent}
+        isReturningUser={isReturningUser}
+        availabilityLabel={availabilityLabel}
+        onPress={isLocked ? undefined : onPress}
+      />
     </TimelineItem>
   );
 });
@@ -162,11 +134,8 @@ function ProgramScreenContent({ activeProgram }: { activeProgram: ProgramSlug })
     const { contentOffset, layoutMeasurement } = e.nativeEvent;
     const scrollCenterY = contentOffset.y + (layoutMeasurement.height / 2);
     
-    // Calculate absolute Y boundaries relative to the ScrollView content
     const absoluteTop = daysContainerY.current + currentDayRelativeY.current;
     
-    // We add a tighter hit box (middle 50% of the card) down so it snaps specifically 
-    // when they are solidly viewing it, not just crossing the top edge.
     const snapTop = absoluteTop + (currentDayHeight.current * 0.25);
     const snapBottom = absoluteTop + (currentDayHeight.current * 0.75);
     
@@ -184,105 +153,165 @@ function ProgramScreenContent({ activeProgram }: { activeProgram: ProgramSlug })
     return null;
   }
 
+  // Determine split Program Name (e.g. "6-Day Control" -> "6-Day" normal, "Control" italic)
+  const nameParts = program.name.split(' ');
+  const namePrefix = nameParts.slice(0, -1).join(' ');
+  const nameItalic = nameParts[nameParts.length - 1];
+
   return (
-    <SafeAreaView className="flex-1 bg-surface">
-      <PaperGrain />
-      <StatusBar style="dark" />
+    <View className="flex-1 bg-forest">
+      <StatusBar style="light" />
       <ScrollView 
-        contentContainerClassName="p-6 pb-32"
+        contentContainerClassName="flex-grow pb-[110px]"
         onScroll={handleScroll}
         scrollEventThrottle={16}
+        showsVerticalScrollIndicator={false}
       >
-        <View className="mb-10 pt-4">
-          <Text className="font-satoshi-bold text-[10px] uppercase tracking-[2.6px] text-forest/30 mb-2">Current Journey</Text>
-          <Text className="font-erode-medium text-[44px] leading-[48px] tracking-tight text-forest mb-4 pr-4">{program.name}</Text>
-          <Text className="font-satoshi text-[16px] leading-[26px] text-forest/60 pr-8">
-            {program.description}
+        {/* HEADER AREA */}
+        <View className="bg-forest px-6 pt-16 pb-[52px] overflow-hidden relative">
+          <Svg 
+            style={{ position: 'absolute', right: -10, top: -10, opacity: 0.07, pointerEvents: 'none' }} 
+            width={190} height={190} viewBox="0 0 200 200" fill="none"
+          >
+            <Path d="M100 10 C100 10 165 55 165 105 C165 148 135 182 100 192 C65 182 35 148 35 105 C35 55 100 10 100 10Z" fill="#E3F3E5"/>
+            <Path d="M100 48 C100 48 145 78 145 108 C145 133 125 155 100 162 C75 155 55 133 55 108 C55 78 100 48 100 48Z" fill="#E3F3E5"/>
+            <Path d="M100 98 L100 192" stroke="#E3F3E5" strokeWidth="1.5"/>
+            <Path d="M75 132 Q100 122 125 132" stroke="#E3F3E5" strokeWidth="1.2" fill="none"/>
+          </Svg>
+
+          <View className="flex-row justify-between items-center mb-[18px] relative z-10 mt-8">
+            <Text className="font-satoshi-medium text-[11px] uppercase tracking-[2.4px] text-sage/55">
+              {access.completionState === 'completed' ? 'Completed Journey' : 'Current Journey'}
+            </Text>
+            {access.completionState === 'completed' ? (
+              <View className="flex-row items-center bg-[#5DCF7A]/20 border border-[#5DCF7A]/30 rounded-full px-2.5 py-1">
+                <Svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="rgba(93,207,122,0.9)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <Path d="M20 6L9 17L4 12"/>
+                </Svg>
+                <Text className="font-satoshi-semibold text-[10px] tracking-[1.2px] text-[#5DCF7A] ml-1">DONE</Text>
+              </View>
+            ) : (
+              <View className="w-8 h-8 rounded-full bg-sage/10 border border-sage/20 items-center justify-center">
+                <Svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(227,243,229,0.7)" strokeWidth="1.8" strokeLinecap="round">
+                  <Circle cx="12" cy="12" r="3" />
+                  <Path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83" />
+                </Svg>
+              </View>
+            )}
+          </View>
+          
+          <Text className="font-erode-medium text-[32px] leading-[34px] tracking-[-0.6px] text-white relative z-10 pr-4">
+            {namePrefix} <Text className="italic">{nameItalic}</Text>
+          </Text>
+          
+          <Text className="font-satoshi text-[13px] leading-[19px] text-sage/60 pr-8 mt-2 relative z-10 max-w-[280px]">
+            {access.completionState === 'completed' 
+              ? `You completed this reset. All ${totalDays} days are now available to revisit.` 
+              : program.description}
           </Text>
 
-          <View className="mt-12">
-            <View className="mb-4">
-              <Text className="font-satoshi-bold text-[11px] uppercase tracking-[2px] text-forest/40 mb-1">
-                Day {Math.min(currentDay, program.totalDays)} of {totalDays}
+          <View className="mt-4 relative z-10">
+            <View className="flex-row justify-between items-baseline mb-2">
+              <Text className="font-erode-medium text-[22px] leading-[22px] text-white tracking-[-0.4px]">
+                {access.completionState === 'completed' ? totalDays : Math.min(currentDay, program.totalDays)} <Text className="font-satoshi text-[13px] text-sage/55 tracking-normal">of {totalDays} days</Text>
               </Text>
-              <Text className="font-erode-medium text-[32px] leading-[36px] text-forest">
-                {progressPercent}% Complete
+              <Text className="font-satoshi-medium text-[11px] text-sage/60 tracking-[0.4px]">
+                {progressPercent}% complete
               </Text>
-              {nextUnlockLabel && access.completionState !== 'completed' ? (
-                <Text className="font-satoshi-medium text-[12px] text-forest/50 mt-2">
-                  {nextUnlockLabel}
-                </Text>
-              ) : null}
             </View>
 
-            <View className="h-[3px] w-full bg-forest/[0.06] rounded-full overflow-hidden">
+            <View className="h-[3px] w-full bg-sage/[0.18] rounded-full overflow-hidden">
               <View
-                className="h-full bg-forest rounded-full"
-                style={{ width: `${progressPercent}%` }}
+                className="h-full bg-sage rounded-full"
+                style={{ width: `${progressPercent}%`, backgroundColor: access.completionState === 'completed' ? 'rgba(93,207,122,0.7)' : '#E3F3E5' }}
               />
             </View>
+            
+            {nextUnlockLabel && access.completionState !== 'completed' ? (
+              <Text className="font-satoshi text-[10px] text-sage/40 mt-[6px] tracking-[0.3px]">
+                {nextUnlockLabel}
+              </Text>
+            ) : null}
           </View>
-
-          {isArchivedReset ? (
-            <View className="mt-8 rounded-[20px] border border-forest/[0.08] bg-[#F6F7F4] px-5 py-5 shadow-sm shadow-[#06290C]/5">
-              <Text className="font-satoshi-bold text-[10px] uppercase tracking-[2px] text-forest/50 mb-2">
-                Completed Path
-              </Text>
-              <Text className="font-satoshi text-[14px] leading-[22px] text-forest/70">
-                Your 6-Day Control journey is complete and archived. You can revisit any completed day whenever you want.
-              </Text>
-            </View>
-          ) : null}
         </View>
 
-        {program.days.length === 0 ? (
-          <View className="rounded-3xl border border-dashed border-gray-300 bg-white px-5 py-6">
-            <Text className="font-satoshi text-center text-gray-500">
-              This program is unlocked, but its daily timeline is still syncing.
-            </Text>
-          </View>
-        ) : (
+        {/* CONTENT AREA OVERLAP */}
+        <View className="bg-surface rounded-t-[28px] -mt-7 pt-6 pb-[110px] relative z-20 flex-1">
+          <PaperGrain />
           <View onLayout={(e) => { daysContainerY.current = e.nativeEvent.layout.y; }}>
-            <Text className="mb-4 font-satoshi text-[11px] uppercase tracking-[3px] text-forest/35">
-              Day Timeline
-            </Text>
-            {program.days.map((day, index) => {
-              const isCompleted = completedDays.includes(day.dayNumber);
-              const isPartial = partialDays.includes(day.dayNumber) && !isCompleted;
-              const isLocked = isArchivedReset || day.dayNumber > currentDay;
-              const isCurrent = day.dayNumber === currentDay && !isCompleted;
-              const availabilityLabel =
-                isLocked && day.dayNumber === nextLockedDayNumber
-                  ? nextUnlockLabel
-                  : null;
+            
+            {isArchivedReset && access.completionState === 'completed' ? (
+              <View className="mx-5 mb-4 bg-white rounded-[20px] px-[18px] py-4 shadow-sm shadow-forest/5" style={{ shadowColor: '#06290C', shadowOpacity: 0.06, shadowRadius: 24, shadowOffset: { width: 0, height: 8 }, borderLeftWidth: 3, borderLeftColor: '#06290C' }}>
+                <Text className="font-satoshi-bold text-[9px] uppercase tracking-[1.8px] text-forest/40">
+                  What's Next
+                </Text>
+                <Text className="font-erode-medium text-[17px] leading-[20px] text-forest mt-1">
+                  Ready for the <Text className="italic">full 90 days?</Text>
+                </Text>
+                <Text className="font-satoshi text-[12px] leading-[18px] text-forest/60 mt-1">
+                  You've broken the initial autopilot. The 90-Day Quit now takes you to lasting freedom.
+                </Text>
+                <View className="flex-row items-center bg-forest rounded-full px-4 py-2 mt-3 self-start">
+                  <Svg width="11" height="11" viewBox="0 0 24 24" fill="#fff" stroke="none" className="mr-1.5">
+                    <Path d="M5 3 L19 12 L5 21 Z" />
+                  </Svg>
+                  <Text className="font-satoshi-medium text-[12px] text-white">Explore 90-Day Quit</Text>
+                </View>
+              </View>
+            ) : null}
 
-              return (
-                <ProgramTimelineNode
-                  key={`${activeProgram}-${day.dayNumber}`}
-                  day={day}
-                  isFirst={index === 0}
-                  isLast={index === program.days.length - 1}
-                  isLocked={isLocked}
-                  isCompleted={isCompleted}
-                  isPartial={isPartial}
-                  isCurrent={isCurrent}
-                  isReturningUser={isReturningUser}
-                  activeProgram={activeProgram}
-                  availabilityLabel={availabilityLabel}
-                  onPress={() =>
-                    router.push(`/day-detail?programSlug=${activeProgram}&dayNumber=${day.dayNumber}` as Href)
-                  }
-                  onLayout={isCurrent ? (e: any) => {
-                    currentDayRelativeY.current = e.nativeEvent.layout.y;
-                    currentDayHeight.current = e.nativeEvent.layout.height;
-                  } : undefined}
-                />
-              );
-            })}
+            <Text className="font-satoshi-bold text-[9px] uppercase tracking-[2px] text-forest/35 px-6 mb-4">
+              {access.completionState === 'completed' ? `All ${totalDays} Days · Revisit Anytime` : 'Day Timeline'}
+            </Text>
+
+            <View className="px-5">
+              {program.days.length === 0 ? (
+                <View className="rounded-3xl border border-dashed border-gray-300 bg-white px-5 py-6 mt-4 mx-1">
+                  <Text className="font-satoshi text-center text-gray-500">
+                    This program is unlocked, but its daily timeline is still syncing.
+                  </Text>
+                </View>
+              ) : (
+                program.days.map((day, index) => {
+                  const isCompleted = completedDays.includes(day.dayNumber);
+                  const isPartial = partialDays.includes(day.dayNumber) && !isCompleted;
+                  const isLocked = isArchivedReset || day.dayNumber > currentDay;
+                  const isCurrent = day.dayNumber === currentDay && !isCompleted;
+                  const availabilityLabel =
+                    isLocked && day.dayNumber === nextLockedDayNumber
+                      ? nextUnlockLabel
+                      : null;
+
+                  return (
+                    <ProgramTimelineNode
+                      key={`${activeProgram}-${day.dayNumber}`}
+                      day={day}
+                      isFirst={index === 0}
+                      isLast={index === program.days.length - 1}
+                      isLocked={isLocked}
+                      isCompleted={isCompleted}
+                      isPartial={isPartial}
+                      isCurrent={isCurrent}
+                      isReturningUser={isReturningUser}
+                      activeProgram={activeProgram}
+                      nextLockedDayNumber={nextLockedDayNumber}
+                      availabilityLabel={availabilityLabel}
+                      onPress={() =>
+                        router.push(`/day-detail?programSlug=${activeProgram}&dayNumber=${day.dayNumber}` as Href)
+                      }
+                      onLayout={isCurrent ? (e: any) => {
+                        currentDayRelativeY.current = e.nativeEvent.layout.y;
+                        currentDayHeight.current = e.nativeEvent.layout.height;
+                      } : undefined}
+                    />
+                  );
+                })
+              )}
+            </View>
           </View>
-        )}
+        </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
