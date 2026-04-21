@@ -1,139 +1,218 @@
 import { Tabs, usePathname } from 'expo-router';
 import React from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import * as Haptics from 'expo-haptics';
-import { BottomTabBarButtonProps } from '@react-navigation/bottom-tabs';
+import { BlurView } from 'expo-blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Svg, { Path, Rect, Circle } from 'react-native-svg';
 
-import { AppColors } from '@/constants/theme';
-import { IconSymbol } from '@/components/ui/icon-symbol';
+// ─── Brand tokens ───────────────────────────────────────────────────────────
+const FOREST = '#06290C';
+const INACTIVE = 'rgba(6,41,12,0.32)';
 
-function TabIcon({
-  focused,
-  name,
-}: {
-  focused: boolean;
-  name: 'house.fill' | 'list.bullet.rectangle.portrait.fill' | 'book.fill' | 'person.fill';
-}) {
+// ─── SVG Tab Icons (inline, matching spec exactly) ───────────────────────────
+
+function HomeIcon({ color }: { color: string }) {
   return (
-    <View style={styles.tabIconContainer} pointerEvents="none">
-      <View style={styles.iconWrapper}>
-        <IconSymbol
-          name={name}
-          size={24}
-          color={focused ? AppColors.white : 'rgba(227, 243, 229, 0.5)'}
-        />
-        {/* Subtle active indicator under the icon */}
-        {focused && <View style={styles.activeIndicator} />}
+    <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M4 11l8-7 8 7v9a1 1 0 01-1 1h-4v-6h-6v6H5a1 1 0 01-1-1v-9z"
+        stroke={color}
+        strokeWidth={1.8}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
+  );
+}
+
+function ProgramIcon({ color }: { color: string }) {
+  return (
+    <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
+      <Rect x="3" y="3" width="7" height="7" rx="1" stroke={color} strokeWidth={1.8} strokeLinecap="round" />
+      <Rect x="14" y="3" width="7" height="7" rx="1" stroke={color} strokeWidth={1.8} strokeLinecap="round" />
+      <Rect x="3" y="14" width="7" height="7" rx="1" stroke={color} strokeWidth={1.8} strokeLinecap="round" />
+      <Rect x="14" y="14" width="7" height="7" rx="1" stroke={color} strokeWidth={1.8} strokeLinecap="round" />
+    </Svg>
+  );
+}
+
+function JournalIcon({ color }: { color: string }) {
+  return (
+    <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"
+        stroke={color}
+        strokeWidth={1.8}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
+  );
+}
+
+function ProfileIcon({ color }: { color: string }) {
+  return (
+    <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 11a4 4 0 100-8 4 4 0 000 8z"
+        stroke={color}
+        strokeWidth={1.8}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
+  );
+}
+
+// ─── Tab item (icon + label) ─────────────────────────────────────────────────
+function TabItem({
+  icon: Icon,
+  label,
+  focused,
+}: {
+  icon: React.ComponentType<{ color: string }>;
+  label: string;
+  focused: boolean;
+}) {
+  const color = focused ? FOREST : INACTIVE;
+  return (
+    <View style={styles.tabItem}>
+      <Icon color={color} />
+      <Text style={[styles.tabLabel, { color }]}>{label}</Text>
+    </View>
+  );
+}
+
+// ─── Custom floating tab bar ─────────────────────────────────────────────────
+function FloatingTabBar({
+  state,
+  descriptors,
+  navigation,
+}: {
+  state: any;
+  descriptors: any;
+  navigation: any;
+}) {
+  const insets = useSafeAreaInsets();
+  const bottomOffset = Math.max(insets.bottom - 12, 4); // flush against bottom bezel
+
+  const tabs = [
+    { name: 'index',   label: 'Home',    Icon: HomeIcon },
+    { name: 'program', label: 'Program', Icon: ProgramIcon },
+    { name: 'journal', label: 'Journal', Icon: JournalIcon },
+    { name: 'profile', label: 'Profile', Icon: ProfileIcon },
+  ];
+
+  return (
+    <View style={[styles.tabBarOuter, { bottom: bottomOffset }]} pointerEvents="box-none">
+      {/* ── Glass pill ── */}
+      <View style={styles.tabBarShadowWrap}>
+        <BlurView
+          intensity={60}
+          tint="light"
+          style={styles.blurView}
+        >
+          <View style={styles.tabBarInner}>
+            {tabs.map((tab, i) => {
+              const routeIndex = state.routes.findIndex((r: any) => r.name === tab.name);
+              const focused = state.index === routeIndex;
+
+              return (
+                <Pressable
+                  key={tab.name}
+                  style={styles.tabButton}
+                  onPress={() => {
+                    if (Platform.OS === 'ios') {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    }
+                    const event = navigation.emit({
+                      type: 'tabPress',
+                      target: state.routes[routeIndex]?.key,
+                      canPreventDefault: true,
+                    });
+                    if (!focused && !event.defaultPrevented) {
+                      navigation.navigate(tab.name);
+                    }
+                  }}
+                  onLongPress={() => {
+                    navigation.emit({
+                      type: 'tabLongPress',
+                      target: state.routes[routeIndex]?.key,
+                    });
+                  }}
+                >
+                  <TabItem icon={tab.Icon} label={tab.label} focused={focused} />
+                </Pressable>
+              );
+            })}
+          </View>
+        </BlurView>
       </View>
     </View>
   );
 }
 
+// ─── Root layout ─────────────────────────────────────────────────────────────
 export default function TabLayout() {
-  const pathname = usePathname();
-  const insets = useSafeAreaInsets();
-  const bottomPadding = Math.max(insets.bottom, 12);
-  const isDashboardRoute = pathname === '/';
-
-  const renderTabButton = (props: BottomTabBarButtonProps) => (
-    <Pressable
-      accessibilityState={props.accessibilityState}
-      accessibilityLabel={props.accessibilityLabel}
-      accessibilityRole={props.accessibilityRole}
-      testID={props.testID}
-      onPress={(event) => {
-        if (process.env.EXPO_OS === 'ios') {
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-        }
-        props.onPress?.(event);
-      }}
-      onLongPress={props.onLongPress}
-      style={styles.tabButton}
-    >
-      {props.children}
-    </Pressable>
-  );
-
   return (
     <Tabs
+      tabBar={(props) => <FloatingTabBar {...props} />}
       screenOptions={{
         headerShown: false,
-        tabBarShowLabel: false,
         tabBarHideOnKeyboard: true,
-        tabBarStyle: {
-          display: isDashboardRoute ? 'none' : 'flex',
-          height: 60 + bottomPadding,
-          paddingBottom: bottomPadding,
-        },
-        tabBarButton: renderTabButton,
-        tabBarItemStyle: {
-          paddingVertical: 0,
-        },
-      }}>
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Home',
-          tabBarIcon: ({ focused }: { focused: boolean }) => (
-            <TabIcon focused={focused} name="house.fill" />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="program"
-        options={{
-          title: 'Program',
-          tabBarIcon: ({ focused }: { focused: boolean }) => (
-            <TabIcon focused={focused} name="list.bullet.rectangle.portrait.fill" />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="journal"
-        options={{
-          title: 'My Journal',
-          tabBarIcon: ({ focused }: { focused: boolean }) => (
-            <TabIcon focused={focused} name="book.fill" />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: 'Account',
-          tabBarIcon: ({ focused }: { focused: boolean }) => (
-            <TabIcon focused={focused} name="person.fill" />
-          ),
-        }}
-      />
+      }}
+    >
+      <Tabs.Screen name="index" options={{ title: 'Home' }} />
+      <Tabs.Screen name="program" options={{ title: 'Program' }} />
+      <Tabs.Screen name="journal" options={{ title: 'My Journal' }} />
+      <Tabs.Screen name="profile" options={{ title: 'Account' }} />
     </Tabs>
   );
 }
 
+// ─── Styles ───────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
+  tabBarOuter: {
+    position: 'absolute',
+    left: 16,
+    right: 16,
+    zIndex: 50,
+  },
+  tabBarShadowWrap: {
+    borderRadius: 28,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.15,
+    shadowRadius: 28,
+    elevation: 24,
+  },
+  blurView: {
+    borderRadius: 28,
+    overflow: 'hidden',
+    // Fallback background for Android where BlurView may be less effective
+    backgroundColor: Platform.OS === 'android' ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.88)',
+  },
+  tabBarInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+  },
   tabButton: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    height: '100%',
   },
-  tabIconContainer: {
+  tabItem: {
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingTop: 8,
+    gap: 3,
+    paddingVertical: 4,
+    paddingHorizontal: 4,
   },
-  iconWrapper: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: 32,
-  },
-  activeIndicator: {
-    position: 'absolute',
-    bottom: -4,
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: AppColors.white,
+  tabLabel: {
+    fontFamily: 'Satoshi-Medium',
+    fontSize: 9,
+    letterSpacing: 0.4, // 0.04em at 9px ≈ 0.36px → ~0.4
   },
 });

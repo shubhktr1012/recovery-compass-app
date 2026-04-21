@@ -1,12 +1,10 @@
 import { View, ScrollView, Text, Pressable, Platform } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
-import { Href, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
-import { Svg, Path, Rect, Circle, Polygon } from 'react-native-svg';
-import { BlurView } from 'expo-blur';
 
 import { useDay } from '@/content';
 import { PROGRAM_METADATA } from '@/content/programs/metadata';
@@ -25,27 +23,7 @@ import { programDayQueryKey, programQueryKey } from '@/hooks/contentQueryUtils';
 import { useOnboardingResponse } from '@/hooks/useOnboardingResponse';
 import { getOnboardingProjection, formatInr } from '@/lib/onboarding-metrics';
 
-function DashboardTabIcon({
-  focused,
-  label,
-  icon,
-}: {
-  focused: boolean;
-  label: string;
-  icon: React.ReactNode;
-}) {
-  return (
-    <View className="flex-col items-center flex-1 p-1 py-1.5 gap-1">
-      {icon}
-      <Text
-        className="font-satoshi text-[9px] tracking-[0.04em] font-medium mt-0.5"
-        style={{ color: focused ? '#06290C' : 'rgba(6,41,12,0.32)' }}
-      >
-        {label}
-      </Text>
-    </View>
-  );
-}
+
 
 function HomeScreenContent({ activeProgram }: { activeProgram: ProgramSlug }) {
   const router = useRouter();
@@ -145,58 +123,6 @@ function HomeScreenContent({ activeProgram }: { activeProgram: ProgramSlug }) {
         </View>
       </ScrollView>
 
-      {/* TAB BAR — floating, frosted glass */}
-      {/* CRITICAL: position: absolute, bottom: 16 (or safe area), backdrop-filter blur(20px), borderRadius: 28px */}
-      <View style={{ bottom: Math.max(insets.bottom + 8, 16) }} className="absolute left-4 right-4 z-50 rounded-[28px] overflow-hidden shadow-2xl shadow-forest/10 border border-white/20">
-        <BlurView intensity={Platform.OS === 'ios' ? 88 : 100} tint="light" className="flex-row items-center justify-around px-2 py-1 bg-white/70">
-          <Pressable onPress={() => router.push('/')} className="flex-1">
-            <DashboardTabIcon 
-              focused={true} 
-              label="Home" 
-              icon={
-                <Svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#06290C" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                  <Path d="M4 11l8-7 8 7v9a1 1 0 01-1 1h-4v-6h-6v6H5a1 1 0 01-1-1v-9z"/>
-                </Svg>
-              } 
-            />
-          </Pressable>
-          <Pressable onPress={() => router.push('/(tabs)/program')} className="flex-1">
-            <DashboardTabIcon 
-              focused={false} 
-              label="Program" 
-              icon={
-                <Svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(6,41,12,0.32)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                  <Rect x="3" y="3" width="7" height="7" rx="1"/><Rect x="14" y="3" width="7" height="7" rx="1"/>
-                  <Rect x="3" y="14" width="7" height="7" rx="1"/><Rect x="14" y="14" width="7" height="7" rx="1"/>
-                </Svg>
-              } 
-            />
-          </Pressable>
-          {/* Ground button removed per instructions */}
-          <Pressable onPress={() => router.push('/(tabs)/journal')} className="flex-1">
-            <DashboardTabIcon 
-              focused={false} 
-              label="Journal" 
-              icon={
-                <Svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(6,41,12,0.32)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                  <Path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/>
-                </Svg>
-              } 
-            />
-          </Pressable>
-          <Pressable onPress={() => router.push('/(tabs)/profile')} className="flex-1">
-            <DashboardTabIcon 
-              focused={false} 
-              label="Profile" 
-              icon={
-                <Svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(6,41,12,0.32)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                  <Path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 11a4 4 0 100-8 4 4 0 000 8z"/>
-                </Svg>
-              } 
-            />
-          </Pressable>
-        </BlurView>
-      </View>
     </View>
   );
 }
