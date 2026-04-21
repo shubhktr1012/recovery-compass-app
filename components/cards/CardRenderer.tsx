@@ -1,10 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import React, { useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Pressable, ScrollView, Text, TextInput, View, StyleSheet } from 'react-native';
-import Svg, { Path } from 'react-native-svg';
 import Animated, {
   Easing,
   FadeInDown,
@@ -23,6 +22,20 @@ import {
   upsertProgramReflection,
 } from '@/lib/api/program-reflections';
 import type { ProgramReflectionIdentity } from '@/lib/api/program-reflections';
+
+export type TransportConfig = {
+  centerIcon?: React.ReactNode;
+  centerLabel?: string;
+  onCenterPress?: () => void;
+  disabled?: boolean;
+};
+
+export const TransportContext = React.createContext<{
+  registerConfig: (index: number, config: TransportConfig) => void;
+}>({
+  registerConfig: () => {},
+});
+
 import type {
   ActionStepCard,
   AudioCard,
@@ -206,15 +219,17 @@ function DarkCardShell({
   children,
   eyebrow,
   title,
+  scrollable = false,
   showGrain = false,
 }: {
   children: React.ReactNode;
   eyebrow?: string;
   title?: string;
+  scrollable?: boolean;
   showGrain?: boolean;
 }) {
-  return (
-    <View style={[styles.darkCardShell, styles.cardShellContinuous, styles.cardShadow]}>
+  const content = (
+    <>
       {eyebrow ? (
         <Text style={styles.eyebrowDark}>
           {eyebrow}
@@ -224,6 +239,18 @@ function DarkCardShell({
         <Text style={styles.titleDark}>{title}</Text>
       ) : null}
       {children}
+    </>
+  );
+
+  return (
+    <View style={[styles.darkCardShell, styles.cardShellContinuous, styles.cardShadow]}>
+      {scrollable ? (
+        <FadingScrollView contentContainerStyle={{ flexGrow: 1 }}>
+          {content}
+        </FadingScrollView>
+      ) : (
+        content
+      )}
     </View>
   );
 }
@@ -307,138 +334,186 @@ function DotList({
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// INTRO CARD — Forest green, full-bleed, bottom-aligned editorial layout
-// Matches rc_intro_redesign_transport.html spec
+// INTRO CARD v2 — White canvas, editorial layout
+// Matches rc_day_view_v2_refined.html spec
 // ─────────────────────────────────────────────────────────────────────────────
 function IntroCardView({ card, programName, totalCards }: { card: IntroCard; programName?: string; totalCards?: number; }) {
   const cardCount = totalCards ?? 0;
+  // Format day number with leading zero for the ghost watermark
+  const dayFormatted = String(card.dayNumber).padStart(2, '0');
+
+  // Convert new `parameters` object (Age Reversal format) → { value, label }[]
+  const paramsFromObject: { value: string; label: string }[] = [];
+  if (card.parameters) {
+    const p = card.parameters;
+    if (p.sets != null) paramsFromObject.push({ value: String(p.sets), label: 'Sets' });
+    if (p.reps != null) paramsFromObject.push({ value: String(p.reps), label: 'Reps' });
+    if (p.holdSeconds != null) paramsFromObject.push({ value: `${p.holdSeconds}s`, label: 'Hold' });
+    if (p.durationMinutes != null) paramsFromObject.push({ value: `${p.durationMinutes}`, label: 'Minutes' });
+  }
+
+  // Priority: explicit params > converted parameters object > fallback
+  const params =
+    card.params ??
+    (paramsFromObject.length > 0
+      ? paramsFromObject
+      : [
+          ...(card.estimatedMinutes ? [{ value: String(card.estimatedMinutes), label: 'Minutes' }] : []),
+          ...(cardCount > 0 ? [{ value: String(cardCount), label: 'Cards' }] : []),
+        ]);
 
   return (
     <View style={styles.introCard}>
-      {/* Botanical SVG watermark — positioned absolute, opacity 0.06 */}
-      <Svg
-        viewBox="0 0 200 200"
-        style={styles.introBotanical}
-        fill="none"
-      >
-        <Path
-          d="M100 10 C100 10 165 55 165 105 C165 148 135 182 100 192 C65 182 35 148 35 105 C35 55 100 10 100 10Z"
-          fill="#E3F3E5"
-        />
-        <Path
-          d="M100 48 C100 48 145 78 145 108 C145 133 125 155 100 162 C75 155 55 133 55 108 C55 78 100 48 100 48Z"
-          fill="#E3F3E5"
-        />
-        <Path
-          d="M100 98 L100 192"
-          stroke="#E3F3E5"
-          strokeWidth="1.5"
-        />
-      </Svg>
+      {/* ── Accent gradient bar ── */}
+      <LinearGradient
+        colors={['#E3F3E5', 'rgba(6,41,12,0.15)']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={styles.introAccentBar}
+      />
 
-      {/* Spacer pushes content to bottom */}
-      <View style={styles.introSpacer} />
-
-      {/* Content zone — bottom-aligned */}
-      <View style={styles.introContent}>
-        {/* Day badge pill */}
-        <View style={styles.introDayBadge}>
-          <Text style={styles.introDayBadgeText}>
-            Day {card.dayNumber}
+      {/* ── Top row: phase pill + duration ── */}
+      <View style={styles.introTopRow}>
+        <View style={styles.introPhasePill}>
+          <View style={styles.introPhaseDot} />
+          <Text style={styles.introPhasePillText}>
+            {card.phase ?? programName ?? 'Today'}
           </Text>
         </View>
+        {card.estimatedMinutes ? (
+          <Text style={styles.introDurationText}>~{card.estimatedMinutes} min</Text>
+        ) : null}
+      </View>
 
-        {/* Serif title — large, white */}
-        <Text style={styles.introTitle}>
-          {card.dayTitle}
-        </Text>
+      {/* ── Hero zone ── */}
+      <View style={styles.introHero}>
+        {/* Ghost day number — huge, nearly invisible watermark */}
+        <Text style={styles.introGhostDay}>{dayFormatted}</Text>
 
-        {/* Goal text — muted sage */}
+        {/* Serif title — overlaps the ghost number */}
+        <Text style={styles.introTitle}>{card.dayTitle}</Text>
+
+        {/* Goal text — muted, flexible */}
         <Text style={styles.introGoal}>{card.goal}</Text>
 
-        {/* Params row — time · cards · program */}
-        <View style={styles.introParamsRow}>
-          {card.estimatedMinutes ? (
-            <Text style={styles.introParamText}>~{card.estimatedMinutes} min</Text>
-          ) : null}
-
-          {card.estimatedMinutes && cardCount > 0 ? (
-            <View style={styles.introParamDot} />
-          ) : null}
-
-          {cardCount > 0 ? (
-            <Text style={styles.introParamText}>{cardCount} cards</Text>
-          ) : null}
-
-          {programName && (card.estimatedMinutes || cardCount > 0) ? (
-            <View style={styles.introParamDot} />
-          ) : null}
-
-          {programName ? (
-            <Text style={[styles.introParamText, { opacity: 0.55 }]}>{programName}</Text>
-          ) : null}
-        </View>
+        {/* ── Parameter boxes ── */}
+        {params.length > 0 ? (
+          <View style={styles.introParamsRow}>
+            {params.map((p, i) => (
+              <View key={`${p.label}-${i}`} style={styles.introParamBox}>
+                <Text style={styles.introParamValue}>{p.value}</Text>
+                <Text style={styles.introParamLabel}>{p.label}</Text>
+              </View>
+            ))}
+          </View>
+        ) : null}
       </View>
     </View>
   );
 }
 
-function LessonCardView({ card }: { card: LessonCard; }) {
+function LessonCardView({ card, cardIndex: _cardIndex }: { card: LessonCard; cardIndex?: number; }) {
+  // Transport context registration is optional here as the default transport bar ("CONTINUE" / next page) is perfectly fine.
+  
   return (
-    <CardShell scrollable>
-      <View style={styles.lessonContextPill}>
-        <Text style={styles.lessonContextText}>Context</Text>
-      </View>
+    <View style={[styles.lessonCardShell, styles.cardShadow]}>
+      <FadingScrollView contentContainerStyle={{ flexGrow: 1 }}>
+        <Text style={styles.lessonEye}>Knowledge</Text>
 
-      <Text style={styles.lessonTitle}>
-        {card.title ?? 'Why timing matters'}
-      </Text>
+        <Text style={styles.lessonTitle}>
+          {card.title ?? 'Why This Works'}
+        </Text>
 
-      <View style={styles.lessonBody}>
-        {card.paragraphs.map((paragraph, index) => {
-          const isDuplicate = card.highlight && paragraph.trim() === card.highlight.trim();
+        <View style={styles.lessonBody}>
+          {card.paragraphs.map((paragraph, index) => {
+            const isDuplicate = card.highlight && paragraph.trim() === card.highlight.trim();
 
-          return (
-            <React.Fragment key={`${paragraph}-${index}`}>
-              {!isDuplicate ? (
-                <Text style={styles.lessonParagraph}>
-                  {paragraph}
-                </Text>
-              ) : null}
-
-              {card.highlight && index === 1 ? (
-                <View style={styles.lessonHighlightContainer}>
-                  <Text style={styles.lessonHighlightText}>
-                    {card.highlight}
+            return (
+              <React.Fragment key={`${paragraph}-${index}`}>
+                {!isDuplicate ? (
+                  <Text style={styles.lessonParagraph}>
+                    {paragraph}
                   </Text>
-                </View>
-              ) : null}
-            </React.Fragment>
-          );
-        })}
+                ) : null}
 
-        {card.highlight && card.paragraphs.length <= 1 ? (
-          <View style={styles.lessonHighlightContainer}>
-            <Text style={styles.lessonHighlightText}>
-              {card.highlight}
-            </Text>
-          </View>
-        ) : null}
-      </View>
-    </CardShell>
+                {card.highlight && index === 1 ? (
+                  <View style={styles.lessonPullQuoteItem}>
+                    <Text style={styles.lessonPullQuoteText}>
+                      {card.highlight}
+                    </Text>
+                  </View>
+                ) : null}
+              </React.Fragment>
+            );
+          })}
+
+          {card.highlight && card.paragraphs.length <= 1 ? (
+            <View style={styles.lessonPullQuoteItem}>
+              <Text style={styles.lessonPullQuoteText}>
+                {card.highlight}
+              </Text>
+            </View>
+          ) : null}
+
+          {/* Pull quote — Age Reversal editorial callout */}
+          {card.pullQuote ? (
+            <View style={styles.lessonPullQuoteItem}>
+              <Text style={styles.lessonPullQuoteText}>{card.pullQuote}</Text>
+            </View>
+          ) : null}
+        </View>
+      </FadingScrollView>
+    </View>
   );
 }
 
-function ActionStepCardView({ card }: { card: ActionStepCard; }) {
+function ActionStepCardView({ card, cardIndex, onContinue }: { card: ActionStepCard; cardIndex?: number; onContinue?: () => void; }) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isDone, setIsDone] = useState(false);
+  const { registerConfig } = useContext(TransportContext);
+
+  // Register transport config: "MARK DONE" → marks complete → auto-advances
+  useEffect(() => {
+    if (cardIndex == null) return;
+
+    registerConfig(cardIndex, {
+      centerIcon: (
+        <Ionicons
+          name={isDone ? 'checkmark-circle' : 'checkmark'}
+          size={28}
+          color={isDone ? '#16a34a' : '#06290C'}
+        />
+      ),
+      centerLabel: isDone ? 'DONE ✓' : 'MARK DONE',
+      onCenterPress: () => {
+        if (isDone) {
+          onContinue?.();
+          return;
+        }
+        setIsDone(true);
+        // Auto-advance after a brief visual confirmation
+        setTimeout(() => {
+          onContinue?.();
+        }, 600);
+      },
+    });
+  }, [cardIndex, isDone, onContinue, registerConfig]);
+
+  // Support both legacy stepNumber and new stepLabel format
+  const eyebrowText = card.stepLabel ?? (card.stepNumber != null ? `Action Step ${card.stepNumber}` : 'Action Step');
 
   return (
     <CardShell
       scrollable
-      eyebrow={`Action Step ${card.stepNumber}`}
+      eyebrow={eyebrowText}
       title={card.title}
     >
       <View style={styles.actionBody}>
+        {/* Age Reversal subtitle */}
+        {card.subtitle ? (
+          <Text style={styles.actionSubtitle}>{card.subtitle}</Text>
+        ) : null}
+
         {card.duration ? (
           <View style={styles.actionDurationPill}>
             <Ionicons name="time-outline" size={14} color="rgba(6, 41, 12, 0.4)" />
@@ -447,6 +522,14 @@ function ActionStepCardView({ card }: { card: ActionStepCard; }) {
         ) : null}
 
         <DotList items={card.instructions} textStyle={{ color: '#374151', fontSize: 16, lineHeight: 26 }} />
+
+        {/* Age Reversal purpose callout */}
+        {card.purpose ? (
+          <View style={styles.actionPurposeContainer}>
+            <Text style={styles.actionPurposeLabel}>Why this step</Text>
+            <Text style={styles.actionPurposeText}>{card.purpose}</Text>
+          </View>
+        ) : null}
 
         {card.whyThisWorks ? (
           <Animated.View
@@ -491,14 +574,17 @@ function ActionStepCardView({ card }: { card: ActionStepCard; }) {
   );
 }
 
-function MindfulExerciseCardView({ card }: { card: MindfulnessExerciseCard | BreathingExerciseCard; }) {
+function MindfulExerciseCardView({ card, cardIndex, onContinue }: { card: MindfulnessExerciseCard | BreathingExerciseCard; cardIndex?: number; onContinue?: () => void; }) {
   const [isActive, setIsActive] = useState(false);
   const scale = useSharedValue(1);
   const opacity = useSharedValue(0.15);
+  const { registerConfig } = useContext(TransportContext);
   const breathingPattern = card.type === 'breathing_exercise' ? card.pattern : undefined;
   const cycles = card.type === 'breathing_exercise' ? card.cycles : undefined;
   const duration = card.type === 'mindfulness_exercise' ? card.duration : undefined;
   const steps = card.type === 'mindfulness_exercise' ? card.steps : undefined;
+  const subtitle = card.type === 'mindfulness_exercise' ? card.subtitle : undefined;
+  const benefits = card.type === 'mindfulness_exercise' ? card.benefits : undefined;
 
   const animatedCircleStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
@@ -519,6 +605,29 @@ function MindfulExerciseCardView({ card }: { card: MindfulnessExerciseCard | Bre
     opacity.value = withTiming(0.4, { duration: 1000 });
   };
 
+  // Register transport config: BEGIN → starts exercise, DONE → advances
+  useEffect(() => {
+    if (cardIndex == null) return;
+
+    registerConfig(cardIndex, {
+      centerIcon: (
+        <Ionicons
+          name={isActive ? 'checkmark' : 'leaf-outline'}
+          size={28}
+          color="#06290C"
+        />
+      ),
+      centerLabel: isActive ? 'DONE' : 'BEGIN',
+      onCenterPress: () => {
+        if (isActive) {
+          onContinue?.();
+        } else {
+          startBreathing();
+        }
+      },
+    });
+  }, [cardIndex, isActive, onContinue, registerConfig]);
+
   const isBreathing = card.type === 'breathing_exercise';
 
   return (
@@ -526,6 +635,22 @@ function MindfulExerciseCardView({ card }: { card: MindfulnessExerciseCard | Bre
       eyebrow={duration ? `Mindful · ${duration}` : 'Grounding'}
       title={card.title}
     >
+      {/* Age Reversal subtitle */}
+      {subtitle ? (
+        <Text style={styles.mindfulSubtitle}>{subtitle}</Text>
+      ) : null}
+
+      {/* Age Reversal benefit pills */}
+      {benefits && benefits.length > 0 ? (
+        <View style={styles.mindfulBenefitsRow}>
+          {benefits.map((benefit, i) => (
+            <View key={`benefit-${i}`} style={styles.mindfulBenefitPill}>
+              <Text style={styles.mindfulBenefitText}>{benefit}</Text>
+            </View>
+          ))}
+        </View>
+      ) : null}
+
       <View style={{ paddingVertical: 24, alignItems: 'center' }}>
         {isBreathing ? (
           <View style={{ alignItems: 'center', width: '100%' }}>
@@ -588,16 +713,60 @@ function MindfulExerciseCardView({ card }: { card: MindfulnessExerciseCard | Bre
 
 function ExerciseRoutineCardView({
   card,
+  cardIndex,
+  onContinue,
   routineStorageKey,
   onProgressChange,
 }: {
   card: ExerciseRoutineCard;
+  cardIndex?: number;
+  onContinue?: () => void;
   routineStorageKey?: string;
   onProgressChange?: () => void;
 }) {
   const [completedItems, setCompletedItems] = useState<Set<string>>(new Set());
   const [hasRestored, setHasRestored] = useState(false);
-  const routineItems = card.exercises ?? [];
+  const { registerConfig } = useContext(TransportContext);
+
+  // ── Detect format ──────────────────────────────────────────────────────────
+  // Age Reversal format: single exercise with `name` + `steps` at top level
+  const isAgeReversalFormat = Boolean(card.name && Array.isArray(card.steps));
+  const routineItems = isAgeReversalFormat ? [] : (card.exercises ?? []);
+
+  // Count total items for progress tracking
+  const totalItems = isAgeReversalFormat ? 1 : routineItems.length;
+  const completedCount = completedItems.size;
+  const allDone = completedCount >= totalItems && totalItems > 0;
+
+  // Register transport config: shows completion progress
+  useEffect(() => {
+    if (cardIndex == null) return;
+
+    registerConfig(cardIndex, {
+      centerIcon: (
+        <Ionicons
+          name={allDone ? 'checkmark-circle' : 'checkmark'}
+          size={28}
+          color={allDone ? '#16a34a' : '#06290C'}
+        />
+      ),
+      centerLabel: allDone
+        ? 'ALL DONE ✓'
+        : totalItems > 1
+          ? `${completedCount}/${totalItems} DONE`
+          : 'MARK DONE',
+      onCenterPress: () => {
+        if (allDone) {
+          onContinue?.();
+        }
+        // If not all done, button does nothing — user needs to check items on the card
+      },
+      disabled: !allDone,
+    });
+  }, [cardIndex, allDone, completedCount, totalItems, onContinue, registerConfig]);
+
+  // For Age Reversal, the single item id is the card name
+  const singleItemId = card.name ?? 'exercise';
 
   React.useEffect(() => {
     let isCancelled = false;
@@ -681,6 +850,93 @@ function ExerciseRoutineCardView({
     });
   };
 
+  // ── Age Reversal single-exercise render ────────────────────────────────────
+  if (isAgeReversalFormat) {
+    const isCompleted = completedItems.has(singleItemId);
+    const steps = card.steps ?? [];
+    const metricPills: string[] = [];
+    if (card.sets != null) metricPills.push(`${card.sets} Sets`);
+    if (card.reps != null) metricPills.push(`${card.reps} Reps`);
+    if (card.holdSeconds != null) metricPills.push(`${card.holdSeconds}s Hold`);
+
+    return (
+      <CardShell
+        eyebrow={card.category ?? 'Facial Exercise'}
+        title={card.name ?? 'Exercise'}
+        scrollable
+      >
+        <View style={styles.exerciseAgeReversalBody}>
+          {/* Target muscle chip */}
+          {card.targetMuscle ? (
+            <View style={styles.exerciseMusclePill}>
+              <Ionicons name="body-outline" size={12} color="rgba(6, 41, 12, 0.5)" />
+              <Text style={styles.exerciseMusclePillText}>{card.targetMuscle}</Text>
+            </View>
+          ) : null}
+
+          {/* Metric pills row */}
+          {metricPills.length > 0 ? (
+            <View style={styles.exerciseMetricsRow}>
+              {metricPills.map((pill, i) => (
+                <View key={`metric-${i}`} style={styles.exerciseMetricPill}>
+                  <Text style={styles.exerciseMetricText}>{pill}</Text>
+                </View>
+              ))}
+            </View>
+          ) : null}
+
+          {/* Numbered steps */}
+          <View style={styles.exerciseStepsList}>
+            {steps.map((step, index) => (
+              <View
+                key={`step-${index}`}
+                style={[
+                  styles.exerciseStep,
+                  index < steps.length - 1 && styles.exerciseStepBorder,
+                ]}
+              >
+                <View style={styles.exerciseStepNumber}>
+                  <Text style={styles.exerciseStepNumberText}>{index + 1}</Text>
+                </View>
+                <Text style={styles.exerciseStepText}>{step}</Text>
+              </View>
+            ))}
+          </View>
+
+          {/* Science note */}
+          {card.scienceNote ? (
+            <View style={styles.exerciseScienceNote}>
+              <Text style={styles.exerciseScienceNoteIcon}>⚗</Text>
+              <Text style={styles.exerciseScienceNoteText}>{card.scienceNote}</Text>
+            </View>
+          ) : null}
+
+          {/* Full-card Done button */}
+          <Pressable
+            onPress={() => toggleItem(singleItemId)}
+            style={[
+              styles.exerciseDoneButton,
+              isCompleted && styles.exerciseDoneButtonCompleted,
+            ]}
+          >
+            {isCompleted ? (
+              <Ionicons name="checkmark-circle" size={18} color="white" />
+            ) : (
+              <Ionicons name="ellipse-outline" size={18} color="rgba(6, 41, 12, 0.5)" />
+            )}
+            <Text style={[
+              styles.exerciseDoneButtonText,
+              isCompleted && styles.exerciseDoneButtonTextCompleted,
+            ]}>
+              {isCompleted ? 'Done!' : 'Mark as Complete'}
+            </Text>
+          </Pressable>
+        </View>
+      </CardShell>
+    );
+  }
+
+  // ── Legacy multi-exercise render ───────────────────────────────────────────
   return (
     <CardShell
       eyebrow={`Routine${card.totalDuration ? ` · ${card.totalDuration}` : ''}`}
@@ -690,7 +946,6 @@ function ExerciseRoutineCardView({
       <View style={styles.routineList}>
         {routineItems.map((item, index) => {
           if (!item) return null;
-          // Use name+index since 'id' doesn't exist on this inline type representation
           const itemId = `${item.name}-${index}`;
           const isCompleted = completedItems.has(itemId);
           const instructions = Array.isArray(item.instructions) ? item.instructions : [];
@@ -744,7 +999,27 @@ function ExerciseRoutineCardView({
   );
 }
 
-function AudioCardView({ card }: { card: AudioCard; }) {
+function AudioCardView({ card, cardIndex }: { card: AudioCard; cardIndex?: number; }) {
+  const { registerConfig } = useContext(TransportContext);
+
+  // Register transport config: LISTEN — audio playback is controlled by the in-card player
+  useEffect(() => {
+    if (cardIndex == null) return;
+
+    registerConfig(cardIndex, {
+      centerIcon: (
+        <Ionicons
+          name="headset-outline"
+          size={28}
+          color="#06290C"
+        />
+      ),
+      centerLabel: 'LISTEN',
+      // No onCenterPress — user controls playback via the in-card player
+      // The Next button handles navigation
+    });
+  }, [cardIndex, registerConfig]);
+
   return (
     <DarkCardShell eyebrow="Guided meditation" title={card.title}>
       <View style={styles.audioDurationBadge}>
@@ -788,11 +1063,13 @@ function CalmTriggerCardView({ card }: { card: CalmTriggerCard; }) {
 
 function JournalCardView({
   card,
+  cardIndex,
   onContinue,
   reflectionStorageKey,
   programReflectionIdentity,
 }: {
   card: JournalCard;
+  cardIndex?: number;
   onContinue?: () => void;
   reflectionStorageKey?: string;
   programReflectionIdentity?: ProgramReflectionIdentity;
@@ -805,6 +1082,8 @@ function JournalCardView({
   const trimmedValue = value.trim();
   const hasSavedReflection = savedValue.trim().length > 0 && !isEditingSavedReflection;
   const shouldSaveDraft = trimmedValue.length > 0;
+  const { registerConfig } = useContext(TransportContext);
+  const canSave = trimmedValue.length >= 30;
   const reflectionUserId = programReflectionIdentity?.userId;
   const reflectionProgramSlug = programReflectionIdentity?.programSlug;
   const reflectionDayNumber = programReflectionIdentity?.dayNumber;
@@ -920,6 +1199,40 @@ function JournalCardView({
     setValue(savedValue);
     setIsEditingSavedReflection(false);
   };
+
+  // Register transport config for journal
+  useEffect(() => {
+    if (cardIndex == null) return;
+
+    if (hasSavedReflection) {
+      // Already saved — center button becomes "CONTINUE"
+      registerConfig(cardIndex, {
+        centerIcon: (
+          <Ionicons name="checkmark-circle" size={28} color="#16a34a" />
+        ),
+        centerLabel: 'SAVED ✓',
+        onCenterPress: () => {
+          onContinue?.();
+        },
+      });
+    } else {
+      // Editing or new — center button is "SAVE ENTRY" (gated on 30+ chars)
+      registerConfig(cardIndex, {
+        centerIcon: (
+          <Ionicons
+            name={isSaving ? 'hourglass-outline' : 'create-outline'}
+            size={28}
+            color={canSave ? '#06290C' : 'rgba(6, 41, 12, 0.3)'}
+          />
+        ),
+        centerLabel: isSaving ? 'SAVING...' : canSave ? 'SAVE ENTRY' : 'SKIP',
+        onCenterPress: () => {
+          void handleSaveAndContinue();
+        },
+        disabled: isSaving,
+      });
+    }
+  }, [cardIndex, hasSavedReflection, canSave, isSaving, onContinue, registerConfig]);
 
   if (hasSavedReflection) {
     return (
@@ -1052,6 +1365,7 @@ function CloseCardViewWithState({
 // ─────────────────────────────────────────────────────────────────────────────
 export function CardRenderer({
   card,
+  cardIndex,
   programName,
   totalCards,
   onContinue,
@@ -1062,6 +1376,7 @@ export function CardRenderer({
   closeCardState,
 }: {
   card: ContentCard;
+  cardIndex?: number;
   programName?: string;
   totalCards?: number;
   onContinue?: () => void;
@@ -1089,28 +1404,31 @@ export function CardRenderer({
     case 'intro':
       return <IntroCardView card={card} programName={programName} totalCards={totalCards} />;
     case 'lesson':
-      return <LessonCardView card={card} />;
+      return <LessonCardView card={card} cardIndex={cardIndex} />;
     case 'action_step':
-      return <ActionStepCardView card={card} />;
+      return <ActionStepCardView card={card} cardIndex={cardIndex} onContinue={onContinue} />;
     case 'mindfulness_exercise':
     case 'breathing_exercise':
-      return <MindfulExerciseCardView card={card} />;
+      return <MindfulExerciseCardView card={card} cardIndex={cardIndex} onContinue={onContinue} />;
     case 'exercise_routine':
       return (
         <ExerciseRoutineCardView
           card={card}
+          cardIndex={cardIndex}
+          onContinue={onContinue}
           routineStorageKey={routineStorageKey}
           onProgressChange={onRoutineProgressChange}
         />
       );
     case 'audio':
-      return <AudioCardView card={card} />;
+      return <AudioCardView card={card} cardIndex={cardIndex} />;
     case 'calm_trigger':
       return <CalmTriggerCardView card={card} />;
     case 'journal':
       return (
         <JournalCardView
           card={card}
+          cardIndex={cardIndex}
           onContinue={onContinue}
           reflectionStorageKey={reflectionStorageKey}
           programReflectionIdentity={
@@ -1323,147 +1641,185 @@ const styles = StyleSheet.create({
     lineHeight: 28,
   },
 
-  // ─── Intro Card ─────────────────────────────────────────────────────────────
-  // Full-bleed forest green — NOT a floating card, fills the pager page
+  // ─── Intro Card v2 ──────────────────────────────────────────────────────────
+  // White canvas, editorial layout — matches rc_day_view_v2_refined.html
   introCard: {
     flex: 1,
     width: '100%',
-    borderRadius: 28,
-    backgroundColor: '#06290C', // forest
-    paddingHorizontal: 28,
-    paddingBottom: 36,
-    paddingTop: 28,
+    borderRadius: 24,
+    backgroundColor: '#FFFFFF',
     borderCurve: 'continuous',
     overflow: 'hidden',
-    // Shadow same as all cards
+    // Shadow
     shadowColor: '#000',
-    shadowOpacity: 0.18,
-    shadowRadius: 20,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 6,
+    shadowOpacity: 0.22,
+    shadowRadius: 32,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 8,
   },
-  // Absolute botanical watermark
-  introBotanical: {
-    position: 'absolute',
-    right: -10,
-    top: -10,
-    width: 220,
-    height: 220,
-    opacity: 0.06,
-    pointerEvents: 'none',
+  // 4px accent gradient bar at very top of card
+  introAccentBar: {
+    height: 4,
+    width: '100%',
   },
-  introSpacer: {
-    flex: 1,
+  // Top row: phase pill (left) + duration (right)
+  introTopRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    paddingHorizontal: 22,
+    paddingTop: 20,
   },
-  // Bottom-aligned content zone
-  introContent: {
-    gap: 0,
-  },
-  // "Day N" pill badge
-  introDayBadge: {
-    alignSelf: 'flex-start',
-    backgroundColor: 'rgba(227, 243, 229, 0.16)',
-    borderWidth: 1,
-    borderColor: 'rgba(227, 243, 229, 0.24)',
-    borderRadius: 999,
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    marginBottom: 14,
-  },
-  introDayBadgeText: {
-    fontFamily: 'Satoshi-Bold',
-    fontSize: 9,
-    textTransform: 'uppercase',
-    letterSpacing: 1.8,
-    color: 'rgba(227, 243, 229, 0.75)',
-  },
-  // Large serif title — white
-  introTitle: {
-    marginBottom: 14,
-    fontFamily: 'Erode-Medium',
-    fontSize: 34,
-    lineHeight: 38,
-    letterSpacing: -0.5,
-    color: '#FFFFFF',
-  },
-  // Goal text — muted sage
-  introGoal: {
-    marginBottom: 24,
-    fontFamily: 'Satoshi',
-    fontSize: 14,
-    lineHeight: 22,
-    color: 'rgba(227, 243, 229, 0.65)',
-    maxWidth: 300,
-  },
-  // Params row: ~N min · N cards · Program Name
-  introParamsRow: {
+  // Phase pill — sage background, forest text
+  introPhasePill: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    flexWrap: 'wrap',
-  },
-  introParamText: {
-    fontFamily: 'Satoshi-Medium',
-    fontSize: 11,
-    letterSpacing: 0.2,
-    color: 'rgba(227, 243, 229, 0.70)',
-  },
-  introParamDot: {
-    width: 3,
-    height: 3,
+    gap: 5,
+    backgroundColor: '#E3F3E5',
     borderRadius: 999,
-    backgroundColor: 'rgba(227, 243, 229, 0.35)',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  introPhaseDot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#06290C',
+  },
+  introPhasePillText: {
+    fontFamily: 'Satoshi-Bold',
+    fontSize: 8,
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
+    color: '#06290C',
+  },
+  // Duration text — top right
+  introDurationText: {
+    fontFamily: 'Satoshi-Medium',
+    fontSize: 10,
+    letterSpacing: 0.4,
+    color: 'rgba(6, 41, 12, 0.4)',
+  },
+  // Hero section — flexible, fills remaining space
+  introHero: {
+    flex: 1,
+    paddingHorizontal: 22,
+    paddingTop: 20,
+    paddingBottom: 16,
+  },
+  // Ghost day number — huge, nearly invisible
+  introGhostDay: {
+    fontFamily: 'Satoshi',
+    fontWeight: '300',
+    fontSize: 48,
+    lineHeight: 48,
+    letterSpacing: -2,
+    color: 'rgba(6, 41, 12, 0.08)',
+    marginBottom: -8,
+  },
+  // Serif title — large, forest green
+  introTitle: {
+    fontFamily: 'Erode-Medium',
+    fontSize: 30,
+    lineHeight: 33,
+    letterSpacing: -0.7,
+    color: '#06290C',
+  },
+  // Goal text — muted
+  introGoal: {
+    marginTop: 12,
+    fontFamily: 'Satoshi',
+    fontSize: 13,
+    lineHeight: 21,
+    color: 'rgba(6, 41, 12, 0.55)',
+    flex: 1,
+  },
+  // Params row — horizontal flex of param boxes
+  introParamsRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 16,
+  },
+  // Individual param box — sage-soft bg, centered text
+  introParamBox: {
+    flex: 1,
+    backgroundColor: '#EEF6EF',
+    borderRadius: 14,
+    paddingVertical: 10,
+    paddingHorizontal: 8,
+    alignItems: 'center',
+  },
+  // Param value — large serif number
+  introParamValue: {
+    fontFamily: 'Erode-Medium',
+    fontSize: 22,
+    lineHeight: 22,
+    color: '#06290C',
+  },
+  // Param label — tiny uppercase
+  introParamLabel: {
+    fontFamily: 'Satoshi-Bold',
+    fontSize: 8,
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
+    color: 'rgba(6, 41, 12, 0.38)',
+    marginTop: 3,
   },
 
   // Lesson Card
-  lessonContextPill: {
-    marginBottom: 24,
-    alignSelf: 'flex-start',
-    borderRadius: 6,
+  lessonCardShell: {
+    flexShrink: 1,
+    width: '100%',
+    borderRadius: 28,
+    backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: 'rgba(6, 41, 12, 0.1)',
-    paddingHorizontal: 12,
-    paddingVertical: 5,
+    borderColor: 'rgba(6, 41, 12, 0.05)',
+    overflow: 'hidden',
   },
-  lessonContextText: {
+  lessonEye: {
+    paddingTop: 22,
+    paddingHorizontal: 20,
     fontFamily: 'Satoshi-Bold',
-    fontSize: 11,
+    fontSize: 9,
+    letterSpacing: 1.8,
     textTransform: 'uppercase',
-    letterSpacing: 1.5,
-    color: 'rgba(6, 41, 12, 0.5)',
+    color: 'rgba(6, 41, 12, 0.4)',
   },
   lessonTitle: {
-    marginBottom: 32,
-    fontFamily: 'Erode',
+    paddingTop: 6,
+    paddingHorizontal: 20,
+    paddingBottom: 16,
+    fontFamily: 'Erode-Medium',
     fontSize: 28,
-    lineHeight: 34,
+    lineHeight: 31,
     letterSpacing: -0.3,
     color: '#06290C',
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(6, 41, 12, 0.06)',
   },
   lessonBody: {
-    marginBottom: 4,
+    padding: 20,
+    gap: 14,
   },
   lessonParagraph: {
-    marginBottom: 20,
     fontFamily: 'Satoshi',
     fontWeight: '300',
-    fontSize: 16,
-    lineHeight: 30,
-    color: '#4B5563',
+    fontSize: 13,
+    lineHeight: 21,
+    color: 'rgba(6, 41, 12, 0.65)',
   },
-  lessonHighlightContainer: {
-    marginVertical: 32,
+  lessonPullQuoteItem: {
+    marginVertical: 10,
+    paddingLeft: 16,
     borderLeftWidth: 2,
-    borderLeftColor: '#06290C',
-    paddingVertical: 16,
-    paddingLeft: 24,
+    borderLeftColor: 'rgba(6, 41, 12, 0.15)',
   },
-  lessonHighlightText: {
+  lessonPullQuoteText: {
     fontFamily: 'Erode-Italic',
-    fontSize: 24,
-    lineHeight: 34,
+    fontSize: 18,
+    lineHeight: 24,
     letterSpacing: -0.2,
-    color: 'rgba(6, 41, 12, 0.9)',
+    color: '#06290C',
   },
 
   // Action Step
@@ -1911,4 +2267,200 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
+
+  // ── Action Step — Age Reversal additions ───────────────────────────────────
+  actionSubtitle: {
+    fontFamily: 'Satoshi',
+    fontSize: 15,
+    color: 'rgba(6, 41, 12, 0.5)',
+    marginBottom: 16,
+    marginTop: -4,
+    fontStyle: 'italic',
+  },
+  actionPurposeContainer: {
+    marginTop: 20,
+    backgroundColor: '#F0F7F1',
+    borderRadius: 12,
+    padding: 16,
+    borderLeftWidth: 3,
+    borderLeftColor: '#06290C',
+  },
+  actionPurposeLabel: {
+    fontFamily: 'Satoshi-Bold',
+    fontSize: 11,
+    color: 'rgba(6, 41, 12, 0.5)',
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+    marginBottom: 6,
+  },
+  actionPurposeText: {
+    fontFamily: 'Satoshi',
+    fontSize: 14,
+    lineHeight: 22,
+    color: '#374151',
+  },
+
+  // ── Lesson — Pull quote (additional container styles) ─────────────────────
+  lessonPullQuoteContainer: {
+    marginTop: 20,
+    borderLeftWidth: 3,
+    borderLeftColor: '#06290C',
+    paddingLeft: 16,
+    paddingVertical: 4,
+  },
+  lessonPullQuoteDecor: {
+    fontFamily: 'Erode',
+    fontSize: 36,
+    color: 'rgba(6, 41, 12, 0.15)',
+    lineHeight: 36,
+    marginBottom: 4,
+  },
+
+  // ── Mindfulness — Age Reversal additions ───────────────────────────────────
+  mindfulSubtitle: {
+    fontFamily: 'Satoshi',
+    fontSize: 14,
+    color: 'rgba(6, 41, 12, 0.5)',
+    fontStyle: 'italic',
+    marginBottom: 12,
+    marginTop: -4,
+  },
+  mindfulBenefitsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 16,
+  },
+  mindfulBenefitPill: {
+    backgroundColor: 'rgba(6, 41, 12, 0.06)',
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+  },
+  mindfulBenefitText: {
+    fontFamily: 'Satoshi',
+    fontSize: 12,
+    color: 'rgba(6, 41, 12, 0.7)',
+  },
+
+  // ── Exercise — Age Reversal single-exercise layout ─────────────────────────
+  exerciseAgeReversalBody: {
+    marginTop: 8,
+  },
+  exerciseMusclePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: 'rgba(6, 41, 12, 0.04)',
+    alignSelf: 'flex-start',
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 20,
+    marginBottom: 16,
+  },
+  exerciseMusclePillText: {
+    fontFamily: 'Satoshi',
+    fontSize: 12,
+    color: 'rgba(6, 41, 12, 0.6)',
+  },
+  exerciseMetricsRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 20,
+  },
+  exerciseMetricPill: {
+    flex: 1,
+    backgroundColor: '#06290C',
+    borderRadius: 10,
+    paddingVertical: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  exerciseMetricText: {
+    fontFamily: 'Satoshi-Bold',
+    fontSize: 13,
+    color: '#E3F3E5',
+    textAlign: 'center',
+  },
+  exerciseStepsList: {
+    marginBottom: 20,
+  },
+  exerciseStep: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    paddingVertical: 13,
+  },
+  exerciseStepBorder: {
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(6, 41, 12, 0.06)',
+  },
+  exerciseStepNumber: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'rgba(6, 41, 12, 0.07)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+    marginTop: 1,
+    flexShrink: 0,
+  },
+  exerciseStepNumberText: {
+    fontFamily: 'Satoshi-Bold',
+    fontSize: 11,
+    color: '#06290C',
+  },
+  exerciseStepText: {
+    flex: 1,
+    fontFamily: 'Satoshi',
+    fontSize: 15,
+    lineHeight: 24,
+    color: '#374151',
+  },
+  exerciseScienceNote: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+    backgroundColor: '#F0F7F1',
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 20,
+  },
+  exerciseScienceNoteIcon: {
+    fontSize: 16,
+    marginTop: 1,
+    color: '#06290C',
+  },
+  exerciseScienceNoteText: {
+    flex: 1,
+    fontFamily: 'Satoshi',
+    fontSize: 13,
+    lineHeight: 20,
+    color: 'rgba(6, 41, 12, 0.65)',
+    fontStyle: 'italic',
+  },
+  exerciseDoneButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    borderWidth: 1.5,
+    borderColor: 'rgba(6, 41, 12, 0.15)',
+    borderRadius: 14,
+    paddingVertical: 14,
+    backgroundColor: 'rgba(6, 41, 12, 0.02)',
+  },
+  exerciseDoneButtonCompleted: {
+    backgroundColor: '#06290C',
+    borderColor: '#06290C',
+  },
+  exerciseDoneButtonText: {
+    fontFamily: 'Satoshi-Bold',
+    fontSize: 15,
+    color: 'rgba(6, 41, 12, 0.6)',
+  },
+  exerciseDoneButtonTextCompleted: {
+    color: '#E3F3E5',
+  },
 });
+

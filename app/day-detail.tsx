@@ -18,8 +18,9 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { CardRenderer } from '@/components/cards/CardRenderer';
+import { CardRenderer, TransportContext, TransportConfig } from '@/components/cards/CardRenderer';
 import { Button } from '@/components/ui/Button';
+import { TransportBar } from '@/components/ui/TransportBar';
 import { useDay, useProgram } from '@/content';
 import { programDayQueryKey, programQueryKey } from '@/hooks/contentQueryUtils';
 import { formatUnlockLabel, getProgramNextUnlockAt, getProgramScheduledDay } from '@/lib/programs/schedule';
@@ -51,6 +52,50 @@ function getRoutineStorageKey(programSlug: ProgramSlug, dayNumber: number, cardI
 
 function getRoutineItemKey(name: string, index: number) {
   return `${name}-${index}`;
+}
+
+/**
+ * Returns the default center button config for a card based purely on its type.
+ * Cards can override this by calling registerConfig via TransportContext.
+ *
+ * Icon/label semantics:
+ *   intro            → play          "BEGIN"
+ *   lesson           → book          "I'VE READ THIS"
+ *   action_step      → checkmark     "MARK DONE"
+ *   exercise_routine → barbell       "MARK DONE"
+ *   mindfulness /
+ *   breathing        → leaf          "BEGIN"
+ *   audio            → musical-notes "LISTEN"
+ *   calm_trigger     → leaf          "DONE"
+ *   journal          → pencil        "SAVE ENTRY"
+ *   close            → checkmark     "COMPLETE DAY"
+ */
+function getDefaultCenterConfig(cardType: string, isLastCard: boolean): { icon: string; label: string } {
+  switch (cardType) {
+    case 'intro':
+      return { icon: 'play', label: 'BEGIN' };
+    case 'lesson':
+      return { icon: 'book-outline', label: "I'VE READ THIS" };
+    case 'action_step':
+      return { icon: 'checkmark', label: 'MARK DONE' };
+    case 'exercise_routine':
+      return { icon: 'checkmark', label: 'MARK DONE' };
+    case 'mindfulness_exercise':
+    case 'breathing_exercise':
+      return { icon: 'leaf-outline', label: 'BEGIN' };
+    case 'audio':
+      return { icon: 'musical-notes-outline', label: 'LISTEN' };
+    case 'calm_trigger':
+      return { icon: 'leaf-outline', label: 'DONE' };
+    case 'journal':
+      return { icon: 'pencil-outline', label: 'SAVE ENTRY' };
+    case 'close':
+      return { icon: 'checkmark', label: 'COMPLETE DAY' };
+    default:
+      return isLastCard
+        ? { icon: 'checkmark', label: 'FINISH' }
+        : { icon: 'arrow-forward', label: 'CONTINUE' };
+  }
 }
 
 async function getDayRoutineCompletionSummary(day: DayContent) {
@@ -85,7 +130,11 @@ async function getDayRoutineCompletionSummary(day: DayContent) {
       }
     })();
 
-    const requiredItems = card.exercises.map((item, itemIndex) => getRoutineItemKey(item.name, itemIndex));
+    // Age Reversal format uses a single exercise at the card level (card.name)
+    // Legacy format uses card.exercises[] — both need completion tracking
+    const requiredItems = card.name && Array.isArray(card.steps)
+      ? [card.name]  // Single-exercise: item id is the card name
+      : (card.exercises ?? []).map((item, itemIndex) => getRoutineItemKey(item.name, itemIndex));
     return requiredItems.every((itemKey) => completedItems.has(itemKey));
   });
 
@@ -167,6 +216,7 @@ const SwipeDeckCard = memo(function SwipeDeckCard({
   progress: SharedValue<number>;
   programName?: string;
   onContinue?: () => void;
+  onPrevious?: () => void;
   reflectionStorageKey?: string;
   routineStorageKey?: string;
   programReflectionContext?: {
@@ -206,7 +256,7 @@ const SwipeDeckCard = memo(function SwipeDeckCard({
           entering={FadeInDown.springify().damping(18).stiffness(140)}
           style={styles.animatedCardContainer}
         >
-          <Animated.View style={animatedStyle}>
+          <Animated.View style={[styles.animatedCardContainer, animatedStyle]}>
             <CardRenderer
             card={card}
             programName={programName}
@@ -239,10 +289,27 @@ export default function DayDetailScreen() {
   const [isRestored, setIsRestored] = useState(false);
   const [showResumeToast, setShowResumeToast] = useState(false);
   const [isCompletingDay, setIsCompletingDay] = useState(false);
+  const [transportConfigs, setTransportConfigs] = useState<Record<number, TransportConfig>>({});
   const [routineSummary, setRoutineSummary] = useState({
     hasRequiredRoutines: false,
     allRequiredRoutinesComplete: true,
   });
+
+  const registerTransportConfig = useCallback((index: number, config: TransportConfig) => {
+    setTransportConfigs(prev => {
+      // Avoid unnecessary re-renders if the config hasn't changed
+      if (
+        prev[index]?.centerLabel === config.centerLabel &&
+        prev[index]?.onCenterPress === config.onCenterPress &&
+        prev[index]?.centerIcon === config.centerIcon &&
+        prev[index]?.disabled === config.disabled
+      ) {
+        return prev;
+      }
+      return { ...prev, [index]: config };
+    });
+  }, []);
+
   const swipeProgress = useSharedValue(0);
 
   const rawProgramSlug = normalizeRouteParam(params.programSlug);
@@ -584,84 +651,116 @@ export default function DayDetailScreen() {
 
       {showResumeToast ? <ResumeToast /> : null}
 
-      <PagerView
-        ref={pagerRef}
-        style={styles.pager}
-        overdrag
-        offscreenPageLimit={2}
-        initialPage={currentIndex}
-        onPageScroll={(event) => {
-          const { position, offset } = event.nativeEvent;
-          swipeProgress.value = position + offset;
-        }}
-        onPageSelected={(event) => {
-          void handlePageSelected(event.nativeEvent.position);
-        }}
-      >
-        {dayContent.cards.map((card, index) => (
-          <View
-            key={`${dayContent.programSlug}-${dayContent.dayNumber}-${card.type}-${index}`}
-            style={styles.cardWrapper}
-            collapsable={false}
-          >
-            <SwipeDeckCard
-              card={card}
-              index={index}
-              totalCards={dayContent.cards.length}
-              progress={swipeProgress}
-              programName={program.name}
-              onContinue={handleContinueFromCard}
-              reflectionStorageKey={`day-reflection:${dayContent.programSlug}:${dayContent.dayNumber}:${index}`}
-              routineStorageKey={getRoutineStorageKey(dayContent.programSlug, dayContent.dayNumber, index)}
-              onRoutineProgressChange={handleRoutineProgressChange}
-              closeCardState={{
-                isCompleted: isDayCompleted,
-                isPartial: isDayPartial,
-                isFinalProgramDay,
-                completionDescription,
-                isCompleting: isCompletingDay,
-                primaryActionLabel: primaryCompletionLabel,
-                onCompleteDay: () => {
-                  void handlePrimaryDayAction();
-                },
-                onBackToProgram: () => router.navigate('/program' as Href),
-              }}
-              programReflectionContext={{
-                userId: user?.id,
-                programSlug: dayContent.programSlug,
-                dayNumber: dayContent.dayNumber,
-                cardIndex: index,
-              }}
-            />
-          </View>
-        ))}
-      </PagerView>
+      <TransportContext.Provider value={{ registerConfig: registerTransportConfig }}>
+        <PagerView
+          ref={pagerRef}
+          style={styles.pager}
+          overdrag
+          offscreenPageLimit={2}
+          initialPage={currentIndex}
+          onPageScroll={(event) => {
+            const { position, offset } = event.nativeEvent;
+            swipeProgress.value = position + offset;
+          }}
+          onPageSelected={(event) => {
+            void handlePageSelected(event.nativeEvent.position);
+          }}
+        >
+          {dayContent.cards.map((card, index) => (
+            <View
+              key={`${dayContent.programSlug}-${dayContent.dayNumber}-${card.type}-${index}`}
+              style={styles.cardWrapper}
+              collapsable={false}
+            >
+              <SwipeDeckCard
+                card={card}
+                index={index}
+                totalCards={dayContent.cards.length}
+                progress={swipeProgress}
+                programName={program.name}
+                onContinue={handleContinueFromCard}
+                onPrevious={() => {
+                  if (index > 0) {
+                    pagerRef.current?.setPage(index - 1);
+                  }
+                }}
+                reflectionStorageKey={`day-reflection:${dayContent.programSlug}:${dayContent.dayNumber}:${index}`}
+                routineStorageKey={getRoutineStorageKey(dayContent.programSlug, dayContent.dayNumber, index)}
+                onRoutineProgressChange={handleRoutineProgressChange}
+                closeCardState={{
+                  isCompleted: isDayCompleted,
+                  isPartial: isDayPartial,
+                  isFinalProgramDay,
+                  completionDescription,
+                  isCompleting: isCompletingDay,
+                  primaryActionLabel: primaryCompletionLabel,
+                  onCompleteDay: () => {
+                    void handlePrimaryDayAction();
+                  },
+                  onBackToProgram: () => router.navigate('/program' as Href),
+                }}
+                programReflectionContext={{
+                  userId: user?.id,
+                  programSlug: dayContent.programSlug,
+                  dayNumber: dayContent.dayNumber,
+                  cardIndex: index,
+                }}
+              />
+            </View>
+          ))}
+        </PagerView>
+      </TransportContext.Provider>
 
-      {shouldShowCompletionBar ? (
-        <View style={styles.completionBar}>
-          <View style={styles.completionCopy}>
-            <Text style={styles.completionEyebrow}>
-              {isDayCompleted ? 'Review mode' : 'Day closing'}
-            </Text>
-            <Text style={styles.completionTitle}>{completionTitle}</Text>
-            <Text style={styles.completionDescription}>{completionDescription}</Text>
-          </View>
-
-          {isDayCompleted ? (
-            <Button
-              label="Back to Program"
-              variant="secondary"
-              onPress={() => router.navigate('/program' as Href)}
+      <TransportBar
+        onPrev={() => {
+          if (currentIndex > 0) pagerRef.current?.setPage(currentIndex - 1);
+        }}
+        onNext={() => {
+          if (currentIndex < dayContent.cards.length - 1) {
+            pagerRef.current?.setPage(currentIndex + 1);
+          } else {
+            void handlePrimaryDayAction();
+          }
+        }}
+        hasPrev={currentIndex > 0}
+        hasNext={currentIndex < dayContent.cards.length}
+        centerLabel={(() => {
+          if (transportConfigs[currentIndex]?.centerLabel) {
+            return transportConfigs[currentIndex]!.centerLabel;
+          }
+          const currentCard = dayContent.cards[currentIndex];
+          const isLastCard = currentIndex === dayContent.cards.length - 1;
+          return getDefaultCenterConfig(currentCard?.type ?? '', isLastCard).label;
+        })()}
+        centerIcon={(() => {
+          if (transportConfigs[currentIndex]?.centerIcon !== undefined) {
+            return transportConfigs[currentIndex]!.centerIcon;
+          }
+          const currentCard = dayContent.cards[currentIndex];
+          const isLastCard = currentIndex === dayContent.cards.length - 1;
+          const { icon } = getDefaultCenterConfig(currentCard?.type ?? '', isLastCard);
+          return (
+            <Ionicons
+              name={icon as React.ComponentProps<typeof Ionicons>['name']}
+              size={28}
+              color="#06290C"
             />
-          ) : (
-            <Button
-              label={primaryCompletionLabel}
-              onPress={handlePrimaryDayAction}
-              loading={isCompletingDay}
-            />
-          )}
-        </View>
-      ) : null}
+          );
+        })()}
+        onCenterPress={() => {
+          const customAction = transportConfigs[currentIndex]?.onCenterPress;
+          if (customAction) {
+            customAction();
+          } else {
+            if (currentIndex < dayContent.cards.length - 1) {
+              pagerRef.current?.setPage(currentIndex + 1);
+            } else {
+              void handlePrimaryDayAction();
+            }
+          }
+        }}
+        disabled={transportConfigs[currentIndex]?.disabled}
+      />
     </SafeAreaView>
   );
 }
@@ -753,7 +852,7 @@ const styles = StyleSheet.create({
   safeAreaCard: {
     flex: 1,
     paddingHorizontal: 24,
-    paddingBottom: 24,
+    paddingBottom: 110, // clear the TransportBar (absolute, ~94px tall)
   },
   cardInner: {
     flex: 1,
