@@ -31,6 +31,23 @@ export interface IntroCard {
   dayTitle: string;
   goal: string;
   estimatedMinutes?: number;
+  /** Optional phase label shown in the top pill, e.g. "Phase 1 · Foundation" */
+  phase?: string;
+  /** Phase number for Age Reversal program */
+  phaseNumber?: number;
+  /** Optional structured params for the bottom metric boxes (legacy) */
+  params?: { value: string; label: string }[];
+  /**
+   * Age Reversal format: structured parameters object.
+   * Renderer converts this to { value, label } pairs automatically.
+   */
+  parameters?: {
+    sets?: number;
+    reps?: number;
+    holdSeconds?: number;
+    durationMinutes?: number;
+    [key: string]: number | string | undefined;
+  };
 }
 
 export interface LessonCard {
@@ -38,16 +55,24 @@ export interface LessonCard {
   title?: string;
   paragraphs: string[];
   highlight?: string;
+  /** Optional pull quote displayed as an editorial callout */
+  pullQuote?: string | null;
 }
 
 export interface ActionStepCard {
   type: 'action_step';
-  stepNumber: number;
+  stepNumber?: number;
+  /** Age Reversal format: e.g. "Step 1 · Body Circulation" */
+  stepLabel?: string;
   title: string;
+  /** Age Reversal format: short subtitle below the title */
+  subtitle?: string;
   duration?: string;
   instructions: string[];
   whyThisWorks?: string;
   proTip?: string;
+  /** Age Reversal format: why this step matters, shown as a callout */
+  purpose?: string;
 }
 
 export interface BreathingExerciseCard {
@@ -66,22 +91,47 @@ export interface MindfulnessExerciseCard {
   type: 'mindfulness_exercise';
   title: string;
   duration?: string;
+  /** Age Reversal format: short descriptor below title */
+  subtitle?: string;
   steps: string[];
-  timerSeconds?: number;
+  timerSeconds?: number | null;
   completionMessage?: string;
+  /** Age Reversal format: list of benefits shown as a pill-row */
+  benefits?: string[];
 }
 
+/**
+ * Supports both formats:
+ *
+ * Legacy (array-of-exercises): uses `exercises[]`
+ * Age Reversal (single-exercise): uses top-level `name`, `steps`, `sets`, etc.
+ */
 export interface ExerciseRoutineCard {
   type: 'exercise_routine';
-  title: string;
+  // ── Legacy format ──
+  title?: string;
   totalDuration?: string;
-  exercises: {
+  exercises?: {
     name: string;
     instructions: string[];
     reps?: string;
     duration?: string;
     rest?: string;
   }[];
+  // ── Age Reversal single-exercise format ──
+  /** Exercise category label, e.g. "Isometric Hold" */
+  category?: string;
+  /** Exercise name, e.g. "Cheek Lift Hold" */
+  name?: string;
+  /** Muscle group targeted */
+  targetMuscle?: string;
+  /** Step-by-step instructions as an array */
+  steps?: string[];
+  sets?: number;
+  reps?: number;
+  holdSeconds?: number;
+  /** Science / physiology note shown at the bottom */
+  scienceNote?: string;
 }
 
 export interface AudioCard {

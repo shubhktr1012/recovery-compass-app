@@ -40,11 +40,11 @@ export const PROGRAM_METADATA: Record<ProgramSlug, ProgramCatalogEntry> = {
   age_reversal: {
     slug: 'age_reversal',
     name: '90-Day Biohacking Reset',
-    description: 'A longevity-focused program with daily guidance and shared CALM support.',
+    description: 'A longevity-focused program with daily facial exercises, circulation walks, and calm recovery.',
     totalDays: 90,
     category: 'aging',
     hasAudio: false,
-    contentStatus: 'placeholder',
+    contentStatus: 'ready',
   },
   male_sexual_health: {
     slug: 'male_sexual_health',

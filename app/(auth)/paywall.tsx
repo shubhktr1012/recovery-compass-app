@@ -10,7 +10,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -61,6 +61,20 @@ function getRecommendedPrograms(programSlug: ProgramSlug | null | undefined): Pr
   return [programSlug];
 }
 
+function getProgramSlugFromRouteParam(value: string | string[] | undefined): ProgramSlug | null {
+  if (!value) {
+    return null;
+  }
+
+  const candidate = Array.isArray(value) ? value[0] : value;
+
+  if (!candidate) {
+    return null;
+  }
+
+  return candidate in PROGRAM_METADATA ? (candidate as ProgramSlug) : null;
+}
+
 function getPreferredOffering(
   offerings: Awaited<ReturnType<typeof Purchases.getOfferings>>
 ) {
@@ -100,6 +114,7 @@ function RadioIndicator({ isSelected }: { isSelected: boolean }) {
 }
 
 export default function Paywall() {
+  const params = useLocalSearchParams<{ program?: string | string[] }>();
   const router = useRouter();
   const navigation = useNavigation<any>();
   const insets = useSafeAreaInsets();
@@ -109,6 +124,11 @@ export default function Paywall() {
   const [packages, setPackages] = useState<PurchasesPackage[]>([]);
   const [fetchingOfferings, setFetchingOfferings] = useState(true);
   const [selectedPackageId, setSelectedPackageId] = useState<string | null>(null);
+  const targetedProgram = getProgramSlugFromRouteParam(params.program);
+  const launchPurchaseLocked =
+    Boolean(access.ownedProgram) &&
+    Boolean(targetedProgram) &&
+    access.ownedProgram !== targetedProgram;
 
   const confirmUnlockedProgram = async (expectedProgram: ProgramSlug | null) => {
     for (let attempt = 0; attempt < ACCESS_CONFIRMATION_RETRY_COUNT; attempt += 1) {
@@ -189,14 +209,23 @@ export default function Paywall() {
   });
 
   useEffect(() => {
-    if (!access.ownedProgram) {
+    if (!access.ownedProgram || targetedProgram) {
       return;
     }
 
     router.replace(needsOnboardingRealignment ? REALIGNMENT_ROUTE : PROGRAM_TAB_ROUTE);
-  }, [access.ownedProgram, needsOnboardingRealignment, router]);
+  }, [access.ownedProgram, needsOnboardingRealignment, router, targetedProgram]);
 
   const handleBack = () => {
+    if (targetedProgram) {
+      if (navigation.canGoBack?.()) {
+        router.back();
+      } else {
+        router.replace('/' as const);
+      }
+      return;
+    }
+
     if (access.ownedProgram) {
       router.replace(needsOnboardingRealignment ? REALIGNMENT_ROUTE : PROGRAM_TAB_ROUTE);
       return;
@@ -206,11 +235,19 @@ export default function Paywall() {
   };
 
   const visibleProgramSlugs = useMemo(() => {
+    if (launchPurchaseLocked) {
+      return [] as ProgramSlug[];
+    }
+
+    if (targetedProgram) {
+      return [targetedProgram] as ProgramSlug[];
+    }
+
     if (access.ownedProgram) {
       return [] as ProgramSlug[];
     }
     return getRecommendedPrograms(recommendedProgram);
-  }, [access.ownedProgram, recommendedProgram]);
+  }, [access.ownedProgram, launchPurchaseLocked, recommendedProgram, targetedProgram]);
 
   const eligiblePackages = useMemo(() => {
     const matchingPackages = packages
@@ -243,13 +280,19 @@ export default function Paywall() {
     }
   }, [eligiblePackages, selectedPackageId]);
 
-  const headerTitle = access.ownedProgram
+  const headerTitle = targetedProgram
+    ? getDisplayNameForProgram(targetedProgram)
+    : access.ownedProgram
     ? 'Program Already Unlocked'
     : recommendedProgram
       ? `${getDisplayNameForProgram(recommendedProgram)}`
       : 'Your Recovery Path';
 
-  const headerBody = access.ownedProgram
+  const headerBody = targetedProgram
+    ? launchPurchaseLocked
+      ? 'Recovery Compass is launching with one unlocked program per account while we finish a smoother multi-program experience.'
+      : 'This program is ready to unlock whenever you are. Your current journey stays intact until you choose a new one.'
+    : access.ownedProgram
     ? 'Recovery Compass currently supports one active program at a time. Head to the Program tab to continue your journey.'
     : recommendedProgram
       ? 'This program matches your assessment and is ready to begin.'
@@ -258,6 +301,14 @@ export default function Paywall() {
   const activePackage = eligiblePackages.find(p => p.identifier === selectedPackageId);
 
   const handlePurchase = async () => {
+    if (launchPurchaseLocked) {
+      Alert.alert(
+        'One Program At Launch',
+        'This account already has an unlocked program. We are limiting launch access to one program per account for now.'
+      );
+      return;
+    }
+
     if (!activePackage) return;
 
     setLoading(true);
@@ -432,20 +483,36 @@ export default function Paywall() {
         ) : eligiblePackages.length === 0 ? (
           <View className="items-center py-12 px-6 rounded-3xl bg-forest/5 border border-forest/10">
             <Text className="font-satoshi text-center text-[15px] text-forest/70 leading-[24px]">
-              {access.ownedProgram
-                ? 'Your account has full access to Recovery Compass. Head to the Program tab to continue your journey.'
+              {launchPurchaseLocked
+                ? `You already have ${getDisplayNameForProgram(access.ownedProgram as ProgramSlug)} unlocked. Additional program purchases will open once multi-program support is ready.`
+                : access.ownedProgram
+                ? targetedProgram
+                  ? `Purchase options for ${getDisplayNameForProgram(targetedProgram)} are not available right now.`
+                  : 'Your account has full access to Recovery Compass. Head to the Program tab to continue your journey.'
                 : 'No eligible setups are available right now. This usually means your account is already fully unlocked.'}
             </Text>
-            <Pressable
-              onPress={handleRestore}
-              disabled={loading}
-              hitSlop={20}
-              className="mt-8 rounded-full border border-forest/10 px-8 py-3.5 bg-white"
-            >
-              <Text className="font-satoshi-bold text-[14px] text-forest">
-                {loading ? 'Restoring...' : 'Restore Purchases'}
-              </Text>
-            </Pressable>
+            {launchPurchaseLocked ? (
+              <Pressable
+                onPress={() => router.replace(PROGRAM_TAB_ROUTE)}
+                hitSlop={20}
+                className="mt-8 rounded-full border border-forest/10 px-8 py-3.5 bg-white"
+              >
+                <Text className="font-satoshi-bold text-[14px] text-forest">
+                  Return to my program
+                </Text>
+              </Pressable>
+            ) : (
+              <Pressable
+                onPress={handleRestore}
+                disabled={loading}
+                hitSlop={20}
+                className="mt-8 rounded-full border border-forest/10 px-8 py-3.5 bg-white"
+              >
+                <Text className="font-satoshi-bold text-[14px] text-forest">
+                  {loading ? 'Restoring...' : 'Restore Purchases'}
+                </Text>
+              </Pressable>
+            )}
           </View>
         ) : (
           <View>

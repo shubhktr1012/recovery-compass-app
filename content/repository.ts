@@ -1,3 +1,4 @@
+import { AGE_REVERSAL_PROGRAM } from '@/content/programs/age-reversal';
 import { PROGRAM_METADATA } from '@/content/programs/metadata';
 import { NINETY_DAY_TRANSFORM_PROGRAM } from '@/content/programs/ninety-day-transform';
 import { SIX_DAY_RESET_PROGRAM } from '@/content/programs/six-day-reset';
@@ -14,10 +15,7 @@ const PROGRAMS: Record<ProgramSlug, ProgramContent> = {
     ...PROGRAM_METADATA.energy_vitality,
     days: [],
   },
-  age_reversal: {
-    ...PROGRAM_METADATA.age_reversal,
-    days: [],
-  },
+  age_reversal: AGE_REVERSAL_PROGRAM,
   male_sexual_health: {
     ...PROGRAM_METADATA.male_sexual_health,
     days: [],

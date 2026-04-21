@@ -15,6 +15,8 @@ import {
 
 const ACCESS_STORAGE_KEY = 'program-access-snapshot';
 const PROGRESS_STORAGE_KEY = 'program-progress-record';
+const REFRESH_IN_FLIGHT = new Map<string, Promise<ProgramAccessSnapshot>>();
+const SYNC_FROM_REVENUECAT_IN_FLIGHT = new Map<string, Promise<ProgramAccessSnapshot>>();
 
 const DEFAULT_ACCESS_SNAPSHOT: ProgramAccessSnapshot = {
   ownerUserId: null,
@@ -166,13 +168,36 @@ function selectPreferredProgramSlug(
   candidates: ProgramSlug[],
   preferences: (ProgramSlug | null | undefined)[]
 ): ProgramSlug | null {
+  const uniqueCandidates = Array.from(new Set(candidates)).sort((left, right) =>
+    left.localeCompare(right)
+  );
+
   for (const preference of preferences) {
-    if (preference && candidates.includes(preference)) {
+    if (preference && uniqueCandidates.includes(preference)) {
       return preference;
     }
   }
 
-  return candidates[0] ?? null;
+  return uniqueCandidates[0] ?? null;
+}
+
+async function getProfileRecommendedProgram(userId: string) {
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('recommended_program')
+      .eq('id', userId)
+      .maybeSingle();
+
+    if (error) {
+      throw error;
+    }
+
+    return normalizeProgramSlug(data?.recommended_program ?? null);
+  } catch (error) {
+    console.warn('Failed to fetch recommended program for access resolution', error);
+    return null;
+  }
 }
 
 function selectPreferredAccessRow(
@@ -445,104 +470,132 @@ export class AccessService {
   }
 
   static async syncFromRevenueCat(customerInfo: CustomerInfo, userId: string) {
-    const [cachedSnapshot, cachedProgress] = await Promise.all([this.getAccessSnapshot(), this.getProgressRecord()]);
-    const existingProgress = isProgressOwnedByUser(cachedProgress, userId) ? cachedProgress : null;
-    const localSnapshot = isSnapshotOwnedByUser(cachedSnapshot, userId)
-      ? cachedSnapshot
-      : createDefaultSnapshot('local', userId);
-    const ownedPrograms = getOwnedProgramsFromCustomerInfo(customerInfo);
-
-    console.log('[AccessService] syncFromRevenueCat:start', {
-      userId,
-      revenueCatAppUserId: customerInfo.originalAppUserId,
-      ownedPrograms,
-      cachedSnapshotOwnerUserId: cachedSnapshot?.ownerUserId ?? null,
-      cachedSnapshotOwnedProgram: cachedSnapshot?.ownedProgram ?? null,
-      cachedProgressUserId: cachedProgress?.userId ?? null,
-      cachedProgressProgramSlug: cachedProgress?.programSlug ?? null,
-      safeLocalOwnedProgram: localSnapshot.ownedProgram,
-      safeExistingProgressProgramSlug: existingProgress?.programSlug ?? null,
-    });
-
-    let ownedProgram = selectPreferredProgramSlug(ownedPrograms, [
-      localSnapshot.ownedProgram,
-      existingProgress?.programSlug,
-    ]);
-    const serverSnapshot = await this.getServerAccessSnapshot(userId, ownedProgram);
-
-    const candidateOwnedPrograms = Array.from(
-      new Set<ProgramSlug>([
-        ...ownedPrograms,
-        ...(serverSnapshot?.ownedProgram ? [serverSnapshot.ownedProgram] : []),
-      ])
-    );
-
-    ownedProgram = selectPreferredProgramSlug(candidateOwnedPrograms, [
-      localSnapshot.ownedProgram,
-      existingProgress?.programSlug,
-      serverSnapshot?.ownedProgram,
-    ]);
-    const serverProgress =
-      ownedProgram
-        ? await this.getServerProgressRecord(
-            userId,
-            ownedProgram,
-            serverSnapshot?.ownedProgram === ownedProgram ? serverSnapshot : null
-          )
-        : null;
-    const nextProgress =
-      ownedProgram && serverProgress
-        ? serverProgress
-        : ownedProgram && existingProgress?.programSlug === ownedProgram
-          ? existingProgress
-          : ownedProgram
-            ? this.buildProgressRecord(userId, ownedProgram)
-            : null;
-
-    if (nextProgress) {
-      await this.saveProgressRecord(nextProgress);
-    } else {
-      await AsyncStorage.removeItem(PROGRESS_STORAGE_KEY);
+    const existingSync = SYNC_FROM_REVENUECAT_IN_FLIGHT.get(userId);
+    if (existingSync) {
+      return existingSync;
     }
 
-    const snapshot: ProgramAccessSnapshot = {
-      ...createDefaultSnapshot('revenuecat', userId),
-      ownedProgram,
-      startedAt: ownedProgram
-        ? serverSnapshot?.startedAt ?? localSnapshot.startedAt ?? new Date().toISOString()
-        : null,
-      ...getStateForProgress(
+    const syncPromise = (async () => {
+      const [cachedSnapshot, cachedProgress, profileRecommendedProgram] = await Promise.all([
+        this.getAccessSnapshot(),
+        this.getProgressRecord(),
+        getProfileRecommendedProgram(userId),
+      ]);
+      const existingProgress = isProgressOwnedByUser(cachedProgress, userId) ? cachedProgress : null;
+      const localSnapshot = isSnapshotOwnedByUser(cachedSnapshot, userId)
+        ? cachedSnapshot
+        : createDefaultSnapshot('local', userId);
+      const ownedPrograms = getOwnedProgramsFromCustomerInfo(customerInfo);
+
+      console.log('[AccessService] syncFromRevenueCat:start', {
+        userId,
+        revenueCatAppUserId: customerInfo.originalAppUserId,
+        ownedPrograms,
+        cachedSnapshotOwnerUserId: cachedSnapshot?.ownerUserId ?? null,
+        cachedSnapshotOwnedProgram: cachedSnapshot?.ownedProgram ?? null,
+        cachedProgressUserId: cachedProgress?.userId ?? null,
+        cachedProgressProgramSlug: cachedProgress?.programSlug ?? null,
+        safeLocalOwnedProgram: localSnapshot.ownedProgram,
+        safeExistingProgressProgramSlug: existingProgress?.programSlug ?? null,
+        profileRecommendedProgram,
+      });
+
+      let ownedProgram = selectPreferredProgramSlug(ownedPrograms, [
+        existingProgress?.programSlug,
+        localSnapshot.ownedProgram,
+        profileRecommendedProgram,
+      ]);
+      const serverSnapshot = await this.getServerAccessSnapshot(
+        userId,
+        ownedProgram ?? profileRecommendedProgram ?? null
+      );
+
+      const candidateOwnedPrograms = Array.from(
+        new Set<ProgramSlug>([
+          ...ownedPrograms,
+          ...(serverSnapshot?.ownedProgram ? [serverSnapshot.ownedProgram] : []),
+        ])
+      );
+
+      ownedProgram = selectPreferredProgramSlug(candidateOwnedPrograms, [
+        serverSnapshot?.ownedProgram,
+        existingProgress?.programSlug,
+        localSnapshot.ownedProgram,
+        profileRecommendedProgram,
+      ]);
+      const serverProgress =
+        ownedProgram
+          ? await this.getServerProgressRecord(
+              userId,
+              ownedProgram,
+              serverSnapshot?.ownedProgram === ownedProgram ? serverSnapshot : null
+            )
+          : null;
+      const nextProgress =
+        ownedProgram && serverProgress
+          ? serverProgress
+          : ownedProgram && existingProgress?.programSlug === ownedProgram
+            ? existingProgress
+            : ownedProgram
+              ? this.buildProgressRecord(userId, ownedProgram)
+              : null;
+
+      if (nextProgress) {
+        await this.saveProgressRecord(nextProgress);
+      } else {
+        await AsyncStorage.removeItem(PROGRESS_STORAGE_KEY);
+      }
+
+      const snapshot: ProgramAccessSnapshot = {
+        ...createDefaultSnapshot('revenuecat', userId),
         ownedProgram,
-        nextProgress,
-        ownedProgram ? serverSnapshot?.startedAt ?? localSnapshot.startedAt ?? new Date().toISOString() : null
-      ),
-    };
+        startedAt: ownedProgram
+          ? serverSnapshot?.startedAt ?? localSnapshot.startedAt ?? new Date().toISOString()
+          : null,
+        ...getStateForProgress(
+          ownedProgram,
+          nextProgress,
+          ownedProgram ? serverSnapshot?.startedAt ?? localSnapshot.startedAt ?? new Date().toISOString() : null
+        ),
+      };
 
-    if (nextProgress && snapshot.currentDay) {
-      nextProgress.currentDay = snapshot.currentDay;
+      if (nextProgress && snapshot.currentDay) {
+        nextProgress.currentDay = snapshot.currentDay;
+      }
+
+      snapshot.eligibleProducts = deriveEligibleProducts(snapshot);
+      await this.saveAccessSnapshot(snapshot);
+
+      console.log('[AccessService] syncFromRevenueCat:resolved', {
+        userId,
+        ownedPrograms,
+        resolvedOwnedProgram: ownedProgram,
+        serverSnapshotOwnedProgram: serverSnapshot?.ownedProgram ?? null,
+        serverSnapshotPurchaseState: serverSnapshot?.purchaseState ?? null,
+        serverProgressProgramSlug: serverProgress?.programSlug ?? null,
+        nextProgressProgramSlug: nextProgress?.programSlug ?? null,
+        savedSnapshotOwnedProgram: snapshot.ownedProgram,
+        savedSnapshotSource: snapshot.source,
+        savedSnapshotOwnerUserId: snapshot.ownerUserId ?? null,
+        profileRecommendedProgram,
+      });
+
+      if (ownedProgram) {
+        await this.syncStateToSupabase(nextProgress);
+      }
+
+      return snapshot;
+    })();
+
+    SYNC_FROM_REVENUECAT_IN_FLIGHT.set(userId, syncPromise);
+
+    try {
+      return await syncPromise;
+    } finally {
+      if (SYNC_FROM_REVENUECAT_IN_FLIGHT.get(userId) === syncPromise) {
+        SYNC_FROM_REVENUECAT_IN_FLIGHT.delete(userId);
+      }
     }
-
-    snapshot.eligibleProducts = deriveEligibleProducts(snapshot);
-    await this.saveAccessSnapshot(snapshot);
-
-    console.log('[AccessService] syncFromRevenueCat:resolved', {
-      userId,
-      ownedPrograms,
-      resolvedOwnedProgram: ownedProgram,
-      serverSnapshotOwnedProgram: serverSnapshot?.ownedProgram ?? null,
-      serverSnapshotPurchaseState: serverSnapshot?.purchaseState ?? null,
-      serverProgressProgramSlug: serverProgress?.programSlug ?? null,
-      nextProgressProgramSlug: nextProgress?.programSlug ?? null,
-      savedSnapshotOwnedProgram: snapshot.ownedProgram,
-      savedSnapshotSource: snapshot.source,
-      savedSnapshotOwnerUserId: snapshot.ownerUserId ?? null,
-    });
-
-    if (ownedProgram) {
-      await this.syncStateToSupabase(nextProgress);
-    }
-
-    return snapshot;
   }
 
   static async updateProgress(
@@ -588,42 +641,59 @@ export class AccessService {
   }
 
   static async refreshFromDeviceStore(userId: string) {
-    try {
-      const isRevenueCatReady = await this.isRevenueCatReadyForUser(userId);
+    const existingRefresh = REFRESH_IN_FLIGHT.get(userId);
+    if (existingRefresh) {
+      return existingRefresh;
+    }
 
-      console.log('[AccessService] refreshFromDeviceStore', {
-        userId,
-        isRevenueCatReady,
-      });
+    const refreshPromise = (async () => {
+      try {
+        const isRevenueCatReady = await this.isRevenueCatReadyForUser(userId);
 
-      if (!isRevenueCatReady) {
+        console.log('[AccessService] refreshFromDeviceStore', {
+          userId,
+          isRevenueCatReady,
+        });
+
+        if (!isRevenueCatReady) {
+          const serverState = await this.hydrateFromSupabase(userId);
+          return serverState.snapshot;
+        }
+
+        const customerInfo = await Purchases.getCustomerInfo();
+        return await this.syncFromRevenueCat(customerInfo, userId);
+      } catch (error) {
+        console.error('Failed to refresh access from RevenueCat', error);
         const serverState = await this.hydrateFromSupabase(userId);
-        return serverState.snapshot;
+        if (serverState.snapshot.ownedProgram) {
+          return serverState.snapshot;
+        }
+
+        const [localSnapshot, localProgress] = await Promise.all([
+          this.getAccessSnapshot(),
+          this.getProgressRecord(),
+        ]);
+
+        if (!localProgress || localProgress.userId !== userId) {
+          await this.clear();
+          return createDefaultSnapshot('local', userId);
+        }
+
+        return isSnapshotOwnedByUser(localSnapshot, userId) &&
+          localSnapshot.ownedProgram === localProgress.programSlug
+          ? localSnapshot
+          : createDefaultSnapshot('local', userId);
       }
+    })();
 
-      const customerInfo = await Purchases.getCustomerInfo();
-      return await this.syncFromRevenueCat(customerInfo, userId);
-    } catch (error) {
-      console.error('Failed to refresh access from RevenueCat', error);
-      const serverState = await this.hydrateFromSupabase(userId);
-      if (serverState.snapshot.ownedProgram) {
-        return serverState.snapshot;
+    REFRESH_IN_FLIGHT.set(userId, refreshPromise);
+
+    try {
+      return await refreshPromise;
+    } finally {
+      if (REFRESH_IN_FLIGHT.get(userId) === refreshPromise) {
+        REFRESH_IN_FLIGHT.delete(userId);
       }
-
-      const [localSnapshot, localProgress] = await Promise.all([
-        this.getAccessSnapshot(),
-        this.getProgressRecord(),
-      ]);
-
-      if (!localProgress || localProgress.userId !== userId) {
-        await this.clear();
-        return createDefaultSnapshot('local', userId);
-      }
-
-      return isSnapshotOwnedByUser(localSnapshot, userId) &&
-        localSnapshot.ownedProgram === localProgress.programSlug
-        ? localSnapshot
-        : createDefaultSnapshot('local', userId);
     }
   }
 }
