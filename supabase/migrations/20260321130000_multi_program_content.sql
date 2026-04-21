@@ -69,7 +69,7 @@ VALUES
   ('sleep_disorder_reset', '21-Day Sleep Reset', 'Reset your body clock and nervous system for deep, restorative sleep.', 21, 21, 'sleep', true, true, 3),
   ('male_sexual_health', '45-Day Vitality', 'Strengthen control, restore confidence, and rebuild your natural vitality.', 45, 45, 'sexual_health', false, false, 4),
   ('energy_vitality', '42-Day Energy Reset', 'Restore your body''s natural energy production through the right daily rhythm.', 42, 42, 'energy', false, false, 5),
-  ('age_reversal', '90-Day Reversal', 'Activate your body''s natural rejuvenation. Ancient protocols backed by modern science.', 90, 90, 'aging', false, false, 6)
+  ('age_reversal', '90-Day Biohacking Reset', 'Activate your body''s natural rejuvenation. Ancient protocols backed by modern science.', 90, 90, 'aging', false, false, 6)
 ON CONFLICT (slug) DO UPDATE SET
   title = EXCLUDED.title,
   description = EXCLUDED.description,
