@@ -85,21 +85,21 @@ function NavigationGate({
                     if (!inAuthGroup) {
                         target = '/welcome' as Href;
                     }
-        } else if (needsOnboardingRealignment) {
-          if (!inPersonalization) {
-            target = '/personalization?mode=realign' as Href;
-          }
-        } else if (!profile || !profile.onboarding_complete) {
-          if ((segments[1] as string) !== 'personalization') {
-            target = '/personalization' as Href;
-          }
-        } else if (!isSubscribed) {
-          if (!inPaywall) {
-            target = '/paywall' as Href;
-          }
-        } else if (!inTabsGroup && !inDayDetail && !inAccountStack) {
-          target = '/' as Href;
-        }
+                } else if (isSubscribed) {
+                    if (needsOnboardingRealignment) {
+                        if (!inPersonalization) {
+                            target = '/personalization?mode=realign' as Href;
+                        }
+                    } else if (!inTabsGroup && !inDayDetail && !inAccountStack) {
+                        target = '/' as Href;
+                    }
+                } else if (!profile || !profile.onboarding_complete) {
+                    if ((segments[1] as string) !== 'personalization') {
+                        target = '/personalization' as Href;
+                    }
+                } else if (!inPaywall) {
+                    target = '/paywall' as Href;
+                }
 
         if (!target) {
           pendingRedirectRef.current = null;

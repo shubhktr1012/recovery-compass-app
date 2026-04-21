@@ -8,6 +8,7 @@ export default function AccountLayout() {
         headerShown: false,
       }}
     >
+      <Stack.Screen name="programs" />
       <Stack.Screen name="settings" />
       <Stack.Screen name="statistics" />
     </Stack>
