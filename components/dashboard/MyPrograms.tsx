@@ -1,61 +1,43 @@
-import React from 'react';
 import { View, Text, Pressable } from 'react-native';
-import { Href, useRouter } from 'expo-router';
-import { PROGRAM_METADATA } from '@/content/programs/metadata';
-import { useProfile } from '@/providers/profile';
-import type { ProgramSlug } from '@/types/content';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { AppColors } from '@/constants/theme';
+import { useRouter } from 'expo-router';
 
-const CATEGORY_LABELS: Record<string, string> = {
-    smoking: 'Smoking',
-    sleep: 'Sleep',
-    energy: 'Energy',
-    aging: 'Longevity',
-    sexual_health: 'Vitality',
-};
+interface MyProgramsProps {
+  programName: string;
+  programDescription: string;
+  currentDayNumber: number;
+  totalDays: number;
+  percentageComplete: number;
+}
 
-export function MyPrograms() {
-    const { access } = useProfile();
-    const router = useRouter();
+export function MyPrograms({
+  programName,
+  programDescription,
+  currentDayNumber,
+  totalDays,
+  percentageComplete,
+}: MyProgramsProps) {
+  const router = useRouter();
 
-    // For now, we show the single owned program
-    // When multi-program support is wired through the access snapshot, 
-    // this will iterate over access.ownedPrograms
-    const ownedSlug = access.ownedProgram as ProgramSlug | null;
-    if (!ownedSlug) return null;
-
-    const program = PROGRAM_METADATA[ownedSlug];
-    if (!program) return null;
-
-    return (
-        <View className="mb-6">
-            <Text className="font-erode-semibold text-[22px] text-forest mb-3">
-                My Programs
-            </Text>
-
-            <Pressable
-                onPress={() => router.push('/program' as Href)}
-            >
-                <View className="rounded-2xl border border-forest/8 bg-white px-5 py-4 flex-row items-center justify-between">
-                    <View className="flex-1 mr-4">
-                        <View className="flex-row items-center gap-2 mb-1">
-                            <Text className="font-satoshi-bold text-[16px] text-forest">
-                                {program.name}
-                            </Text>
-                            <View className="bg-sage px-2 py-0.5 rounded-md">
-                                <Text className="font-satoshi-bold text-[9px] uppercase tracking-[1.5px] text-success">
-                                    Active
-                                </Text>
-                            </View>
-                        </View>
-                        <Text className="font-satoshi text-[13px] text-forest/40">
-                            {program.totalDays} days · {CATEGORY_LABELS[program.category] ?? program.category}
-                        </Text>
-                    </View>
-                    <IconSymbol name="chevron.right" size={16} color={AppColors.forest} style={{ opacity: 0.3 }} />
-                </View>
-            </Pressable>
+  return (
+    <View className="mt-1">
+      <View className="flex-row justify-between items-baseline px-0.5 mb-3">
+        <Text className="font-erode-medium text-[20px] text-forest tracking-[-0.01em]">My Programs</Text>
+        <Pressable onPress={() => router.push('/(tabs)/program')}>
+          <Text className="font-satoshi-medium text-[11px] text-forest/45 tracking-[0.04em]">View all</Text>
+        </Pressable>
+      </View>
+      <Pressable onPress={() => router.push('/(tabs)/program')} className="bg-forest rounded-[20px] p-[18px]">
+        <Text className="font-satoshi-bold uppercase text-[9px] tracking-[0.18em] text-sage/50">Active · {programName}</Text>
+        <Text className="font-erode-medium text-[18px] text-white leading-snug mt-[5px]">{programName}</Text>
+        <Text className="font-satoshi text-[11px] text-white/50 mt-[3px] leading-relaxed">{programDescription}</Text>
+        <View className="h-[2px] bg-sage/20 rounded-full mt-3.5 overflow-hidden">
+          <View className="h-[2px] bg-sage rounded-full" style={{ width: `${percentageComplete}%` }} />
         </View>
-    );
+        <View className="flex-row justify-between mt-[5px]">
+          <Text className="font-satoshi text-[10px] text-sage/50">Day {currentDayNumber} of {totalDays}</Text>
+          <Text className="font-satoshi text-[10px] text-sage/50">{percentageComplete}%</Text>
+        </View>
+      </Pressable>
+    </View>
+  );
 }

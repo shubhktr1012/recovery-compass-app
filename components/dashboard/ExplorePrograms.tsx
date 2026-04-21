@@ -1,69 +1,47 @@
-import React from 'react';
-import { View, Text, Pressable } from 'react-native';
-import { Href, useRouter } from 'expo-router';
-import { PROGRAM_METADATA } from '@/content/programs/metadata';
-import { useProfile } from '@/providers/profile';
-import type { ProgramSlug } from '@/types/content';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { AppColors } from '@/constants/theme';
-
-const CATEGORY_LABELS: Record<string, string> = {
-    smoking: 'Smoking',
-    sleep: 'Sleep',
-    energy: 'Energy',
-    aging: 'Longevity',
-    sexual_health: 'Vitality',
-};
+import { View, Text } from 'react-native';
+import { Svg, Path } from 'react-native-svg';
 
 export function ExplorePrograms() {
-    const { access } = useProfile();
-    const router = useRouter();
+  return (
+    <View className="mt-2">
+      <View className="flex-row justify-between items-baseline px-0.5 mb-3">
+        <Text className="font-erode-medium text-[20px] text-forest tracking-[-0.01em]">Explore</Text>
+        <Text className="font-satoshi-medium text-[11px] text-forest/45 tracking-[0.04em]">Browse all</Text>
+      </View>
 
-    const ownedSlug = access.ownedProgram as ProgramSlug | null;
-
-    if (ownedSlug) {
-        return null;
-    }
-
-    // Filter to non-owned programs
-    const allSlugs = Object.keys(PROGRAM_METADATA) as ProgramSlug[];
-    const exploreSlugs = allSlugs.filter((slug) => slug !== ownedSlug);
-
-    if (exploreSlugs.length === 0) return null;
-
-    return (
-        <View className="mb-6">
-            <Text className="font-erode-semibold text-[22px] text-forest mb-1">
-                Explore Programs
-            </Text>
-            <Text className="font-satoshi text-[13px] text-forest/35 mb-4">
-                Unlock a new path for your journey
-            </Text>
-
-            <View className="gap-3">
-                {exploreSlugs.map((slug) => {
-                    const program = PROGRAM_METADATA[slug];
-
-                    return (
-                        <Pressable
-                            key={slug}
-                            onPress={() => router.push(`/paywall?program=${slug}` as Href)}
-                        >
-                            <View className="rounded-2xl border border-forest/6 bg-white/60 px-5 py-4 flex-row items-center justify-between opacity-70">
-                                <View className="flex-1 mr-4">
-                                    <Text className="font-satoshi-bold text-[15px] text-forest mb-0.5">
-                                        {program.name}
-                                    </Text>
-                                    <Text className="font-satoshi text-[12px] text-forest/35" numberOfLines={1}>
-                                        {program.totalDays} days · {CATEGORY_LABELS[program.category] ?? program.category}
-                                    </Text>
-                                </View>
-                                <IconSymbol name="lock.fill" size={14} color={AppColors.forest} style={{ opacity: 0.25 }} />
-                            </View>
-                        </Pressable>
-                    );
-                })}
-            </View>
+      <View className="bg-white rounded-[20px] p-4 shadow-sm shadow-forest/5 flex-row gap-3.5 mb-2.5 items-start">
+        <View className="w-[44px] h-[44px] rounded-2xl bg-[#EEF6EF] items-center justify-center shrink-0">
+          <Svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#06290C" strokeWidth="1.6" strokeLinecap="round">
+            <Path d="M12 3C8 8 6 11 6 15a6 6 0 0012 0c0-4-2-7-6-12z"/>
+          </Svg>
         </View>
-    );
+        <View className="flex-1">
+          <Text className="font-erode-medium text-[16px] text-forest leading-snug">90-Day Quit Smoking</Text>
+          <Text className="font-satoshi text-[11px] text-forest/50 mt-1 leading-relaxed">Lasting change through awareness, resilience, and consistency.</Text>
+          <Text className="font-satoshi-bold text-xs text-forest mt-2">
+            ₹6,549 <Text className="font-satoshi text-[11px] font-normal text-forest/40 line-through ml-1">₹15,000</Text>
+          </Text>
+        </View>
+      </View>
+
+      <View className="bg-white rounded-[20px] p-4 shadow-sm shadow-forest/5 flex-row gap-3.5 items-start">
+        <View className="w-[44px] h-[44px] rounded-2xl bg-[#EEF6EF] items-center justify-center shrink-0">
+          <Svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#06290C" strokeWidth="1.6" strokeLinecap="round">
+            <Path d="M20 14A8 8 0 1110 4a7 7 0 0010 10z"/>
+          </Svg>
+        </View>
+        <View className="flex-1">
+          <Text className="font-erode-medium text-[16px] text-forest leading-snug">21-Day Sleep Reset</Text>
+          <Text className="font-satoshi text-[11px] text-forest/50 mt-1 leading-relaxed">Restore your natural sleep rhythm through targeted protocols.</Text>
+          <View className="flex-row items-center mt-2">
+            <Text className="font-satoshi-bold text-xs text-forest">₹4,999</Text>
+            <Text className="font-satoshi text-[11px] font-normal text-forest/40 line-through ml-1.5 mr-2">₹12,000</Text>
+            <View className="bg-[#EEF6EF] px-2 py-0.5 rounded-full">
+              <Text className="font-satoshi-bold uppercase text-[8px] tracking-[0.08em] text-forest">Coming soon</Text>
+            </View>
+          </View>
+        </View>
+      </View>
+    </View>
+  );
 }

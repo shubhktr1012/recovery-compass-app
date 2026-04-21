@@ -397,29 +397,30 @@ function ActionStepCardView({ card }: { card: ActionStepCard; }) {
         {card.whyThisWorks ? (
           <Animated.View
             layout={LinearTransition.springify().damping(18).stiffness(130)}
-            style={styles.whyWorksContainer}
           >
-            <Pressable
-              style={styles.whyWorksHeader}
-              onPress={() => setIsExpanded((value) => !value)}
-            >
-              <Text style={styles.whyWorksHeaderText}>Why this works</Text>
-              <Ionicons
-                name={isExpanded ? 'chevron-up' : 'chevron-down'}
-                size={14}
-                color="rgba(5, 41, 12, 0.5)"
-              />
-            </Pressable>
-
-            {isExpanded ? (
-              <Animated.View
-                entering={FadeInDown.springify().damping(18).stiffness(130)}
-                exiting={FadeOut.duration(140)}
-                style={styles.whyWorksBody}
+            <View style={styles.whyWorksContainer}>
+              <Pressable
+                style={styles.whyWorksHeader}
+                onPress={() => setIsExpanded((value) => !value)}
               >
-                <Text style={styles.whyWorksText}>{card.whyThisWorks}</Text>
-              </Animated.View>
-            ) : null}
+                <Text style={styles.whyWorksHeaderText}>Why this works</Text>
+                <Ionicons
+                  name={isExpanded ? 'chevron-up' : 'chevron-down'}
+                  size={14}
+                  color="rgba(5, 41, 12, 0.5)"
+                />
+              </Pressable>
+
+              {isExpanded ? (
+                <Animated.View
+                  entering={FadeInDown.springify().damping(18).stiffness(130)}
+                  exiting={FadeOut.duration(140)}
+                  style={styles.whyWorksBody}
+                >
+                  <Text style={styles.whyWorksText}>{card.whyThisWorks}</Text>
+                </Animated.View>
+              ) : null}
+            </View>
           </Animated.View>
         ) : null}
 

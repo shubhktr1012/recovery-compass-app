@@ -8,6 +8,11 @@ import { Platform } from 'react-native';
 export const AppColors = {
   forest: '#06290C',
   sage: '#E3F3E5',
+  sageSoft: '#EEF6EF',
+  canvas: '#FFFFFF',
+  mutedInk: 'rgba(6,41,12,0.62)',
+  subtleInk: 'rgba(6,41,12,0.45)',
+  hairline: 'rgba(6,41,12,0.06)',
   surface: '#F5F5F7',
   success: '#056936',
   danger: '#EF4444',

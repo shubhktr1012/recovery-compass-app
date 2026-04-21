@@ -1,7 +1,6 @@
-import { Tabs } from 'expo-router';
+import { Tabs, usePathname } from 'expo-router';
 import React from 'react';
-import { Platform, Pressable, StyleSheet, View } from 'react-native';
-import { BlurView } from 'expo-blur';
+import { Pressable, StyleSheet, View } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { BottomTabBarButtonProps } from '@react-navigation/bottom-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -32,9 +31,10 @@ function TabIcon({
 }
 
 export default function TabLayout() {
+  const pathname = usePathname();
   const insets = useSafeAreaInsets();
   const bottomPadding = Math.max(insets.bottom, 12);
-  const TAB_BAR_HEIGHT = 60 + bottomPadding;
+  const isDashboardRoute = pathname === '/';
 
   const renderTabButton = (props: BottomTabBarButtonProps) => (
     <Pressable
@@ -62,32 +62,10 @@ export default function TabLayout() {
         tabBarShowLabel: false,
         tabBarHideOnKeyboard: true,
         tabBarStyle: {
-          position: 'absolute',
-          left: 0,
-          right: 0,
-          bottom: 0,
-          height: TAB_BAR_HEIGHT,
+          display: isDashboardRoute ? 'none' : 'flex',
+          height: 60 + bottomPadding,
           paddingBottom: bottomPadding,
-          borderTopWidth: 1,
-          borderColor: 'rgba(255, 255, 255, 0.1)',
-          backgroundColor: 'transparent',
-          elevation: 0, // Removes Android default shadow to rely on our own flat or subtle shadow
         },
-        tabBarBackground: () => (
-          <BlurView
-            intensity={Platform.OS === 'ios' ? 85 : 100}
-            tint="dark"
-            style={[
-              StyleSheet.absoluteFill,
-              {
-                backgroundColor:
-                  Platform.OS === 'android'
-                    ? AppColors.forest // Opaque forest for Android to prevent artifacting
-                    : 'rgba(6, 41, 12, 0.95)', // Deep translucent forest for iOS
-              },
-            ]}
-          />
-        ),
         tabBarButton: renderTabButton,
         tabBarItemStyle: {
           paddingVertical: 0,
