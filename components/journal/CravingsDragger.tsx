@@ -17,16 +17,10 @@ interface CravingsDraggerProps {
 const LEVELS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const;
 
 /**
- * Impeccable Cravings Level selector.
+ * Cravings Level selector — rectangular numbered segments.
  *
- * Instead of a continuous slider (which fights ScrollView and feels
- * like a dashboard widget), this uses a row of tappable discrete
- * segments — each one a calm, printed-artifact-style label.
- *
- * Per .impeccable.md:
- * - "cards should feel like premium printed artifacts or quiet gallery labels"
- * - "favor fewer, better-composed elements over dense utility packing"
- * - "surfaces that feel like printed cards, not generic software panels"
+ * Matches spec: flex-distributed row of tappable segments,
+ * each showing its number. Selected segment fills forest green.
  */
 export function CravingsDragger({ value, onChange }: CravingsDraggerProps) {
     const selectedVal = value ?? null;
@@ -37,21 +31,23 @@ export function CravingsDragger({ value, onChange }: CravingsDraggerProps) {
     };
 
     return (
-        <View className="mb-2">
-            {/* Label row */}
-            <View className="flex-row justify-between items-end mb-4">
-                <Text className="text-forest font-satoshi-medium text-sm ml-1">
-                    Cravings Level
-                </Text>
-                {selectedVal !== null && (
-                    <Text className="font-erode-semibold text-[22px] text-forest mr-1">
-                        {selectedVal}
-                    </Text>
-                )}
-            </View>
+        <View>
+            {/* Label */}
+            <Text
+                style={{
+                    fontFamily: 'Satoshi-SemiBold',
+                    fontSize: 10,
+                    letterSpacing: 1.2,
+                    textTransform: 'uppercase',
+                    color: 'rgba(6,41,12,0.45)',
+                    marginBottom: 8,
+                }}
+            >
+                Cravings
+            </Text>
 
-            {/* Discrete segment row */}
-            <View className="flex-row items-center justify-between">
+            {/* Segment row */}
+            <View style={{ flexDirection: 'row', gap: 3, alignItems: 'center' }}>
                 {LEVELS.map((level) => {
                     const isSelected = selectedVal === level;
                     return (
@@ -65,12 +61,28 @@ export function CravingsDragger({ value, onChange }: CravingsDraggerProps) {
                 })}
             </View>
 
-            {/* Scale context */}
-            <View className="flex-row justify-between px-0.5 mt-3">
-                <Text className="font-satoshi text-[10px] uppercase tracking-[1.5px] text-forest/20">
+            {/* Scale labels */}
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 5 }}>
+                <Text
+                    style={{
+                        fontFamily: 'Satoshi-SemiBold',
+                        fontSize: 8,
+                        letterSpacing: 1.5,
+                        textTransform: 'uppercase',
+                        color: 'rgba(6,41,12,0.28)',
+                    }}
+                >
                     Calm
                 </Text>
-                <Text className="font-satoshi text-[10px] uppercase tracking-[1.5px] text-forest/20">
+                <Text
+                    style={{
+                        fontFamily: 'Satoshi-SemiBold',
+                        fontSize: 8,
+                        letterSpacing: 1.5,
+                        textTransform: 'uppercase',
+                        color: 'rgba(6,41,12,0.28)',
+                    }}
+                >
                     Intense
                 </Text>
             </View>
@@ -94,7 +106,7 @@ function CravingsSegment({
     }));
 
     const handlePressIn = () => {
-        scale.value = withTiming(0.85, { duration: 100, easing: Easing.out(Easing.cubic) });
+        scale.value = withTiming(0.9, { duration: 100, easing: Easing.out(Easing.cubic) });
     };
     const handlePressOut = () => {
         scale.value = withTiming(1, { duration: 180, easing: Easing.out(Easing.cubic) });
@@ -106,27 +118,27 @@ function CravingsSegment({
             onPressOut={handlePressOut}
             onPress={() => onSelect(level)}
             hitSlop={4}
+            style={{ flex: 1 }}
         >
             <Animated.View
                 style={[
                     animStyle,
                     {
-                        width: 30,
-                        height: 40,
-                        borderRadius: 12,
+                        height: 30,
+                        borderRadius: 8,
                         alignItems: 'center',
                         justifyContent: 'center',
-                        backgroundColor: isSelected ? AppColors.forest : 'transparent',
-                        borderWidth: isSelected ? 0 : 1,
-                        borderColor: isSelected ? 'transparent' : 'rgba(6, 41, 12, 0.06)',
+                        backgroundColor: isSelected ? AppColors.forest : AppColors.surface,
+                        borderWidth: 1,
+                        borderColor: isSelected ? AppColors.forest : AppColors.hairline,
                     },
                 ]}
             >
                 <Text
                     style={{
-                        fontFamily: isSelected ? 'Satoshi-Bold' : 'Satoshi-Medium',
-                        fontSize: 14,
-                        color: isSelected ? '#FFFFFF' : 'rgba(6, 41, 12, 0.35)',
+                        fontFamily: 'Satoshi-Medium',
+                        fontSize: 10,
+                        color: isSelected ? '#FFFFFF' : 'rgba(6,41,12,0.28)',
                     }}
                 >
                     {level}
