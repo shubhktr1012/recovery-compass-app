@@ -24,6 +24,7 @@ import { formatInr, getOnboardingProjection } from '@/lib/onboarding-metrics';
 import { useProfile } from '@/providers/profile';
 import { supabase } from '@/lib/supabase';
 import { EditProfileSheet } from '@/components/account/EditProfileSheet';
+import { AccountWatermark } from '@/components/ui/TabWatermarks';
 import type { ProgramSlug } from '@/types/content';
 import { AppColors } from '@/constants/theme';
 
@@ -80,18 +81,6 @@ function getPhaseLabel(dayNumber: number, totalDays: number) {
   if (ratio <= 0.5) return 'Phase 2 · Regulation';
   if (ratio <= 0.75) return 'Phase 3 · Momentum';
   return 'Phase 4 · Integration';
-}
-
-function BotanicalWatermark({ opacity = 0.07, light = false }: { opacity?: number; light?: boolean }) {
-  const fill = light ? '#E3F3E5' : '#06290C';
-
-  return (
-    <Svg width={180} height={180} viewBox="0 0 200 200" fill="none">
-      <Path d="M100 10C100 10 165 55 165 105C165 148 135 182 100 192C65 182 35 148 35 105C35 55 100 10 100 10Z" fill={fill} opacity={opacity} />
-      <Path d="M100 98L100 192" stroke={fill} strokeWidth="1.5" opacity={opacity} />
-      <Path d="M100 120C80 110 65 125 60 140" stroke={fill} strokeWidth="1" opacity={opacity} />
-    </Svg>
-  );
 }
 
 function getDaysInMotion(startedAt: string | null | undefined) {
@@ -270,9 +259,12 @@ export default function AccountScreen() {
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <SafeAreaView edges={['top']} style={styles.headerSafeArea}>
           <View style={styles.headerContainer}>
-            <View style={styles.headerWatermark}>
-              <BotanicalWatermark light opacity={0.07} />
-            </View>
+            <AccountWatermark 
+              width={280} 
+              height={170} 
+              opacity={0.06} 
+              style={{ position: 'absolute', right: -20, top: -10 }} 
+            />
 
             <View style={styles.headerTopRow}>
               <Text style={styles.headerEyebrow}>Your account</Text>
@@ -475,7 +467,6 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    paddingBottom: 110,
   },
 
   // ─── Header ───
@@ -488,11 +479,6 @@ const styles = StyleSheet.create({
     paddingBottom: 68,
     position: 'relative',
     overflow: 'hidden',
-  },
-  headerWatermark: {
-    position: 'absolute',
-    right: -14,
-    top: -10,
   },
   headerTopRow: {
     flexDirection: 'row',
@@ -526,7 +512,7 @@ const styles = StyleSheet.create({
     marginTop: -28,
     paddingHorizontal: 20,
     paddingTop: 0,
-    paddingBottom: 36,
+    paddingBottom: 146,
   },
 
   // ─── Identity ───

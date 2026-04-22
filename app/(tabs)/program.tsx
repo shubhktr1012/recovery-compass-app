@@ -15,6 +15,7 @@ import { formatUnlockLabel, getProgramNextUnlockAt, getProgramScheduledDay } fro
 import { TimelineItem } from '@/components/program/TimelineItem';
 import { ProgramCard } from '@/components/program/ProgramCard';
 import { PaperGrain } from '@/components/ui/PaperGrain';
+import { ProgramWatermark } from '@/components/ui/TabWatermarks';
 import { DayContent, ProgramSlug } from '@/types/content';
 import { programQueryKey } from '@/hooks/contentQueryUtils';
 
@@ -162,22 +163,19 @@ function ProgramScreenContent({ activeProgram }: { activeProgram: ProgramSlug })
     <View className="flex-1 bg-forest">
       <StatusBar style="light" />
       <ScrollView 
-        contentContainerClassName="flex-grow pb-[110px]"
+        contentContainerClassName="flex-grow"
         onScroll={handleScroll}
         scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
       >
         {/* HEADER AREA */}
         <View className="bg-forest px-6 pt-16 pb-[52px] overflow-hidden relative">
-          <Svg 
-            style={{ position: 'absolute', right: -10, top: -10, opacity: 0.07, pointerEvents: 'none' }} 
-            width={190} height={190} viewBox="0 0 200 200" fill="none"
-          >
-            <Path d="M100 10 C100 10 165 55 165 105 C165 148 135 182 100 192 C65 182 35 148 35 105 C35 55 100 10 100 10Z" fill="#E3F3E5"/>
-            <Path d="M100 48 C100 48 145 78 145 108 C145 133 125 155 100 162 C75 155 55 133 55 108 C55 78 100 48 100 48Z" fill="#E3F3E5"/>
-            <Path d="M100 98 L100 192" stroke="#E3F3E5" strokeWidth="1.5"/>
-            <Path d="M75 132 Q100 122 125 132" stroke="#E3F3E5" strokeWidth="1.2" fill="none"/>
-          </Svg>
+          <ProgramWatermark
+            width={280}
+            height={170}
+            opacity={0.06}
+            style={{ position: 'absolute', right: -20, top: 50 }}
+          />
 
           <View className="flex-row justify-between items-center mb-[18px] relative z-10 mt-8">
             <Text className="font-satoshi-medium text-[11px] uppercase tracking-[2.4px] text-sage/55">

@@ -13,6 +13,7 @@ import { PaperGrain } from '@/components/ui/PaperGrain';
 import { listProgramReflections } from '@/lib/api/program-reflections';
 import { AppColors } from '@/constants/theme';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing } from 'react-native-reanimated';
+import { JournalWatermark } from '@/components/ui/TabWatermarks';
 
 interface JournalEntry {
   id: string;
@@ -274,11 +275,12 @@ export default function JournalScreen() {
           {/* ─── Forest Header ─── */}
           <SafeAreaView edges={['top']} className="bg-forest">
             <View className="bg-forest px-6 pt-3 pb-[56px] overflow-hidden relative">
-              <Svg style={{ position: 'absolute', right: -10, top: -10, opacity: 0.07 }} width={190} height={190} viewBox="0 0 200 200" fill="none">
-                <Path d="M100 10C100 10 165 55 165 105C165 148 135 182 100 192C65 182 35 148 35 105C35 55 100 10 100 10Z" fill="#E3F3E5"/>
-                <Path d="M100 48C100 48 145 78 145 108C145 133 125 155 100 162C75 155 55 133 55 108C55 78 100 48 100 48Z" fill="#E3F3E5"/>
-                <Path d="M100 98L100 192" stroke="#E3F3E5" strokeWidth="1.5"/>
-              </Svg>
+              <JournalWatermark
+                width={280}
+                height={170}
+                opacity={0.06}
+                style={{ position: 'absolute', right: -20, top: 10}}
+              />
 
               <Text className="font-satoshi-medium text-[11px] uppercase tracking-[2.4px] text-sage/55 relative z-10 mt-8">
                 Your reflections
@@ -534,4 +536,3 @@ export default function JournalScreen() {
     </View>
   );
 }
-
