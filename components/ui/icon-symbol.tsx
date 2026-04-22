@@ -19,16 +19,23 @@ const MAPPING = {
   'chevron.left.forwardslash.chevron.right': 'code',
   'chevron.right': 'chevron-right',
   'chevron.left': 'chevron-left',
+  'arrow.left': 'arrow-back',
   'list.bullet.rectangle.portrait.fill': 'view-agenda', // Program
   'book.fill': 'book', // Journal
   'person.fill': 'person', // Profile
   'exclamationmark.triangle.fill': 'warning', // SOS
+  'exclamationmark.triangle': 'warning',
   'play.circle.fill': 'play-circle', // Action Card
   'checkmark.circle.fill': 'check-circle',
   'lock.fill': 'lock',
   'leaf.fill': 'eco',
   'arrow.clockwise': 'refresh',
   'arrow.right.to.line': 'logout',
+  'bell': 'notifications-none',
+  'questionmark.circle': 'help-outline',
+  'doc.text': 'description',
+  'trash': 'delete-outline',
+  'creditcard': 'credit-card',
 } as IconMapping;
 
 /**

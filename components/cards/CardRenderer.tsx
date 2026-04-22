@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useContext, useEffect, useState } from 'react';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Pressable, ScrollView, Text, TextInput, View, StyleSheet } from 'react-native';
+import { Modal, Pressable, ScrollView, Text, TextInput, View, StyleSheet, Platform } from 'react-native';
 import Animated, {
   Easing,
   FadeInDown,
@@ -49,6 +49,55 @@ import type {
   MindfulnessExerciseCard,
   BreathingExerciseCard,
 } from '@/types/content';
+
+function SafetySheet({
+  visible,
+  title,
+  points,
+  onClose,
+}: {
+  visible: boolean;
+  title: string;
+  points: string[];
+  onClose: () => void;
+}) {
+  return (
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+      <View style={styles.safetySheetOverlay}>
+        <Pressable style={styles.safetySheetBackdrop} onPress={onClose} />
+        <View style={styles.safetySheetCard}>
+          <View style={styles.safetySheetHandle} />
+          
+          <View style={styles.safetySheetIconWrap}>
+            <Ionicons name="warning" size={24} color="#B93A2B" />
+          </View>
+          
+          <Text style={styles.safetySheetTitle}>{title}</Text>
+          
+          <Text style={styles.safetySheetSubtitle}>
+            Please read the following guidelines to ensure a safe and effective session.
+          </Text>
+
+          <View style={styles.safetySheetBody}>
+            {points.map((point, index) => (
+              <View
+                key={`${point}-${index}`}
+                style={styles.safetySheetItem}
+              >
+                <View style={styles.safetySheetDot} />
+                <Text style={styles.safetySheetText}>{point}</Text>
+              </View>
+            ))}
+          </View>
+
+          <Pressable onPress={onClose} style={styles.safetySheetButton}>
+            <Text style={styles.safetySheetButtonText}>I understand</Text>
+          </Pressable>
+        </View>
+      </View>
+    </Modal>
+  );
+}
 
 function FadingScrollView({ children, contentContainerStyle }: { children: React.ReactNode; contentContainerStyle?: any }) {
   const [scrollViewHeight, setScrollViewHeight] = useState(0);
@@ -726,6 +775,7 @@ function ExerciseRoutineCardView({
 }) {
   const [completedItems, setCompletedItems] = useState<Set<string>>(new Set());
   const [hasRestored, setHasRestored] = useState(false);
+  const [showSafetySheet, setShowSafetySheet] = useState(false);
   const { registerConfig } = useContext(TransportContext);
 
   // ── Detect format ──────────────────────────────────────────────────────────
@@ -866,6 +916,27 @@ function ExerciseRoutineCardView({
         scrollable
       >
         <View style={styles.exerciseAgeReversalBody}>
+          <SafetySheet
+            visible={showSafetySheet}
+            title="Before you begin"
+            points={[
+              'Stop immediately if you feel jaw clicking, headaches, skin irritation, dizziness, or any discomfort.',
+              "Do not continue if you have had recent facial surgery, botox or fillers, Bell's palsy, TMJ disorder, or active skin conditions.",
+            ]}
+            onClose={() => setShowSafetySheet(false)}
+          />
+
+          <Pressable
+            onPress={() => setShowSafetySheet(true)}
+            style={({ pressed }) => [
+              styles.safetyTriggerPill,
+              pressed && styles.safetyTriggerPillPressed,
+            ]}
+          >
+            <Ionicons name="warning-outline" size={12} color="rgba(6, 41, 12, 0.5)" />
+            <Text style={styles.safetyTriggerText}>Safety guidance</Text>
+          </Pressable>
+
           {/* Target muscle chip */}
           {card.targetMuscle ? (
             <View style={styles.exerciseMusclePill}>
@@ -2346,6 +2417,112 @@ const styles = StyleSheet.create({
   // ── Exercise — Age Reversal single-exercise layout ─────────────────────────
   exerciseAgeReversalBody: {
     marginTop: 8,
+    gap: 16,
+  },
+  safetyTriggerPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    gap: 6,
+    backgroundColor: 'rgba(6, 41, 12, 0.03)',
+    borderRadius: 20,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },
+  safetyTriggerPillPressed: {
+    opacity: 0.7,
+  },
+  safetyTriggerText: {
+    fontSize: 11,
+    color: 'rgba(6, 41, 12, 0.55)',
+    fontFamily: 'Satoshi-Medium',
+  },
+  safetySheetOverlay: {
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
+  safetySheetBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(6, 41, 12, 0.6)',
+  },
+  safetySheetCard: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
+    paddingHorizontal: 24,
+    paddingTop: 12,
+    paddingBottom: Platform.OS === 'ios' ? 44 : 24,
+  },
+  safetySheetHandle: {
+    width: 36,
+    height: 5,
+    borderRadius: 2.5,
+    backgroundColor: 'rgba(6, 41, 12, 0.08)',
+    alignSelf: 'center',
+    marginBottom: 32,
+  },
+  safetySheetIconWrap: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: 'rgba(185, 58, 43, 0.06)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'center',
+    marginBottom: 16,
+  },
+  safetySheetTitle: {
+    fontFamily: 'Erode-Bold',
+    fontSize: 22,
+    color: '#06290C',
+    textAlign: 'center',
+    marginBottom: 12,
+  },
+  safetySheetSubtitle: {
+    fontFamily: 'Satoshi-Regular',
+    fontSize: 14,
+    color: 'rgba(6, 41, 12, 0.5)',
+    textAlign: 'center',
+    lineHeight: 20,
+    marginBottom: 24,
+    paddingHorizontal: 10,
+  },
+  safetySheetBody: {
+    marginBottom: 32,
+    paddingHorizontal: 4,
+  },
+  safetySheetItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 12,
+  },
+  safetySheetDot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#B93A2B',
+    marginTop: 8,
+    marginRight: 10,
+  },
+  safetySheetText: {
+    flex: 1,
+    fontSize: 14,
+    lineHeight: 20,
+    color: '#06290C',
+    fontFamily: 'Satoshi-Medium',
+  },
+  safetySheetButton: {
+    height: 54,
+    borderRadius: 16,
+    backgroundColor: '#06290C',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+  },
+  safetySheetButtonText: {
+    fontSize: 15,
+    color: '#FFFFFF',
+    fontFamily: 'Satoshi-Bold',
   },
   exerciseMusclePill: {
     flexDirection: 'row',
@@ -2463,4 +2640,3 @@ const styles = StyleSheet.create({
     color: '#E3F3E5',
   },
 });
-
