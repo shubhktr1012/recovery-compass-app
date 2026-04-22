@@ -487,7 +487,7 @@ export class AccessService {
         : createDefaultSnapshot('local', userId);
       const ownedPrograms = getOwnedProgramsFromCustomerInfo(customerInfo);
 
-      console.log('[AccessService] syncFromRevenueCat:start', {
+      if (__DEV__) console.log('[AccessService] syncFromRevenueCat:start', {
         userId,
         revenueCatAppUserId: customerInfo.originalAppUserId,
         ownedPrograms,
@@ -566,7 +566,7 @@ export class AccessService {
       snapshot.eligibleProducts = deriveEligibleProducts(snapshot);
       await this.saveAccessSnapshot(snapshot);
 
-      console.log('[AccessService] syncFromRevenueCat:resolved', {
+      if (__DEV__) console.log('[AccessService] syncFromRevenueCat:resolved', {
         userId,
         ownedPrograms,
         resolvedOwnedProgram: ownedProgram,
@@ -650,7 +650,7 @@ export class AccessService {
       try {
         const isRevenueCatReady = await this.isRevenueCatReadyForUser(userId);
 
-        console.log('[AccessService] refreshFromDeviceStore', {
+        if (__DEV__) console.log('[AccessService] refreshFromDeviceStore', {
           userId,
           isRevenueCatReady,
         });

@@ -133,7 +133,7 @@ export default function Paywall() {
   const confirmUnlockedProgram = async (expectedProgram: ProgramSlug | null) => {
     for (let attempt = 0; attempt < ACCESS_CONFIRMATION_RETRY_COUNT; attempt += 1) {
       const snapshot = await refreshAccess();
-      console.log('[Paywall] confirmUnlockedProgram:attempt', {
+      if (__DEV__) console.log('[Paywall] confirmUnlockedProgram:attempt', {
         attempt: attempt + 1,
         expectedProgram,
         snapshotOwnedProgram: snapshot.ownedProgram,
@@ -159,7 +159,7 @@ export default function Paywall() {
 
   const restoreOwnedPurchase = async (expectedProgram: ProgramSlug | null) => {
     try {
-      console.log('[Paywall] restoreOwnedPurchase:start', { expectedProgram });
+      if (__DEV__) console.log('[Paywall] restoreOwnedPurchase:start', { expectedProgram });
       await Purchases.restorePurchases();
     } catch (error) {
       console.warn('Restore attempt after purchase issue failed', error);
@@ -175,7 +175,7 @@ export default function Paywall() {
         const offerings = await Purchases.getOfferings();
         const currentOffering = getPreferredOffering(offerings);
 
-        console.log('[Paywall] getOfferings:resolved', {
+        if (__DEV__) console.log('[Paywall] getOfferings:resolved', {
           platform: Platform.OS,
           currentOfferingIdentifier: offerings.current?.identifier ?? null,
           selectedOfferingIdentifier: currentOffering?.identifier ?? null,
@@ -317,7 +317,7 @@ export default function Paywall() {
     try {
       const result = await Purchases.purchasePackage(pack);
       const ownedPrograms = getOwnedProgramsFromCustomerInfo(result.customerInfo);
-      console.log('[Paywall] purchasePackage:result', {
+      if (__DEV__) console.log('[Paywall] purchasePackage:result', {
         selectedProgram: programSlug,
         ownedPrograms,
         revenueCatAppUserId: result.customerInfo.originalAppUserId,
@@ -355,7 +355,7 @@ export default function Paywall() {
         combinedErrorMessage.includes('invalid credentials');
 
       if (isAlreadyOwnedError) {
-        console.log('[Paywall] purchasePackage:alreadyOwned', {
+        if (__DEV__) console.log('[Paywall] purchasePackage:alreadyOwned', {
           selectedProgram: programSlug,
           errorMessage: combinedErrorMessage,
         });
@@ -414,13 +414,13 @@ export default function Paywall() {
   const handleRestore = async () => {
     setLoading(true);
     try {
-      console.log('[Paywall] handleRestore:start', {
+      if (__DEV__) console.log('[Paywall] handleRestore:start', {
         recommendedProgram,
         accessOwnedProgram: access.ownedProgram,
       });
       await Purchases.restorePurchases();
       const snapshot = await refreshAccess();
-      console.log('[Paywall] handleRestore:resolved', {
+      if (__DEV__) console.log('[Paywall] handleRestore:resolved', {
         recommendedProgram,
         snapshotOwnedProgram: snapshot?.ownedProgram ?? null,
         snapshotPurchaseState: snapshot?.purchaseState ?? null,

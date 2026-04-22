@@ -40,7 +40,7 @@ export default function OnboardingScreen() {
                 await AppStorage.setItem('hasSeenOnboarding', 'true');
                 navigation.navigate('sign-in');
             } catch (err) {
-                console.log('Error @setItem: ', err);
+                console.error('Error @setItem: ', err);
             }
         }
     };
