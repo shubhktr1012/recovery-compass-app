@@ -15,6 +15,7 @@ import { AppErrorBoundary } from '@/components/AppErrorBoundary';
 import { getPublicEnvState } from '@/lib/env';
 import { installGlobalErrorHandler } from '@/lib/monitoring';
 import { hasOnboardingContextMismatch } from '@/lib/onboarding.realignment';
+import { NotificationService } from '@/lib/notifications';
 import { Session } from '@supabase/supabase-js';
 import ErodeRegular from '@/assets/fonts/Erode-Regular.otf';
 import ErodeItalic from '@/assets/fonts/Erode-Italic.otf';
@@ -211,6 +212,13 @@ function RootLayoutContent() {
     };
 
     void loginToRevenueCat();
+  }, [session?.user?.id]);
+
+  // Initialize Notifications
+  useEffect(() => {
+    if (session?.user?.id) {
+      NotificationService.initialize(session.user.id);
+    }
   }, [session?.user?.id]);
 
   return (
