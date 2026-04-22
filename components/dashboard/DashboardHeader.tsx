@@ -46,16 +46,29 @@ export function DashboardHeader({
         </Svg>
 
         <View className="flex-row justify-between items-center mb-5 relative z-10">
-          <View className="w-[56px] h-[56px] rounded-full bg-sage/20 border-[1.5px] border-sage/30 items-center justify-center overflow-hidden">
-            {avatarUrl ? (
-              <Image
-                source={{ uri: avatarUrl }}
-                style={{ width: '100%', height: '100%' }}
-                resizeMode="cover"
-              />
-            ) : (
-              <Text className="font-erode-medium text-[26px] text-sage">{avatarLetter}</Text>
-            )}
+          <View
+            className="w-[60px] h-[60px] rounded-full"
+            style={{
+              backgroundColor: '#F5F5F7',
+              padding: 2,
+              shadowColor: '#06290C',
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.18,
+              shadowRadius: 20,
+              elevation: 6,
+            }}
+          >
+            <View className="w-full h-full rounded-full bg-sage/20 border-[1.5px] border-sage/30 items-center justify-center overflow-hidden">
+              {avatarUrl ? (
+                <Image
+                  source={{ uri: avatarUrl }}
+                  style={{ width: '100%', height: '100%' }}
+                  resizeMode="cover"
+                />
+              ) : (
+                <Text className="font-erode-medium text-[26px] text-sage">{avatarLetter}</Text>
+              )}
+            </View>
           </View>
           <View className="w-[38px] h-[38px] items-center justify-center">
             <Svg width="26" height="26" viewBox="19.23 16.92 121.54 125.63">

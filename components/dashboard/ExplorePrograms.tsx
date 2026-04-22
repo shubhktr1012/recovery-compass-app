@@ -10,6 +10,31 @@ interface ExploreProgramsProps {
   isPurchaseLocked?: boolean;
 }
 
+function parsePriceString(priceString: string): number | null {
+  const numeric = Number(priceString.replace(/[^\d.]/g, ''));
+  return Number.isFinite(numeric) ? numeric : null;
+}
+
+function formatInr(value: number): string {
+  return `₹${new Intl.NumberFormat('en-IN', {
+    maximumFractionDigits: 0,
+  }).format(value)}`;
+}
+
+function getDiscountedPrice(priceString?: string | null): string | null {
+  if (!priceString) return null;
+  const numeric = parsePriceString(priceString);
+  if (numeric === null) return null;
+  return formatInr(numeric);
+}
+
+function getOriginalPrice(priceString?: string | null): string | null {
+  if (!priceString) return null;
+  const numeric = parsePriceString(priceString);
+  if (numeric === null) return null;
+  return formatInr(numeric * 2);
+}
+
 function getStatusLabel(program: ProgramContent) {
   if (program.contentStatus === 'ready') {
     return 'Available now';
@@ -132,7 +157,6 @@ export function ExplorePrograms({
               <Text className="font-erode-medium text-[16px] text-forest leading-snug">{program.name}</Text>
               <Text className="font-satoshi text-[11px] text-forest/50 mt-1 leading-relaxed">{program.description}</Text>
               <View className="flex-row items-center flex-wrap gap-2 mt-2">
-                <Text className="font-satoshi-bold text-xs text-forest">{program.totalDays} days</Text>
                 {program.hasAudio ? (
                   <View className="bg-[#EEF6EF] px-2 py-0.5 rounded-full">
                     <Text className="font-satoshi-bold uppercase text-[8px] tracking-[0.08em] text-forest">Audio</Text>
@@ -144,6 +168,28 @@ export function ExplorePrograms({
                   </Text>
                 </View>
               </View>
+              {program.priceString ? (
+                <View className="mt-3 pt-3 border-t border-forest/8 flex-row items-end justify-between gap-3">
+                  <View>
+                    <View className="flex-row items-center gap-2">
+                      <Text
+                        className="font-satoshi text-[11px] text-forest/38"
+                        style={{ textDecorationLine: 'line-through' }}
+                      >
+                        {getOriginalPrice(program.priceString) ?? program.priceString}
+                      </Text>
+                      <View className="bg-[#EEF6EF] px-2 py-0.5 rounded-full">
+                        <Text className="font-satoshi-bold uppercase text-[8px] tracking-[0.08em] text-forest">
+                          50% OFF
+                        </Text>
+                      </View>
+                    </View>
+                    <Text className="font-satoshi-bold text-[14px] text-forest tracking-[0.02em] mt-1">
+                      {getDiscountedPrice(program.priceString) ?? program.priceString}
+                    </Text>
+                  </View>
+                </View>
+              ) : null}
             </View>
           </Pressable>
         ))
