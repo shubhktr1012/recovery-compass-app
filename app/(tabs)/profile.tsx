@@ -6,16 +6,17 @@ import {
   NativeScrollEvent,
   NativeSyntheticEvent,
   ScrollView,
+  StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  StyleSheet,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { Svg, Path } from 'react-native-svg';
 import { useQuery } from '@tanstack/react-query';
+
 import { PROGRAM_METADATA } from '@/content/programs/metadata';
 import { useAuth } from '@/providers/auth';
 import { useOnboardingResponse } from '@/hooks/useOnboardingResponse';
@@ -27,14 +28,80 @@ import type { ProgramSlug } from '@/types/content';
 import { AppColors } from '@/constants/theme';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
-const STAT_CARD_WIDTH = SCREEN_WIDTH - 48;
+const STAT_CARD_WIDTH = 164;
+const STAT_CARD_GAP = 10;
+const STAT_CARD_SNAP = STAT_CARD_WIDTH + STAT_CARD_GAP;
 
 interface StatCard {
   label: string;
   value: string | number;
   subtitle: string;
-  icon: keyof typeof Ionicons.glyphMap;
+  context?: string;
+  variant: 'forest' | 'sage';
 }
+
+function formatStartedDate(value: string | null | undefined) {
+  if (!value) return null;
+
+  return new Intl.DateTimeFormat('en-IN', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  }).format(new Date(value));
+}
+
+function getProgressSummary(args: {
+  currentDay: number | null;
+  totalDays: number;
+  completedDays: number[];
+  completionState: string;
+}) {
+  if (args.completionState === 'completed') {
+    return {
+      dayNumber: args.totalDays,
+      percentage: 100,
+    };
+  }
+
+  const completedCount = args.completedDays.length;
+  const dayNumber = Math.max(args.currentDay ?? completedCount + 1, 1);
+  const percentage = Math.min(100, Math.max(1, Math.round((dayNumber / args.totalDays) * 100)));
+
+  return {
+    dayNumber,
+    percentage,
+  };
+}
+
+function getPhaseLabel(dayNumber: number, totalDays: number) {
+  const ratio = totalDays > 0 ? dayNumber / totalDays : 0;
+
+  if (ratio <= 0.25) return 'Phase 1 · Foundation';
+  if (ratio <= 0.5) return 'Phase 2 · Regulation';
+  if (ratio <= 0.75) return 'Phase 3 · Momentum';
+  return 'Phase 4 · Integration';
+}
+
+function BotanicalWatermark({ opacity = 0.07, light = false }: { opacity?: number; light?: boolean }) {
+  const fill = light ? '#E3F3E5' : '#06290C';
+
+  return (
+    <Svg width={180} height={180} viewBox="0 0 200 200" fill="none">
+      <Path d="M100 10C100 10 165 55 165 105C165 148 135 182 100 192C65 182 35 148 35 105C35 55 100 10 100 10Z" fill={fill} opacity={opacity} />
+      <Path d="M100 98L100 192" stroke={fill} strokeWidth="1.5" opacity={opacity} />
+      <Path d="M100 120C80 110 65 125 60 140" stroke={fill} strokeWidth="1" opacity={opacity} />
+    </Svg>
+  );
+}
+
+function getDaysInMotion(startedAt: string | null | undefined) {
+  if (!startedAt) return 0;
+
+  const diffMs = Math.max(0, Date.now() - new Date(startedAt).getTime());
+  return Math.floor(diffMs / (1000 * 60 * 60 * 24)) + 1;
+}
+
+
 
 export default function AccountScreen() {
   const router = useRouter();
@@ -45,7 +112,6 @@ export default function AccountScreen() {
   const [activeStatIndex, setActiveStatIndex] = useState(0);
   const userId = user?.id ?? null;
 
-  // Journal entry count
   const journalCountQuery = useQuery({
     queryKey: ['journal-count', userId],
     queryFn: async () => {
@@ -60,14 +126,14 @@ export default function AccountScreen() {
     enabled: Boolean(userId),
   });
 
-  // Calculate streak from completedDays
   const { currentStreak, bestStreak } = useMemo(() => {
     const days = progress?.completedDays ?? [];
     if (days.length === 0) return { currentStreak: 0, bestStreak: 0 };
+
     const sorted = [...days].sort((a, b) => a - b);
     let best = 1;
-    let current = 1;
     let runLength = 1;
+
     for (let i = 1; i < sorted.length; i++) {
       if (sorted[i] === sorted[i - 1]! + 1) {
         runLength++;
@@ -76,8 +142,8 @@ export default function AccountScreen() {
       }
       best = Math.max(best, runLength);
     }
-    // Current streak = run ending at the last completed day
-    current = 1;
+
+    let current = 1;
     for (let i = sorted.length - 1; i > 0; i--) {
       if (sorted[i] === sorted[i - 1]! + 1) {
         current++;
@@ -85,39 +151,100 @@ export default function AccountScreen() {
         break;
       }
     }
+
     return { currentStreak: current, bestStreak: best };
   }, [progress?.completedDays]);
 
   const stats = useMemo(() => {
     const projection = getOnboardingProjection(onboardingQuery.data ?? null);
-    const joinedDays = profile?.created_at
-      ? Math.floor(Math.max(0, Date.now() - new Date(profile.created_at).getTime()) / (1000 * 60 * 60 * 24))
-      : 0;
+    const joinedDays = getDaysInMotion(profile?.created_at);
 
     return {
       avoidedUnits90Days: projection.avoidedUnits90Days,
       joinedDays,
       projectedSavings90Days: projection.projectedSavings90Days,
+      primaryGoal: projection.primaryGoal,
     };
   }, [onboardingQuery.data, profile?.created_at]);
 
   const activeProgram = access.ownedProgram ? PROGRAM_METADATA[access.ownedProgram as ProgramSlug] : null;
 
-  const displayName = profile?.display_name
-    || onboardingQuery.data?.full_name?.trim().split(/\s+/)[0]
-    || user?.email?.split('@')[0]
-    || 'Your Account';
+  const displayName =
+    profile?.display_name ||
+    onboardingQuery.data?.full_name?.trim().split(/\s+/)[0] ||
+    user?.email?.split('@')[0] ||
+    'Your Account';
 
   const avatarUrl = profile?.avatar_url ?? null;
   const emailDisplay = user?.email ?? 'Signed in';
+  const displayInitial = displayName.charAt(0).toUpperCase();
+  const startedDate = formatStartedDate(profile?.created_at);
 
-  // Direct avatar change via image picker
+  const progressSummary = activeProgram
+    ? getProgressSummary({
+        currentDay: access.currentDay,
+        totalDays: activeProgram.totalDays,
+        completedDays: progress?.completedDays ?? [],
+        completionState: access.completionState,
+      })
+    : null;
+
+  const statCards: StatCard[] = useMemo(() => {
+    const totalDays = activeProgram?.totalDays ?? 90;
+    const remaining = Math.max(0, totalDays - stats.joinedDays);
+    const baseCards: Omit<StatCard, 'variant'>[] = [
+      {
+        label: 'Days in motion',
+        value: stats.joinedDays,
+        subtitle: 'Days completed',
+        context: remaining > 0 ? `On schedule · ${remaining} remaining` : 'Journey complete',
+      },
+      {
+        label: '90-day savings',
+        value: formatInr(stats.projectedSavings90Days),
+        subtitle: 'Estimated',
+        context: 'vs. baseline monthly spend',
+      },
+      {
+        label: 'Reflections',
+        value: journalCountQuery.data ?? 0,
+        subtitle: 'Written',
+        context: activeProgram ? 'This program' : 'All time',
+      },
+      {
+        label: 'Current streak',
+        value: currentStreak,
+        subtitle: 'Days in a row',
+        context: currentStreak >= bestStreak && currentStreak > 0 ? 'Your longest yet' : bestStreak > 0 ? `Best: ${bestStreak} days` : 'Start tomorrow',
+      },
+    ];
+
+    if (activeProgram && progressSummary) {
+      const phaseNum = Math.min(4, Math.ceil((progressSummary.dayNumber / activeProgram.totalDays) * 4));
+      baseCards.splice(2, 0, {
+        label: 'Program progress',
+        value: `${progressSummary.percentage}%`,
+        subtitle: 'Completed',
+        context: access.completionState === 'completed' ? `All 4 phases` : `Phase ${phaseNum} of 4`,
+      });
+    }
+
+    return baseCards.map((card, index) => ({
+      ...card,
+      variant: index % 2 === 0 ? 'forest' : 'sage',
+    }));
+  }, [access.completionState, activeProgram, bestStreak, currentStreak, journalCountQuery.data, progressSummary, stats.joinedDays, stats.projectedSavings90Days]);
+
+  const handleStatScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const offsetX = event.nativeEvent.contentOffset.x;
+    const nextIndex = Math.round(offsetX / STAT_CARD_SNAP);
+    setActiveStatIndex(Math.max(0, Math.min(nextIndex, statCards.length - 1)));
+  };
+
   const handleAvatarTap = async () => {
     try {
       const { requireOptionalNativeModule } = await import('expo-modules-core');
-      const hasImagePickerNativeModule = Boolean(
-        requireOptionalNativeModule('ExponentImagePicker')
-      );
+      const hasImagePickerNativeModule = Boolean(requireOptionalNativeModule('ExponentImagePicker'));
       if (!hasImagePickerNativeModule) {
         Alert.alert('Profile photo unavailable', 'Photo upload needs a fresh native iOS build.');
         return;
@@ -137,434 +264,642 @@ export default function AccountScreen() {
     }
   };
 
-  const statCards: StatCard[] = useMemo(() => {
-    const cards: StatCard[] = [
-      {
-        label: 'Days in Motion',
-        value: stats.joinedDays,
-        subtitle: 'since you started your journey',
-        icon: 'flame-outline',
-      },
-      {
-        label: '90-Day Savings',
-        value: formatInr(stats.projectedSavings90Days),
-        subtitle: 'projected accumulation',
-        icon: 'wallet-outline',
-      },
-      {
-        label: 'Units Avoided',
-        value: stats.avoidedUnits90Days,
-        subtitle: 'across 90 days',
-        icon: 'shield-checkmark-outline',
-      },
-      {
-        label: 'Reflections',
-        value: journalCountQuery.data ?? 0,
-        subtitle: 'journal entries written',
-        icon: 'book-outline',
-      },
-    ];
-
-    if (activeProgram && progress) {
-      cards.push({
-        label: 'Program Progress',
-        value: `${progress.completedDays.length}/${activeProgram.totalDays}`,
-        subtitle: `days in ${activeProgram.name}`,
-        icon: 'checkmark-circle-outline',
-      });
-    }
-
-    if (currentStreak > 0) {
-      cards.push({
-        label: 'Current Streak',
-        value: currentStreak,
-        subtitle: bestStreak > currentStreak ? `best: ${bestStreak} days` : 'your best yet!',
-        icon: 'trending-up-outline',
-      });
-    }
-
-    return cards;
-  }, [stats, activeProgram, progress, journalCountQuery.data, currentStreak, bestStreak]);
-
-  const handleStatScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const index = Math.round(event.nativeEvent.contentOffset.x / STAT_CARD_WIDTH);
-    setActiveStatIndex(Math.max(0, Math.min(index, statCards.length - 1)));
-  };
-
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar style="dark" />
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Account</Text>
-          <TouchableOpacity
-            onPress={() => router.push('/account/settings')}
-            style={styles.settingsButton}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="settings-outline" size={20} color={AppColors.forest} />
-          </TouchableOpacity>
-        </View>
+    <View style={styles.screen}>
+      <StatusBar style="light" />
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <SafeAreaView edges={['top']} style={styles.headerSafeArea}>
+          <View style={styles.headerContainer}>
+            <View style={styles.headerWatermark}>
+              <BotanicalWatermark light opacity={0.07} />
+            </View>
 
-        {/* Identity Block */}
-        <View style={styles.identityBlock}>
-          <View style={styles.identityRow}>
-            <TouchableOpacity onPress={() => void handleAvatarTap()} activeOpacity={0.8}>
+            <View style={styles.headerTopRow}>
+              <Text style={styles.headerEyebrow}>Your account</Text>
+
+              <TouchableOpacity
+                onPress={() => router.push('/account/settings')}
+                activeOpacity={0.8}
+                style={styles.settingsButton}
+              >
+                <Svg width={15} height={15} viewBox="0 0 24 24" fill="none" stroke="rgba(227,243,229,0.7)" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+                  <Path d="M12 15a3 3 0 100-6 3 3 0 000 6z" />
+                  <Path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" />
+                </Svg>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </SafeAreaView>
+
+        <View style={styles.contentWrap}>
+          <View style={styles.identityCard}>
+            <TouchableOpacity onPress={() => void handleAvatarTap()} activeOpacity={0.82} style={styles.avatarTouchable}>
               <View style={styles.avatarContainer}>
                 {avatarUrl ? (
                   <Image source={{ uri: avatarUrl }} style={styles.avatarImage} resizeMode="cover" />
                 ) : (
-                  <Text style={styles.avatarPlaceholder}>
-                    {displayName.charAt(0).toUpperCase()}
-                  </Text>
+                  <Text style={styles.avatarPlaceholder}>{displayInitial}</Text>
                 )}
               </View>
             </TouchableOpacity>
 
-            <View style={styles.identityTextContainer}>
-              <Text style={styles.identityName} numberOfLines={1}>{displayName}</Text>
-              <Text style={styles.identityEmail} numberOfLines={1}>{emailDisplay}</Text>
-            </View>
+            <Text style={styles.identityName}>{displayName}</Text>
+            <Text style={styles.identityEmail}>{emailDisplay}</Text>
+
+            <TouchableOpacity
+              onPress={() => setIsEditOpen(true)}
+              activeOpacity={0.78}
+              style={styles.editProfilePill}
+            >
+              <Svg width={11} height={11} viewBox="0 0 24 24" fill="none" stroke="rgba(6,41,12,0.5)" strokeWidth={2} strokeLinecap="round">
+                <Path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" />
+              </Svg>
+              <Text style={styles.editProfileText}>Edit Profile</Text>
+            </TouchableOpacity>
           </View>
 
-          <TouchableOpacity
-            onPress={() => setIsEditOpen(true)}
-            style={styles.editProfileCta}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="create-outline" size={16} color={AppColors.forest} />
-            <Text style={styles.editProfileText}>Edit Profile</Text>
-          </TouchableOpacity>
-        </View>
+          {/* ACTIVE PROGRAM */}
+          {activeProgram && progressSummary ? (
+            <>
+              <Text style={styles.sectionEyebrow}>{access.completionState === 'completed' ? 'Program' : 'Active Program'}</Text>
+              <TouchableOpacity
+                onPress={() => router.push('/(tabs)/program')}
+                activeOpacity={0.9}
+                style={styles.programCard}
+              >
+                <View style={styles.programInner}>
+                  <View style={styles.programWatermark}>
+                    <Svg width={110} height={110} viewBox="0 0 200 200" fill="none" style={{ opacity: 0.08 }}>
+                      <Path d="M100 10C100 10 165 55 165 105C165 148 135 182 100 192C65 182 35 148 35 105C35 55 100 10 100 10Z" fill="#E3F3E5" />
+                    </Svg>
+                  </View>
 
-        {/* Active Program Block */}
-        <View style={styles.sectionContainer}>
-          <View style={styles.card}>
-            <Text style={styles.cardEyebrow}>Active Program</Text>
-            {activeProgram ? (
-              <>
-                <Text style={styles.programTitle}>{activeProgram.name}</Text>
-                <Text style={styles.programSubtitle}>
-                  Day {progress?.completedDays.length ?? 0} of {activeProgram.totalDays}
-                  {access.completionState === 'completed' ? ' · Completed' : ''}
-                </Text>
-              </>
-            ) : (
-              <Text style={styles.emptyProgramText}>No active program yet</Text>
-            )}
-          </View>
-        </View>
+                  <View style={styles.programTopRow}>
+                    {access.completionState === 'completed' ? (
+                      <View style={styles.completedBadge}>
+                        <View style={styles.completedBadgeDot} />
+                        <Text style={styles.completedBadgeText}>Completed · {activeProgram.totalDays} days</Text>
+                      </View>
+                    ) : (
+                      <View style={styles.phasePill}>
+                        <Text style={styles.phasePillText}>
+                          {getPhaseLabel(progressSummary.dayNumber, activeProgram.totalDays)}
+                        </Text>
+                      </View>
+                    )}
+                    <Svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="rgba(227,243,229,0.45)" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                      <Path d="M9 18l6-6-6-6" />
+                    </Svg>
+                  </View>
 
-        {/* Featured Stat Card (swipeable) */}
-        <View style={styles.statsSection}>
+                  <Text style={styles.programName}>{activeProgram.name}</Text>
+
+                  {access.completionState === 'completed' ? (
+                    <Text style={styles.programMeta}>
+                      {startedDate ? `Completed journey · Began ${startedDate}` : 'Completed journey'}
+                    </Text>
+                  ) : (
+                    <View style={styles.programDayRow}>
+                      <Text style={styles.programDayCount}>
+                        {progressSummary.dayNumber} <Text style={styles.programDayTotal}>/ {activeProgram.totalDays} days</Text>
+                      </Text>
+                      <Text style={styles.programPct}>{progressSummary.percentage}%</Text>
+                    </View>
+                  )}
+
+                  <View style={styles.programProgressTrack}>
+                    <View style={[styles.programProgressFill, { width: `${progressSummary.percentage}%` }]} />
+                  </View>
+                </View>
+              </TouchableOpacity>
+            </>
+          ) : null}
+
+          {/* PROGRESS / STATS */}
+          <Text style={styles.sectionEyebrow}>Progress</Text>
+
           <ScrollView
             horizontal
-            pagingEnabled
             showsHorizontalScrollIndicator={false}
-            onMomentumScrollEnd={handleStatScroll}
-            decelerationRate="fast"
-            snapToInterval={STAT_CARD_WIDTH}
-            snapToAlignment="start"
+            style={styles.statsScrollWrap}
             contentContainerStyle={styles.statsScrollContent}
+            snapToInterval={STAT_CARD_SNAP}
+            decelerationRate="fast"
+            onMomentumScrollEnd={handleStatScroll}
+            scrollEventThrottle={16}
           >
-            {statCards.map((card, index) => (
-              <View
-                key={card.label}
-                style={[
-                  styles.statCardContainer,
-                  { width: STAT_CARD_WIDTH, marginRight: index < statCards.length - 1 ? 12 : 0 }
-                ]}
-              >
-                <View style={styles.statCardHeader}>
-                  <View style={styles.statIconContainer}>
-                    <Ionicons name={card.icon} size={18} color="rgba(255,255,255,0.9)" />
+            {statCards.map((card, index) => {
+              const isSage = card.variant === 'sage';
+              return (
+                <View
+                  key={card.label}
+                  style={[
+                    styles.statCard,
+                    isSage ? styles.statCardSage : styles.statCardForest,
+                    index < statCards.length - 1 && { marginRight: STAT_CARD_GAP },
+                  ]}
+                >
+                  <View style={styles.statAccentStripe} />
+                  <View style={styles.statWatermark}>
+                    <Svg width={80} height={80} viewBox="0 0 200 200" fill="none" style={{ opacity: 0.06 }}>
+                      <Path d="M100 10C100 10 165 55 165 105C165 148 135 182 100 192C65 182 35 148 35 105C35 55 100 10 100 10Z" fill="#E3F3E5" />
+                    </Svg>
                   </View>
-                  <Text style={styles.statCardEyebrow}>{card.label}</Text>
+
+                  <Text style={styles.statEyebrow}>{card.label}</Text>
+                  <Text style={styles.statValue}>{card.value}</Text>
+                  <Text style={styles.statLabel}>{card.subtitle}</Text>
+                  {card.context ? <Text style={styles.statContext}>{card.context}</Text> : null}
                 </View>
-                <Text style={styles.statCardValue}>{card.value}</Text>
-                <Text style={styles.statCardSubtitle}>{card.subtitle}</Text>
-              </View>
-            ))}
+              );
+            })}
           </ScrollView>
 
-          {/* Pagination dots */}
-          {statCards.length > 1 && (
-            <View style={styles.paginationDotsContainer}>
+          {statCards.length > 1 ? (
+            <View style={styles.paginationDots}>
               {statCards.map((_, index) => (
                 <View
-                  key={index}
-                  style={[
-                    styles.dot,
-                    index === activeStatIndex ? styles.activeDot : styles.inactiveDot
-                  ]}
+                  key={`dot-${index}`}
+                  style={index === activeStatIndex ? styles.paginationDotActive : styles.paginationDot}
                 />
               ))}
             </View>
-          )}
-        </View>
+          ) : null}
 
-        {/* View Statistics CTA */}
-        <View style={styles.sectionContainer}>
           <TouchableOpacity
             onPress={() => router.push('/account/statistics')}
-            style={styles.statsCta}
-            activeOpacity={0.7}
+            activeOpacity={0.78}
+            style={styles.viewAllRow}
           >
-            <View style={styles.statsCtaLeft}>
-              <Ionicons name="stats-chart-outline" size={20} color={AppColors.forest} />
-              <Text style={styles.statsCtaText}>View All Statistics</Text>
+            <Text style={styles.viewAllLabel}>View all statistics</Text>
+            <View style={styles.viewAllRight}>
+              <Text style={styles.viewAllCount}>{statCards.length} metrics</Text>
+              <Svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="rgba(6,41,12,0.35)" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                <Path d="M9 18l6-6-6-6" />
+              </Svg>
             </View>
-            <Ionicons name="chevron-forward" size={18} color="rgba(5, 41, 12, 0.4)" />
           </TouchableOpacity>
-        </View>
 
-        {/* Why You Started */}
-        <View style={styles.sectionContainer}>
-          <View style={styles.whyStartedCard}>
-            <Text style={styles.whyStartedTitle}>Why You Started</Text>
-            <Text style={styles.whyStartedText}>
-              {onboardingQuery.data?.primary_goal ?? 'Finish onboarding to generate your personal reason and projection.'}
+          {/* YOUR INTENTION */}
+          <Text style={[styles.sectionEyebrow, { marginTop: 6 }]}>Your Intention</Text>
+          <View style={styles.intentionCard}>
+            <View style={styles.intentionEyebrowRow}>
+              <Svg width={10} height={10} viewBox="0 0 24 24" fill="none" stroke="rgba(6,41,12,0.4)" strokeWidth={2} strokeLinecap="round">
+                <Path d="M20 4C10 4 4 10 4 20c8 0 16-6 16-16zM4 20C8 16 12 12 20 4" />
+              </Svg>
+              <Text style={styles.intentionEyebrowText}>Why you started</Text>
+            </View>
+
+            <Text style={styles.intentionQuote}>
+              {stats.primaryGoal
+                ? `\u201C${stats.primaryGoal}\u201D`
+                : '\u201CTap to add your intention\u201D'}
+            </Text>
+
+            <Text style={styles.intentionMeta}>
+              {startedDate ? `Started ${startedDate}` : ''}
             </Text>
           </View>
         </View>
       </ScrollView>
 
       <EditProfileSheet isOpen={isEditOpen} onClose={() => setIsEditOpen(false)} />
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
+  screen: {
     flex: 1,
-    backgroundColor: AppColors.surface,
+    backgroundColor: AppColors.forest,
   },
   scrollContent: {
-    paddingBottom: 120,
+    flexGrow: 1,
+    paddingBottom: 110,
   },
-  header: {
+
+  // ─── Header ───
+  headerSafeArea: {
+    backgroundColor: AppColors.forest,
+  },
+  headerContainer: {
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 68,
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  headerWatermark: {
+    position: 'absolute',
+    right: -14,
+    top: -10,
+  },
+  headerTopRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 24,
-    paddingTop: 16,
-    paddingBottom: 8,
   },
-  headerTitle: {
-    fontFamily: 'Erode-Bold',
-    fontSize: 28,
-    color: AppColors.forest,
+  headerEyebrow: {
+    fontFamily: 'Satoshi-Medium',
+    fontSize: 10,
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
+    color: 'rgba(227,243,229,0.55)',
   },
   settingsButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: AppColors.white,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: 'rgba(227,243,229,0.1)',
     borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.06)',
+    borderColor: 'rgba(227,243,229,0.18)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  identityBlock: {
-    paddingHorizontal: 24,
-    paddingTop: 16,
-    paddingBottom: 24,
+
+  // ─── Content ───
+  contentWrap: {
+    flex: 1,
+    backgroundColor: AppColors.surface,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    marginTop: -28,
+    paddingHorizontal: 20,
+    paddingTop: 0,
+    paddingBottom: 36,
   },
-  identityRow: {
-    flexDirection: 'row',
+
+  // ─── Identity ───
+  identityCard: {
     alignItems: 'center',
+    paddingBottom: 22,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: 'rgba(6,41,12,0.08)',
+  },
+  avatarTouchable: {
+    marginTop: -48,
   },
   avatarContainer: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: '#FFFFFF',
     overflow: 'hidden',
-    backgroundColor: AppColors.sage,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: 'rgba(5,41,12,0.1)',
+    borderWidth: 3,
+    borderColor: AppColors.surface,
+    // Spec: box-shadow: 0 4px 20px rgba(6,41,12,0.13)
+    shadowColor: '#06290C',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.13,
+    shadowRadius: 20,
+    elevation: 5,
   },
   avatarImage: {
     width: '100%',
     height: '100%',
   },
   avatarPlaceholder: {
-    fontFamily: 'Erode-Bold',
-    fontSize: 32,
-    color: 'rgba(5,41,12,0.3)',
-  },
-  identityTextContainer: {
-    marginLeft: 16,
-    flex: 1,
+    fontFamily: 'Erode-Medium',
+    fontSize: 30,
+    color: AppColors.forest,
   },
   identityName: {
-    fontFamily: 'Erode-Bold',
-    fontSize: 24,
-    lineHeight: 32,
+    fontFamily: 'Erode-Medium',
+    fontSize: 22,
+    lineHeight: 28,
+    letterSpacing: -0.35,
     color: AppColors.forest,
+    marginTop: 12,
+    textAlign: 'center',
   },
   identityEmail: {
     fontFamily: 'Satoshi-Regular',
-    fontSize: 14,
-    color: AppColors.iconMuted,
-    marginTop: 2,
+    fontSize: 11,
+    lineHeight: 16,
+    color: 'rgba(6,41,12,0.42)',
+    marginTop: 4,
+    textAlign: 'center',
   },
-  editProfileCta: {
-    marginTop: 16,
+  editProfilePill: {
+    marginTop: 14,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 10,
-    borderRadius: 9999,
+    gap: 5,
     borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.06)',
-    backgroundColor: AppColors.white,
+    borderColor: 'rgba(6,41,12,0.10)',
+    backgroundColor: 'transparent',
+    borderRadius: 999,
+    paddingHorizontal: 16,
+    paddingVertical: 7,
   },
   editProfileText: {
     fontFamily: 'Satoshi-Medium',
-    fontSize: 14,
-    color: AppColors.forest,
-    marginLeft: 6,
+    fontSize: 12,
+    color: 'rgba(6,41,12,0.62)',
   },
-  sectionContainer: {
-    paddingHorizontal: 24,
-    marginBottom: 20,
-  },
-  card: {
-    borderRadius: 24,
-    backgroundColor: AppColors.white,
-    borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.06)',
-    padding: 24,
-  },
-  cardEyebrow: {
+
+  // ─── Section Eyebrow ───
+  sectionEyebrow: {
     fontFamily: 'Satoshi-Bold',
-    fontSize: 11,
+    fontSize: 9,
+    letterSpacing: 1.8,
     textTransform: 'uppercase',
-    letterSpacing: 1.2,
-    color: AppColors.iconMuted,
-    marginBottom: 8,
-  },
-  programTitle: {
-    fontFamily: 'Erode-SemiBold',
-    fontSize: 20,
-    color: AppColors.forest,
-  },
-  programSubtitle: {
-    fontFamily: 'Satoshi-Regular',
-    fontSize: 14,
-    color: AppColors.iconMuted,
-    marginTop: 4,
-  },
-  emptyProgramText: {
-    fontFamily: 'Satoshi-Regular',
-    fontSize: 14,
-    color: 'rgba(0,0,0,0.4)',
-    fontStyle: 'italic',
-  },
-  statsSection: {
-    marginBottom: 8,
-  },
-  statsScrollContent: {
-    paddingHorizontal: 24,
-  },
-  statCardContainer: {
-    borderRadius: 24,
-    backgroundColor: AppColors.forest,
-    padding: 24,
-  },
-  statCardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    color: 'rgba(6,41,12,0.38)',
+    marginTop: 20,
     marginBottom: 12,
   },
-  statIconContainer: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(255,255,255,0.15)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 10,
-  },
-  statCardEyebrow: {
-    fontFamily: 'Satoshi-Bold',
-    fontSize: 11,
-    color: 'rgba(255,255,255,0.7)',
-    textTransform: 'uppercase',
-    letterSpacing: 1.2,
-  },
-  statCardValue: {
-    fontFamily: 'Erode-Bold',
-    fontSize: 36,
-    color: AppColors.white,
-    marginBottom: 4,
-  },
-  statCardSubtitle: {
-    fontFamily: 'Satoshi-Regular',
-    fontSize: 14,
-    color: 'rgba(255,255,255,0.6)',
-  },
-  paginationDotsContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 16,
-    gap: 6,
-  },
-  dot: {
-    borderRadius: 9999,
-  },
-  activeDot: {
+
+  // ─── Program Card ───
+  programCard: {
     backgroundColor: AppColors.forest,
-    width: 20,
-    height: 6,
+    borderRadius: 20,
+    overflow: 'hidden',
+    // Spec: box-shadow: 0 4px 20px rgba(6,41,12,0.18)
+    shadowColor: '#06290C',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.18,
+    shadowRadius: 20,
+    elevation: 5,
+    borderWidth: 1,
+    borderColor: 'rgba(227,243,229,0.08)',
   },
-  inactiveDot: {
-    backgroundColor: 'rgba(0,0,0,0.15)',
-    width: 6,
-    height: 6,
+  pressedCard: {
+    opacity: 0.92,
   },
-  statsCta: {
+  programInner: {
+    paddingHorizontal: 18,
+    paddingTop: 16,
+    paddingBottom: 14,
+    position: 'relative',
+    zIndex: 2,
+  },
+  programWatermark: {
+    position: 'absolute',
+    right: -10,
+    bottom: -14,
+  },
+  programTopRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    borderRadius: 20,
-    backgroundColor: AppColors.white,
-    borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.06)',
-  },
-  statsCtaLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  statsCtaText: {
-    fontFamily: 'Satoshi-Medium',
-    fontSize: 16,
-    color: AppColors.forest,
-    marginLeft: 12,
-  },
-  whyStartedCard: {
-    borderRadius: 24,
-    backgroundColor: 'rgba(206,215,203,0.3)', // Sage but much softer
-    borderWidth: 1,
-    borderColor: 'rgba(5,41,12,0.05)',
-    padding: 24,
-  },
-  whyStartedTitle: {
-    fontFamily: 'Erode-SemiBold',
-    fontSize: 18,
-    color: AppColors.forest,
     marginBottom: 10,
   },
-  whyStartedText: {
-    fontFamily: 'Satoshi-Regular',
-    fontSize: 15,
+  phasePill: {
+    backgroundColor: 'rgba(227,243,229,0.14)',
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderWidth: 1,
+    borderColor: 'rgba(227,243,229,0.22)',
+  },
+  phasePillText: {
+    fontFamily: 'Satoshi-Bold',
+    fontSize: 9,
+    letterSpacing: 0.9,
+    textTransform: 'uppercase',
+    color: '#E3F3E5', // High contrast sage
+  },
+  completedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(227,243,229,0.16)',
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(227,243,229,0.28)',
+    gap: 5,
+    marginBottom: 8,
+  },
+  completedBadgeDot: {
+    width: 5,
+    height: 5,
+    borderRadius: 2.5,
+    backgroundColor: AppColors.sage,
+  },
+  completedBadgeText: {
+    fontFamily: 'Satoshi-Bold',
+    fontSize: 9,
+    letterSpacing: 0.9,
+    textTransform: 'uppercase',
+    color: AppColors.sage,
+  },
+  programName: {
+    fontFamily: 'Erode-Medium',
+    fontSize: 19,
     lineHeight: 24,
-    color: 'rgba(0,0,0,0.7)',
+    letterSpacing: -0.3,
+    color: '#FFFFFF',
+    maxWidth: '88%',
+  },
+  programMeta: {
+    fontFamily: 'Satoshi-Regular',
+    fontSize: 11,
+    lineHeight: 16,
+    color: 'rgba(227,243,229,0.5)',
+    marginTop: 6,
+  },
+  programDayRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    justifyContent: 'space-between',
+    marginTop: 10,
+  },
+  programDayCount: {
+    fontFamily: 'Erode-Medium',
+    fontSize: 16,
+    color: '#FFFFFF',
+    letterSpacing: -0.2,
+  },
+  programDayTotal: {
+    fontFamily: 'Satoshi-Regular',
+    fontSize: 11,
+    color: 'rgba(227,243,229,0.5)',
+  },
+  programPct: {
+    fontFamily: 'Satoshi-Medium',
+    fontSize: 10,
+    color: 'rgba(227,243,229,0.55)',
+  },
+  programProgressTrack: {
+    marginTop: 16,
+    height: 3,
+    borderRadius: 999,
+    backgroundColor: 'rgba(227,243,229,0.15)',
+    overflow: 'hidden',
+  },
+  programProgressFill: {
+    height: '100%',
+    borderRadius: 999,
+    backgroundColor: '#E3F3E5', // Pure sage for maximum visibility
+  },
+
+  // ─── Stat Cards ───
+  statsScrollWrap: {
+    marginHorizontal: -20, // Break out of contentWrap padding
+  },
+  statsScrollContent: {
+    paddingLeft: 20,
+    paddingRight: 20,
+  },
+  statCard: {
+    width: STAT_CARD_WIDTH,
+    minHeight: 158,
+    borderRadius: 20,
+    overflow: 'hidden',
+    paddingHorizontal: 18,
+    paddingTop: 18,
+    paddingBottom: 16,
+    position: 'relative',
+  },
+  statCardForest: {
+    backgroundColor: AppColors.forest,
+  },
+  statCardSage: {
+    backgroundColor: 'rgba(6,41,12,0.88)',
+    borderWidth: 1,
+    borderColor: 'rgba(227,243,229,0.08)',
+  },
+  statAccentStripe: {
+    position: 'absolute',
+    top: 0,
+    left: 18,
+    right: 18,
+    height: 2,
+    borderBottomLeftRadius: 2,
+    borderBottomRightRadius: 2,
+    backgroundColor: 'rgba(227,243,229,0.18)',
+  },
+  statWatermark: {
+    position: 'absolute',
+    right: -18,
+    bottom: -14,
+  },
+  statEyebrow: {
+    fontFamily: 'Satoshi-Bold',
+    fontSize: 8,
+    lineHeight: 11,
+    letterSpacing: 1.4,
+    textTransform: 'uppercase',
+    color: 'rgba(227,243,229,0.45)',
+    marginBottom: 10,
+  },
+  statValue: {
+    fontFamily: 'Erode-Medium',
+    fontSize: 38,
+    lineHeight: 38,
+    letterSpacing: -0.6,
+    color: '#FFFFFF',
+  },
+  statLabel: {
+    fontFamily: 'Satoshi-Medium',
+    fontSize: 11,
+    lineHeight: 15,
+    color: 'rgba(227,243,229,0.65)',
+    marginTop: 8,
+  },
+  statContext: {
+    fontFamily: 'Satoshi-Regular',
+    fontSize: 10,
+    lineHeight: 14,
+    color: 'rgba(227,243,229,0.38)',
+    marginTop: 3,
+  },
+
+  // ─── Pagination ───
+  paginationDots: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 5,
+    marginTop: 12,
+  },
+  paginationDot: {
+    width: 5,
+    height: 5,
+    borderRadius: 999,
+    backgroundColor: 'rgba(6,41,12,0.14)',
+  },
+  paginationDotActive: {
+    width: 16,
+    height: 5,
+    borderRadius: 999,
+    backgroundColor: AppColors.forest,
+  },
+
+  // ─── View All Row ───
+  viewAllRow: {
+    marginTop: 6,
+    paddingHorizontal: 4,
+    paddingVertical: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  viewAllLabel: {
+    fontFamily: 'Satoshi-Medium',
+    fontSize: 13,
+    color: AppColors.forest,
+  },
+  viewAllRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  viewAllCount: {
+    fontFamily: 'Satoshi-Regular',
+    fontSize: 11,
+    color: 'rgba(6,41,12,0.45)',
+  },
+
+  // ─── Intention Card ───
+  intentionCard: {
+    borderRadius: 20,
+    backgroundColor: AppColors.sageSoft,
+    borderLeftWidth: 3,
+    borderLeftColor: AppColors.forest,
+    paddingTop: 18,
+    paddingBottom: 18,
+    paddingRight: 18,
+    paddingLeft: 16,
+    overflow: 'hidden',
+    // Spec: --soft-shadow = 0 1px 2px rgba(6,41,12,0.03), 0 8px 24px rgba(6,41,12,0.06)
+    // RN supports single shadow — using dominant layer
+    shadowColor: '#06290C',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.06,
+    shadowRadius: 24,
+    elevation: 2,
+  },
+  intentionEyebrowRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 10,
+  },
+  intentionEyebrowText: {
+    fontFamily: 'Satoshi-Bold',
+    fontSize: 8,
+    letterSpacing: 1.4,
+    textTransform: 'uppercase',
+    color: 'rgba(6,41,12,0.45)',
+  },
+  intentionQuote: {
+    fontFamily: 'Erode-Medium-Italic',
+    fontSize: 18,
+    lineHeight: 25,
+    letterSpacing: -0.2,
+    color: AppColors.forest,
+  },
+  intentionMeta: {
+    fontFamily: 'Satoshi-Medium',
+    fontSize: 9,
+    lineHeight: 13,
+    letterSpacing: 0.7,
+    textTransform: 'uppercase',
+    color: 'rgba(6,41,12,0.28)',
+    marginTop: 12,
   },
 });

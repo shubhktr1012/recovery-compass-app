@@ -83,6 +83,7 @@ function HomeScreenContent({ activeProgram }: { activeProgram: ProgramSlug }) {
     profile?.display_name?.trim().split(/\s+/)[0] ||
     onboardingResponse?.full_name?.trim().split(/\s+/)[0] ||
     'Friend';
+  const avatarUrl = profile?.avatar_url ?? null;
   const avatarLetter = firstName[0]?.toUpperCase() ?? 'S';
   const percentageComplete = Math.min(100, Math.round((currentDayNumber / program.totalDays) * 100));
   const statsItems = useMemo(
@@ -138,6 +139,7 @@ function HomeScreenContent({ activeProgram }: { activeProgram: ProgramSlug }) {
           greetingLabel={getGreetingLabel()}
           firstName={firstName}
           avatarLetter={avatarLetter}
+          avatarUrl={avatarUrl}
           progressLabel={`Day ${currentDayNumber} of ${program.totalDays}`}
           secondaryPillLabel={secondaryPillLabel}
         />
