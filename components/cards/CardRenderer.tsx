@@ -1,9 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Modal, Pressable, ScrollView, Text, TextInput, View, StyleSheet, Platform } from 'react-native';
+import { ActivityIndicator, Modal, Pressable, ScrollView, Text, TextInput, View, StyleSheet, Platform } from 'react-native';
+import Svg, { Path as SvgPath } from 'react-native-svg';
 import Animated, {
   Easing,
   FadeInDown,
@@ -16,7 +17,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { ProgramAudioPlayer } from '@/components/program/ProgramAudioPlayer';
+import { useProgramAudioPlayback } from '@/components/program/ProgramAudioPlayer';
 import {
   getProgramReflection,
   upsertProgramReflection,
@@ -1070,56 +1071,212 @@ function ExerciseRoutineCardView({
   );
 }
 
+// ── Waveform bar configuration ─────────────────────────────────────────────
+const WAVEFORM_BARS: { height: number; opacity: number }[] = [
+  { height: 10, opacity: 0.08 },
+  { height: 16, opacity: 0.12 },
+  { height: 24, opacity: 0.16 },
+  { height: 34, opacity: 0.24 },
+  { height: 48, opacity: 0.34 },
+  { height: 64, opacity: 0.48 },
+  { height: 80, opacity: 0.64 },
+  { height: 94, opacity: 0.82 },
+  { height: 104, opacity: 1 },
+  { height: 94, opacity: 0.82 },
+  { height: 80, opacity: 0.64 },
+  { height: 64, opacity: 0.48 },
+  { height: 48, opacity: 0.34 },
+  { height: 34, opacity: 0.24 },
+  { height: 24, opacity: 0.16 },
+  { height: 16, opacity: 0.12 },
+  { height: 10, opacity: 0.08 },
+];
+
+function formatAudioTime(seconds: number): string {
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60);
+  return `${mins}:${secs.toString().padStart(2, '0')}`;
+}
+
 function AudioCardView({ card, cardIndex }: { card: AudioCard; cardIndex?: number; }) {
   const { registerConfig } = useContext(TransportContext);
+  const playback = useProgramAudioPlayback(card.audioStoragePath, card.durationSeconds, card.title);
+  const [progressTrackWidth, setProgressTrackWidth] = useState(0);
+  const [scrubProgress, setScrubProgress] = useState<number | null>(null);
 
-  // Register transport config: LISTEN — audio playback is controlled by the in-card player
+  // Split the title for serif styling: last word italic, rest regular
+  const titleParts = useMemo(() => {
+    const words = card.title.split(' ');
+    if (words.length <= 1) return { prefix: '', italic: card.title };
+    return {
+      prefix: words.slice(0, -1).join(' ') + ' ',
+      italic: words[words.length - 1],
+    };
+  }, [card.title]);
+
+  // Derive eyebrow from session type
+  const eyebrowLabel = useMemo(() => {
+    const lower = card.title.toLowerCase();
+    if (lower.includes('calm') || lower.includes('nervous')) return 'Calm Session';
+    if (lower.includes('sleep')) return 'Sleep Session';
+    if (lower.includes('breathe') || lower.includes('breath')) return 'Breathwork';
+    return 'Guided Audio Session';
+  }, [card.title]);
+
+  const clampProgress = useCallback((value: number) => {
+    return Math.max(0, Math.min(1, value));
+  }, []);
+
+  const getProgressFromLocation = useCallback((locationX: number) => {
+    if (progressTrackWidth <= 0) {
+      return playback.progress;
+    }
+
+    return clampProgress(locationX / progressTrackWidth);
+  }, [clampProgress, playback.progress, progressTrackWidth]);
+
+  const previewScrubPosition = useCallback((locationX: number) => {
+    if (playback.duration <= 0) return;
+    setScrubProgress(getProgressFromLocation(locationX));
+  }, [getProgressFromLocation, playback.duration]);
+
+  const commitScrubPosition = useCallback((locationX: number) => {
+    if (playback.duration <= 0) return;
+
+    const nextProgress = getProgressFromLocation(locationX);
+    setScrubProgress(nextProgress);
+    playback.seekTo(playback.duration * nextProgress);
+  }, [getProgressFromLocation, playback]);
+
+  useEffect(() => {
+    if (scrubProgress == null || playback.duration <= 0) return;
+
+    const liveProgress = playback.progress;
+    if (Math.abs(liveProgress - scrubProgress) < 0.02) {
+      setScrubProgress(null);
+    }
+  }, [playback.duration, playback.progress, scrubProgress]);
+
+  const displayedProgress = scrubProgress ?? playback.progress;
+  const displayedCurrentTime =
+    scrubProgress != null && playback.duration > 0
+      ? playback.duration * scrubProgress
+      : playback.currentTime;
+
   useEffect(() => {
     if (cardIndex == null) return;
 
-    registerConfig(cardIndex, {
-      centerIcon: (
-        <Ionicons
-          name="headset-outline"
-          size={28}
-          color="#06290C"
-        />
-      ),
-      centerLabel: 'LISTEN',
-      // No onCenterPress — user controls playback via the in-card player
-      // The Next button handles navigation
-    });
-  }, [cardIndex, registerConfig]);
+    if (playback.isLoading) {
+      registerConfig(cardIndex, {
+        centerIcon: <ActivityIndicator color="#06290C" size="small" />,
+        centerLabel: 'LOADING',
+        disabled: true,
+      });
+    } else {
+      registerConfig(cardIndex, {
+        centerIcon: (
+          <Ionicons
+            name={playback.isPlaying ? 'pause' : 'play'}
+            size={24}
+            color="#06290C"
+          />
+        ),
+        centerLabel: playback.isPlaying ? 'PAUSE' : 'PLAY',
+        onCenterPress: playback.togglePlayback,
+      });
+    }
+  }, [cardIndex, playback.isPlaying, playback.isLoading, playback.togglePlayback, registerConfig]);
 
   return (
-    <DarkCardShell eyebrow="Guided meditation" title={card.title}>
-      <View style={styles.audioDurationBadge}>
-        <Ionicons name="headset-outline" size={14} color="rgba(255, 255, 255, 0.55)" />
-        <Text style={styles.audioDurationText}>
-          {card.durationSeconds
-            ? `${Math.round(card.durationSeconds / 60)} min session`
-            : 'Guided session'}
-        </Text>
+    <View style={[styles.darkCardShell, styles.cardShellContinuous, styles.cardShadow, audioStyles.container]}>
+      {/* Botanical watermark — bottom-left, mirrored */}
+      <View style={audioStyles.watermark} pointerEvents="none">
+        <Svg width={180} height={180} viewBox="0 0 200 200" fill="none" style={{ transform: [{ scaleX: -1 }] }}>
+          <SvgPath
+            d="M100 10C100 10 165 55 165 105C165 148 135 182 100 192C65 182 35 148 35 105C35 55 100 10 100 10Z"
+            fill="#E3F3E5"
+            fillOpacity={0.05}
+          />
+          <SvgPath
+            d="M100 98L100 192"
+            stroke="#E3F3E5"
+            strokeWidth={1.5}
+            strokeOpacity={0.05}
+          />
+        </Svg>
       </View>
 
+      {/* Eyebrow */}
+      <Text style={audioStyles.eyebrow}>{eyebrowLabel}</Text>
+
+      {/* Title — serif with italic last word */}
+      <Text style={audioStyles.title}>
+        {titleParts.prefix}
+        <Text style={audioStyles.titleItalic}>{titleParts.italic}</Text>
+      </Text>
+
+      {/* Description */}
       {card.description ? (
-        <Text style={styles.audioIntention}>{card.description}</Text>
+        <Text style={audioStyles.description}>{card.description}</Text>
       ) : null}
 
-      <ProgramAudioPlayer
-        embeddedDark
-        audio={{
-          storagePath: card.audioStoragePath,
-          durationSeconds: card.durationSeconds,
-        }}
-      />
+      {/* Waveform visualization */}
+      <View style={audioStyles.waveContainer}>
+        {WAVEFORM_BARS.map((bar, index) => (
+          <View
+            key={`wv-${index}`}
+            style={[
+              audioStyles.waveBar,
+              {
+                height: bar.height,
+                backgroundColor: `rgba(223, 241, 226, ${bar.opacity})`,
+              },
+            ]}
+          />
+        ))}
+      </View>
 
-      {card.autoAdvance ? (
-        <Text style={styles.autoAdvanceDark}>
-          Auto-advance enabled
-        </Text>
+      {/* Progress scrubber */}
+      <View style={audioStyles.progressContainer}>
+        <View
+          style={audioStyles.progressTrack}
+          onLayout={(event) => setProgressTrackWidth(event.nativeEvent.layout.width)}
+          onStartShouldSetResponder={() => playback.duration > 0}
+          onMoveShouldSetResponder={() => playback.duration > 0}
+          onResponderGrant={(event) => previewScrubPosition(event.nativeEvent.locationX)}
+          onResponderMove={(event) => previewScrubPosition(event.nativeEvent.locationX)}
+          onResponderRelease={(event) => commitScrubPosition(event.nativeEvent.locationX)}
+          onResponderTerminate={() => setScrubProgress(null)}
+        >
+          <View
+            style={[
+              audioStyles.progressFill,
+              { width: `${Math.round(displayedProgress * 100)}%` },
+            ]}
+          >
+            <View style={audioStyles.progressThumb} />
+          </View>
+        </View>
+
+        {/* Time labels */}
+        <View style={audioStyles.timeRow}>
+          <Text style={audioStyles.timeText}>
+            {formatAudioTime(displayedCurrentTime)}
+          </Text>
+          <Text style={audioStyles.timeText}>
+            {formatAudioTime(playback.duration)}
+          </Text>
+        </View>
+      </View>
+
+      {/* Error display */}
+      {playback.error ? (
+        <View style={audioStyles.errorRow}>
+          <Ionicons name="alert-circle-outline" size={14} color="rgba(227,243,229,0.5)" />
+          <Text style={audioStyles.errorText}>{playback.error}</Text>
+        </View>
       ) : null}
-    </DarkCardShell>
+    </View>
   );
 }
 
@@ -2638,5 +2795,134 @@ const styles = StyleSheet.create({
   },
   exerciseDoneButtonTextCompleted: {
     color: '#E3F3E5',
+  },
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// AUDIO CARD v2 — immersive dark, spec-matched styles
+// ─────────────────────────────────────────────────────────────────────────────
+const audioStyles = StyleSheet.create({
+  container: {
+    position: 'relative',
+    overflow: 'visible',
+  },
+  watermark: {
+    position: 'absolute',
+    left: -20,
+    bottom: -20,
+    opacity: 0.05,
+    width: 180,
+    height: 180,
+  },
+  eyebrow: {
+    fontFamily: 'Satoshi-Bold',
+    fontSize: 9,
+    fontWeight: '700',
+    letterSpacing: 1.8,
+    textTransform: 'uppercase',
+    color: 'rgba(227, 243, 229, 0.35)',
+    marginBottom: 10,
+    position: 'relative',
+    zIndex: 2,
+  },
+  title: {
+    fontFamily: 'Erode-Medium',
+    fontSize: 28,
+    fontWeight: '500',
+    color: '#FFFFFF',
+    lineHeight: 31,
+    letterSpacing: -0.5,
+    marginBottom: 8,
+    position: 'relative',
+    zIndex: 2,
+  },
+  titleItalic: {
+    fontFamily: 'Erode-MediumItalic',
+    fontStyle: 'italic',
+    fontWeight: '400',
+    color: 'rgba(227, 243, 229, 0.8)',
+  },
+  description: {
+    fontFamily: 'Satoshi',
+    fontSize: 12,
+    color: 'rgba(227, 243, 229, 0.5)',
+    lineHeight: 18.5,
+    marginBottom: 0,
+    position: 'relative',
+    zIndex: 2,
+  },
+  waveContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 3,
+    paddingTop: 28,
+    paddingBottom: 20,
+    minHeight: 128,
+    position: 'relative',
+    zIndex: 2,
+  },
+  waveBar: {
+    width: 3,
+    borderRadius: 2,
+  },
+  progressContainer: {
+    paddingHorizontal: 4,
+    paddingTop: 8,
+    paddingBottom: 6,
+    position: 'relative',
+    zIndex: 2,
+    overflow: 'visible',
+  },
+  progressTrack: {
+    height: 4,
+    backgroundColor: 'rgba(227, 243, 229, 0.22)',
+    borderRadius: 999,
+    position: 'relative',
+    overflow: 'visible',
+  },
+  progressFill: {
+    height: 4,
+    backgroundColor: '#E3F3E5',
+    borderRadius: 999,
+    position: 'relative',
+  },
+  progressThumb: {
+    position: 'absolute',
+    right: -6,
+    top: -5,
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 4,
+  },
+  timeRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 5,
+  },
+  timeText: {
+    fontFamily: 'Satoshi',
+    fontSize: 9,
+    color: 'rgba(227, 243, 229, 0.4)',
+    letterSpacing: 0.4,
+  },
+  errorRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 12,
+    position: 'relative',
+    zIndex: 2,
+  },
+  errorText: {
+    fontFamily: 'Satoshi',
+    fontSize: 11,
+    color: 'rgba(227, 243, 229, 0.5)',
   },
 });

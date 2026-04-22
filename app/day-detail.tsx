@@ -258,14 +258,15 @@ const SwipeDeckCard = memo(function SwipeDeckCard({
         >
           <Animated.View style={[styles.animatedCardContainer, animatedStyle]}>
             <CardRenderer
-            card={card}
-            programName={programName}
-            totalCards={totalCards}
-            onContinue={onContinue}
-            reflectionStorageKey={reflectionStorageKey}
-            routineStorageKey={routineStorageKey}
-            onRoutineProgressChange={onRoutineProgressChange}
-            closeCardState={closeCardState}
+              card={card}
+              cardIndex={index}
+              programName={programName}
+              totalCards={totalCards}
+              onContinue={onContinue}
+              reflectionStorageKey={reflectionStorageKey}
+              routineStorageKey={routineStorageKey}
+              onRoutineProgressChange={onRoutineProgressChange}
+              closeCardState={closeCardState}
               programReflectionContext={
                 card.type === 'journal' ? programReflectionContext : undefined
               }
@@ -290,25 +291,44 @@ export default function DayDetailScreen() {
   const [showResumeToast, setShowResumeToast] = useState(false);
   const [isCompletingDay, setIsCompletingDay] = useState(false);
   const [transportConfigs, setTransportConfigs] = useState<Record<number, TransportConfig>>({});
+  const transportConfigsRef = useRef<Record<number, TransportConfig>>({});
   const [routineSummary, setRoutineSummary] = useState({
     hasRequiredRoutines: false,
     allRequiredRoutinesComplete: true,
   });
 
   const registerTransportConfig = useCallback((index: number, config: TransportConfig) => {
+    transportConfigsRef.current[index] = config;
     setTransportConfigs(prev => {
-      // Avoid unnecessary re-renders if the config hasn't changed
+      const existing = prev[index];
+      // Only update state when the rendered output would actually change.
+      // centerIcon is a new React element each time so we compare the name
+      // prop (for Ionicons) or the element type to detect real changes.
+      const iconChanged = (() => {
+        if (!existing?.centerIcon) return true;
+        const prevEl = existing.centerIcon as React.ReactElement<any> | null;
+        const nextEl = config.centerIcon as React.ReactElement<any> | null;
+        if (!prevEl || !nextEl) return prevEl !== nextEl;
+        return prevEl.type !== nextEl.type || prevEl.props?.name !== nextEl.props?.name;
+      })();
       if (
-        prev[index]?.centerLabel === config.centerLabel &&
-        prev[index]?.onCenterPress === config.onCenterPress &&
-        prev[index]?.centerIcon === config.centerIcon &&
-        prev[index]?.disabled === config.disabled
+        !iconChanged &&
+        existing?.centerLabel === config.centerLabel &&
+        existing?.disabled === config.disabled
       ) {
         return prev;
       }
       return { ...prev, [index]: config };
     });
   }, []);
+
+  // Memoize so the context object reference is stable — without this, every
+  // re-render creates a new `{ registerConfig }` object, which causes child
+  // useEffects that list `registerConfig` as a dep to fire on every render.
+  const transportContextValue = useMemo(
+    () => ({ registerConfig: registerTransportConfig }),
+    [registerTransportConfig]
+  );
 
   const swipeProgress = useSharedValue(0);
 
@@ -651,7 +671,7 @@ export default function DayDetailScreen() {
 
       {showResumeToast ? <ResumeToast /> : null}
 
-      <TransportContext.Provider value={{ registerConfig: registerTransportConfig }}>
+      <TransportContext.Provider value={transportContextValue}>
         <PagerView
           ref={pagerRef}
           style={styles.pager}
@@ -748,7 +768,7 @@ export default function DayDetailScreen() {
           );
         })()}
         onCenterPress={() => {
-          const customAction = transportConfigs[currentIndex]?.onCenterPress;
+          const customAction = transportConfigsRef.current[currentIndex]?.onCenterPress;
           if (customAction) {
             customAction();
           } else {
