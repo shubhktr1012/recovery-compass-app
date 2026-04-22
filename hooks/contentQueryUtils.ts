@@ -173,6 +173,7 @@ export function mapProgramRowToProgramContent(
     category: isProgramCategory(row.category) ? row.category : fallbackProgram.category,
     hasAudio: row.has_audio ?? fallbackProgram.hasAudio,
     contentStatus: resolveContentStatus(row.slug, mergedDays),
+    priceString: fallbackProgram.priceString,
   };
 
   return {

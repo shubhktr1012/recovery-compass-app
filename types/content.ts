@@ -23,6 +23,7 @@ export interface ProgramCatalogEntry {
   category: ProgramCategory;
   hasAudio: boolean;
   contentStatus: ProgramContentStatus;
+  priceString?: string;
 }
 
 export interface IntroCard {

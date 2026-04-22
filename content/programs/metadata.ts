@@ -9,6 +9,7 @@ export const PROGRAM_METADATA: Record<ProgramSlug, ProgramCatalogEntry> = {
     category: 'smoking',
     hasAudio: false,
     contentStatus: 'sample',
+    priceString: '₹599',
   },
   ninety_day_transform: {
     slug: 'ninety_day_transform',
@@ -18,6 +19,7 @@ export const PROGRAM_METADATA: Record<ProgramSlug, ProgramCatalogEntry> = {
     category: 'smoking',
     hasAudio: true,
     contentStatus: 'sample',
+    priceString: '₹5,999',
   },
   sleep_disorder_reset: {
     slug: 'sleep_disorder_reset',
@@ -27,6 +29,7 @@ export const PROGRAM_METADATA: Record<ProgramSlug, ProgramCatalogEntry> = {
     category: 'sleep',
     hasAudio: true,
     contentStatus: 'ready',
+    priceString: '₹2,599',
   },
   energy_vitality: {
     slug: 'energy_vitality',
@@ -36,6 +39,7 @@ export const PROGRAM_METADATA: Record<ProgramSlug, ProgramCatalogEntry> = {
     category: 'energy',
     hasAudio: false,
     contentStatus: 'placeholder',
+    priceString: '₹1,499',
   },
   age_reversal: {
     slug: 'age_reversal',
@@ -45,6 +49,7 @@ export const PROGRAM_METADATA: Record<ProgramSlug, ProgramCatalogEntry> = {
     category: 'aging',
     hasAudio: false,
     contentStatus: 'ready',
+    priceString: '₹6,999',
   },
   male_sexual_health: {
     slug: 'male_sexual_health',
@@ -54,5 +59,6 @@ export const PROGRAM_METADATA: Record<ProgramSlug, ProgramCatalogEntry> = {
     category: 'sexual_health',
     hasAudio: false,
     contentStatus: 'placeholder',
+    priceString: '₹4,999',
   },
 };
