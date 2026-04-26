@@ -8,12 +8,8 @@ import type { ProgramSlug } from '@/types/content';
 
 export function StreakRibbon() {
     const { access, progress } = useProfile();
-    if (!access.ownedProgram || access.purchaseState === 'not_owned') {
-        return null;
-    }
-
-    const activeProgram = access.ownedProgram as ProgramSlug;
-    const programMeta = PROGRAM_METADATA[activeProgram];
+    const activeProgram = access.ownedProgram as ProgramSlug | null;
+    const programMeta = activeProgram ? PROGRAM_METADATA[activeProgram] : null;
     const totalDays = programMeta?.totalDays ?? 1;
 
     // Pulse animation for "today" dot
@@ -42,7 +38,7 @@ export function StreakRibbon() {
         const windowSize = Math.min(7, currentScheduledDay);
         const startDay = currentScheduledDay - windowSize + 1;
 
-        const result: Array<{ dayNumber: number; status: 'completed' | 'partial' | 'today' | 'missed' }> = [];
+        const result: { dayNumber: number; status: 'completed' | 'partial' | 'today' | 'missed' }[] = [];
         let completed = 0;
 
         for (let dayNum = startDay; dayNum <= currentScheduledDay; dayNum++) {
@@ -68,6 +64,10 @@ export function StreakRibbon() {
 
         return { dots: result, completedCount: completed };
     }, [progress?.completedDays, progress?.partialDays, access.startedAt, access.currentDay, totalDays]);
+
+    if (!activeProgram || access.purchaseState === 'not_owned') {
+        return null;
+    }
 
     const windowLabel = dots.length < 7
         ? `${completedCount} of ${dots.length} day${dots.length === 1 ? '' : 's'} completed`

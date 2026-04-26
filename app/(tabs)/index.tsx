@@ -47,14 +47,11 @@ function HomeScreenContent({ activeProgram }: { activeProgram: ProgramSlug }) {
   const { ownedPrograms, isLoading: isOwnedProgramsLoading } = useOwnedPrograms();
   const queryClient = useQueryClient();
 
-  if (!program) {
-    return null;
-  }
-
+  const programTotalDays = program?.totalDays ?? 1;
   const currentDayNumber = access.completionState === 'completed'
-    ? program.totalDays
+    ? programTotalDays
     : access.startedAt
-      ? getProgramScheduledDay(access.startedAt, program.totalDays)
+      ? getProgramScheduledDay(access.startedAt, programTotalDays)
       : access.currentDay ?? 1;
 
   const { day: currentDay } = useDay(activeProgram, currentDayNumber);
@@ -70,12 +67,12 @@ function HomeScreenContent({ activeProgram }: { activeProgram: ProgramSlug }) {
   );
 
   const dayPreview = (() => {
-    if (!currentDay) return program.description;
+    if (!currentDay) return program?.description ?? '';
     const introCard = currentDay.cards.find((c) => c.type === 'intro');
     if (introCard?.type === 'intro') return introCard.goal;
     const lessonCard = currentDay.cards.find((c) => c.type === 'lesson');
-    if (lessonCard?.type === 'lesson') return lessonCard.highlight ?? lessonCard.paragraphs[0] ?? program.description;
-    return program.description;
+    if (lessonCard?.type === 'lesson') return lessonCard.highlight ?? lessonCard.paragraphs[0] ?? program?.description ?? '';
+    return program?.description ?? '';
   })();
 
   const journalCard = currentDay?.cards.find((card) => card.type === 'journal');
@@ -85,16 +82,16 @@ function HomeScreenContent({ activeProgram }: { activeProgram: ProgramSlug }) {
     'Friend';
   const avatarUrl = profile?.avatar_url ?? null;
   const avatarLetter = firstName[0]?.toUpperCase() ?? 'S';
-  const percentageComplete = Math.min(100, Math.round((currentDayNumber / program.totalDays) * 100));
+  const percentageComplete = Math.min(100, Math.round((currentDayNumber / programTotalDays) * 100));
   const statsItems = useMemo(
     () =>
       resolveDashboardStatItems({
         programSlug: activeProgram,
         currentDayNumber,
-        totalDays: program.totalDays,
+        totalDays: programTotalDays,
         completedDays: progress?.completedDays ?? [],
         partialDays: progress?.partialDays ?? [],
-        hasAudio: program.hasAudio,
+        hasAudio: program?.hasAudio ?? false,
         onboardingResponse,
         questionnaireAnswers:
           (profile?.questionnaire_answers as QuestionnaireAnswersSnapshot | null) ?? null,
@@ -104,17 +101,22 @@ function HomeScreenContent({ activeProgram }: { activeProgram: ProgramSlug }) {
           !profile?.questionnaire_answers,
       }),
     [
-      activeProgram,
-      currentDayNumber,
-      onboardingQuery.isLoading,
-      onboardingResponse,
+	      activeProgram,
+	      currentDayNumber,
+	      onboardingQuery.isLoading,
+	      onboardingResponse,
       profile?.questionnaire_answers,
-      program.hasAudio,
-      program.totalDays,
+      program?.hasAudio,
+      programTotalDays,
       progress?.completedDays,
       progress?.partialDays,
     ]
   );
+
+  if (!program) {
+    return null;
+  }
+
   const journeyGoal =
     onboardingResponse?.primary_goal ??
     getJourneyConfig(getJourneyForProgram(activeProgram)).primaryGoal;

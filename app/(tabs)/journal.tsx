@@ -310,7 +310,7 @@ export default function JournalScreen() {
                 </View>
               ) : (
                 <Text className="font-satoshi text-[13px] text-sage/55 leading-[19px] mt-2 relative z-10">
-                  A quiet place to notice what's shifting.
+                  {`A quiet place to notice what's shifting.`}
                 </Text>
               )}
             </View>
@@ -332,7 +332,7 @@ export default function JournalScreen() {
               {/* Prompt Strip */}
               <View style={{ backgroundColor: '#EEF6EF', paddingHorizontal: 20, paddingTop: 18, paddingBottom: 16 }}>
                 <Text style={{ fontFamily: 'Satoshi-Medium', fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(6,41,12,0.45)', marginBottom: 8 }}>
-                  Today's entry
+                  {`Today's entry`}
                 </Text>
                 <Text className="font-erode-medium text-[23px] text-forest tracking-tight" style={{ lineHeight: 28 }}>
                   How are you <Text className="font-erode-medium-italic" style={{ color: 'rgba(6,41,12,0.65)' }}>feeling?</Text>
@@ -516,7 +516,7 @@ export default function JournalScreen() {
                           </Text>
                         </View>
                         <Text className="font-erode-medium text-[17px] text-forest leading-[23px] tracking-tight mb-2" style={{ fontStyle: 'italic' }}>
-                          "{ref.prompt}"
+                          {`"${ref.prompt}"`}
                         </Text>
                         <Text style={{ fontFamily: 'Satoshi-Regular', fontSize: 13, lineHeight: 21, color: 'rgba(6,41,12,0.62)' }}>
                           {ref.reflection}

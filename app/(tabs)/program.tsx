@@ -241,13 +241,13 @@ function ProgramScreenContent({ activeProgram }: { activeProgram: ProgramSlug })
             {isArchivedReset && access.completionState === 'completed' ? (
               <View className="mx-5 mb-4 bg-white rounded-[20px] px-[18px] py-4 shadow-sm shadow-forest/5" style={{ shadowColor: '#06290C', shadowOpacity: 0.06, shadowRadius: 24, shadowOffset: { width: 0, height: 8 }, borderLeftWidth: 3, borderLeftColor: '#06290C' }}>
                 <Text className="font-satoshi-bold text-[9px] uppercase tracking-[1.8px] text-forest/40">
-                  What's Next
+                  {`What's Next`}
                 </Text>
                 <Text className="font-erode-medium text-[17px] leading-[20px] text-forest mt-1">
                   Ready for the <Text className="italic">full 90 days?</Text>
                 </Text>
                 <Text className="font-satoshi text-[12px] leading-[18px] text-forest/60 mt-1">
-                  You've broken the initial autopilot. The 90-Day Quit now takes you to lasting freedom.
+                  {`You've broken the initial autopilot. The 90-Day Quit now takes you to lasting freedom.`}
                 </Text>
                 <View className="flex-row items-center bg-forest rounded-full px-4 py-2 mt-3 self-start">
                   <Svg width="11" height="11" viewBox="0 0 24 24" fill="#fff" stroke="none" className="mr-1.5">

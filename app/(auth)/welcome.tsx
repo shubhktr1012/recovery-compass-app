@@ -224,7 +224,7 @@ export default function WelcomeScreen() {
     }, [googleAuthResponse, signInWithGoogleIdToken]);
 
     const handleCreateAccountPress = () => {
-        navigation.navigate('onboarding');
+        navigation.navigate('sign-up');
     };
 
     const openLink = (url: string) => {

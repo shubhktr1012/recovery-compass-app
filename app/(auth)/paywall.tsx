@@ -78,11 +78,13 @@ function getProgramSlugFromRouteParam(value: string | string[] | undefined): Pro
 function getPreferredOffering(
   offerings: Awaited<ReturnType<typeof Purchases.getOfferings>>
 ) {
+  // Always prefer the unified production offering first so platform-specific
+  // legacy offerings cannot silently shadow the live catalog again.
   const preferredKeys =
     Platform.OS === 'ios'
-      ? ['main_ios', 'main_production', 'main', 'default']
+      ? ['main_production', 'main_ios', 'main', 'default']
       : Platform.OS === 'android'
-        ? ['main_android', 'main_production', 'main', 'default']
+        ? ['main_production', 'main_android', 'main', 'default']
         : ['main_production', 'main', 'default'];
 
   for (const key of preferredKeys) {
@@ -181,6 +183,12 @@ export default function Paywall() {
           selectedOfferingIdentifier: currentOffering?.identifier ?? null,
           selectedPackageCount: currentOffering?.availablePackages?.length ?? 0,
           availableOfferingKeys: Object.keys(offerings.all),
+          packages: currentOffering?.availablePackages?.map((pack) => ({
+            packageIdentifier: pack.identifier,
+            productIdentifier: pack.product.identifier,
+            mappedProgramSlug: getProgramSlugForPackage(pack),
+            priceString: pack.product.priceString,
+          })) ?? [],
         });
 
         if (currentOffering && currentOffering.availablePackages.length > 0) {
@@ -272,6 +280,15 @@ export default function Paywall() {
       .map((slug) => uniquePackages.get(slug))
       .filter((pack): pack is PurchasesPackage => Boolean(pack));
   }, [packages, visibleProgramSlugs]);
+
+  const hasVisiblePurchaseIntent = visibleProgramSlugs.length > 0;
+  const hasStorePackages = packages.length > 0;
+  const purchaseOptionsUnavailable =
+    !launchPurchaseLocked &&
+    !access.ownedProgram &&
+    hasVisiblePurchaseIntent &&
+    !fetchingOfferings &&
+    eligiblePackages.length === 0;
 
   // Default select the primary package
   useEffect(() => {
@@ -485,11 +502,15 @@ export default function Paywall() {
             <Text className="font-satoshi text-center text-[15px] text-forest/70 leading-[24px]">
               {launchPurchaseLocked
                 ? `You already have ${getDisplayNameForProgram(access.ownedProgram as ProgramSlug)} unlocked. Additional program purchases will open once multi-program support is ready.`
-                : access.ownedProgram
+                : purchaseOptionsUnavailable
+                  ? hasStorePackages
+                    ? 'Purchase options are temporarily unavailable for this program. Please try again shortly.'
+                    : 'Purchase options are temporarily unavailable. Please try again shortly.'
+                  : access.ownedProgram
                 ? targetedProgram
                   ? `Purchase options for ${getDisplayNameForProgram(targetedProgram)} are not available right now.`
                   : 'Your account has full access to Recovery Compass. Head to the Program tab to continue your journey.'
-                : 'No eligible setups are available right now. This usually means your account is already fully unlocked.'}
+                : 'Purchase options are temporarily unavailable. Please try again shortly.'}
             </Text>
             {launchPurchaseLocked ? (
               <Pressable
