@@ -14,7 +14,7 @@ import type {
 } from '@/lib/onboarding.types';
 
 export interface OnboardingDraftPayload {
-  version: 'onboarding_redesign_v1_draft';
+  version: typeof QUESTIONNAIRE_DRAFT_VERSION;
   status: 'draft';
   currentStepId: string;
   currentStepIndex: number;
@@ -24,7 +24,8 @@ export interface OnboardingDraftPayload {
 
 type QuestionnaireRunSource = 'self_select' | 'guided_recommendation' | 'realignment';
 
-const QUESTIONNAIRE_VERSION = 'onboarding_redesign_v1';
+const QUESTIONNAIRE_VERSION = 'onboarding_redesign_v2';
+const QUESTIONNAIRE_DRAFT_VERSION = 'onboarding_redesign_v2_draft';
 
 function getOptionLabel(options: SelectionOption[] | undefined, value: string | null | undefined) {
   if (!options || !value) return null;
@@ -104,7 +105,7 @@ export async function loadOnboardingDraft(userId: string) {
   }
 
   const draft = data.questionnaire_answers as OnboardingDraftPayload | null;
-  if (!draft || draft.status !== 'draft' || draft.version !== 'onboarding_redesign_v1_draft') {
+  if (!draft || draft.status !== 'draft' || draft.version !== QUESTIONNAIRE_DRAFT_VERSION) {
     return null;
   }
 
@@ -121,7 +122,7 @@ export async function saveOnboardingDraft(args: {
   const { answers, currentStepId, currentStepIndex, email, userId } = args;
   const updatedAt = new Date().toISOString();
   const draftPayload: OnboardingDraftPayload = {
-    version: 'onboarding_redesign_v1_draft',
+    version: QUESTIONNAIRE_DRAFT_VERSION,
     status: 'draft',
     currentStepId,
     currentStepIndex,
@@ -167,10 +168,15 @@ export async function saveOnboardingQuestionnaire(args: {
     activeQuestions.flatMap((question) => serializeQuestionEntries(question, answers))
   );
 
+  const numericBaselineQuestion = journeyConfig.questions.baseline?.find(
+    (question) => question.type === 'number_input'
+  );
   const severityInputId =
     journeyConfig.questions.severity.type === 'compound_number_input' &&
     journeyConfig.questions.severity.inputs?.[0]?.id
       ? journeyConfig.questions.severity.inputs[0].id
+      : numericBaselineQuestion?.id
+        ? numericBaselineQuestion.id
       : journeyConfig.questions.severity.id;
   const spendInputId =
     journeyConfig.questions.severity.type === 'compound_number_input' &&
@@ -180,9 +186,13 @@ export async function saveOnboardingQuestionnaire(args: {
 
   const durationAnswer = serializedQuestionAnswers[journeyConfig.questions.duration.id];
   const frictionAnswer = serializedQuestionAnswers[journeyConfig.questions.friction.id];
+  const lifestyleAnswer = serializedQuestionAnswers[journeyConfig.questions.lifestyle.id];
   const triggerAnswer = serializedQuestionAnswers[journeyConfig.questions.trigger.id];
   const copingAnswer = serializedQuestionAnswers[journeyConfig.questions.coping.id];
   const severityAnswer = serializedQuestionAnswers[severityInputId];
+  const outcomeAnswer = journeyConfig.questions.outcome
+    ? serializedQuestionAnswers[journeyConfig.questions.outcome.id]
+    : null;
   const secondarySymptoms =
     (serializedQuestionAnswers[SECONDARY_SYMPTOMS_QUESTION_ID] as string[] | null) ?? [];
   const dailyConsumptionAmount = toNumericValue(answers.questionValues[severityInputId]);
@@ -216,8 +226,10 @@ export async function saveOnboardingQuestionnaire(args: {
     target_selection: journeyConfig.selectionLabel,
     past_attempts: typeof durationAnswer === 'string' ? durationAnswer : null,
     triggers: [
+      typeof lifestyleAnswer === 'string' ? lifestyleAnswer : null,
       typeof triggerAnswer === 'string' ? triggerAnswer : null,
       typeof copingAnswer === 'string' ? copingAnswer : null,
+      typeof outcomeAnswer === 'string' ? outcomeAnswer : null,
       ...secondarySymptoms,
     ].filter((value): value is string => Boolean(value)),
     root_cause: resolution.primaryConcernLabel,

@@ -104,14 +104,14 @@ export function getProgramStatisticsSummary(
       journey,
       cards: [
         {
+          id: 'sleep-affected-nights',
+          label: 'Nights affected weekly',
+          value: String(getAnswerLabel(questionnaireAnswers, questions.severity.id) ?? 'Not set'),
+        },
+        {
           id: 'daily-reliance',
           label: 'Daily reliance count',
           value: formatCount(projection.dailyAmount),
-        },
-        {
-          id: 'sleep-trigger',
-          label: 'Main sleep disruptor',
-          value: String(getAnswerLabel(questionnaireAnswers, questions.trigger.id) ?? 'Not set'),
         },
         {
           id: 'sleep-coping',
@@ -127,14 +127,14 @@ export function getProgramStatisticsSummary(
       journey,
       cards: [
         {
+          id: 'energy-caffeine',
+          label: 'Daily caffeine baseline',
+          value: String(getAnswerLabel(questionnaireAnswers, 'energy_caffeine_count') ?? 'Not set'),
+        },
+        {
           id: 'energy-severity',
           label: 'Desk or screen load',
           value: String(getAnswerLabel(questionnaireAnswers, questions.severity.id) ?? 'Not set'),
-        },
-        {
-          id: 'energy-trigger',
-          label: 'Biggest daily drain',
-          value: String(getAnswerLabel(questionnaireAnswers, questions.trigger.id) ?? 'Not set'),
         },
         {
           id: 'energy-coping',
@@ -150,14 +150,14 @@ export function getProgramStatisticsSummary(
       journey,
       cards: [
         {
+          id: 'age-disconnect',
+          label: 'Always-on load',
+          value: String(getAnswerLabel(questionnaireAnswers, questions.lifestyle.id) ?? 'Not set'),
+        },
+        {
           id: 'age-severity',
           label: 'Screen-hour load',
           value: String(getAnswerLabel(questionnaireAnswers, questions.severity.id) ?? 'Not set'),
-        },
-        {
-          id: 'age-trigger',
-          label: 'Hardest drain to recover from',
-          value: String(getAnswerLabel(questionnaireAnswers, questions.trigger.id) ?? 'Not set'),
         },
         {
           id: 'age-coping',

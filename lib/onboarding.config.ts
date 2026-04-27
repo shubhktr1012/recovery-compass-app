@@ -79,6 +79,22 @@ const JOURNEY_ORDER: JourneyKey[] = [
   'male_sexual_health',
 ];
 
+function createReadinessQuestion(idPrefix: string) {
+  return {
+    id: `${idPrefix}_readiness`,
+    title: 'If this plan takes 10-15 minutes a day, how ready are you to follow it?',
+    description: 'Choose the answer that feels honest right now.',
+    type: 'single_select' as const,
+    required: true,
+    options: [
+      { id: 'fully_ready', label: 'I am fully ready to commit' },
+      { id: 'mostly_ready', label: 'I am ready if it feels realistic' },
+      { id: 'need_structure', label: 'I need structure to stay consistent' },
+      { id: 'unsure_but_open', label: 'I am unsure, but open to starting' },
+    ],
+  };
+}
+
 const JOURNEY_CONFIG: Record<JourneyKey, JourneyConfig> = {
   smoking: {
     selectionLabel: 'Quit Smoking',
@@ -123,6 +139,19 @@ const JOURNEY_CONFIG: Record<JourneyKey, JourneyConfig> = {
           { id: '10_plus_years', label: '10+ years' },
         ],
       },
+      lifestyle: {
+        id: 'smoking_disconnect',
+        title: 'Does your current lifestyle give you space to disconnect from smoking cues?',
+        description: 'This helps us understand how much automatic pressure surrounds the habit.',
+        type: 'single_select',
+        required: true,
+        options: [
+          { id: 'yes_easily', label: 'Yes, I can disconnect when I need to' },
+          { id: 'sometimes', label: 'Sometimes, but stress pulls me back' },
+          { id: 'always_on', label: 'No, the cues are around me all day' },
+          { id: 'socially_embedded', label: 'It is tied into my social routine' },
+        ],
+      },
       trigger: {
         id: 'smoking_trigger',
         title: 'When do urges hit hardest?',
@@ -160,6 +189,19 @@ const JOURNEY_CONFIG: Record<JourneyKey, JourneyConfig> = {
           { id: 'delay_until_later', label: 'I tell myself I will deal with it later' },
         ],
       },
+      outcome: {
+        id: 'smoking_outcome',
+        title: 'Which outcome do you need most right now?',
+        description: 'This helps us choose between immediate control and a longer quit path.',
+        type: 'single_select',
+        required: true,
+        options: [
+          { id: 'immediate_control', label: 'I need immediate control over urges' },
+          { id: 'full_quit_longer_path', label: 'I want to fully quit with a longer guided path' },
+          { id: 'not_sure', label: 'I am not sure yet' },
+        ],
+      },
+      readiness: createReadinessQuestion('smoking'),
     },
   },
   sleep_disorder_reset: {
@@ -205,6 +247,19 @@ const JOURNEY_CONFIG: Record<JourneyKey, JourneyConfig> = {
           { id: 'over_year', label: 'More than a year' },
         ],
       },
+      lifestyle: {
+        id: 'sleep_disconnect',
+        title: 'Does your current lifestyle allow you to truly downshift at night?',
+        description: 'This tells us whether sleep is mainly a timing issue, a stress issue, or both.',
+        type: 'single_select',
+        required: true,
+        options: [
+          { id: 'yes_easily', label: 'Yes, I can switch off most nights' },
+          { id: 'sometimes', label: 'Sometimes, but not consistently' },
+          { id: 'always_on', label: 'No, I am always mentally on' },
+          { id: 'schedule_chaotic', label: 'My schedule keeps changing too much' },
+        ],
+      },
       trigger: {
         id: 'sleep_trigger',
         title: 'What most often throws sleep off track?',
@@ -219,14 +274,29 @@ const JOURNEY_CONFIG: Record<JourneyKey, JourneyConfig> = {
         ],
       },
       severity: {
-        id: 'sleep_reliance_count',
-        title: 'How many coffees, energy drinks, or sleep aids do you rely on in a day?',
-        description: 'Count both the things keeping you going and the things helping you crash.',
-        type: 'number_input',
+        id: 'sleep_affected_nights',
+        title: 'How many nights a week does this usually affect you?',
+        description: 'Pick the closest pattern.',
+        type: 'single_select',
         required: true,
-        placeholder: 'Enter a number',
-        keyboardType: 'number-pad',
+        options: [
+          { id: '1_2', label: '1-2 nights' },
+          { id: '3_4', label: '3-4 nights' },
+          { id: '5_6', label: '5-6 nights' },
+          { id: 'almost_every_night', label: 'Almost every night' },
+        ],
       },
+      baseline: [
+        {
+          id: 'sleep_reliance_count',
+          title: 'How many coffees, energy drinks, or sleep aids do you rely on in a day?',
+          description: 'Count both the things keeping you going and the things helping you crash.',
+          type: 'number_input',
+          required: true,
+          placeholder: 'Enter a number',
+          keyboardType: 'number-pad',
+        },
+      ],
       coping: {
         id: 'sleep_coping',
         title: 'What do you usually rely on to get through it?',
@@ -240,6 +310,7 @@ const JOURNEY_CONFIG: Record<JourneyKey, JourneyConfig> = {
           { id: 'push_through', label: 'I just push through and hope tonight is better' },
         ],
       },
+      readiness: createReadinessQuestion('sleep'),
     },
   },
   energy_vitality: {
@@ -285,6 +356,19 @@ const JOURNEY_CONFIG: Record<JourneyKey, JourneyConfig> = {
           { id: 'over_year', label: 'More than a year' },
         ],
       },
+      lifestyle: {
+        id: 'energy_crash_timing',
+        title: 'When does your energy crash hardest?',
+        description: 'This gives us a baseline for the daily rhythm we need to rebuild.',
+        type: 'single_select',
+        required: true,
+        options: [
+          { id: 'morning', label: 'Morning' },
+          { id: 'afternoon', label: 'Afternoon' },
+          { id: 'evening', label: 'Evening' },
+          { id: 'all_day', label: 'It feels low all day' },
+        ],
+      },
       trigger: {
         id: 'energy_trigger',
         title: 'What seems to drain you the most?',
@@ -311,6 +395,17 @@ const JOURNEY_CONFIG: Record<JourneyKey, JourneyConfig> = {
           { id: '8_plus', label: '8+ hours' },
         ],
       },
+      baseline: [
+        {
+          id: 'energy_caffeine_count',
+          title: 'How many coffees or energy drinks do you rely on daily?',
+          description: 'A rough daily count is enough.',
+          type: 'number_input',
+          required: true,
+          placeholder: 'Enter a number',
+          keyboardType: 'number-pad',
+        },
+      ],
       coping: {
         id: 'energy_coping',
         title: 'What do you currently rely on to push through?',
@@ -324,6 +419,7 @@ const JOURNEY_CONFIG: Record<JourneyKey, JourneyConfig> = {
           { id: 'force_through', label: 'I just force myself through the day' },
         ],
       },
+      readiness: createReadinessQuestion('energy'),
     },
   },
   age_reversal: {
@@ -369,6 +465,19 @@ const JOURNEY_CONFIG: Record<JourneyKey, JourneyConfig> = {
           { id: 'over_5_years', label: 'More than 5 years' },
         ],
       },
+      lifestyle: {
+        id: 'age_disconnect',
+        title: 'Does your current lifestyle allow you to truly disconnect?',
+        description: 'This is a core signal for hidden stress load and recovery strain.',
+        type: 'single_select',
+        required: true,
+        options: [
+          { id: 'yes_easily', label: 'Yes, easily' },
+          { id: 'sometimes', label: 'Sometimes' },
+          { id: 'always_on', label: 'No, I am always on' },
+          { id: 'only_when_exhausted', label: 'Only when I completely crash' },
+        ],
+      },
       trigger: {
         id: 'age_trigger',
         title: 'What in your lifestyle feels hardest to recover from?',
@@ -408,6 +517,7 @@ const JOURNEY_CONFIG: Record<JourneyKey, JourneyConfig> = {
           { id: 'crash_diets', label: 'Crash diets or extreme fixes' },
         ],
       },
+      readiness: createReadinessQuestion('age'),
     },
   },
   male_sexual_health: {
@@ -453,6 +563,19 @@ const JOURNEY_CONFIG: Record<JourneyKey, JourneyConfig> = {
           { id: 'over_year', label: 'More than a year' },
         ],
       },
+      lifestyle: {
+        id: 'male_lifestyle_load',
+        title: 'How much daily pressure is your body carrying right now?',
+        description: 'This keeps the question private while still giving us useful context.',
+        type: 'single_select',
+        required: true,
+        options: [
+          { id: 'low', label: 'Low, my routine is fairly steady' },
+          { id: 'moderate', label: 'Moderate, stress comes and goes' },
+          { id: 'high', label: 'High, I feel tense most days' },
+          { id: 'very_high', label: 'Very high, I rarely feel fully relaxed' },
+        ],
+      },
       trigger: {
         id: 'male_trigger',
         title: 'What seems most connected to it?',
@@ -492,6 +615,7 @@ const JOURNEY_CONFIG: Record<JourneyKey, JourneyConfig> = {
           { id: 'push_through', label: 'Push through without changing much' },
         ],
       },
+      readiness: createReadinessQuestion('male'),
     },
   },
 };

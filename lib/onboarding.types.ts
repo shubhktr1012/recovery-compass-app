@@ -56,10 +56,14 @@ export interface JourneyRecommendation {
 export interface JourneyQuestionSet {
   duration: QuestionDefinition;
   friction: QuestionDefinition;
+  lifestyle: QuestionDefinition;
   trigger: QuestionDefinition;
   severity: QuestionDefinition;
+  baseline?: QuestionDefinition[];
   spend?: QuestionDefinition;
   coping: QuestionDefinition;
+  outcome?: QuestionDefinition;
+  readiness: QuestionDefinition;
 }
 
 export interface JourneyConfig {

@@ -11,6 +11,7 @@ import {
 import type {
   GenderOption,
   GuidedIssueId,
+  JourneyKey,
   OnboardingAnswers,
   OnboardingResolution,
   OnboardingStep,
@@ -67,27 +68,45 @@ export function getActiveQuestionSequence(answers: OnboardingAnswers): QuestionD
   const journeyQuestions = getJourneyConfig(journey).questions;
   const secondarySymptoms = buildSecondarySymptomsQuestion(answers.gender, answers.guidedMainIssue);
 
-  if (answers.path === 'self_select') {
-    return [
-      journeyQuestions.friction,
-      journeyQuestions.duration,
-      journeyQuestions.trigger,
-      journeyQuestions.severity,
-      ...(journeyQuestions.spend ? [journeyQuestions.spend] : []),
-      journeyQuestions.coping,
-      secondarySymptoms,
-    ];
-  }
-
   return [
-    journeyQuestions.duration,
     journeyQuestions.friction,
+    journeyQuestions.duration,
+    journeyQuestions.lifestyle,
     journeyQuestions.severity,
+    ...(journeyQuestions.baseline ?? []),
     ...(journeyQuestions.spend ? [journeyQuestions.spend] : []),
-    secondarySymptoms,
     journeyQuestions.trigger,
     journeyQuestions.coping,
+    secondarySymptoms,
+    ...(journeyQuestions.outcome ? [journeyQuestions.outcome] : []),
+    journeyQuestions.readiness,
   ];
+}
+
+function getSmokingRecommendedProgram(answers: OnboardingAnswers) {
+  const outcome = answers.questionValues.smoking_outcome;
+  const duration = answers.questionValues.smoking_duration;
+  const dailyCountValue = answers.questionValues.smoking_daily_count;
+  const dailyCount = typeof dailyCountValue === 'string' ? Number(dailyCountValue) : 0;
+
+  if (outcome === 'full_quit_longer_path') {
+    return 'ninety_day_transform' as const;
+  }
+
+  if (
+    outcome === 'not_sure' &&
+    (dailyCount >= 10 || duration === '3_10_years' || duration === '10_plus_years')
+  ) {
+    return 'ninety_day_transform' as const;
+  }
+
+  return 'six_day_reset' as const;
+}
+
+function getRecommendedProgramForAnswers(journey: JourneyKey, answers: OnboardingAnswers) {
+  return journey === 'smoking'
+    ? getSmokingRecommendedProgram(answers)
+    : getRecommendedProgramForJourney(journey);
 }
 
 export function buildOnboardingSteps(answers: OnboardingAnswers): OnboardingStep[] {
@@ -206,7 +225,7 @@ export function getOnboardingResolution(answers: OnboardingAnswers): OnboardingR
 
   return {
     journey,
-    recommendedProgram: getRecommendedProgramForJourney(journey),
+    recommendedProgram: getRecommendedProgramForAnswers(journey, answers),
     primaryConcernLabel,
   };
 }
