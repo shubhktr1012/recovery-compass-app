@@ -78,13 +78,13 @@ function getProgramSlugFromRouteParam(value: string | string[] | undefined): Pro
 function getPreferredOffering(
   offerings: Awaited<ReturnType<typeof Purchases.getOfferings>>
 ) {
-  // Always prefer the unified production offering first so platform-specific
-  // legacy offerings cannot silently shadow the live catalog again.
+  // Prefer platform-specific offerings so StoreKit/Play only receive products
+  // for the current store. main_production stays as a fallback for continuity.
   const preferredKeys =
     Platform.OS === 'ios'
-      ? ['main_production', 'main_ios', 'main', 'default']
+      ? ['main_ios', 'main_production', 'main', 'default']
       : Platform.OS === 'android'
-        ? ['main_production', 'main_android', 'main', 'default']
+        ? ['main_android', 'main_production', 'main', 'default']
         : ['main_production', 'main', 'default'];
 
   for (const key of preferredKeys) {
@@ -125,6 +125,8 @@ export default function Paywall() {
   const [loading, setLoading] = useState(false);
   const [packages, setPackages] = useState<PurchasesPackage[]>([]);
   const [fetchingOfferings, setFetchingOfferings] = useState(true);
+  const [offeringsLoadFailed, setOfferingsLoadFailed] = useState(false);
+  const [offeringsRetryKey, setOfferingsRetryKey] = useState(0);
   const [selectedPackageId, setSelectedPackageId] = useState<string | null>(null);
   const targetedProgram = getProgramSlugFromRouteParam(params.program);
   const launchPurchaseLocked =
@@ -172,6 +174,8 @@ export default function Paywall() {
 
   useEffect(() => {
     const getOfferings = async () => {
+      setFetchingOfferings(true);
+      setOfferingsLoadFailed(false);
       try {
         await refreshAccess();
         const offerings = await Purchases.getOfferings();
@@ -198,15 +202,16 @@ export default function Paywall() {
         }
       } catch (e) {
         console.error('Error fetching offerings', e);
+        setPackages([]);
+        setOfferingsLoadFailed(true);
         void captureError(e, { source: 'paywall', metadata: { stage: 'get_offerings' } });
-        Alert.alert('Error', 'Could not load purchase options.');
       } finally {
         setFetchingOfferings(false);
       }
     };
 
     void getOfferings();
-  }, [refreshAccess]);
+  }, [offeringsRetryKey, refreshAccess]);
 
   const recommendedProgram = profile?.recommended_program ?? null;
   const needsOnboardingRealignment = hasOnboardingContextMismatch({
@@ -503,7 +508,9 @@ export default function Paywall() {
               {launchPurchaseLocked
                 ? `You already have ${getDisplayNameForProgram(access.ownedProgram as ProgramSlug)} unlocked. Additional program purchases will open once multi-program support is ready.`
                 : purchaseOptionsUnavailable
-                  ? hasStorePackages
+                  ? offeringsLoadFailed
+                    ? 'Purchase options are not available from the store yet. Please try again, or restore purchases if this program was already unlocked.'
+                    : hasStorePackages
                     ? 'Purchase options are temporarily unavailable for this program. Please try again shortly.'
                     : 'Purchase options are temporarily unavailable. Please try again shortly.'
                   : access.ownedProgram
@@ -524,13 +531,13 @@ export default function Paywall() {
               </Pressable>
             ) : (
               <Pressable
-                onPress={handleRestore}
+                onPress={offeringsLoadFailed ? () => setOfferingsRetryKey((key) => key + 1) : handleRestore}
                 disabled={loading}
                 hitSlop={20}
                 className="mt-8 rounded-full border border-forest/10 px-8 py-3.5 bg-white"
               >
                 <Text className="font-satoshi-bold text-[14px] text-forest">
-                  {loading ? 'Restoring...' : 'Restore Purchases'}
+                  {offeringsLoadFailed ? 'Try again' : loading ? 'Restoring...' : 'Restore Purchases'}
                 </Text>
               </Pressable>
             )}
