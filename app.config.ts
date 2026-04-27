@@ -1,23 +1,44 @@
-import type { ExpoConfig } from 'expo/config';
+import type { ConfigContext, ExpoConfig } from 'expo/config';
 
-const appJson = require('./app.json');
+type ExpoPlugin = NonNullable<ExpoConfig['plugins']>[number];
+type ExpoPlugins = NonNullable<ExpoConfig['plugins']>;
 
-export default (): ExpoConfig => {
-  const baseConfig = appJson.expo as ExpoConfig;
+export default ({ config }: ConfigContext): ExpoConfig => {
+  const baseConfig = config as ExpoConfig;
   const easProjectId = process.env.EXPO_PUBLIC_EAS_PROJECT_ID ?? process.env.EAS_PROJECT_ID ?? undefined;
   const basePlugins = baseConfig.plugins ?? [];
-  const audioPluginConfig: [string, { microphonePermission: false; recordAudioAndroid: false }] = [
+  const audioPluginConfig: [string, Record<string, unknown>] = [
     'expo-audio',
-    { microphonePermission: false, recordAudioAndroid: false },
+    {
+      enableBackgroundPlayback: true,
+      microphonePermission: false,
+      recordAudioAndroid: false,
+    },
   ];
-  const hasAudioPlugin = basePlugins.some((plugin) => plugin === 'expo-audio' || (Array.isArray(plugin) && plugin[0] === 'expo-audio'));
+  const withAudioSafetyConfig = (plugin: ExpoPlugin): ExpoPlugin => {
+    if (plugin === 'expo-audio') {
+      return audioPluginConfig;
+    }
+
+    if (Array.isArray(plugin) && plugin[0] === 'expo-audio') {
+      return [
+        'expo-audio',
+        {
+          ...(plugin[1] ?? {}),
+          microphonePermission: false,
+          recordAudioAndroid: false,
+        },
+      ];
+    }
+
+    return plugin;
+  };
+  const hasAudioPlugin = basePlugins.some(
+    (plugin) => plugin === 'expo-audio' || (Array.isArray(plugin) && plugin[0] === 'expo-audio')
+  );
   const plugins = hasAudioPlugin
-    ? basePlugins.map((plugin) =>
-        plugin === 'expo-audio' || (Array.isArray(plugin) && plugin[0] === 'expo-audio')
-          ? audioPluginConfig
-          : plugin
-      )
-    : [...basePlugins, audioPluginConfig];
+    ? basePlugins.map(withAudioSafetyConfig)
+    : ([...basePlugins, audioPluginConfig] as ExpoPlugins);
 
   return {
     ...baseConfig,

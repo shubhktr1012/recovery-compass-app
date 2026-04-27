@@ -19,9 +19,11 @@ import type { ProgramSlug } from '@/types/content';
 import { programDayQueryKey, programQueryKey } from '@/hooks/contentQueryUtils';
 import { useOnboardingResponse } from '@/hooks/useOnboardingResponse';
 import { useOwnedPrograms } from '@/hooks/useOwnedPrograms';
+import { useDailySteps } from '@/hooks/useDailySteps';
 import { getJourneyConfig } from '@/lib/onboarding.config';
 import { resolveDashboardStatItems } from '@/lib/dashboard-statistics';
 import type { QuestionnaireAnswersSnapshot } from '@/lib/program-statistics';
+import { StepPermissionPrompt } from '@/components/steps/StepPermissionPrompt';
 
 function getGreetingLabel() {
   const hour = new Date().getHours();
@@ -45,6 +47,7 @@ function HomeScreenContent({ activeProgram }: { activeProgram: ProgramSlug }) {
   const { program } = useProgram(activeProgram);
   const { programs } = usePrograms();
   const { ownedPrograms, isLoading: isOwnedProgramsLoading } = useOwnedPrograms();
+  const dailySteps = useDailySteps();
   const queryClient = useQueryClient();
 
   const programTotalDays = program?.totalDays ?? 1;
@@ -88,6 +91,11 @@ function HomeScreenContent({ activeProgram }: { activeProgram: ProgramSlug }) {
       resolveDashboardStatItems({
         programSlug: activeProgram,
         currentDayNumber,
+        dailySteps: {
+          isLoading: dailySteps.isLoading,
+          permissionState: dailySteps.summary?.permissionState,
+          steps: dailySteps.summary?.steps,
+        },
         totalDays: programTotalDays,
         completedDays: progress?.completedDays ?? [],
         partialDays: progress?.partialDays ?? [],
@@ -101,10 +109,13 @@ function HomeScreenContent({ activeProgram }: { activeProgram: ProgramSlug }) {
           !profile?.questionnaire_answers,
       }),
     [
-	      activeProgram,
-	      currentDayNumber,
-	      onboardingQuery.isLoading,
-	      onboardingResponse,
+      activeProgram,
+      currentDayNumber,
+      dailySteps.isLoading,
+      dailySteps.summary?.permissionState,
+      dailySteps.summary?.steps,
+      onboardingQuery.isLoading,
+      onboardingResponse,
       profile?.questionnaire_answers,
       program?.hasAudio,
       programTotalDays,
@@ -198,6 +209,12 @@ function HomeScreenContent({ activeProgram }: { activeProgram: ProgramSlug }) {
         </View>
       </ScrollView>
 
+      <StepPermissionPrompt
+        enableStepTracking={dailySteps.enableStepTracking}
+        isEnabling={dailySteps.isEnabling}
+        isLoading={dailySteps.isLoading}
+        summary={dailySteps.summary}
+      />
     </View>
   );
 }

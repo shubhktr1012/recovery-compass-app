@@ -84,6 +84,11 @@ queryClient.setQueryDefaults(['journal-count'], {
   gcTime: DEFAULT_QUERY_GC_TIME,
 });
 
+queryClient.setQueryDefaults(['daily-steps'], {
+  staleTime: 30 * 1000,
+  gcTime: DEFAULT_QUERY_GC_TIME,
+});
+
 // Create the AsyncStorage persister
 const asyncStoragePersister = createAsyncStoragePersister({
   storage: AsyncStorage,

@@ -20,6 +20,7 @@ import { useQuery } from '@tanstack/react-query';
 import { PROGRAM_METADATA } from '@/content/programs/metadata';
 import { useAuth } from '@/providers/auth';
 import { useOnboardingResponse } from '@/hooks/useOnboardingResponse';
+import { useDailySteps } from '@/hooks/useDailySteps';
 import { formatInr, getOnboardingProjection } from '@/lib/onboarding-metrics';
 import { useProfile } from '@/providers/profile';
 import { supabase } from '@/lib/supabase';
@@ -97,6 +98,7 @@ export default function AccountScreen() {
   const { user } = useAuth();
   const { access, profile, progress, uploadAvatar } = useProfile();
   const onboardingQuery = useOnboardingResponse();
+  const dailySteps = useDailySteps();
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [activeStatIndex, setActiveStatIndex] = useState(0);
   const userId = user?.id ?? null;
@@ -189,6 +191,18 @@ export default function AccountScreen() {
         context: remaining > 0 ? `On schedule · ${remaining} remaining` : 'Journey complete',
       },
       {
+        label: 'Steps today',
+        value:
+          dailySteps.summary?.permissionState === 'ready'
+            ? dailySteps.formattedSteps
+            : 'Enable',
+        subtitle: 'Daily movement',
+        context:
+          dailySteps.summary?.permissionState === 'ready'
+            ? dailySteps.summary.providerLabel
+            : 'Set up in statistics',
+      },
+      {
         label: '90-day savings',
         value: formatInr(stats.projectedSavings90Days),
         subtitle: 'Estimated',
@@ -222,7 +236,7 @@ export default function AccountScreen() {
       ...card,
       variant: index % 2 === 0 ? 'forest' : 'sage',
     }));
-  }, [access.completionState, activeProgram, bestStreak, currentStreak, journalCountQuery.data, progressSummary, stats.joinedDays, stats.projectedSavings90Days]);
+  }, [access.completionState, activeProgram, bestStreak, currentStreak, dailySteps.formattedSteps, dailySteps.summary?.permissionState, dailySteps.summary?.providerLabel, journalCountQuery.data, progressSummary, stats.joinedDays, stats.projectedSavings90Days]);
 
   const handleStatScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const offsetX = event.nativeEvent.contentOffset.x;

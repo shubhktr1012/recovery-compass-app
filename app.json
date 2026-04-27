@@ -15,6 +15,8 @@
       "supportsTablet": false,
       "bundleIdentifier": "com.recoverycompass.app",
       "infoPlist": {
+        "CFBundleDisplayName": "Recovery Compass",
+        "CFBundleName": "Recovery Compass",
         "ITSAppUsesNonExemptEncryption": false
       }
     },
@@ -59,7 +61,9 @@
         }
       ],
       "permissions": [
-        "com.android.vending.BILLING"
+        "com.android.vending.BILLING",
+        "android.permission.ACTIVITY_RECOGNITION",
+        "android.permission.health.READ_STEPS"
       ],
       "blockedPermissions": [
         "android.permission.RECORD_AUDIO",
@@ -97,9 +101,26 @@
         }
       ],
       "expo-secure-store",
+      "expo-asset",
       "expo-apple-authentication",
+      "expo-web-browser",
       "expo-notifications",
       "@react-native-community/datetimepicker",
+      [
+        "expo-sensors",
+        {
+          "motionPermission": "Allow $(PRODUCT_NAME) to read your step count so we can show daily movement progress."
+        }
+      ],
+      "expo-health-connect",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "minSdkVersion": 26
+          }
+        }
+      ],
       [
         "expo-audio",
         {

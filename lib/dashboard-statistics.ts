@@ -21,6 +21,11 @@ interface DashboardStatContext {
 interface ResolveDashboardStatItemsArgs extends DashboardStatContext {
   programSlug: ProgramSlug;
   currentDayNumber: number;
+  dailySteps?: {
+    isLoading: boolean;
+    permissionState: string | null | undefined;
+    steps: number | null | undefined;
+  } | null;
   totalDays: number;
   completedDays: number[];
   partialDays: number[];
@@ -112,26 +117,26 @@ function getQuestionnaireMetricSpecs(programSlug: ProgramSlug): MetricSpec[] {
     case 'sleep_disorder_reset':
       return [
         {
-          id: 'daily-reliance',
-          label: 'Daily reliance',
-          resolve: ({ onboardingResponse, questionnaireAnswers }) => {
-            const projection = getOnboardingProjection(onboardingResponse);
-            if (projection.dailyAmount > 0) {
-              return String(projection.dailyAmount);
-            }
-
-            return getQuestionnaireAnswer(questionnaireAnswers, 'sleep_reliance_count');
-          },
+          id: 'sleep-affected-nights',
+          label: 'Nights affected',
+          resolve: ({ questionnaireAnswers }) =>
+            getQuestionnaireAnswer(questionnaireAnswers, 'sleep_affected_nights'),
         },
         {
-          id: 'main-sleep-disruptor',
-          label: 'Main disruptor',
+          id: 'daily-reliance',
+          label: 'Daily reliance',
           resolve: ({ questionnaireAnswers }) =>
-            getQuestionnaireAnswer(questionnaireAnswers, 'sleep_trigger'),
+            getQuestionnaireAnswer(questionnaireAnswers, 'sleep_reliance_count'),
         },
       ];
     case 'energy_vitality':
       return [
+        {
+          id: 'daily-caffeine',
+          label: 'Daily caffeine',
+          resolve: ({ questionnaireAnswers }) =>
+            getQuestionnaireAnswer(questionnaireAnswers, 'energy_caffeine_count'),
+        },
         {
           id: 'screen-load',
           label: 'Screen load',
@@ -147,6 +152,12 @@ function getQuestionnaireMetricSpecs(programSlug: ProgramSlug): MetricSpec[] {
       ];
     case 'age_reversal':
       return [
+        {
+          id: 'always-on-load',
+          label: 'Always-on load',
+          resolve: ({ questionnaireAnswers }) =>
+            getQuestionnaireAnswer(questionnaireAnswers, 'age_disconnect'),
+        },
         {
           id: 'screen-load',
           label: 'Screen load',
@@ -245,6 +256,32 @@ export function resolveDashboardStatItems(
       state: 'ready',
     },
   ];
+
+  if (args.dailySteps?.isLoading) {
+    items.push({
+      id: 'steps-today',
+      label: 'Steps today',
+      value: '',
+      sublabel: '',
+      state: 'pending',
+    });
+  } else if (args.dailySteps?.permissionState === 'ready') {
+    items.push({
+      id: 'steps-today',
+      label: 'Steps today',
+      value: new Intl.NumberFormat('en-IN').format(args.dailySteps.steps ?? 0),
+      sublabel: 'Synced from device',
+      state: 'ready',
+    });
+  } else {
+    items.push({
+      id: 'steps-today',
+      label: 'Steps today',
+      value: 'Enable',
+      sublabel: 'From Statistics',
+      state: 'fallback',
+    });
+  }
 
   const metricSpecs = getQuestionnaireMetricSpecs(args.programSlug);
   const fallbackItems = getFallbackStatItems({

@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { ScrollView, Text, TouchableOpacity, View, StyleSheet } from 'react-native';
+import { Alert, ScrollView, Text, TouchableOpacity, View, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
@@ -7,7 +7,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { AppColors } from '@/constants/theme';
 import { useProfile } from '@/providers/profile';
 import { useOnboardingResponse } from '@/hooks/useOnboardingResponse';
+import { useDailySteps } from '@/hooks/useDailySteps';
 import { getProgramStatisticsSummary } from '@/lib/program-statistics';
+import { formatStepCount } from '@/lib/steps';
 import { PROGRAM_METADATA } from '@/content/programs/metadata';
 import type { ProgramSlug } from '@/types/content';
 
@@ -15,12 +17,30 @@ export default function StatisticsScreen() {
   const router = useRouter();
   const { access, profile, progress } = useProfile();
   const onboardingQuery = useOnboardingResponse();
+  const dailySteps = useDailySteps();
 
   const joinedDays = profile?.created_at
     ? Math.floor(Math.max(0, Date.now() - new Date(profile.created_at).getTime()) / (1000 * 60 * 60 * 24))
     : 0;
 
   const activeProgram = access.ownedProgram ? PROGRAM_METADATA[access.ownedProgram as ProgramSlug] : null;
+  const stepSummary = dailySteps.summary;
+
+  const handleEnableStepTracking = async () => {
+    try {
+      const summary = await dailySteps.enableStepTracking();
+      if (summary.permissionState !== 'ready') {
+        Alert.alert(
+          'Step tracking unavailable',
+          summary.canAskAgain
+            ? 'Permission was not granted. You can try again when you are ready.'
+            : 'Permission is disabled for Recovery Compass. Enable step access for Recovery Compass in device settings.'
+        );
+      }
+    } catch (error: any) {
+      Alert.alert('Step tracking failed', error?.message ?? 'Please try again.');
+    }
+  };
 
   const summary = useMemo(() => {
     return getProgramStatisticsSummary(
@@ -53,6 +73,57 @@ export default function StatisticsScreen() {
           <Text style={styles.heroSubtitle}>
             since {profile?.created_at ? new Date(profile.created_at).toLocaleDateString('en-IN', { month: 'long', day: 'numeric', year: 'numeric' }) : 'joining'}
           </Text>
+        </View>
+
+        <View style={styles.card}>
+          <View style={styles.cardHeaderRow}>
+            <View>
+              <Text style={styles.cardTitle}>Daily Movement</Text>
+              <Text style={styles.cardSubtitle}>
+                {stepSummary?.permissionState === 'ready'
+                  ? stepSummary.providerLabel
+                  : 'Connect your device step source'}
+              </Text>
+            </View>
+            <View style={styles.stepBadge}>
+              <Ionicons name="walk-outline" size={16} color={AppColors.forest} />
+            </View>
+          </View>
+
+          <Text style={styles.stepValue}>
+            {stepSummary?.permissionState === 'ready'
+              ? formatStepCount(stepSummary.steps)
+              : 'Not enabled'}
+          </Text>
+          <Text style={styles.stepContext}>
+            {stepSummary?.permissionState === 'ready'
+              ? `Current program day · Resets at 5:00 AM local time`
+              : 'Resets at 5:00 AM local time. iPhone uses Motion & Fitness. Android uses the best available device source.'}
+          </Text>
+
+          {stepSummary?.permissionState !== 'ready' ? (
+            <TouchableOpacity
+              onPress={() => void handleEnableStepTracking()}
+              activeOpacity={0.82}
+              style={styles.enableStepsButton}
+              disabled={dailySteps.isEnabling}
+            >
+              <Text style={styles.enableStepsText}>
+                {dailySteps.isEnabling ? 'Enabling...' : 'Enable step tracking'}
+              </Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              onPress={() => void dailySteps.refresh()}
+              activeOpacity={0.82}
+              style={styles.refreshStepsButton}
+              disabled={dailySteps.isRefreshing}
+            >
+              <Text style={styles.refreshStepsText}>
+                {dailySteps.isRefreshing ? 'Refreshing...' : 'Refresh steps'}
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
 
         {/* Dynamic Program Statistics */}
@@ -188,6 +259,71 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: AppColors.forest,
     marginBottom: 16,
+  },
+  cardHeaderRow: {
+    alignItems: 'flex-start',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+  },
+  cardSubtitle: {
+    color: AppColors.subtleInk,
+    fontFamily: 'Satoshi-Regular',
+    fontSize: 12,
+    marginTop: -8,
+  },
+  stepBadge: {
+    alignItems: 'center',
+    backgroundColor: AppColors.sageSoft,
+    borderColor: AppColors.hairline,
+    borderRadius: 16,
+    borderWidth: 1,
+    height: 32,
+    justifyContent: 'center',
+    width: 32,
+  },
+  stepValue: {
+    color: AppColors.forest,
+    fontFamily: 'Erode-Bold',
+    fontSize: 40,
+    lineHeight: 44,
+  },
+  stepContext: {
+    color: AppColors.subtleInk,
+    fontFamily: 'Satoshi-Regular',
+    fontSize: 13,
+    lineHeight: 19,
+    marginTop: 4,
+  },
+  enableStepsButton: {
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    backgroundColor: AppColors.forest,
+    borderRadius: 999,
+    marginTop: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 9,
+  },
+  enableStepsText: {
+    color: AppColors.white,
+    fontFamily: 'Satoshi-Bold',
+    fontSize: 12,
+  },
+  refreshStepsButton: {
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    backgroundColor: AppColors.sageSoft,
+    borderColor: AppColors.hairline,
+    borderRadius: 999,
+    borderWidth: 1,
+    marginTop: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 9,
+  },
+  refreshStepsText: {
+    color: AppColors.forest,
+    fontFamily: 'Satoshi-Bold',
+    fontSize: 12,
   },
   splitRow: {
     flexDirection: 'row',

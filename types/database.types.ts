@@ -47,6 +47,45 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_step_counts: {
+        Row: {
+          created_at: string
+          id: string
+          local_date: string
+          provider_status: string
+          recorded_at: string
+          source: string
+          steps: number
+          timezone: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          local_date: string
+          provider_status?: string
+          recorded_at?: string
+          source: string
+          steps?: number
+          timezone?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          local_date?: string
+          provider_status?: string
+          recorded_at?: string
+          source?: string
+          steps?: number
+          timezone?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       edge_rate_limits: {
         Row: {
           bucket: string
