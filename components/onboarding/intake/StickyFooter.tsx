@@ -1,5 +1,5 @@
 import React from 'react';
-import { View } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CompassCTA } from './CompassCTA';
 
@@ -14,11 +14,8 @@ export function StickyFooter({ label, onPress, disabled, loading }: StickyFooter
   const insets = useSafeAreaInsets();
 
   return (
-    <View 
-      className="absolute bottom-0 w-full bg-surface px-6"
-      style={{ paddingBottom: Math.max(insets.bottom, 32) }}
-    >
-      <CompassCTA 
+    <View style={[styles.wrap, { paddingBottom: Math.max(insets.bottom, 32) }]}>
+      <CompassCTA
         label={label}
         onPress={onPress}
         disabled={disabled}
@@ -27,3 +24,13 @@ export function StickyFooter({ label, onPress, disabled, loading }: StickyFooter
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  wrap: {
+    position: 'absolute',
+    bottom: 0,
+    width: '100%',
+    backgroundColor: '#FFFFFF', // canvas to match StepContainer
+    paddingHorizontal: 24,
+  },
+});

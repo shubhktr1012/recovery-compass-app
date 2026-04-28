@@ -6,17 +6,18 @@ import { useQueryClient } from '@tanstack/react-query';
 
 import {
   CompassCTA,
-  FocusPointRow,
-  InlineSelectRow,
+  FocusPill,
+  GenderSegment,
   InputText,
   LargeNumberInput,
-  ProgressLine,
+  OptionCard,
+  PathCard,
   RecommendationHero,
   SelectChip,
   StepContainer,
   StepHeadline,
   StepPill,
-  SurfaceSelectCard,
+  WhyFitsCard,
 } from '@/components/onboarding/intake';
 import { PROGRAM_METADATA } from '@/content/programs/metadata';
 import { ONBOARDING_RESPONSE_QUERY_KEY } from '@/hooks/useOnboardingResponse';
@@ -194,7 +195,7 @@ export default function Personalization() {
           setDidRestoreDraft(true);
         }
       } catch (error) {
-        console.error('Failed to restore onboarding draft', error);
+        console.warn('Failed to restore onboarding draft', error);
       } finally {
         if (isMounted) {
           setIsDraftReady(true);
@@ -227,7 +228,7 @@ export default function Personalization() {
         email: user.email,
         userId: user.id,
       }).catch((error) => {
-        console.error('Failed to save onboarding draft', error);
+        console.warn('Failed to save onboarding draft', error);
       });
     }, 500);
 
@@ -481,25 +482,24 @@ export default function Personalization() {
 
     if (question.type === 'compound_number_input' && question.inputs) {
       return (
-        <View className="mt-8 gap-6">
+        <View style={{ marginTop: 24, gap: 16 }}>
           {question.inputs.map((input, index) => {
             const currentValue = answers.questionValues[input.id];
             const isLast = index === question.inputs!.length - 1;
             return (
-              <View key={input.id}>
-                <Text className="text-forest/50 font-satoshi-bold text-[11px] uppercase tracking-[2px] mb-3 ml-1">
-                  {input.label}
-                </Text>
-                <LargeNumberInput
-                  value={typeof currentValue === 'string' ? currentValue : ''}
-                  onChangeText={(value) => updateQuestionValue(input.id, value)}
-                  unit={input.placeholder || ''}
-                  autoFocus={index === 0}
-                  onSubmitEditing={() => {
-                    if (isLast) void handleNext();
-                  }}
-                />
-              </View>
+              <InputText
+                key={input.id}
+                label={input.label}
+                value={typeof currentValue === 'string' ? currentValue : ''}
+                onChangeText={(value) => updateQuestionValue(input.id, value)}
+                placeholder={input.placeholder || ''}
+                autoFocus={index === 0}
+                keyboardType="numeric"
+                inputMode="numeric"
+                onSubmitEditing={() => {
+                  if (isLast) void handleNext();
+                }}
+              />
             );
           })}
         </View>
@@ -511,31 +511,38 @@ export default function Personalization() {
       const selectedValues = Array.isArray(currentValue) ? currentValue : [];
 
       return (
-        <View className="mt-8 flex-row flex-wrap" style={{ gap: 10 }}>
-          {question.options?.map((option) => (
-            <SelectChip
-              key={option.id}
-              label={option.label}
-              selected={selectedValues.includes(option.id)}
-              onPress={() => toggleQuestionValue(question.id, option.id)}
-            />
-          ))}
+        <View style={{ marginTop: 24 }}>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
+            {question.options?.map((option) => (
+              <SelectChip
+                key={option.id}
+                label={option.label}
+                selected={selectedValues.includes(option.id)}
+                onPress={() => toggleQuestionValue(question.id, option.id)}
+              />
+            ))}
+          </View>
+          {question.allowEmpty && (
+            <Text style={{ fontFamily: 'Satoshi-Regular', fontSize: 12, color: 'rgba(6,41,12,0.35)', marginTop: 14, textAlign: 'center' }}>
+              You can skip this if nothing else applies.
+            </Text>
+          )}
         </View>
       );
     }
 
-    // single_select — inline text rows
+    // single_select — card-based options
     const currentValue = answers.questionValues[question.id];
 
     return (
-      <View className="mt-8">
-        {question.options?.map((option, index) => (
-          <InlineSelectRow
+      <View style={{ marginTop: 20, gap: 8 }}>
+        {question.options?.map((option) => (
+          <OptionCard
             key={option.id}
             label={option.label}
+            sublabel={option.description}
             selected={currentValue === option.id}
             onPress={() => updateQuestionValue(question.id, option.id)}
-            isLast={index === (question.options?.length ?? 0) - 1}
           />
         ))}
       </View>
@@ -548,36 +555,46 @@ export default function Personalization() {
       return null;
     }
 
+    const journey = currentStep.journey;
+    const rec = currentStep.recommendation;
+    const programSlug = resolution.recommendedProgram;
+    const programMeta = programSlug ? PROGRAM_METADATA[programSlug] : null;
+
     const primaryConcernCopy = resolution.primaryConcernLabel
       ? `You told us the main issue is ${resolution.primaryConcernLabel.toLowerCase()}.`
       : 'You gave us enough context to narrow this down clearly.';
 
+    const stats = programMeta
+      ? [
+          { value: String(programMeta.totalDays), label: 'Days' },
+          { value: programMeta.dailyMinutesLabel, label: 'Min / day' },
+          { value: String(programMeta.phaseCount), label: 'Phases' },
+        ]
+      : undefined;
+
     return (
-      <View className="mt-8">
+      <View style={{ marginTop: 24 }}>
         {/* Hero card */}
         <RecommendationHero
-          title={`${currentStep.recommendation.title} fits your current pattern.`}
-          subtitle={currentStep.recommendation.subtitle}
+          title={rec.title}
+          subtitle={rec.subtitle}
+          programName={programMeta?.name}
+          tagline={programMeta?.description}
+          stats={stats}
         />
 
         {/* Why this fits */}
-        <View className="mt-6">
-          <StepPill label="WHY THIS FITS" />
-          <Text className="mt-4 font-satoshi text-[15px] leading-[26px] text-forest/70">
-            {primaryConcernCopy} {currentStep.recommendation.whyFits}
-          </Text>
+        <View style={{ marginTop: 20 }}>
+          <WhyFitsCard text={`${primaryConcernCopy} ${rec.whyFits}`} />
         </View>
 
-        {/* Divider */}
-        <View className="my-4 h-[1px] w-[24px] bg-forest/15" />
-
-        {/* Focus points */}
-        <View>
-          <StepPill label={currentStep.recommendation.focusLabel.toUpperCase()} />
-          <View className="mt-4" style={{ gap: 16 }}>
-            {currentStep.recommendation.focusPoints.map((point, index) => (
-              <FocusPointRow
-                key={`${currentStep.journey}-focus-${index}`}
+        {/* Focus areas as pills */}
+        <View style={{ marginTop: 20 }}>
+          <StepPill label={rec.focusLabel.toUpperCase()} />
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 10 }}>
+            {rec.focusPoints.map((point, index) => (
+              <FocusPill
+                key={`${journey}-focus-${index}`}
                 text={point}
               />
             ))}
@@ -592,8 +609,9 @@ export default function Personalization() {
     switch (currentStep.type) {
       case 'quick_profile':
         return (
-          <View className="mt-8">
+          <View style={{ marginTop: 20, gap: 12 }}>
             <InputText
+              label="NAME"
               value={answers.name}
               onChangeText={(value) => updateQuickProfile('name', value)}
               placeholder="What should we call you?"
@@ -601,43 +619,36 @@ export default function Personalization() {
               maxLength={80}
             />
 
-            <View className="mt-8">
-              <Text className="font-satoshi-bold text-[10px] uppercase tracking-[2.4px] text-forest/35 mb-4">
-                AGE
-              </Text>
-              <LargeNumberInput
-                value={answers.age}
-                onChangeText={(value) => updateQuickProfile('age', value)}
-                unit="years"
-                maxLength={3}
-              />
-            </View>
+            <LargeNumberInput
+              variant="age"
+              label="AGE"
+              value={answers.age}
+              onChangeText={(value) => updateQuickProfile('age', value)}
+              maxLength={3}
+            />
 
-            <View className="mt-8">
-              <Text className="font-satoshi-bold text-[10px] uppercase tracking-[2.4px] text-forest/35 mb-4">
+            <View style={{ marginTop: 4 }}>
+              <Text style={{ fontFamily: 'Satoshi-Bold', fontSize: 9, letterSpacing: 9 * 0.18, color: 'rgba(6,41,12,0.35)', textTransform: 'uppercase', marginBottom: 10 }}>
                 GENDER
               </Text>
-              {GENDER_OPTIONS.map((option, index) => (
-                <InlineSelectRow
-                  key={option}
-                  label={option}
-                  selected={answers.gender === option}
-                  onPress={() => updateGender(option)}
-                  isLast={index === GENDER_OPTIONS.length - 1}
-                />
-              ))}
+              <GenderSegment
+                options={[...GENDER_OPTIONS]}
+                selected={answers.gender}
+                onSelect={(value) => updateGender(value as GenderOption)}
+              />
             </View>
           </View>
         );
 
       case 'path_choice':
         return (
-          <View className="mt-8">
+          <View style={{ marginTop: 20, gap: 10 }}>
             {currentStep.options.map((option) => (
-              <SurfaceSelectCard
+              <PathCard
                 key={option.id}
                 title={option.label}
                 description={option.description}
+                icon={option.id === 'self_select' ? 'navigate-outline' : 'compass-outline'}
                 selected={answers.path === option.id}
                 onPress={() => updatePath(option.id)}
               />
@@ -647,9 +658,9 @@ export default function Personalization() {
 
       case 'program_choice':
         return (
-          <View className="mt-8">
+          <View style={{ marginTop: 20, gap: 10 }}>
             {currentStep.options.map((option) => (
-              <SurfaceSelectCard
+              <PathCard
                 key={option.id}
                 title={option.label}
                 description={option.description}
@@ -662,9 +673,9 @@ export default function Personalization() {
 
       case 'guided_issue':
         return (
-          <View className="mt-8">
+          <View style={{ marginTop: 20, gap: 10 }}>
             {currentStep.options.map((option) => (
-              <SurfaceSelectCard
+              <PathCard
                 key={option.id}
                 title={option.label}
                 description={option.description}
@@ -694,15 +705,24 @@ export default function Personalization() {
         ? 'See plans'
         : 'Continue';
 
+  const ctaVariant: 'primary' | 'highlight' =
+    currentStep.type === 'recommendation' ? 'highlight' : 'primary';
+
+  // Determine headline variant: serif for emotional questions, sans for utility
+  const headlineVariant: 'serif' | 'sans' =
+    currentStep.type === 'quick_profile' || currentStep.type === 'path_choice'
+      ? 'sans'
+      : 'serif';
+
   // ─── Loading state ─────────────────────────────────────────────────────
   if (!isDraftReady) {
     return (
-      <View className="flex-1 items-center justify-center bg-surface px-8">
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFFFFF', paddingHorizontal: 32 }}>
         <StatusBar style="dark" />
-        <Text className="font-erode-semibold text-[28px] leading-[34px] text-forest text-center">
+        <Text style={{ fontFamily: 'Erode-Semibold', fontSize: 28, lineHeight: 34, color: '#06290C', textAlign: 'center' }}>
           {isRealignmentMode ? 'Preparing your program' : 'Restoring your progress'}
         </Text>
-        <Text className="mt-3 max-w-[280px] font-satoshi text-[15px] leading-[24px] text-forest/50 text-center">
+        <Text style={{ marginTop: 12, maxWidth: 280, fontFamily: 'Satoshi-Regular', fontSize: 15, lineHeight: 24, color: 'rgba(6,41,12,0.50)', textAlign: 'center' }}>
           {isRealignmentMode
             ? 'We are loading a few questions so your unlocked program matches your profile.'
             : 'We are picking up your questionnaire from where you left off.'}
@@ -725,24 +745,23 @@ export default function Personalization() {
         totalSteps={steps.length}
         onBack={handleBack}
         showBack={stepIndex > 0}
+        showProgress={currentStep.type !== 'recommendation'}
         footer={
           <CompassCTA
             label={ctaLabel}
+            variant={ctaVariant}
             onPress={() => void handleNext()}
             loading={isSaving}
           />
         }
       >
-        {/* Progress line */}
-        <ProgressLine currentStep={stepIndex} totalSteps={steps.length} />
-
         {/* Content with transition */}
         <RNAnimated.View
           key={`step-${stepIndex}`}
           style={{ opacity: stepFadeAnim }}
         >
-          {/* Pill label — 48px below progress */}
-          <View className="mt-12">
+          {/* Pill label */}
+          <View style={{ marginTop: 28 }}>
             <StepPill label={STEP_PILL_LABELS[currentStep.type]} />
           </View>
 
@@ -750,6 +769,7 @@ export default function Personalization() {
           <StepHeadline
             title={currentStep.title}
             description={currentStep.description}
+            variant={headlineVariant}
           />
 
           {isRealignmentMode ? (

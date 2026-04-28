@@ -24,6 +24,10 @@ export interface ProgramCatalogEntry {
   hasAudio: boolean;
   contentStatus: ProgramContentStatus;
   priceString?: string;
+  /** Label for the recommendation stats row, e.g. "10–15" */
+  dailyMinutesLabel: string;
+  /** Number of program phases for the recommendation stats row */
+  phaseCount: number;
 }
 
 export interface IntroCard {

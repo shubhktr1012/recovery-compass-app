@@ -10,6 +10,8 @@ export const PROGRAM_METADATA: Record<ProgramSlug, ProgramCatalogEntry> = {
     hasAudio: false,
     contentStatus: 'sample',
     priceString: '₹599',
+    dailyMinutesLabel: '10–15',
+    phaseCount: 2,
   },
   ninety_day_transform: {
     slug: 'ninety_day_transform',
@@ -20,6 +22,8 @@ export const PROGRAM_METADATA: Record<ProgramSlug, ProgramCatalogEntry> = {
     hasAudio: true,
     contentStatus: 'sample',
     priceString: '₹5,999',
+    dailyMinutesLabel: '10–20',
+    phaseCount: 4,
   },
   sleep_disorder_reset: {
     slug: 'sleep_disorder_reset',
@@ -30,6 +34,8 @@ export const PROGRAM_METADATA: Record<ProgramSlug, ProgramCatalogEntry> = {
     hasAudio: true,
     contentStatus: 'ready',
     priceString: '₹2,599',
+    dailyMinutesLabel: '10–15',
+    phaseCount: 3,
   },
   energy_vitality: {
     slug: 'energy_vitality',
@@ -40,6 +46,8 @@ export const PROGRAM_METADATA: Record<ProgramSlug, ProgramCatalogEntry> = {
     hasAudio: false,
     contentStatus: 'placeholder',
     priceString: '₹1,499',
+    dailyMinutesLabel: '10–15',
+    phaseCount: 2,
   },
   age_reversal: {
     slug: 'age_reversal',
@@ -50,6 +58,8 @@ export const PROGRAM_METADATA: Record<ProgramSlug, ProgramCatalogEntry> = {
     hasAudio: false,
     contentStatus: 'ready',
     priceString: '₹6,999',
+    dailyMinutesLabel: '10–15',
+    phaseCount: 4,
   },
   male_sexual_health: {
     slug: 'male_sexual_health',
@@ -60,5 +70,7 @@ export const PROGRAM_METADATA: Record<ProgramSlug, ProgramCatalogEntry> = {
     hasAudio: false,
     contentStatus: 'placeholder',
     priceString: '₹4,999',
+    dailyMinutesLabel: '10–15',
+    phaseCount: 3,
   },
 };

@@ -174,6 +174,8 @@ export function mapProgramRowToProgramContent(
     hasAudio: row.has_audio ?? fallbackProgram.hasAudio,
     contentStatus: resolveContentStatus(row.slug, mergedDays),
     priceString: fallbackProgram.priceString,
+    dailyMinutesLabel: fallbackProgram.dailyMinutesLabel,
+    phaseCount: fallbackProgram.phaseCount,
   };
 
   return {

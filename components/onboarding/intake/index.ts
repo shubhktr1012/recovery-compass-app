@@ -14,3 +14,10 @@ export { RecommendationHero } from './RecommendationHero';
 export { FocusPointRow } from './FocusPointRow';
 export { StickyFooter } from './StickyFooter';
 export { StepContainer } from './StepContainer';
+
+// New components — Forest editorial spec
+export { GenderSegment } from './GenderSegment';
+export { OptionCard } from './OptionCard';
+export { PathCard } from './PathCard';
+export { WhyFitsCard } from './WhyFitsCard';
+export { FocusPill } from './FocusPill';

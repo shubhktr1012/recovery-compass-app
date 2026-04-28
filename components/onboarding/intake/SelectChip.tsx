@@ -1,6 +1,5 @@
 import React from 'react';
-import { Pressable, Text } from 'react-native';
-import Animated, { useAnimatedStyle, withSpring, withTiming } from 'react-native-reanimated';
+import { Pressable, StyleSheet, Text } from 'react-native';
 
 interface SelectChipProps {
   label: string;
@@ -8,28 +7,48 @@ interface SelectChipProps {
   onPress: () => void;
 }
 
-const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
-
 export function SelectChip({ label, selected, onPress }: SelectChipProps) {
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: withSpring(selected ? 1 : 0.95, { damping: 15, stiffness: 150 }) }],
-    backgroundColor: withTiming(selected ? 'rgba(6, 41, 12, 0.04)' : '#FFFFFF', { duration: 150 }),
-    borderColor: withTiming(selected ? 'rgba(6, 41, 12, 0.25)' : 'rgba(6, 41, 12, 0.08)', { duration: 150 }),
-  }));
-
   return (
-    <AnimatedPressable 
+    <Pressable
       onPress={onPress}
-      style={[animatedStyle, { borderWidth: 1 }]}
-      className="px-5 py-3 rounded-full"
+      style={[styles.chip, selected && styles.chipSelected]}
     >
-      <Text 
-        className={`font-satoshi text-[14px] ${
-          selected ? 'font-satoshi-bold text-forest' : 'text-forest/60'
-        }`}
-      >
+      <Text style={[styles.text, selected && styles.textSelected]}>
         {label}
       </Text>
-    </AnimatedPressable>
+    </Pressable>
   );
 }
+
+const styles = StyleSheet.create({
+  chip: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: 'rgba(6,41,12,0.08)',
+    borderRadius: 999,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    // --card-shadow
+    shadowColor: '#06290C',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 1,
+  },
+  chipSelected: {
+    backgroundColor: '#E3F3E5', // sage
+    borderColor: 'rgba(6,41,12,0.15)',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+  },
+  text: {
+    fontFamily: 'Satoshi-Regular',
+    fontSize: 14,
+    color: 'rgba(6,41,12,0.60)',
+  },
+  textSelected: {
+    fontFamily: 'Satoshi-Medium',
+    color: '#06290C', // forest
+  },
+});
