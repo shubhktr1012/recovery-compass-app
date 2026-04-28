@@ -2,8 +2,6 @@ import React, { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
-  Animated as RNAnimated,
-  Linking,
   Platform,
   Pressable,
   ScrollView,
@@ -28,9 +26,11 @@ import {
 import { hasOnboardingContextMismatch } from '@/lib/onboarding.realignment';
 import { useProfile } from '@/providers/profile';
 
-// Reusing intake components for the premium aesthetic
-import { CompassCTA } from '@/components/onboarding/intake/CompassCTA';
-import { FocusPointRow } from '@/components/onboarding/intake/FocusPointRow';
+// Paywall v2 components
+import { PreviewCard } from '@/components/paywall/PreviewCard';
+import { TrustStampBar } from '@/components/paywall/TrustStampBar';
+import { PurchaseCard } from '@/components/paywall/PurchaseCard';
+import { StickyCtaFooter } from '@/components/paywall/StickyCtaFooter';
 
 const ACCESS_CONFIRMATION_RETRY_DELAY_MS = 1500;
 const ACCESS_CONFIRMATION_RETRY_COUNT = 4;
@@ -41,13 +41,7 @@ function wait(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function openLink(url: string) {
-  try {
-    await Linking.openURL(url);
-  } catch {
-    Alert.alert('Unable to open link', 'Please try again in a moment.');
-  }
-}
+
 
 function getRecommendedPrograms(programSlug: ProgramSlug | null | undefined): ProgramSlug[] {
   if (!programSlug) {
@@ -95,24 +89,6 @@ function getPreferredOffering(
   }
 
   return offerings.current ?? null;
-}
-
-function RadioIndicator({ isSelected }: { isSelected: boolean }) {
-  const opacity = React.useRef(new RNAnimated.Value(isSelected ? 1 : 0)).current;
-
-  React.useEffect(() => {
-    RNAnimated.timing(opacity, {
-      toValue: isSelected ? 1 : 0,
-      duration: 200,
-      useNativeDriver: true,
-    }).start();
-  }, [isSelected, opacity]);
-
-  return (
-    <View className={`mt-1 h-6 w-6 rounded-full border-[1.5px] items-center justify-center ${isSelected ? 'border-forest/40 bg-white' : 'border-forest/20 bg-transparent'}`}>
-      <RNAnimated.View style={{ opacity }} className="h-2.5 w-2.5 rounded-full bg-forest" />
-    </View>
-  );
 }
 
 export default function Paywall() {
@@ -302,25 +278,13 @@ export default function Paywall() {
     }
   }, [eligiblePackages, selectedPackageId]);
 
-  const headerTitle = targetedProgram
-    ? getDisplayNameForProgram(targetedProgram)
-    : access.ownedProgram
-    ? 'Program Already Unlocked'
-    : recommendedProgram
-      ? `${getDisplayNameForProgram(recommendedProgram)}`
-      : 'Your Recovery Path';
-
-  const headerBody = targetedProgram
-    ? launchPurchaseLocked
-      ? 'Recovery Compass is launching with one unlocked program per account while we finish a smoother multi-program experience.'
-      : 'This program is ready to unlock whenever you are. Your current journey stays intact until you choose a new one.'
-    : access.ownedProgram
-    ? 'Recovery Compass currently supports one active program at a time. Head to the Program tab to continue your journey.'
-    : recommendedProgram
-      ? 'This program matches your assessment and is ready to begin.'
-      : 'Select the program that fits your journey.';
-
   const activePackage = eligiblePackages.find(p => p.identifier === selectedPackageId);
+
+  const getPackageDisplayName = (pack: PurchasesPackage) => {
+    const programSlug = getProgramSlugForPackage(pack);
+    if (programSlug) return getDisplayNameForProgram(programSlug);
+    return pack.product.title;
+  };
 
   const handlePurchase = async () => {
     if (launchPurchaseLocked) {
@@ -462,49 +426,188 @@ export default function Paywall() {
     }
   };
 
-  const getPackageDisplayName = (pack: PurchasesPackage) => {
-    const programSlug = getProgramSlugForPackage(pack);
-    if (programSlug) return getDisplayNameForProgram(programSlug);
-    return pack.product.title;
-  };
+  // ─── Derived display values ──────────────────────────────────────────────────
+
+  const isSingleProgram = visibleProgramSlugs.length === 1;
+  const isMultiOption = visibleProgramSlugs.length > 1;
+
+  // Primary program metadata for the centered headline + preview card
+  const primarySlug = visibleProgramSlugs[0] ?? null;
+  const primaryMeta = primarySlug ? PROGRAM_METADATA[primarySlug] : null;
+
+  const headlineTitle = isSingleProgram && primaryMeta
+    ? primaryMeta.name
+    : isMultiOption
+      ? 'Choose your path.'
+      : targetedProgram
+        ? getDisplayNameForProgram(targetedProgram)
+        : 'Your Recovery Path';
+
+  const headlineSubtitle = isSingleProgram && primaryMeta
+    ? primaryMeta.description
+    : isMultiOption
+      ? 'Both programs fit your assessment. Pick the one that calls to you.'
+      : targetedProgram
+        ? launchPurchaseLocked
+          ? 'Recovery Compass is launching with one unlocked program per account while we finish a smoother multi-program experience.'
+          : 'This program is ready to unlock whenever you are.'
+        : 'Select the program that fits your journey.';
+
+  const kickerText = isSingleProgram
+    ? 'Recommended for you'
+    : isMultiOption
+      ? 'Your options'
+      : null;
+
+  const sectionEyebrow = isSingleProgram
+    ? 'Begin for'
+    : 'Choose a program';
+
+  // ─── Render ──────────────────────────────────────────────────────────────────
 
   return (
-    <View className="flex-1 bg-surface">
+    <View style={{ flex: 1, backgroundColor: '#F5F5F7' }}>
       <StatusBar style="dark" />
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
-          paddingTop: Math.max(insets.top, 24) + 16,
-          paddingHorizontal: 24,
-          paddingBottom: 220 + insets.bottom,
+          paddingTop: Math.max(insets.top, 24),
+          paddingBottom: 180 + insets.bottom,
         }}
       >
-        <Pressable
-          onPress={handleBack}
-          hitSlop={20}
-          className="self-start mb-10 h-12 w-12 items-center justify-center rounded-full border border-forest/10 bg-white"
-          accessibilityRole="button"
-          accessibilityLabel="Go back"
-        >
-          <Ionicons name="chevron-back" size={20} color="#06290C" />
-        </Pressable>
+        {/* ── Back button ── */}
+        <View style={{ paddingHorizontal: 20, paddingTop: 14 }}>
+          <Pressable
+            onPress={handleBack}
+            hitSlop={20}
+            style={{
+              width: 32,
+              height: 32,
+              borderRadius: 16,
+              backgroundColor: 'rgba(6,41,12,0.06)',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
+          >
+            <Ionicons name="chevron-back" size={14} color="rgba(6,41,12,0.55)" />
+          </Pressable>
+        </View>
 
-        <View className="mb-12">
-          <Text className="font-erode text-[36px] text-forest leading-[42px] tracking-tight mb-3">
-            {headerTitle}
+        {/* ── Centered headline block (always rendered) ── */}
+        <View style={{ alignItems: 'center', paddingHorizontal: 28, paddingTop: 20 }}>
+          {/* Kicker pill */}
+          {kickerText && (
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 5,
+                backgroundColor: isSingleProgram ? '#E3F3E5' : '#F5F5F7',
+                borderRadius: 999,
+                paddingHorizontal: 12,
+                paddingVertical: 4,
+                marginBottom: 14,
+                ...(isMultiOption && {
+                  borderWidth: 1,
+                  borderColor: 'rgba(6,41,12,0.07)',
+                }),
+              }}
+            >
+              <View
+                style={{
+                  width: 5,
+                  height: 5,
+                  borderRadius: 2.5,
+                  backgroundColor: isSingleProgram ? '#06290C' : 'rgba(6,41,12,0.4)',
+                }}
+              />
+              <Text
+                style={{
+                  fontFamily: 'Satoshi-Bold',
+                  fontSize: 9,
+                  letterSpacing: 1.08,
+                  textTransform: 'uppercase',
+                  color: isSingleProgram ? '#06290C' : 'rgba(6,41,12,0.62)',
+                }}
+              >
+                {kickerText}
+              </Text>
+            </View>
+          )}
+
+          {/* Headline — serif */}
+          <Text
+            style={{
+              fontFamily: 'Erode-Medium',
+              fontSize: 34,
+              lineHeight: 37,
+              letterSpacing: -0.68,
+              color: '#06290C',
+              textAlign: 'center',
+            }}
+          >
+            {headlineTitle}
           </Text>
-          <Text className="font-satoshi text-[17px] leading-[26px] text-forest/70 pr-4">
-            {headerBody}
+
+          {/* Subtitle */}
+          <Text
+            style={{
+              fontFamily: 'Satoshi-Regular',
+              fontSize: 14,
+              lineHeight: 21.7,
+              color: 'rgba(6,41,12,0.45)',
+              textAlign: 'center',
+              marginTop: 10,
+              maxWidth: 260,
+            }}
+          >
+            {headlineSubtitle}
           </Text>
         </View>
 
+        {/* ── Preview card (single-program only) ── */}
+        {isSingleProgram && primaryMeta && (
+          <PreviewCard
+            totalDays={primaryMeta.totalDays}
+            dailyMinutes={primaryMeta.dailyMinutesLabel}
+            phaseCount={primaryMeta.phaseCount}
+          />
+        )}
+
+        {/* ── Trust stamps (only when purchase options are available) ── */}
+        {hasVisiblePurchaseIntent && !launchPurchaseLocked && <TrustStampBar />}
+
+        {/* ── Content area ── */}
         {fetchingOfferings ? (
-          <View className="items-center justify-center py-16">
+          <View style={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 64 }}>
             <ActivityIndicator size="small" color="#06290C" />
           </View>
         ) : eligiblePackages.length === 0 ? (
-          <View className="items-center py-12 px-6 rounded-3xl bg-forest/5 border border-forest/10">
-            <Text className="font-satoshi text-center text-[15px] text-forest/70 leading-[24px]">
+          /* ── Empty / locked / unavailable states ── */
+          <View
+            style={{
+              marginHorizontal: 20,
+              marginTop: 22,
+              alignItems: 'center',
+              paddingVertical: 48,
+              paddingHorizontal: 24,
+              borderRadius: 24,
+              backgroundColor: 'rgba(6,41,12,0.03)',
+              borderWidth: 1,
+              borderColor: 'rgba(6,41,12,0.07)',
+            }}
+          >
+            <Text
+              style={{
+                fontFamily: 'Satoshi-Regular',
+                fontSize: 15,
+                lineHeight: 24,
+                color: 'rgba(6,41,12,0.5)',
+                textAlign: 'center',
+              }}
+            >
               {launchPurchaseLocked
                 ? `You already have ${getDisplayNameForProgram(access.ownedProgram as ProgramSlug)} unlocked. Additional program purchases will open once multi-program support is ready.`
                 : purchaseOptionsUnavailable
@@ -523,9 +626,17 @@ export default function Paywall() {
               <Pressable
                 onPress={() => router.replace(PROGRAM_TAB_ROUTE)}
                 hitSlop={20}
-                className="mt-8 rounded-full border border-forest/10 px-8 py-3.5 bg-white"
+                style={{
+                  marginTop: 32,
+                  borderRadius: 999,
+                  borderWidth: 1,
+                  borderColor: 'rgba(6,41,12,0.10)',
+                  paddingHorizontal: 32,
+                  paddingVertical: 14,
+                  backgroundColor: '#FFFFFF',
+                }}
               >
-                <Text className="font-satoshi-bold text-[14px] text-forest">
+                <Text style={{ fontFamily: 'Satoshi-SemiBold', fontSize: 14, color: '#06290C' }}>
                   Return to my program
                 </Text>
               </Pressable>
@@ -534,113 +645,75 @@ export default function Paywall() {
                 onPress={offeringsLoadFailed ? () => setOfferingsRetryKey((key) => key + 1) : handleRestore}
                 disabled={loading}
                 hitSlop={20}
-                className="mt-8 rounded-full border border-forest/10 px-8 py-3.5 bg-white"
+                style={{
+                  marginTop: 32,
+                  borderRadius: 999,
+                  borderWidth: 1,
+                  borderColor: 'rgba(6,41,12,0.10)',
+                  paddingHorizontal: 32,
+                  paddingVertical: 14,
+                  backgroundColor: '#FFFFFF',
+                }}
               >
-                <Text className="font-satoshi-bold text-[14px] text-forest">
+                <Text style={{ fontFamily: 'Satoshi-SemiBold', fontSize: 14, color: '#06290C' }}>
                   {offeringsLoadFailed ? 'Try again' : loading ? 'Restoring...' : 'Restore Purchases'}
                 </Text>
               </Pressable>
             )}
           </View>
         ) : (
-          <View>
-            <View className="mb-12 pl-1" style={{ gap: 16 }}>
-              <FocusPointRow text="Private daily progress tracking" />
-              <FocusPointRow text="Science-based behavioral grounding" />
-              <FocusPointRow text="One-time unlock. No recurring fees." />
-            </View>
+          /* ── Purchase section ── */
+          <View style={{ paddingHorizontal: 20, paddingTop: 22 }}>
+            {/* Section eyebrow */}
+            <Text
+              style={{
+                fontFamily: 'Satoshi-Bold',
+                fontSize: 9,
+                letterSpacing: 1.8,
+                textTransform: 'uppercase',
+                color: 'rgba(6,41,12,0.3)',
+                marginBottom: 10,
+              }}
+            >
+              {sectionEyebrow}
+            </Text>
 
-            <View style={{ gap: 16 }}>
-              {eligiblePackages.map((pack) => {
-                const programSlug = getProgramSlugForPackage(pack);
-                const isSelected = selectedPackageId === pack.identifier;
+            {/* Purchase cards */}
+            {eligiblePackages.map((pack) => {
+              const programSlug = getProgramSlugForPackage(pack);
+              const isSelected = selectedPackageId === pack.identifier;
+              const meta = programSlug ? PROGRAM_METADATA[programSlug] : null;
 
-                return (
-                  <Pressable
-                    key={pack.identifier}
-                    onPress={() => setSelectedPackageId(pack.identifier)}
-                    className={`flex-row items-start px-6 py-6 rounded-3xl border transition-colors duration-200 ${
-                      isSelected
-                        ? 'bg-sage border-forest/15'
-                        : 'bg-white border-forest/10'
-                    }`}
-                  >
-                    <View className="flex-1 pr-6">
-                      <Text className={`font-erode text-[24px] tracking-tight mb-2 ${isSelected ? 'text-forest' : 'text-forest/80'}`}>
-                        {getPackageDisplayName(pack)}
-                      </Text>
-
-                      <Text className={`font-satoshi text-[15px] leading-6 mb-5 ${isSelected ? 'text-forest/80' : 'text-forest/60'}`}>
-                        {pack.product.description ||
-                          (programSlug ? PROGRAM_METADATA[programSlug].description : 'A guided Recovery Compass program.')}
-                      </Text>
-
-                      <View className="flex-row items-baseline">
-                        <Text className={`font-satoshi-bold text-[22px] tracking-tight ${isSelected ? 'text-forest' : 'text-forest/70'}`}>
-                          {pack.product.priceString}
-                        </Text>
-                        <Text className={`font-satoshi text-[14px] ml-1.5 ${isSelected ? 'text-forest/70' : 'text-forest/50'}`}>
-                          one-time
-                        </Text>
-                      </View>
-                    </View>
-
-                    {/* Premium Radio indicator */}
-                    <RadioIndicator isSelected={isSelected} />
-                  </Pressable>
-                );
-              })}
-            </View>
+              return (
+                <PurchaseCard
+                  key={pack.identifier}
+                  programName={getPackageDisplayName(pack)}
+                  durationDays={meta?.totalDays ?? 0}
+                  description={
+                    pack.product.description ||
+                    (meta ? meta.description : 'A guided Recovery Compass program.')
+                  }
+                  priceString={pack.product.priceString}
+                  isSelected={isSelected}
+                  showCheckCircle={isMultiOption}
+                  onPress={() => setSelectedPackageId(pack.identifier)}
+                />
+              );
+            })}
           </View>
         )}
       </ScrollView>
 
-      {/* Sticky Bottom Area */}
+      {/* ── Sticky CTA footer ── */}
       {eligiblePackages.length > 0 && !fetchingOfferings && (
-        <View
-          className="absolute bottom-0 left-0 right-0 bg-surface/95 border-t border-forest/10"
-          style={{
-            paddingTop: 20,
-            paddingHorizontal: 24,
-            paddingBottom: Math.max(insets.bottom, 12) + 12,
-          }}
-        >
-          <CompassCTA
-            label={`Unlock ${activePackage ? getPackageDisplayName(activePackage) : 'Access'}`}
-            onPress={handlePurchase}
-            loading={loading}
-            disabled={!selectedPackageId || loading}
-          />
-
-          <View className="mt-6 flex-row items-center justify-between px-1">
-            <Text className="font-satoshi text-[14px] text-forest/70">
-              One-time payment
-            </Text>
-            <Pressable onPress={handleRestore} disabled={loading} hitSlop={20}>
-              <Text className="font-satoshi text-[14px] text-forest/70 underline">
-                Restore Purchases
-              </Text>
-            </Pressable>
-          </View>
-
-          <Text className="mt-5 text-center font-satoshi text-[12px] leading-[18px] text-forest/40 mx-4">
-            By continuing, you agree to our{' '}
-            <Text
-              className="text-forest/60 underline"
-              onPress={() => void openLink('https://recoverycompass.co/terms')}
-            >
-              Terms
-            </Text>{' '}
-            and{' '}
-            <Text
-              className="text-forest/60 underline"
-              onPress={() => void openLink('https://recoverycompass.co/privacy')}
-            >
-              Privacy
-            </Text>
-            . No subscriptions or recurring charges.
-          </Text>
-        </View>
+        <StickyCtaFooter
+          ctaLabel={`Unlock ${activePackage ? getPackageDisplayName(activePackage) : 'Access'}`}
+          onPurchase={handlePurchase}
+          onRestore={handleRestore}
+          loading={loading}
+          disabled={!selectedPackageId || loading}
+          insetBottom={insets.bottom}
+        />
       )}
     </View>
   );
