@@ -140,6 +140,13 @@ Relevant areas:
 - `supabase/functions/delete-account` handles permanent account deletion.
 - `supabase/functions/revenuecat-webhook` is the server-side RevenueCat sync path.
 
+Important deploy note:
+
+- `supabase/functions/revenuecat-webhook` uses a raw shared secret in the `Authorization` header, not a Supabase JWT.
+- Always deploy it with `--no-verify-jwt`.
+- Use `npm run supabase:functions:deploy:revenuecat-webhook` or `npm run supabase:functions:deploy:commerce`.
+- Do not use a plain `supabase functions deploy revenuecat-webhook` command, or RevenueCat deliveries will start failing with `401 Invalid JWT`.
+
 If you are wiring the webhook flow, you will also need server-side variables such as:
 
 ```env
@@ -168,6 +175,8 @@ npm run typecheck
 npm run generate:program-content
 npm run supabase:functions:list
 npm run supabase:functions:deploy:delete-account
+npm run supabase:functions:deploy:revenuecat-webhook
+npm run supabase:functions:deploy:commerce
 ```
 
 ## Android release notes

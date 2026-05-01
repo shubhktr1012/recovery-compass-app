@@ -20,7 +20,8 @@
     "supabase:types:gen": "supabase gen types --linked --lang typescript --schema public > types/database.types.ts",
     "supabase:functions:list": "supabase functions list --workdir .",
     "supabase:functions:deploy:delete-account": "supabase functions deploy delete-account --no-verify-jwt --use-api --import-map ./supabase/functions/deno.json --workdir .",
-    "supabase:functions:deploy:revenuecat-webhook": "supabase functions deploy revenuecat-webhook --no-verify-jwt --use-api --import-map ./supabase/functions/deno.json --workdir ."
+    "supabase:functions:deploy:revenuecat-webhook": "supabase functions deploy revenuecat-webhook --no-verify-jwt --use-api --import-map ./supabase/functions/deno.json --workdir .",
+    "supabase:functions:deploy:commerce": "npm run supabase:functions:deploy:revenuecat-webhook"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
