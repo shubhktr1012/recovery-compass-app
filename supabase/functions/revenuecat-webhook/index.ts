@@ -8,6 +8,8 @@ const supabaseUrl = Deno.env.get("SUPABASE_URL") as string;
 const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") as string;
 // REVENUECAT_WEBHOOK_AUTH is a shared secret you will configure in Supabase and RevenueCat
 const expectedAuthHeader = Deno.env.get("REVENUECAT_WEBHOOK_AUTH");
+const appPurchaseEmailEndpoint = Deno.env.get("APP_PURCHASE_EMAIL_ENDPOINT");
+const appPurchaseEmailSecret = Deno.env.get("APP_PURCHASE_EMAIL_SECRET");
 const APP_SIX_DAY_PROGRAM = "six_day_reset";
 const APP_NINETY_DAY_PROGRAM = "ninety_day_transform";
 const APP_SLEEP_RESET_PROGRAM = "sleep_disorder_reset";
@@ -325,6 +327,56 @@ const getRevenueCatIdentityCandidates = (event: Record<string, unknown>, appUser
         ),
     );
 
+const getStoreValue = (event: Record<string, unknown>) =>
+    typeof event.store === "string" ? event.store : null;
+
+const dispatchAppPurchaseWelcomeEmail = async ({
+    userId,
+    programSlug,
+    productId,
+    revenueCatEventId,
+    providerTransactionId,
+    store,
+}: {
+    userId: string;
+    programSlug: string;
+    productId: string | null;
+    revenueCatEventId: string | null;
+    providerTransactionId: string | null;
+    store: string | null;
+}) => {
+    if (!appPurchaseEmailEndpoint || !appPurchaseEmailSecret) {
+        console.warn("App purchase welcome email skipped because endpoint configuration is missing", {
+            hasEndpoint: Boolean(appPurchaseEmailEndpoint),
+            hasSecret: Boolean(appPurchaseEmailSecret),
+            userId,
+            programSlug,
+        });
+        return;
+    }
+
+    const response = await fetch(appPurchaseEmailEndpoint, {
+        method: "POST",
+        headers: {
+            "content-type": "application/json",
+            authorization: `Bearer ${appPurchaseEmailSecret}`,
+        },
+        body: JSON.stringify({
+            userId,
+            programSlug,
+            revenueCatProductId: productId,
+            revenueCatEventId,
+            providerTransactionId,
+            store,
+        }),
+    });
+
+    if (!response.ok) {
+        const bodyText = await response.text();
+        throw new Error(`App purchase welcome email endpoint failed: ${response.status} ${bodyText}`);
+    }
+};
+
 const repairActiveProgramPreference = async (
     supabase: SupabaseProfileClient,
     userId: string,
@@ -423,16 +475,29 @@ serve(async (req: Request) => {
         const appUserId = typeof event.app_user_id === "string" ? event.app_user_id : "";
         const purchasedProgram = getProgramSlug(event);
         const purchasedProductId = typeof event.product_id === "string" ? event.product_id : null;
+        const revenueCatEventId = typeof event.id === "string" ? event.id : null;
+        const providerTransactionId =
+            typeof event.transaction_id === "string"
+                ? event.transaction_id
+                : typeof event.original_transaction_id === "string"
+                    ? event.original_transaction_id
+                    : null;
+        const store = getStoreValue(event);
         const isPositivePurchaseEvent = ["INITIAL_PURCHASE", "RENEWAL", "UNCANCELLATION", "NON_RENEWING_PURCHASE"].includes(eventType);
         const isNegativeLifecycleEvent = ["CANCELLATION", "EXPIRATION"].includes(eventType);
+        const shouldSendPurchaseWelcomeEmail = ["INITIAL_PURCHASE", "NON_RENEWING_PURCHASE"].includes(eventType);
 
         console.log("RevenueCat normalized event", {
             eventType,
             appUserId,
             purchasedProgram,
             purchasedProductId,
+            revenueCatEventId,
+            providerTransactionId,
+            store,
             isPositivePurchaseEvent,
             isNegativeLifecycleEvent,
+            shouldSendPurchaseWelcomeEmail,
         });
 
         if (!appUserId) {
@@ -582,6 +647,34 @@ serve(async (req: Request) => {
                 completionState,
                 currentDay,
             });
+
+            if (shouldSendPurchaseWelcomeEmail) {
+                try {
+                    await dispatchAppPurchaseWelcomeEmail({
+                        userId: resolvedProfileId,
+                        programSlug: purchasedProgram,
+                        productId: purchasedProductId,
+                        revenueCatEventId,
+                        providerTransactionId,
+                        store,
+                    });
+
+                    console.log("RevenueCat app purchase welcome email dispatched", {
+                        resolvedProfileId,
+                        purchasedProgram,
+                        revenueCatEventId,
+                        providerTransactionId,
+                    });
+                } catch (emailError) {
+                    console.error("RevenueCat app purchase welcome email dispatch failed", {
+                        resolvedProfileId,
+                        purchasedProgram,
+                        revenueCatEventId,
+                        providerTransactionId,
+                        error: emailError instanceof Error ? emailError.message : String(emailError),
+                    });
+                }
+            }
         } else if (isPositivePurchaseEvent) {
             console.warn("RevenueCat positive purchase event did not resolve to a known program", {
                 appUserId,
