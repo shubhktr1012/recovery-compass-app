@@ -97,14 +97,26 @@ function ProgramScreenContent({ activeProgram }: { activeProgram: ProgramSlug })
   );
 
   const { completedDays, partialDays, currentDay } = useMemo(() => {
+    const progressCompletedDays = progress?.completedDays ?? [];
+    const progressPartialDays = progress?.partialDays ?? [];
     const derivedCurrentDay = access.startedAt
       ? getProgramScheduledDay(access.startedAt, totalDays)
       : access.currentDay ?? 1;
+    const highestTouchedDay = Math.max(
+      0,
+      ...progressCompletedDays,
+      ...progressPartialDays,
+      access.currentDay ?? 0
+    );
+    const unlockedThroughDay = Math.min(
+      totalDays,
+      Math.max(derivedCurrentDay, highestTouchedDay || 1)
+    );
 
     return {
-      currentDay: access.completionState === 'completed' ? totalDays : derivedCurrentDay,
-      completedDays: progress?.completedDays ?? [],
-      partialDays: progress?.partialDays ?? [],
+      currentDay: access.completionState === 'completed' ? totalDays : unlockedThroughDay,
+      completedDays: progressCompletedDays,
+      partialDays: progressPartialDays,
     };
   }, [access.completionState, access.currentDay, access.startedAt, progress?.completedDays, progress?.partialDays, totalDays]);
   const isArchivedReset = activeProgram === 'six_day_reset' && access.purchaseState === 'owned_archived';
@@ -273,7 +285,7 @@ function ProgramScreenContent({ activeProgram }: { activeProgram: ProgramSlug })
                 program.days.map((day, index) => {
                   const isCompleted = completedDays.includes(day.dayNumber);
                   const isPartial = partialDays.includes(day.dayNumber) && !isCompleted;
-                  const isLocked = isArchivedReset || day.dayNumber > currentDay;
+                  const isLocked = isArchivedReset || (!isCompleted && !isPartial && day.dayNumber > currentDay);
                   const isCurrent = day.dayNumber === currentDay && !isCompleted;
                   const availabilityLabel =
                     isLocked && day.dayNumber === nextLockedDayNumber

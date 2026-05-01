@@ -385,6 +385,27 @@ export type Database = {
         }
         Relationships: []
       }
+      user_program_preferences: {
+        Row: {
+          active_program: string
+          created_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          active_program: string
+          created_at?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          active_program?: string
+          created_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       program_days: {
         Row: {
           cards: Json | null
@@ -815,6 +836,7 @@ export type Database = {
           p_completed_at?: string
           p_completed_days?: number[]
           p_current_day: number
+          p_partial_days?: number[]
           p_program_id: string
         }
         Returns: {
@@ -822,6 +844,15 @@ export type Database = {
           completed_at: string
           completed_days: number[]
           current_day: number
+        }[]
+      }
+      select_active_program: {
+        Args: {
+          p_program_id: string
+        }
+        Returns: {
+          active_program: string
+          updated_at: string
         }[]
       }
     }

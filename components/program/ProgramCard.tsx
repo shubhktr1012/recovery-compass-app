@@ -40,9 +40,9 @@ function ClockSvg() {
   );
 }
 
-function PlaySvg() {
+function PlaySvg({ fill = '#fff' }: { fill?: string }) {
   return (
-    <Svg width={10} height={10} viewBox="0 0 24 24" fill="#fff">
+    <Svg width={10} height={10} viewBox="0 0 24 24" fill={fill}>
       <Polygon points="5,3 19,12 5,21" />
     </Svg>
   );
@@ -395,6 +395,65 @@ function LockedDayCard({ day }: { day: ProgramCardDay }) {
   );
 }
 
+// ─── AVAILABLE PAST DAY ──────────────────────────────────────────────────────
+function AvailableDayCard({ day, onPress }: { day: ProgramCardDay; onPress?: () => void }) {
+  return (
+    <SquishPress onPress={onPress}>
+      <View
+        style={{
+          backgroundColor: F.canvas,
+          borderRadius: 18,
+          paddingHorizontal: 16,
+          paddingVertical: 14,
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 12,
+          shadowColor: '#06290C',
+          shadowOffset: { width: 0, height: 1 },
+          shadowOpacity: 0.03,
+          shadowRadius: 5,
+          elevation: 1,
+        }}
+      >
+        <View
+          style={{
+            width: 32,
+            height: 32,
+            borderRadius: 16,
+            backgroundColor: F.sageSoft,
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0,
+          }}
+        >
+          <PlaySvg fill={F.forest} />
+        </View>
+
+        <View style={{ flex: 1 }}>
+          <Text
+            style={{
+              fontFamily: 'Satoshi-SemiBold',
+              fontSize: 9,
+              letterSpacing: 1.4,
+              textTransform: 'uppercase',
+              color: 'rgba(6,41,12,0.35)',
+              marginBottom: 2,
+            }}
+          >
+            Day {day.id} · Available
+          </Text>
+          <Text style={{ fontFamily: 'Erode-Medium', fontSize: 15, lineHeight: 18, color: 'rgba(6,41,12,0.7)' }}>
+            {day.title}
+          </Text>
+          <Text style={{ fontFamily: 'Satoshi-Regular', fontSize: 10, color: 'rgba(6,41,12,0.35)', marginTop: 2 }}>
+            Tap to open
+          </Text>
+        </View>
+      </View>
+    </SquishPress>
+  );
+}
+
 // ─── PARTIAL DAY ──────────────────────────────────────────────────────────────
 function PartialDayCard({ day, onPress }: { day: ProgramCardDay; onPress?: () => void }) {
   return (
@@ -492,6 +551,5 @@ export function ProgramCard({
     return <LockedDayCard day={day} />;
   }
 
-  // Available but not yet current (unusual edge case)
-  return <NextLockedDayCard day={day} availabilityLabel={availabilityLabel} />;
+  return <AvailableDayCard day={day} onPress={onPress} />;
 }

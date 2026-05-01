@@ -14,6 +14,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import Purchases, { PurchasesPackage } from 'react-native-purchases';
 import { Ionicons } from '@expo/vector-icons';
+import { useQueryClient } from '@tanstack/react-query';
 
 import { PROGRAM_METADATA } from '@/content/programs/metadata';
 import { captureError } from '@/lib/monitoring';
@@ -31,10 +32,12 @@ import { PreviewCard } from '@/components/paywall/PreviewCard';
 import { TrustStampBar } from '@/components/paywall/TrustStampBar';
 import { PurchaseCard } from '@/components/paywall/PurchaseCard';
 import { StickyCtaFooter } from '@/components/paywall/StickyCtaFooter';
+import { OWNED_PROGRAMS_QUERY_ROOT } from '@/hooks/useOwnedPrograms';
 
 const ACCESS_CONFIRMATION_RETRY_DELAY_MS = 1500;
 const ACCESS_CONFIRMATION_RETRY_COUNT = 4;
 const PROGRAM_TAB_ROUTE = '/(tabs)/program' as const;
+const PROGRAM_LIBRARY_ROUTE = '/account/programs' as const;
 const REALIGNMENT_ROUTE = '/personalization?mode=realign' as const;
 
 function wait(ms: number) {
@@ -96,6 +99,7 @@ export default function Paywall() {
   const router = useRouter();
   const navigation = useNavigation<any>();
   const insets = useSafeAreaInsets();
+  const queryClient = useQueryClient();
   const { access, profile, refreshAccess, setProgramAccess } = useProfile();
 
   const [loading, setLoading] = useState(false);
@@ -104,11 +108,11 @@ export default function Paywall() {
   const [offeringsLoadFailed, setOfferingsLoadFailed] = useState(false);
   const [offeringsRetryKey, setOfferingsRetryKey] = useState(0);
   const [selectedPackageId, setSelectedPackageId] = useState<string | null>(null);
+  const [canAutoRedirectOwnedUser, setCanAutoRedirectOwnedUser] = useState(false);
+  const hasProgramRouteParam = Array.isArray(params.program)
+    ? params.program.some((value) => Boolean(value))
+    : Boolean(params.program);
   const targetedProgram = getProgramSlugFromRouteParam(params.program);
-  const launchPurchaseLocked =
-    Boolean(access.ownedProgram) &&
-    Boolean(targetedProgram) &&
-    access.ownedProgram !== targetedProgram;
 
   const confirmUnlockedProgram = async (expectedProgram: ProgramSlug | null) => {
     for (let attempt = 0; attempt < ACCESS_CONFIRMATION_RETRY_COUNT; attempt += 1) {
@@ -198,15 +202,23 @@ export default function Paywall() {
   });
 
   useEffect(() => {
-    if (!access.ownedProgram || targetedProgram) {
+    const redirectTimer = setTimeout(() => {
+      setCanAutoRedirectOwnedUser(true);
+    }, 250);
+
+    return () => clearTimeout(redirectTimer);
+  }, []);
+
+  useEffect(() => {
+    if (!canAutoRedirectOwnedUser || !access.ownedProgram || hasProgramRouteParam) {
       return;
     }
 
     router.replace(needsOnboardingRealignment ? REALIGNMENT_ROUTE : PROGRAM_TAB_ROUTE);
-  }, [access.ownedProgram, needsOnboardingRealignment, router, targetedProgram]);
+  }, [access.ownedProgram, canAutoRedirectOwnedUser, hasProgramRouteParam, needsOnboardingRealignment, router]);
 
   const handleBack = () => {
-    if (targetedProgram) {
+    if (hasProgramRouteParam) {
       if (navigation.canGoBack?.()) {
         router.back();
       } else {
@@ -224,10 +236,6 @@ export default function Paywall() {
   };
 
   const visibleProgramSlugs = useMemo(() => {
-    if (launchPurchaseLocked) {
-      return [] as ProgramSlug[];
-    }
-
     if (targetedProgram) {
       return [targetedProgram] as ProgramSlug[];
     }
@@ -236,7 +244,7 @@ export default function Paywall() {
       return [] as ProgramSlug[];
     }
     return getRecommendedPrograms(recommendedProgram);
-  }, [access.ownedProgram, launchPurchaseLocked, recommendedProgram, targetedProgram]);
+  }, [access.ownedProgram, recommendedProgram, targetedProgram]);
 
   const eligiblePackages = useMemo(() => {
     const matchingPackages = packages
@@ -265,7 +273,6 @@ export default function Paywall() {
   const hasVisiblePurchaseIntent = visibleProgramSlugs.length > 0;
   const hasStorePackages = packages.length > 0;
   const purchaseOptionsUnavailable =
-    !launchPurchaseLocked &&
     !access.ownedProgram &&
     hasVisiblePurchaseIntent &&
     !fetchingOfferings &&
@@ -286,15 +293,27 @@ export default function Paywall() {
     return pack.product.title;
   };
 
-  const handlePurchase = async () => {
-    if (launchPurchaseLocked) {
-      Alert.alert(
-        'One Program At Launch',
-        'This account already has an unlocked program. We are limiting launch access to one program per account for now.'
-      );
+  const finalizeUnlockedProgram = async (confirmedProgram: ProgramSlug) => {
+    const activeProgram = access.ownedProgram as ProgramSlug | null;
+
+    if (!activeProgram || activeProgram === confirmedProgram) {
+      await setProgramAccess(confirmedProgram);
+      await refreshAccess();
+      await queryClient.invalidateQueries({ queryKey: OWNED_PROGRAMS_QUERY_ROOT });
+      router.replace(PROGRAM_TAB_ROUTE);
       return;
     }
 
+    await refreshAccess();
+    await queryClient.invalidateQueries({ queryKey: OWNED_PROGRAMS_QUERY_ROOT });
+    Alert.alert(
+      'Program Unlocked',
+      `${getDisplayNameForProgram(confirmedProgram)} was added to your library. Set it as current from My Programs when you are ready to personalize it.`
+    );
+    router.replace(PROGRAM_LIBRARY_ROUTE);
+  };
+
+  const handlePurchase = async () => {
     if (!activePackage) return;
 
     setLoading(true);
@@ -322,11 +341,7 @@ export default function Paywall() {
         return;
       }
 
-      await setProgramAccess(confirmedProgram);
-      await refreshAccess();
-
-      // No alert needed for success if we just drop them into the program smoothly
-      router.replace(PROGRAM_TAB_ROUTE);
+      await finalizeUnlockedProgram(confirmedProgram);
     } catch (e: any) {
       const combinedErrorMessage = [e?.message, e?.underlyingErrorMessage]
         .filter((value): value is string => typeof value === 'string' && value.length > 0)
@@ -348,12 +363,7 @@ export default function Paywall() {
         const restoredProgram = await restoreOwnedPurchase(programSlug);
 
         if (restoredProgram) {
-          await setProgramAccess(restoredProgram);
-          Alert.alert(
-            'Already Unlocked',
-            `This account already owns ${getDisplayNameForProgram(restoredProgram)}. Access has been restored.`
-          );
-          router.replace(PROGRAM_TAB_ROUTE);
+          await finalizeUnlockedProgram(restoredProgram);
           return;
         }
 
@@ -368,8 +378,7 @@ export default function Paywall() {
         const restoredProgram = await confirmUnlockedProgram(programSlug);
 
         if (restoredProgram) {
-          await setProgramAccess(restoredProgram);
-          router.replace(PROGRAM_TAB_ROUTE);
+          await finalizeUnlockedProgram(restoredProgram);
           return;
         }
       }
@@ -448,9 +457,7 @@ export default function Paywall() {
     : isMultiOption
       ? 'Both programs fit your assessment. Pick the one that calls to you.'
       : targetedProgram
-        ? launchPurchaseLocked
-          ? 'Recovery Compass is launching with one unlocked program per account while we finish a smoother multi-program experience.'
-          : 'This program is ready to unlock whenever you are.'
+        ? 'This program is ready to unlock whenever you are.'
         : 'Select the program that fits your journey.';
 
   const kickerText = isSingleProgram
@@ -577,7 +584,7 @@ export default function Paywall() {
         )}
 
         {/* ── Trust stamps (only when purchase options are available) ── */}
-        {hasVisiblePurchaseIntent && !launchPurchaseLocked && <TrustStampBar />}
+        {hasVisiblePurchaseIntent && <TrustStampBar />}
 
         {/* ── Content area ── */}
         {fetchingOfferings ? (
@@ -608,9 +615,7 @@ export default function Paywall() {
                 textAlign: 'center',
               }}
             >
-              {launchPurchaseLocked
-                ? `You already have ${getDisplayNameForProgram(access.ownedProgram as ProgramSlug)} unlocked. Additional program purchases will open once multi-program support is ready.`
-                : purchaseOptionsUnavailable
+              {purchaseOptionsUnavailable
                   ? offeringsLoadFailed
                     ? 'Purchase options are not available from the store yet. Please try again, or restore purchases if this program was already unlocked.'
                     : hasStorePackages
@@ -622,25 +627,6 @@ export default function Paywall() {
                   : 'Your account has full access to Recovery Compass. Head to the Program tab to continue your journey.'
                 : 'Purchase options are temporarily unavailable. Please try again shortly.'}
             </Text>
-            {launchPurchaseLocked ? (
-              <Pressable
-                onPress={() => router.replace(PROGRAM_TAB_ROUTE)}
-                hitSlop={20}
-                style={{
-                  marginTop: 32,
-                  borderRadius: 999,
-                  borderWidth: 1,
-                  borderColor: 'rgba(6,41,12,0.10)',
-                  paddingHorizontal: 32,
-                  paddingVertical: 14,
-                  backgroundColor: '#FFFFFF',
-                }}
-              >
-                <Text style={{ fontFamily: 'Satoshi-SemiBold', fontSize: 14, color: '#06290C' }}>
-                  Return to my program
-                </Text>
-              </Pressable>
-            ) : (
               <Pressable
                 onPress={offeringsLoadFailed ? () => setOfferingsRetryKey((key) => key + 1) : handleRestore}
                 disabled={loading}
@@ -659,7 +645,6 @@ export default function Paywall() {
                   {offeringsLoadFailed ? 'Try again' : loading ? 'Restoring...' : 'Restore Purchases'}
                 </Text>
               </Pressable>
-            )}
           </View>
         ) : (
           /* ── Purchase section ── */

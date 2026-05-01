@@ -203,7 +203,6 @@ function HomeScreenContent({ activeProgram }: { activeProgram: ProgramSlug }) {
           <ExplorePrograms
             programs={explorePrograms}
             isLoading={isOwnedProgramsLoading}
-            isPurchaseLocked={Boolean(access.ownedProgram)}
           />
 
         </View>

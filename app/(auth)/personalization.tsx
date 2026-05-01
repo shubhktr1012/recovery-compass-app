@@ -51,6 +51,48 @@ function isPositiveInteger(value: string) {
   return Number.isInteger(Number(value)) && Number(value) > 0;
 }
 
+function hasAppleIdentity(user: ReturnType<typeof useAuth>['user']) {
+  if (!user) {
+    return false;
+  }
+
+  const primaryProvider =
+    typeof user.app_metadata?.provider === 'string' ? user.app_metadata.provider : null;
+
+  if (primaryProvider === 'apple') {
+    return true;
+  }
+
+  return Boolean(user.identities?.some((identity) => identity.provider === 'apple'));
+}
+
+function getAuthDisplayName(user: ReturnType<typeof useAuth>['user']) {
+  const metadata = user?.user_metadata;
+  const candidates = [
+    metadata?.full_name,
+    metadata?.name,
+    metadata?.display_name,
+  ];
+
+  return candidates.find((candidate): candidate is string => {
+    return typeof candidate === 'string' && candidate.trim().length > 0;
+  })?.trim() ?? '';
+}
+
+function getProgramSlugFromRouteParam(value: string | string[] | undefined): ProgramSlug | null {
+  if (!value) {
+    return null;
+  }
+
+  const candidate = Array.isArray(value) ? value[0] : value;
+
+  if (!candidate) {
+    return null;
+  }
+
+  return candidate in PROGRAM_METADATA ? (candidate as ProgramSlug) : null;
+}
+
 const PAYWALL_RETURN_STATE_VERSION = 'onboarding_paywall_return_v1';
 
 function getPaywallReturnStateKey(userId: string) {
@@ -63,7 +105,7 @@ export default function Personalization() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const { access, profile } = useProfile();
-  const params = useLocalSearchParams<{ mode?: string | string[]; resume?: string | string[] }>();
+  const params = useLocalSearchParams<{ mode?: string | string[]; program?: string | string[]; resume?: string | string[] }>();
   const [didRestoreDraft, setDidRestoreDraft] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
   const [isDraftReady, setIsDraftReady] = useState(false);
@@ -73,6 +115,14 @@ export default function Personalization() {
   const mode = Array.isArray(params.mode) ? params.mode[0] : params.mode;
   const isRealignmentMode = mode === 'realign';
   const ownedProgram = access.ownedProgram as ProgramSlug | null;
+  const realignmentProgramParam = getProgramSlugFromRouteParam(params.program);
+  const realignmentProgram = isRealignmentMode
+    ? realignmentProgramParam ?? ownedProgram
+    : ownedProgram;
+  const isAppleAuthenticated = hasAppleIdentity(user);
+  const authDisplayName = getAuthDisplayName(user);
+  const profileDisplayName = profile?.display_name?.trim() ?? '';
+  const nameFromIdentity = profileDisplayName || authDisplayName;
 
   const steps = useMemo(
     () => (isRealignmentMode ? buildOnboardingRealignmentSteps(answers) : buildOnboardingSteps(answers)),
@@ -81,7 +131,7 @@ export default function Personalization() {
   const currentStep = steps[Math.min(stepIndex, steps.length - 1)];
   const resolution = useMemo(() => getOnboardingResolution(answers), [answers]);
   const realignmentProgramName =
-    isRealignmentMode && ownedProgram ? PROGRAM_METADATA[ownedProgram]?.name ?? null : null;
+    isRealignmentMode && realignmentProgram ? PROGRAM_METADATA[realignmentProgram]?.name ?? null : null;
 
   const stepFadeAnim = React.useRef(new RNAnimated.Value(1)).current;
 
@@ -101,6 +151,23 @@ export default function Personalization() {
     }
   }, [stepIndex, steps.length]);
 
+  useEffect(() => {
+    if (!nameFromIdentity) {
+      return;
+    }
+
+    setAnswers((current) => {
+      if (current.name.trim()) {
+        return current;
+      }
+
+      return {
+        ...current,
+        name: nameFromIdentity,
+      };
+    });
+  }, [nameFromIdentity]);
+
   // ─── Restore draft ──────────────────────────────────────────────────────
   useEffect(() => {
     let isMounted = true;
@@ -115,7 +182,7 @@ export default function Personalization() {
 
       try {
         if (isRealignmentMode) {
-          if (!ownedProgram) {
+          if (!realignmentProgram) {
             if (isMounted) {
               setIsDraftReady(true);
             }
@@ -123,7 +190,7 @@ export default function Personalization() {
           }
 
           const nextAnswers = buildRealignmentAnswers({
-            ownedProgram,
+            ownedProgram: realignmentProgram,
             questionnaireAnswers: profile?.questionnaire_answers ?? null,
           });
 
@@ -208,7 +275,7 @@ export default function Personalization() {
     return () => {
       isMounted = false;
     };
-  }, [isRealignmentMode, ownedProgram, profile?.questionnaire_answers, resumeMode, user]);
+  }, [isRealignmentMode, profile?.questionnaire_answers, realignmentProgram, resumeMode, user]);
 
   // ─── Auto-save draft ───────────────────────────────────────────────────
   useEffect(() => {
@@ -374,8 +441,12 @@ export default function Personalization() {
     switch (step.type) {
       case 'quick_profile':
         return (
-          (Boolean(answers.name.trim()) && isPositiveInteger(answers.age) && Boolean(answers.gender)) ||
-          'Enter your name, a valid age, and your gender to continue.'
+          ((isAppleAuthenticated || Boolean(answers.name.trim())) &&
+            isPositiveInteger(answers.age) &&
+            Boolean(answers.gender)) ||
+          (isAppleAuthenticated
+            ? 'Enter a valid age and your gender to continue.'
+            : 'Enter your name, a valid age, and your gender to continue.')
         );
       case 'path_choice':
         return Boolean(answers.path) || 'Choose how you want to move forward.';
@@ -425,8 +496,9 @@ export default function Personalization() {
 
       queryClient.setQueryData(ONBOARDING_RESPONSE_QUERY_KEY(user.id), persistedOnboarding);
       queryClient.setQueryData(PROFILE_QUERY_KEY(user.id), persistedProfile);
+      await queryClient.invalidateQueries({ queryKey: ['questionnaire-runs', user.id, 'journeys'] });
 
-      if (isRealignmentMode && ownedProgram) {
+      if (isRealignmentMode && realignmentProgram) {
         router.replace('/(tabs)/program');
         return;
       }
@@ -610,14 +682,16 @@ export default function Personalization() {
       case 'quick_profile':
         return (
           <View style={{ marginTop: 20, gap: 12 }}>
-            <InputText
-              label="NAME"
-              value={answers.name}
-              onChangeText={(value) => updateQuickProfile('name', value)}
-              placeholder="What should we call you?"
-              autoFocus
-              maxLength={80}
-            />
+            {!isAppleAuthenticated ? (
+              <InputText
+                label="NAME"
+                value={answers.name}
+                onChangeText={(value) => updateQuickProfile('name', value)}
+                placeholder="What should we call you?"
+                autoFocus
+                maxLength={80}
+              />
+            ) : null}
 
             <LargeNumberInput
               variant="age"

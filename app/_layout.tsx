@@ -1,7 +1,7 @@
 import "../global.css";
 import { useEffect, useRef, useState } from 'react';
 import { useFonts } from 'expo-font';
-import { Stack, useSegments, Href, useRootNavigationState, useRouter } from 'expo-router';
+import { Stack, useSegments, Href, useGlobalSearchParams, useRootNavigationState, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import 'react-native-reanimated';
 import { StatusBar } from 'expo-status-bar';
@@ -58,8 +58,10 @@ function NavigationGate({
 }) {
   const router = useRouter();
   const segments = useSegments();
+  const searchParams = useGlobalSearchParams<{ mode?: string | string[] }>();
   const rootNavigationState = useRootNavigationState();
   const pendingRedirectRef = useRef<Href | null>(null);
+  const modeParam = Array.isArray(searchParams.mode) ? searchParams.mode[0] : searchParams.mode;
 
   useEffect(() => {
     if (!isNavigationReady || !rootNavigationState?.key) return;
@@ -70,6 +72,7 @@ function NavigationGate({
         const inDayDetail = (segments[0] as string) === 'day-detail';
         const inResetPassword = inAuthGroup && (segments[1] as string) === 'reset-password';
         const inPersonalization = inAuthGroup && (segments[1] as string) === 'personalization';
+        const inManualRealignment = inPersonalization && modeParam === 'realign';
         const inAccountStack = (segments[0] as string) === 'account';
 
         const checkRouting = async () => {
@@ -91,7 +94,7 @@ function NavigationGate({
                         if (!inPersonalization) {
                             target = '/personalization?mode=realign' as Href;
                         }
-                    } else if (!inTabsGroup && !inDayDetail && !inAccountStack) {
+                    } else if (!inTabsGroup && !inDayDetail && !inAccountStack && !inPaywall && !inManualRealignment) {
                         target = '/' as Href;
                     }
                 } else if (!profile || !profile.onboarding_complete) {
@@ -117,7 +120,7 @@ function NavigationGate({
     };
 
     void checkRouting();
-    }, [isNavigationReady, needsOnboardingRealignment, rootNavigationState?.key, session, profile, isSubscribed, isRecoveringPassword, router, segments]);
+    }, [isNavigationReady, modeParam, needsOnboardingRealignment, rootNavigationState?.key, session, profile, isSubscribed, isRecoveringPassword, router, segments]);
 
   return null;
 }

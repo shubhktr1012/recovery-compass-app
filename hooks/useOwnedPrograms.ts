@@ -1,9 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
+import Purchases from 'react-native-purchases';
 
 import type { ProgramSlug } from '@/types/content';
 import type { Database } from '@/types/database.types';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/providers/auth';
+import { getOwnedProgramsFromCustomerInfo } from '@/lib/revenuecat/config';
 
 type ProgramAccessRow = Database['public']['Tables']['program_access']['Row'];
 
@@ -16,14 +18,15 @@ export interface OwnedProgramRecord {
   updatedAt: ProgramAccessRow['updated_at'];
 }
 
-const OWNED_PROGRAM_QUERY_KEY = (userId: string | null) => ['owned-programs', userId];
+export const OWNED_PROGRAMS_QUERY_ROOT = ['owned-programs'] as const;
+export const ownedProgramsQueryKey = (userId: string | null) => [...OWNED_PROGRAMS_QUERY_ROOT, userId] as const;
 
 export function useOwnedPrograms() {
   const { user } = useAuth();
   const userId = user?.id ?? null;
 
   const query = useQuery({
-    queryKey: OWNED_PROGRAM_QUERY_KEY(userId),
+    queryKey: ownedProgramsQueryKey(userId),
     enabled: Boolean(userId),
     queryFn: async (): Promise<OwnedProgramRecord[]> => {
       if (!userId) {
@@ -62,6 +65,28 @@ export function useOwnedPrograms() {
           startedAt: row.started_at,
           updatedAt: row.updated_at,
         });
+      }
+
+      try {
+        const customerInfo = await Purchases.getCustomerInfo();
+        const revenueCatOwnedPrograms = getOwnedProgramsFromCustomerInfo(customerInfo);
+
+        for (const slug of revenueCatOwnedPrograms) {
+          if (uniquePrograms.has(slug)) {
+            continue;
+          }
+
+          uniquePrograms.set(slug, {
+            slug,
+            purchaseState: 'owned_active',
+            completionState: 'in_progress',
+            currentDay: null,
+            startedAt: null,
+            updatedAt: new Date().toISOString(),
+          });
+        }
+      } catch (error) {
+        console.warn('Failed to merge RevenueCat-owned programs into library', error);
       }
 
       return [...uniquePrograms.values()];

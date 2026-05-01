@@ -1,5 +1,5 @@
-import { Alert, View, Text, Pressable } from 'react-native';
-import { useRouter, Href } from 'expo-router';
+import { View, Text, Pressable } from 'react-native';
+import { useRouter } from 'expo-router';
 import { Svg, Path } from 'react-native-svg';
 import type { ProgramContent } from '@/types/content';
 import { SkeletonCircle, SkeletonLine, SkeletonTitle } from '@/components/ui/Skeleton';
@@ -7,7 +7,6 @@ import { SkeletonCircle, SkeletonLine, SkeletonTitle } from '@/components/ui/Ske
 interface ExploreProgramsProps {
   programs: ProgramContent[];
   isLoading?: boolean;
-  isPurchaseLocked?: boolean;
 }
 
 function parsePriceString(priceString: string): number | null {
@@ -90,31 +89,20 @@ export function ProgramIcon({ category }: { category: ProgramContent['category']
 export function ExplorePrograms({
   programs,
   isLoading = false,
-  isPurchaseLocked = false,
 }: ExploreProgramsProps) {
   const router = useRouter();
 
   const handleProgramPress = (programSlug: ProgramContent['slug']) => {
-    if (isPurchaseLocked) {
-      Alert.alert(
-        'One Program At Launch',
-        'For launch, each account can unlock one program while we finalize the best multi-program experience.'
-      );
-      return;
-    }
-
-    router.push(`/paywall?program=${programSlug}` as Href);
+    router.push({
+      pathname: '/paywall',
+      params: { program: programSlug },
+    });
   };
 
   return (
     <View className="mt-2">
       <View className="px-0.5 mb-3">
         <Text className="font-erode-medium text-[20px] text-forest tracking-[-0.01em]">Explore Programs</Text>
-        {isPurchaseLocked ? (
-          <Text className="font-satoshi text-[11px] text-forest/50 leading-relaxed mt-1.5 pr-4">
-            At launch, your library is limited to one unlocked program while we shape the multi-program experience.
-          </Text>
-        ) : null}
       </View>
 
       {isLoading ? (
@@ -164,7 +152,7 @@ export function ExplorePrograms({
                 ) : null}
                 <View className="bg-[#EEF6EF] px-2 py-0.5 rounded-full">
                   <Text className="font-satoshi-bold uppercase text-[8px] tracking-[0.08em] text-forest">
-                    {isPurchaseLocked ? 'Launch limit' : getStatusLabel(program)}
+                    {getStatusLabel(program)}
                   </Text>
                 </View>
               </View>

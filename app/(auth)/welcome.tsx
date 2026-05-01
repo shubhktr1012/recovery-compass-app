@@ -15,6 +15,7 @@ import * as WebBrowser from 'expo-web-browser';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import * as Crypto from 'expo-crypto';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { supabase } from '@/lib/supabase';
 
 type OAuthProvider = 'google' | 'apple';
 type LastSignInProvider = 'email' | 'google' | 'apple';
@@ -41,6 +42,23 @@ function getGoogleReversedClientScheme(clientId?: string | null) {
     }
 
     return `com.googleusercontent.apps.${clientId.slice(0, -suffix.length)}`;
+}
+
+function getAppleFullName(fullName: AppleAuthentication.AppleAuthenticationFullName | null) {
+    if (!fullName) {
+        return null;
+    }
+
+    const formattedName = [
+        fullName.givenName,
+        fullName.middleName,
+        fullName.familyName,
+    ]
+        .filter((part): part is string => Boolean(part?.trim()))
+        .join(' ')
+        .trim();
+
+    return formattedName || fullName.nickname?.trim() || null;
 }
 
 WebBrowser.maybeCompleteAuthSession();
@@ -299,6 +317,45 @@ export default function WelcomeScreen() {
 
             const { error, user } = await signInWithAppleIdToken(credential.identityToken, rawNonce);
             if (error) throw error;
+
+            const appleFullName = getAppleFullName(credential.fullName);
+            if (user?.id && appleFullName) {
+                const updatedAt = new Date().toISOString();
+                const { data: existingProfile, error: profileFetchError } = await supabase
+                    .from('profiles')
+                    .select('display_name')
+                    .eq('id', user.id)
+                    .maybeSingle();
+
+                if (profileFetchError) {
+                    console.warn('Failed to read profile before persisting Apple name', profileFetchError);
+                } else if (!existingProfile?.display_name?.trim()) {
+                    const { error: profileError } = await supabase
+                        .from('profiles')
+                        .upsert(
+                            {
+                                id: user.id,
+                                email: user.email ?? credential.email ?? null,
+                                display_name: appleFullName,
+                                updated_at: updatedAt,
+                            },
+                            { onConflict: 'id' }
+                        );
+
+                    if (profileError) {
+                        console.warn('Failed to persist Apple profile name', profileError);
+                    }
+                }
+
+                const { error: metadataError } = await supabase.auth.updateUser({
+                    data: { full_name: appleFullName },
+                });
+
+                if (metadataError) {
+                    console.warn('Failed to persist Apple auth name', metadataError);
+                }
+            }
+
             await persistLastSignInProvider('apple');
             await maybeShowLinkedProviderInfo(user, 'apple');
         } catch (error: any) {

@@ -1,16 +1,19 @@
-import React, { useMemo } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import React, { useCallback, useMemo, useState } from 'react';
+import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { useQuery } from '@tanstack/react-query';
 
 import { usePrograms } from '@/content';
 import { useOwnedPrograms } from '@/hooks/useOwnedPrograms';
 import { useProfile } from '@/providers/profile';
 import { ProgramIcon } from '@/components/dashboard/ExplorePrograms';
 import { SkeletonCircle, SkeletonLine, SkeletonTitle } from '@/components/ui/Skeleton';
-import type { ProgramContent } from '@/types/content';
+import type { ProgramContent, ProgramSlug } from '@/types/content';
+import { getJourneyForProgramSlug, getStoredOnboardingJourney } from '@/lib/onboarding.realignment';
+import { supabase } from '@/lib/supabase';
 
 function ProgramLibraryCard({
   program,
@@ -18,21 +21,27 @@ function ProgramLibraryCard({
   body,
   dark = false,
   actionLabel,
+  notice,
   onPress,
+  disabled = false,
 }: {
   program: ProgramContent;
   eyebrow: string;
   body: string;
   dark?: boolean;
   actionLabel?: string;
+  notice?: string;
   onPress?: () => void;
+  disabled?: boolean;
 }) {
   const CardComponent = onPress ? Pressable : View;
 
   return (
     <CardComponent
       onPress={onPress}
+      disabled={disabled}
       className={`rounded-[24px] p-5 border ${dark ? 'bg-forest border-forest/80' : 'bg-white border-forest/5'} shadow-sm shadow-forest/5`}
+      accessibilityRole={onPress ? 'button' : undefined}
     >
       <View className="flex-row items-start gap-3.5">
         <View className="w-[48px] h-[48px] rounded-[18px] items-center justify-center shrink-0 bg-sageSoft">
@@ -48,6 +57,11 @@ function ProgramLibraryCard({
           <Text className={`font-satoshi text-[12px] leading-relaxed mt-1.5 ${dark ? 'text-white/60' : 'text-forest/55'}`}>
             {body}
           </Text>
+          {notice ? (
+            <Text className={`font-satoshi-bold text-[11px] leading-relaxed mt-2 ${dark ? 'text-sage/80' : 'text-forest/55'}`}>
+              {notice}
+            </Text>
+          ) : null}
           <View className="flex-row items-center flex-wrap gap-2 mt-3">
             <View className={`${dark ? 'bg-white/8 border border-white/10' : 'bg-sageSoft'} rounded-full px-2.5 py-1`}>
               <Text className={`font-satoshi-bold uppercase text-[8px] tracking-[0.12em] ${dark ? 'text-sage/75' : 'text-forest/65'}`}>
@@ -102,9 +116,116 @@ export default function ProgramsLibraryScreen() {
   const router = useRouter();
   const { programs } = usePrograms();
   const { ownedPrograms, isLoading } = useOwnedPrograms();
-  const { access } = useProfile();
+  const { access, profile, selectActiveProgram } = useProfile();
+  const [switchingProgram, setSwitchingProgram] = useState<ProgramSlug | null>(null);
 
   const activeProgramSlug = access.ownedProgram ?? null;
+  const userId = profile?.id ?? null;
+
+  const questionnaireRunsQuery = useQuery({
+    queryKey: ['questionnaire-runs', userId, 'journeys'],
+    enabled: Boolean(userId),
+    queryFn: async () => {
+      if (!userId) {
+        return [] as string[];
+      }
+
+      const { data, error } = await supabase
+        .from('questionnaire_runs')
+        .select('journey_key')
+        .eq('user_id', userId);
+
+      if (error) {
+        throw error;
+      }
+
+      return Array.from(
+        new Set((data ?? []).map((run) => run.journey_key).filter(Boolean))
+      );
+    },
+    staleTime: 60 * 1000,
+  });
+
+  const completedJourneyKeys = useMemo(() => {
+    const keys = new Set(questionnaireRunsQuery.data ?? []);
+    const profileJourney = getStoredOnboardingJourney({
+      questionnaireAnswers: profile?.questionnaire_answers ?? null,
+      recommendedProgram: profile?.recommended_program ?? null,
+    });
+
+    if (profileJourney) {
+      keys.add(profileJourney);
+    }
+
+    return keys;
+  }, [profile?.questionnaire_answers, profile?.recommended_program, questionnaireRunsQuery.data]);
+
+  const hasProgramPersonalization = useCallback(
+    (programSlug: ProgramSlug) => {
+      const journey = getJourneyForProgramSlug(programSlug);
+      return Boolean(journey && completedJourneyKeys.has(journey));
+    },
+    [completedJourneyKeys]
+  );
+
+  const switchToProgram = useCallback(
+    async (programSlug: ProgramSlug, options?: { personalize: boolean }) => {
+      setSwitchingProgram(programSlug);
+
+      try {
+        await selectActiveProgram(programSlug);
+
+        if (options?.personalize) {
+          router.push({
+            pathname: '/personalization',
+            params: {
+              mode: 'realign',
+              program: programSlug,
+            },
+          });
+        }
+      } catch (error) {
+        console.error('Failed to switch active program', error);
+        Alert.alert(
+          'Could not switch program',
+          'Please try again in a moment. If this keeps happening, restore purchases and try again.'
+        );
+      } finally {
+        setSwitchingProgram(null);
+      }
+    },
+    [router, selectActiveProgram]
+  );
+
+  const handleSelectProgram = useCallback(
+    (programSlug: ProgramSlug) => {
+      if (!hasProgramPersonalization(programSlug)) {
+        const programName = programs.find((program) => program.slug === programSlug)?.name ?? 'this program';
+        Alert.alert(
+          'Personalize this program?',
+          `${programName} is unlocked, but its questionnaire is not complete yet.`,
+          [
+            {
+              text: 'Cancel',
+              style: 'cancel',
+            },
+            {
+              text: 'Skip for now',
+              onPress: () => void switchToProgram(programSlug, { personalize: false }),
+            },
+            {
+              text: 'Personalize now',
+              onPress: () => void switchToProgram(programSlug, { personalize: true }),
+            },
+          ]
+        );
+        return;
+      }
+
+      void switchToProgram(programSlug, { personalize: false });
+    },
+    [hasProgramPersonalization, programs, switchToProgram]
+  );
 
   const { activeProgram, otherOwnedPrograms } = useMemo(() => {
     const ownedSlugSet = new Set([
@@ -156,6 +277,11 @@ export default function ProgramsLibraryScreen() {
                 program={activeProgram}
                 eyebrow="Current journey"
                 body="This is the program currently pinned to your dashboard and day flow."
+                notice={
+                  hasProgramPersonalization(activeProgram.slug)
+                    ? undefined
+                    : 'Personalization not completed'
+                }
                 dark
                 actionLabel="Open program"
                 onPress={() => router.push('/(tabs)/program')}
@@ -180,7 +306,15 @@ export default function ProgramsLibraryScreen() {
                       key={program.slug}
                       program={program}
                       eyebrow="Unlocked"
-                      body="Available in your library and ready whenever you want to explore it next."
+                      body="Available in your library. Set it as current to pin it to Home and the Program tab."
+                      notice={
+                        hasProgramPersonalization(program.slug)
+                          ? undefined
+                          : 'Personalization not completed'
+                      }
+                      actionLabel={switchingProgram === program.slug ? 'Switching...' : 'Set as current'}
+                      disabled={Boolean(switchingProgram)}
+                      onPress={() => handleSelectProgram(program.slug)}
                     />
                   ))}
                 </View>

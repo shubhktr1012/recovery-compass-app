@@ -12,6 +12,7 @@ import {
   ProgramSlug,
 } from '@/lib/programs/types';
 import { AccessService } from '@/lib/access/service';
+import { OWNED_PROGRAMS_QUERY_ROOT } from '@/hooks/useOwnedPrograms';
 import { decode } from 'base64-arraybuffer';
 import * as FileSystem from 'expo-file-system/legacy';
 
@@ -39,6 +40,7 @@ interface ProfileContextType {
   refreshAccess: () => Promise<ProgramAccessSnapshot>;
   refreshProfile: () => Promise<void>;
   setProgramAccess: (program: ProgramSlug | null) => Promise<void>;
+  selectActiveProgram: (program: ProgramSlug) => Promise<void>;
   savePartialProgramDay: (program: ProgramSlug, dayNumber: number) => Promise<void>;
   completeProgramDay: (program: ProgramSlug, dayNumber: number) => Promise<void>;
   updateProfile: (fields: { display_name?: string | null }) => Promise<void>;
@@ -110,6 +112,7 @@ const ProfileContext = createContext<ProfileContextType>({
   }),
   refreshProfile: async () => { },
   setProgramAccess: async () => { },
+  selectActiveProgram: async () => { },
   savePartialProgramDay: async () => { },
   completeProgramDay: async () => { },
   updateProfile: async () => { },
@@ -274,7 +277,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
     try {
       const snapshot = await AccessService.refreshFromDeviceStore(userId);
-      const nextProgress = await AccessService.getProgressRecord();
+      const nextProgress = await AccessService.getProgressRecord(userId, snapshot.ownedProgram);
       console.log('[ProfileProvider] refreshAccess:resolved', {
         userId,
         snapshotOwnerUserId: snapshot.ownerUserId ?? null,
@@ -289,7 +292,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     } catch (error) {
       console.error('Error refreshing access state:', error);
       const fallbackSnapshot = await AccessService.getAccessSnapshot();
-      const fallbackProgress = await AccessService.getProgressRecord();
+      const fallbackProgress = await AccessService.getProgressRecord(userId, fallbackSnapshot.ownedProgram);
       setAccess(fallbackSnapshot);
       setProgress(fallbackProgress);
       return fallbackSnapshot;
@@ -319,6 +322,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
       const nextProgress = AccessService.buildProgressRecord(userId, program);
       await Promise.all([
+        AccessService.saveLocalActiveProgramPreference(userId, program),
         AccessService.saveAccessSnapshot(nextSnapshot),
         AccessService.saveProgressRecord(nextProgress),
         AccessService.syncStateToSupabase(nextProgress),
@@ -328,6 +332,26 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
       setProgress(nextProgress);
     },
     [userId]
+  );
+
+  const selectActiveProgram = useCallback(
+    async (program: ProgramSlug) => {
+      if (!userId) {
+        return;
+      }
+
+      setIsAccessLoading(true);
+
+      try {
+        const { snapshot, progress: nextProgress } = await AccessService.selectActiveProgram(userId, program);
+        setAccess(snapshot);
+        setProgress(nextProgress);
+        await queryClient.invalidateQueries({ queryKey: OWNED_PROGRAMS_QUERY_ROOT });
+      } finally {
+        setIsAccessLoading(false);
+      }
+    },
+    [queryClient, userId]
   );
 
   const completeProgramDay = useCallback(
@@ -427,10 +451,8 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setIsAccessLoading(true);
 
     try {
-      const [cachedSnapshot, cachedProgress] = await Promise.all([
-        AccessService.getAccessSnapshot(),
-        AccessService.getProgressRecord(),
-      ]);
+      const cachedSnapshot = await AccessService.getAccessSnapshot();
+      const cachedProgress = await AccessService.getProgressRecord(userId, cachedSnapshot.ownedProgram);
 
       const safeCachedProgress = cachedProgress?.userId === userId ? cachedProgress : null;
       const safeCachedSnapshot =
@@ -463,7 +485,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
       setProgress(safeCachedProgress);
 
       const liveSnapshot = await AccessService.refreshFromDeviceStore(userId);
-      const liveProgress = await AccessService.getProgressRecord();
+      const liveProgress = await AccessService.getProgressRecord(userId, liveSnapshot.ownedProgram);
       console.log('[ProfileProvider] bootstrapAccessState:live', {
         userId,
         liveSnapshotOwnerUserId: liveSnapshot.ownerUserId ?? null,
@@ -491,7 +513,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const updateListener = (customerInfo: CustomerInfo) => {
       void AccessService.syncFromRevenueCat(customerInfo, userId)
         .then(async (snapshot) => {
-          const nextProgress = await AccessService.getProgressRecord();
+          const nextProgress = await AccessService.getProgressRecord(userId, snapshot.ownedProgram);
           console.log('[ProfileProvider] customerInfoUpdate', {
             userId,
             snapshotOwnerUserId: snapshot.ownerUserId ?? null,
@@ -502,6 +524,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
           });
           setAccess(snapshot);
           setProgress(nextProgress);
+          await queryClient.invalidateQueries({ queryKey: OWNED_PROGRAMS_QUERY_ROOT });
         })
         .catch((error) => {
           console.error('Error syncing RevenueCat access update', error);
@@ -513,7 +536,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     return () => {
       Purchases.removeCustomerInfoUpdateListener(updateListener);
     };
-  }, [bootstrapAccessState, userId]);
+  }, [bootstrapAccessState, queryClient, userId]);
 
   const refreshProfile = useCallback(
     async () => {
@@ -703,6 +726,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
       refreshAccess,
       refreshProfile,
       setProgramAccess,
+      selectActiveProgram,
       savePartialProgramDay,
       completeProgramDay,
       updateProfile,
@@ -716,6 +740,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
       progress,
       refreshAccess,
       refreshProfile,
+      selectActiveProgram,
       setProgramAccess,
       savePartialProgramDay,
       updateProfile,

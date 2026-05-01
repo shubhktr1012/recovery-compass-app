@@ -447,12 +447,28 @@ export default function DayDetailScreen() {
       return program.totalDays;
     }
 
-    return access.startedAt
+    const derivedScheduledDay = access.startedAt
       ? getProgramScheduledDay(access.startedAt, program.totalDays)
       : access.currentDay ?? 1;
-  }, [access.completionState, access.currentDay, access.startedAt, program]);
+    const highestTouchedDay = Math.max(
+      0,
+      ...completedDays,
+      ...partialDays,
+      access.currentDay ?? 0
+    );
 
-  const isFutureLocked = Boolean(normalizedDayNumber && normalizedDayNumber > scheduledDay && !isDayCompleted);
+    return Math.min(
+      program.totalDays,
+      Math.max(derivedScheduledDay, highestTouchedDay || 1)
+    );
+  }, [access.completionState, access.currentDay, access.startedAt, completedDays, partialDays, program]);
+
+  const isFutureLocked = Boolean(
+    normalizedDayNumber &&
+    normalizedDayNumber > scheduledDay &&
+    !isDayCompleted &&
+    !isDayPartial
+  );
   const hasCloseCard = dayContent?.cards.some((card) => card.type === 'close') ?? false;
   const isLastCard = Boolean(dayContent && currentIndex === dayContent.cards.length - 1);
   const shouldShowCompletionBar = !hasCloseCard && (isDayCompleted || isDayPartial || isLastCard);

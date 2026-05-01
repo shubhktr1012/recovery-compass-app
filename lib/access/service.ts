@@ -14,7 +14,9 @@ import {
 } from '@/lib/programs/types';
 
 const ACCESS_STORAGE_KEY = 'program-access-snapshot';
+const ACTIVE_PROGRAM_STORAGE_KEY_PREFIX = 'program-active-preference:';
 const PROGRESS_STORAGE_KEY = 'program-progress-record';
+const PROGRESS_STORAGE_KEY_PREFIX = `${PROGRESS_STORAGE_KEY}:`;
 const REFRESH_IN_FLIGHT = new Map<string, Promise<ProgramAccessSnapshot>>();
 const SYNC_FROM_REVENUECAT_IN_FLIGHT = new Map<string, Promise<ProgramAccessSnapshot>>();
 
@@ -63,6 +65,16 @@ function getStateForProgress(
 
   const totalDays = getProgramLength(programSlug);
   const scheduledDay = getProgramScheduledDay(startedAt, totalDays);
+  const highestTouchedDay = Math.max(
+    0,
+    ...(progress?.completedDays ?? []),
+    ...(progress?.partialDays ?? []),
+    progress?.currentDay ?? 0
+  );
+  const unlockedThroughDay = Math.min(
+    totalDays,
+    Math.max(scheduledDay, highestTouchedDay || 1)
+  );
 
   if (!progress) {
     return {
@@ -78,7 +90,7 @@ function getStateForProgress(
   const isArchived = Boolean(progress.archivedAt);
   const effectiveScheduledDay = isProgramComplete
     ? totalDays
-    : scheduledDay;
+    : unlockedThroughDay;
 
   let completionState: CompletionState = 'in_progress';
   let purchaseState: PurchaseState = 'owned_active';
@@ -139,6 +151,20 @@ function normalizeProgressRecord(progress: ProgramProgressRecord): ProgramProgre
   };
 }
 
+function getProgressStorageKey(userId: string, programSlug: ProgramSlug) {
+  return `${PROGRESS_STORAGE_KEY_PREFIX}${userId}:${programSlug}`;
+}
+
+function getActiveProgramStorageKey(userId: string) {
+  return `${ACTIVE_PROGRAM_STORAGE_KEY_PREFIX}${userId}`;
+}
+
+type LocalActiveProgramPreference = {
+  userId: string;
+  programSlug: ProgramSlug;
+  updatedAt: string;
+};
+
 type ProgramAccessRow = {
   archived_at: string | null;
   completed_at: string | null;
@@ -196,6 +222,25 @@ async function getProfileRecommendedProgram(userId: string) {
     return normalizeProgramSlug(data?.recommended_program ?? null);
   } catch (error) {
     console.warn('Failed to fetch recommended program for access resolution', error);
+    return null;
+  }
+}
+
+async function getServerActiveProgramPreference(userId: string) {
+  try {
+    const { data, error } = await supabase
+      .from('user_program_preferences')
+      .select('active_program')
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (error) {
+      throw error;
+    }
+
+    return normalizeProgramSlug(data?.active_program ?? null);
+  } catch (error) {
+    console.warn('Failed to fetch active program preference', error);
     return null;
   }
 }
@@ -274,7 +319,36 @@ export class AccessService {
     await AsyncStorage.setItem(ACCESS_STORAGE_KEY, JSON.stringify(snapshot));
   }
 
-  static async getProgressRecord() {
+  static async getLocalActiveProgramPreference(userId: string) {
+    try {
+      const rawValue = await AsyncStorage.getItem(getActiveProgramStorageKey(userId));
+      if (!rawValue) return null;
+
+      const parsed = JSON.parse(rawValue) as Partial<LocalActiveProgramPreference>;
+      const programSlug = normalizeProgramSlug(parsed.programSlug);
+
+      if (parsed.userId !== userId || !programSlug) {
+        return null;
+      }
+
+      return programSlug;
+    } catch (error) {
+      console.warn('Failed to read local active program preference', error);
+      return null;
+    }
+  }
+
+  static async saveLocalActiveProgramPreference(userId: string, programSlug: ProgramSlug) {
+    const preference: LocalActiveProgramPreference = {
+      userId,
+      programSlug,
+      updatedAt: new Date().toISOString(),
+    };
+
+    await AsyncStorage.setItem(getActiveProgramStorageKey(userId), JSON.stringify(preference));
+  }
+
+  private static async getLegacyProgressRecord() {
     try {
       const rawValue = await AsyncStorage.getItem(PROGRESS_STORAGE_KEY);
       if (!rawValue) return null;
@@ -285,12 +359,66 @@ export class AccessService {
     }
   }
 
+  static async getProgressRecord(userId?: string | null, programSlug?: ProgramSlug | null) {
+    if (!userId || !programSlug) {
+      return await this.getLegacyProgressRecord();
+    }
+
+    try {
+      const rawValue = await AsyncStorage.getItem(getProgressStorageKey(userId, programSlug));
+      if (rawValue) {
+        return normalizeProgressRecord(JSON.parse(rawValue) as ProgramProgressRecord);
+      }
+
+      const legacyProgress = await this.getLegacyProgressRecord();
+      if (legacyProgress?.userId === userId && legacyProgress.programSlug === programSlug) {
+        await this.saveProgressRecord(legacyProgress);
+        await AsyncStorage.removeItem(PROGRESS_STORAGE_KEY);
+        return legacyProgress;
+      }
+
+      return null;
+    } catch (error) {
+      console.error('Failed to read program progress record', error);
+      return null;
+    }
+  }
+
   static async saveProgressRecord(progress: ProgramProgressRecord) {
-    await AsyncStorage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify(normalizeProgressRecord(progress)));
+    const normalizedProgress = normalizeProgressRecord(progress);
+    await AsyncStorage.setItem(
+      getProgressStorageKey(normalizedProgress.userId, normalizedProgress.programSlug),
+      JSON.stringify(normalizedProgress)
+    );
+
+    const legacyProgress = await this.getLegacyProgressRecord();
+    if (
+      legacyProgress?.userId === normalizedProgress.userId &&
+      legacyProgress.programSlug === normalizedProgress.programSlug
+    ) {
+      await AsyncStorage.removeItem(PROGRESS_STORAGE_KEY);
+    }
+  }
+
+  static async removeProgressRecord(userId?: string | null, programSlug?: ProgramSlug | null) {
+    if (userId && programSlug) {
+      await AsyncStorage.removeItem(getProgressStorageKey(userId, programSlug));
+      return;
+    }
+
+    await AsyncStorage.removeItem(PROGRESS_STORAGE_KEY);
   }
 
   static async clear() {
-    await AsyncStorage.multiRemove([ACCESS_STORAGE_KEY, PROGRESS_STORAGE_KEY]);
+    const keys = await AsyncStorage.getAllKeys();
+    const progressKeys = keys.filter((key) => key.startsWith(PROGRESS_STORAGE_KEY_PREFIX));
+    const activeProgramKeys = keys.filter((key) => key.startsWith(ACTIVE_PROGRAM_STORAGE_KEY_PREFIX));
+    await AsyncStorage.multiRemove([
+      ACCESS_STORAGE_KEY,
+      PROGRESS_STORAGE_KEY,
+      ...progressKeys,
+      ...activeProgramKeys,
+    ]);
   }
 
   static buildProgressRecord(userId: string, programSlug: ProgramSlug): ProgramProgressRecord {
@@ -314,10 +442,12 @@ export class AccessService {
         .eq('user_id', userId);
 
       if (error) throw error;
-      const selectedRow = selectPreferredAccessRow((data ?? []) as ProgramAccessRow[], preferredProgram ?? null);
+      const ownedRows = ((data ?? []) as ProgramAccessRow[]).filter((row) => {
+        return normalizeProgramSlug(row.owned_program) && (row.purchase_state as PurchaseState | null) !== 'not_owned';
+      });
+      const selectedRow = selectPreferredAccessRow(ownedRows, preferredProgram ?? null);
       if (!selectedRow) return null;
       if (!normalizeProgramSlug(selectedRow.owned_program)) return null;
-      if ((selectedRow.purchase_state as PurchaseState | null) === 'not_owned') return null;
 
       const snapshot: ProgramAccessSnapshot = {
         ownerUserId: userId,
@@ -364,10 +494,21 @@ export class AccessService {
         .map((row) => row.day_id);
       const totalDays = getProgramLength(programSlug);
       const highestCompletedDay = completedDays.at(-1) ?? 0;
+      const highestPartialDay = partialDays.at(-1) ?? 0;
       const isComplete = Boolean(snapshot?.completedAt) || highestCompletedDay >= totalDays;
+      const scheduledDay = getProgramScheduledDay(snapshot?.startedAt, totalDays);
       const fallbackCurrentDay = isComplete
         ? totalDays
-        : getProgramScheduledDay(snapshot?.startedAt, totalDays);
+        : Math.min(
+            totalDays,
+            Math.max(
+              scheduledDay,
+              snapshot?.currentDay ?? 0,
+              highestCompletedDay,
+              highestPartialDay,
+              1
+            )
+          );
 
       if (
         !completedDays.length &&
@@ -435,8 +576,95 @@ export class AccessService {
     }
   }
 
-  static async hydrateFromSupabase(userId: string) {
-    const snapshot = (await this.getServerAccessSnapshot(userId)) ?? createDefaultSnapshot('supabase', userId);
+  static async selectActiveProgram(userId: string, programSlug: ProgramSlug) {
+    let preferenceWriteError: unknown = null;
+
+    try {
+      const { error } = await supabase.rpc('select_active_program', {
+        p_program_id: programSlug,
+      });
+
+      if (error) {
+        throw error;
+      }
+    } catch (error) {
+      preferenceWriteError = error;
+      console.warn('Failed to persist active program preference to Supabase, using local fallback', {
+        userId,
+        programSlug,
+        error,
+      });
+    }
+
+    let snapshot = await this.getServerAccessSnapshot(userId, programSlug);
+
+    if (snapshot?.ownedProgram !== programSlug) {
+      const customerInfo = await Purchases.getCustomerInfo();
+      const revenueCatOwnedPrograms = getOwnedProgramsFromCustomerInfo(customerInfo);
+
+      if (!revenueCatOwnedPrograms.includes(programSlug)) {
+        throw preferenceWriteError instanceof Error
+          ? preferenceWriteError
+          : new Error(`Unable to load selected program access for ${programSlug}`);
+      }
+
+      const cachedSnapshot = await this.getAccessSnapshot();
+      const safeCachedSnapshot = isSnapshotOwnedByUser(cachedSnapshot, userId)
+        ? cachedSnapshot
+        : createDefaultSnapshot('local', userId);
+
+      snapshot = {
+        ...createDefaultSnapshot('revenuecat', userId),
+        ownedProgram: programSlug,
+        purchaseState: 'owned_active',
+        completionState: 'in_progress',
+        currentDay: null,
+        startedAt:
+          safeCachedSnapshot.ownedProgram === programSlug && safeCachedSnapshot.startedAt
+            ? safeCachedSnapshot.startedAt
+            : new Date().toISOString(),
+      };
+    }
+
+    const serverProgress = await this.getServerProgressRecord(userId, programSlug, snapshot);
+    const cachedProgress = await this.getProgressRecord(userId, programSlug);
+    const progress =
+      serverProgress ??
+      (cachedProgress?.userId === userId && cachedProgress.programSlug === programSlug
+        ? cachedProgress
+        : this.buildProgressRecord(userId, programSlug));
+
+    const nextSnapshot: ProgramAccessSnapshot = {
+      ...snapshot,
+      ...getStateForProgress(programSlug, progress, snapshot.startedAt),
+      source: 'supabase',
+    };
+
+    if (progress && nextSnapshot.currentDay) {
+      progress.currentDay = nextSnapshot.currentDay;
+    }
+
+    nextSnapshot.eligibleProducts = deriveEligibleProducts(nextSnapshot);
+
+    await Promise.all([
+      this.saveLocalActiveProgramPreference(userId, programSlug),
+      this.saveAccessSnapshot(nextSnapshot),
+      this.saveProgressRecord(progress),
+    ]);
+
+    return {
+      snapshot: nextSnapshot,
+      progress,
+    };
+  }
+
+  static async hydrateFromSupabase(userId: string, preferredProgram?: ProgramSlug | null) {
+    const [localActivePreference, serverActivePreference] = await Promise.all([
+      this.getLocalActiveProgramPreference(userId),
+      getServerActiveProgramPreference(userId),
+    ]);
+    const activePreference = preferredProgram ?? localActivePreference ?? serverActivePreference;
+    const snapshot = (await this.getServerAccessSnapshot(userId, activePreference)) ?? createDefaultSnapshot('supabase', userId);
     const progress = snapshot.ownedProgram
       ? await this.getServerProgressRecord(userId, snapshot.ownedProgram, snapshot)
       : null;
@@ -459,8 +687,10 @@ export class AccessService {
 
     if (progress) {
       await this.saveProgressRecord(progress);
+    } else if (snapshot.ownedProgram) {
+      await this.removeProgressRecord(userId, snapshot.ownedProgram);
     } else {
-      await AsyncStorage.removeItem(PROGRESS_STORAGE_KEY);
+      await this.removeProgressRecord();
     }
 
     return {
@@ -476,15 +706,28 @@ export class AccessService {
     }
 
     const syncPromise = (async () => {
-      const [cachedSnapshot, cachedProgress, profileRecommendedProgram] = await Promise.all([
+      const [
+        cachedSnapshot,
+        profileRecommendedProgram,
+        localActiveProgramPreference,
+        activeProgramPreference,
+      ] = await Promise.all([
         this.getAccessSnapshot(),
-        this.getProgressRecord(),
         getProfileRecommendedProgram(userId),
+        this.getLocalActiveProgramPreference(userId),
+        getServerActiveProgramPreference(userId),
       ]);
-      const existingProgress = isProgressOwnedByUser(cachedProgress, userId) ? cachedProgress : null;
       const localSnapshot = isSnapshotOwnedByUser(cachedSnapshot, userId)
         ? cachedSnapshot
         : createDefaultSnapshot('local', userId);
+      const cachedProgress = await this.getProgressRecord(
+        userId,
+        localActiveProgramPreference ??
+          localSnapshot.ownedProgram ??
+          activeProgramPreference ??
+          profileRecommendedProgram
+      );
+      const existingProgress = isProgressOwnedByUser(cachedProgress, userId) ? cachedProgress : null;
       const ownedPrograms = getOwnedProgramsFromCustomerInfo(customerInfo);
 
       if (__DEV__) console.log('[AccessService] syncFromRevenueCat:start', {
@@ -496,31 +739,46 @@ export class AccessService {
         cachedProgressUserId: cachedProgress?.userId ?? null,
         cachedProgressProgramSlug: cachedProgress?.programSlug ?? null,
         safeLocalOwnedProgram: localSnapshot.ownedProgram,
+        localActiveProgramPreference,
         safeExistingProgressProgramSlug: existingProgress?.programSlug ?? null,
         profileRecommendedProgram,
+        activeProgramPreference,
       });
 
       let ownedProgram = selectPreferredProgramSlug(ownedPrograms, [
-        existingProgress?.programSlug,
+        localActiveProgramPreference,
         localSnapshot.ownedProgram,
+        existingProgress?.programSlug,
+        activeProgramPreference,
         profileRecommendedProgram,
       ]);
+      const preferredServerProgram =
+        localActiveProgramPreference ??
+        activeProgramPreference ??
+        localSnapshot.ownedProgram ??
+        existingProgress?.programSlug ??
+        profileRecommendedProgram ??
+        ownedProgram ??
+        null;
       const serverSnapshot = await this.getServerAccessSnapshot(
         userId,
-        ownedProgram ?? profileRecommendedProgram ?? null
+        preferredServerProgram
       );
 
       const candidateOwnedPrograms = Array.from(
         new Set<ProgramSlug>([
           ...ownedPrograms,
           ...(serverSnapshot?.ownedProgram ? [serverSnapshot.ownedProgram] : []),
+          ...(localSnapshot.ownedProgram ? [localSnapshot.ownedProgram] : []),
         ])
       );
 
       ownedProgram = selectPreferredProgramSlug(candidateOwnedPrograms, [
-        serverSnapshot?.ownedProgram,
-        existingProgress?.programSlug,
+        localActiveProgramPreference,
         localSnapshot.ownedProgram,
+        existingProgress?.programSlug,
+        activeProgramPreference,
+        serverSnapshot?.ownedProgram,
         profileRecommendedProgram,
       ]);
       const serverProgress =
@@ -542,8 +800,10 @@ export class AccessService {
 
       if (nextProgress) {
         await this.saveProgressRecord(nextProgress);
+      } else if (ownedProgram) {
+        await this.removeProgressRecord(userId, ownedProgram);
       } else {
-        await AsyncStorage.removeItem(PROGRESS_STORAGE_KEY);
+        await this.removeProgressRecord();
       }
 
       const snapshot: ProgramAccessSnapshot = {
@@ -564,7 +824,12 @@ export class AccessService {
       }
 
       snapshot.eligibleProducts = deriveEligibleProducts(snapshot);
-      await this.saveAccessSnapshot(snapshot);
+      await Promise.all([
+        ownedProgram
+          ? this.saveLocalActiveProgramPreference(userId, ownedProgram)
+          : Promise.resolve(),
+        this.saveAccessSnapshot(snapshot),
+      ]);
 
       if (__DEV__) console.log('[AccessService] syncFromRevenueCat:resolved', {
         userId,
@@ -578,6 +843,8 @@ export class AccessService {
         savedSnapshotSource: snapshot.source,
         savedSnapshotOwnerUserId: snapshot.ownerUserId ?? null,
         profileRecommendedProgram,
+        localActiveProgramPreference,
+        activeProgramPreference,
       });
 
       if (ownedProgram) {
@@ -604,7 +871,7 @@ export class AccessService {
     updater: (current: ProgramProgressRecord) => ProgramProgressRecord
   ) {
     const currentProgress =
-      (await this.getProgressRecord()) ?? this.buildProgressRecord(userId, programSlug);
+      (await this.getProgressRecord(userId, programSlug)) ?? this.buildProgressRecord(userId, programSlug);
     const nextProgress = updater({
       ...currentProgress,
       userId,
@@ -669,10 +936,8 @@ export class AccessService {
           return serverState.snapshot;
         }
 
-        const [localSnapshot, localProgress] = await Promise.all([
-          this.getAccessSnapshot(),
-          this.getProgressRecord(),
-        ]);
+        const localSnapshot = await this.getAccessSnapshot();
+        const localProgress = await this.getProgressRecord(userId, localSnapshot.ownedProgram);
 
         if (!localProgress || localProgress.userId !== userId) {
           await this.clear();

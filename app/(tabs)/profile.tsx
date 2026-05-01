@@ -1,7 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import {
   Alert,
-  Dimensions,
   Image,
   NativeScrollEvent,
   NativeSyntheticEvent,
@@ -21,7 +20,8 @@ import { PROGRAM_METADATA } from '@/content/programs/metadata';
 import { useAuth } from '@/providers/auth';
 import { useOnboardingResponse } from '@/hooks/useOnboardingResponse';
 import { useDailySteps } from '@/hooks/useDailySteps';
-import { formatInr, getOnboardingProjection } from '@/lib/onboarding-metrics';
+import { getOnboardingProjection } from '@/lib/onboarding-metrics';
+import { getProgramStatisticsSummary } from '@/lib/program-statistics';
 import { useProfile } from '@/providers/profile';
 import { supabase } from '@/lib/supabase';
 import { EditProfileSheet } from '@/components/account/EditProfileSheet';
@@ -29,7 +29,6 @@ import { AccountWatermark } from '@/components/ui/TabWatermarks';
 import type { ProgramSlug } from '@/types/content';
 import { AppColors } from '@/constants/theme';
 
-const SCREEN_WIDTH = Dimensions.get('window').width;
 const STAT_CARD_WIDTH = 164;
 const STAT_CARD_GAP = 10;
 const STAT_CARD_SNAP = STAT_CARD_WIDTH + STAT_CARD_GAP;
@@ -83,15 +82,6 @@ function getPhaseLabel(dayNumber: number, totalDays: number) {
   if (ratio <= 0.75) return 'Phase 3 · Momentum';
   return 'Phase 4 · Integration';
 }
-
-function getDaysInMotion(startedAt: string | null | undefined) {
-  if (!startedAt) return 0;
-
-  const diffMs = Math.max(0, Date.now() - new Date(startedAt).getTime());
-  return Math.floor(diffMs / (1000 * 60 * 60 * 24)) + 1;
-}
-
-
 
 export default function AccountScreen() {
   const router = useRouter();
@@ -148,15 +138,11 @@ export default function AccountScreen() {
 
   const stats = useMemo(() => {
     const projection = getOnboardingProjection(onboardingQuery.data ?? null);
-    const joinedDays = getDaysInMotion(profile?.created_at);
 
     return {
-      avoidedUnits90Days: projection.avoidedUnits90Days,
-      joinedDays,
-      projectedSavings90Days: projection.projectedSavings90Days,
       primaryGoal: projection.primaryGoal,
     };
-  }, [onboardingQuery.data, profile?.created_at]);
+  }, [onboardingQuery.data]);
 
   const activeProgram = access.ownedProgram ? PROGRAM_METADATA[access.ownedProgram as ProgramSlug] : null;
 
@@ -180,16 +166,16 @@ export default function AccountScreen() {
       })
     : null;
 
+  const activeProgramStatistics = useMemo(() => {
+    return getProgramStatisticsSummary(
+      access.ownedProgram as ProgramSlug | null,
+      onboardingQuery.data ?? null,
+      profile?.questionnaire_answers ?? null
+    );
+  }, [access.ownedProgram, onboardingQuery.data, profile?.questionnaire_answers]);
+
   const statCards: StatCard[] = useMemo(() => {
-    const totalDays = activeProgram?.totalDays ?? 90;
-    const remaining = Math.max(0, totalDays - stats.joinedDays);
     const baseCards: Omit<StatCard, 'variant'>[] = [
-      {
-        label: 'Days in motion',
-        value: stats.joinedDays,
-        subtitle: 'Days completed',
-        context: remaining > 0 ? `On schedule · ${remaining} remaining` : 'Journey complete',
-      },
       {
         label: 'Steps today',
         value:
@@ -203,16 +189,10 @@ export default function AccountScreen() {
             : 'Set up in statistics',
       },
       {
-        label: '90-day savings',
-        value: formatInr(stats.projectedSavings90Days),
-        subtitle: 'Estimated',
-        context: 'vs. baseline monthly spend',
-      },
-      {
-        label: 'Reflections',
+        label: 'All-time reflections',
         value: journalCountQuery.data ?? 0,
         subtitle: 'Written',
-        context: activeProgram ? 'This program' : 'All time',
+        context: 'Across journal entries',
       },
       {
         label: 'Current streak',
@@ -224,6 +204,15 @@ export default function AccountScreen() {
 
     if (activeProgram && progressSummary) {
       const phaseNum = Math.min(4, Math.ceil((progressSummary.dayNumber / activeProgram.totalDays) * 4));
+      const completedCount = progress?.completedDays.length ?? 0;
+
+      baseCards.unshift({
+        label: 'Journey progress',
+        value: `${completedCount}/${activeProgram.totalDays}`,
+        subtitle: 'Days completed',
+        context: `Day ${progressSummary.dayNumber} · ${activeProgram.name}`,
+      });
+
       baseCards.splice(2, 0, {
         label: 'Program progress',
         value: `${progressSummary.percentage}%`,
@@ -232,11 +221,25 @@ export default function AccountScreen() {
       });
     }
 
+    if (activeProgramStatistics?.cards.length) {
+      const programMetricCards = activeProgramStatistics.cards
+        .filter((card) => card.value && card.value !== 'Not set')
+        .slice(0, 2)
+        .map((card) => ({
+          label: card.label,
+          value: card.value,
+          subtitle: 'Baseline',
+          context: activeProgram?.name ?? 'Current journey',
+        }));
+
+      baseCards.splice(activeProgram && progressSummary ? 3 : 1, 0, ...programMetricCards);
+    }
+
     return baseCards.map((card, index) => ({
       ...card,
       variant: index % 2 === 0 ? 'forest' : 'sage',
     }));
-  }, [access.completionState, activeProgram, bestStreak, currentStreak, dailySteps.formattedSteps, dailySteps.summary?.permissionState, dailySteps.summary?.providerLabel, journalCountQuery.data, progressSummary, stats.joinedDays, stats.projectedSavings90Days]);
+  }, [access.completionState, activeProgram, activeProgramStatistics?.cards, bestStreak, currentStreak, dailySteps.formattedSteps, dailySteps.summary?.permissionState, dailySteps.summary?.providerLabel, journalCountQuery.data, progress?.completedDays.length, progressSummary]);
 
   const handleStatScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const offsetX = event.nativeEvent.contentOffset.x;
@@ -380,6 +383,27 @@ export default function AccountScreen() {
               </TouchableOpacity>
             </>
           ) : null}
+
+          <Text style={styles.sectionEyebrow}>Programs</Text>
+          <TouchableOpacity
+            onPress={() => router.push('/account/programs')}
+            activeOpacity={0.78}
+            style={styles.programLibraryRow}
+          >
+            <View style={styles.programLibraryIcon}>
+              <Svg width={15} height={15} viewBox="0 0 24 24" fill="none" stroke="#06290C" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                <Path d="M4 19.5A2.5 2.5 0 016.5 17H20" />
+                <Path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" />
+              </Svg>
+            </View>
+            <View style={styles.programLibraryCopy}>
+              <Text style={styles.programLibraryTitle}>My programs</Text>
+              <Text style={styles.programLibrarySubtitle}>Switch your current journey or open unlocked programs.</Text>
+            </View>
+            <Svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="rgba(6,41,12,0.35)" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+              <Path d="M9 18l6-6-6-6" />
+            </Svg>
+          </TouchableOpacity>
 
           {/* PROGRESS / STATS */}
           <Text style={styles.sectionEyebrow}>Progress</Text>
@@ -734,6 +758,47 @@ const styles = StyleSheet.create({
     height: '100%',
     borderRadius: 999,
     backgroundColor: '#E3F3E5', // Pure sage for maximum visibility
+  },
+
+  // ─── Program Library Row ───
+  programLibraryRow: {
+    borderRadius: 18,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: 'rgba(6,41,12,0.06)',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    shadowColor: '#06290C',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 10,
+    elevation: 2,
+  },
+  programLibraryIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 14,
+    backgroundColor: AppColors.sageSoft,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  programLibraryCopy: {
+    flex: 1,
+  },
+  programLibraryTitle: {
+    fontFamily: 'Satoshi-Bold',
+    fontSize: 14,
+    color: AppColors.forest,
+  },
+  programLibrarySubtitle: {
+    fontFamily: 'Satoshi-Regular',
+    fontSize: 11,
+    lineHeight: 16,
+    color: 'rgba(6,41,12,0.48)',
+    marginTop: 2,
   },
 
   // ─── Stat Cards ───

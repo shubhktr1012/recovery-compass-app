@@ -1,6 +1,6 @@
-// eslint-disable-next-line import/no-unresolved -- resolved via supabase/functions/deno.json import map
-import { serve } from "std/http/server.ts";
-import { createClient } from "@supabase/supabase-js";
+import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
+// eslint-disable-next-line import/no-unresolved -- Deno npm specifier for Supabase Edge Functions bundling
+import { createClient } from "npm:@supabase/supabase-js@2";
 
 console.log("RevenueCat Webhook Function Started!");
 
@@ -254,13 +254,21 @@ const enforceRateLimit = async (
 
 const resolveProfileIdentity = async (
     supabase: SupabaseProfileClient,
-    appUserId: string,
+    identityCandidates: string[],
 ) => {
-    const findByColumn = async (column: 'id' | 'revenuecat_app_user_id') => {
+    const normalizedCandidates = Array.from(
+        new Set(
+            identityCandidates
+                .map((candidate) => candidate.trim())
+                .filter(Boolean),
+        ),
+    );
+
+    const findByColumn = async (column: 'id' | 'revenuecat_app_user_id', candidate: string) => {
         const { data, error } = await supabase
             .from('profiles')
             .select('id, revenuecat_app_user_id')
-            .eq(column, appUserId)
+            .eq(column, candidate)
             .maybeSingle();
 
         if (error) {
@@ -270,25 +278,115 @@ const resolveProfileIdentity = async (
         return data as { id: string; revenuecat_app_user_id: string | null } | null;
     };
 
-    const directProfile = await findByColumn('id');
-    if (directProfile) {
-        return {
-            profileId: directProfile.id,
-            matchedOn: 'id' as const,
-            revenueCatAppUserId: directProfile.revenuecat_app_user_id,
-        };
+    for (const candidate of normalizedCandidates) {
+        const directProfile = await findByColumn('id', candidate);
+        if (directProfile) {
+            return {
+                profileId: directProfile.id,
+                matchedIdentifier: candidate,
+                matchedOn: 'id' as const,
+                revenueCatAppUserId: directProfile.revenuecat_app_user_id,
+            };
+        }
     }
 
-    const fallbackProfile = await findByColumn('revenuecat_app_user_id');
-    if (fallbackProfile) {
-        return {
-            profileId: fallbackProfile.id,
-            matchedOn: 'revenuecat_app_user_id' as const,
-            revenueCatAppUserId: fallbackProfile.revenuecat_app_user_id,
-        };
+    for (const candidate of normalizedCandidates) {
+        const fallbackProfile = await findByColumn('revenuecat_app_user_id', candidate);
+        if (fallbackProfile) {
+            return {
+                profileId: fallbackProfile.id,
+                matchedIdentifier: candidate,
+                matchedOn: 'revenuecat_app_user_id' as const,
+                revenueCatAppUserId: fallbackProfile.revenuecat_app_user_id,
+            };
+        }
     }
 
     return null;
+};
+
+const getStringArray = (value: unknown) =>
+    Array.isArray(value)
+        ? value.filter((entry): entry is string => typeof entry === "string" && entry.trim().length > 0)
+        : [];
+
+const getRevenueCatIdentityCandidates = (event: Record<string, unknown>, appUserId: string) =>
+    Array.from(
+        new Set(
+            [
+                appUserId,
+                typeof event.original_app_user_id === "string" ? event.original_app_user_id : "",
+                ...getStringArray(event.aliases),
+                ...getStringArray(event.transferred_from),
+                ...getStringArray(event.transferred_to),
+            ]
+                .map((candidate) => candidate.trim())
+                .filter(Boolean),
+        ),
+    );
+
+const repairActiveProgramPreference = async (
+    supabase: SupabaseProfileClient,
+    userId: string,
+    revokedProgram: string,
+) => {
+    const { data: preference, error: preferenceError } = await supabase
+        .from('user_program_preferences')
+        .select('active_program')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+    if (preferenceError) {
+        console.error("Program Preference Fetch Error:", preferenceError);
+        return;
+    }
+
+    if (preference?.active_program !== revokedProgram) {
+        return;
+    }
+
+    const { data: fallbackPrograms, error: fallbackError } = await supabase
+        .from('program_access')
+        .select('owned_program')
+        .eq('user_id', userId)
+        .neq('owned_program', revokedProgram)
+        .in('purchase_state', ['owned_active', 'owned_completed', 'owned_archived'])
+        .order('updated_at', { ascending: false })
+        .limit(1);
+
+    if (fallbackError) {
+        console.error("Program Preference Fallback Error:", fallbackError);
+        return;
+    }
+
+    const fallbackProgram = Array.isArray(fallbackPrograms)
+        ? fallbackPrograms[0]?.owned_program
+        : null;
+
+    if (typeof fallbackProgram === 'string' && fallbackProgram.trim()) {
+        const { error: preferenceUpsertError } = await supabase
+            .from('user_program_preferences')
+            .upsert({
+                user_id: userId,
+                active_program: fallbackProgram,
+                updated_at: new Date().toISOString(),
+            }, { onConflict: 'user_id' });
+
+        if (preferenceUpsertError) {
+            console.error("Program Preference Upsert Error:", preferenceUpsertError);
+        }
+
+        return;
+    }
+
+    const { error: preferenceDeleteError } = await supabase
+        .from('user_program_preferences')
+        .delete()
+        .eq('user_id', userId);
+
+    if (preferenceDeleteError) {
+        console.error("Program Preference Delete Error:", preferenceDeleteError);
+    }
 };
 
 serve(async (req: Request) => {
@@ -385,11 +483,13 @@ serve(async (req: Request) => {
         }
 
         // 2. Resolve the canonical Supabase profile id for this RevenueCat user.
-        const resolvedProfile = await resolveProfileIdentity(supabase, appUserId);
+        const identityCandidates = getRevenueCatIdentityCandidates(event, appUserId);
+        const resolvedProfile = await resolveProfileIdentity(supabase, identityCandidates);
 
         if (!resolvedProfile) {
             console.error("RevenueCat webhook could not resolve a profile for app_user_id", {
                 appUserId,
+                identityCandidates,
                 eventType,
                 purchasedProgram,
                 purchasedProductId,
@@ -402,6 +502,7 @@ serve(async (req: Request) => {
         console.log("RevenueCat resolved profile identity", {
             appUserId,
             resolvedProfileId,
+            matchedIdentifier: resolvedProfile.matchedIdentifier,
             matchedOn: resolvedProfile.matchedOn,
         });
 
@@ -483,6 +584,45 @@ serve(async (req: Request) => {
             });
         } else if (isPositivePurchaseEvent) {
             console.warn("RevenueCat positive purchase event did not resolve to a known program", {
+                appUserId,
+                eventType,
+                purchasedProductId,
+            });
+        }
+
+        if (isNegativeLifecycleEvent && purchasedProgram) {
+            console.log("RevenueCat attempting targeted program_access revoke", {
+                appUserId,
+                resolvedProfileId,
+                purchasedProgram,
+                purchasedProductId,
+                eventType,
+            });
+
+            const { error: accessRevokeError } = await supabase
+                .from('program_access')
+                .update({
+                    purchase_state: 'not_owned',
+                    revenuecat_product_id: purchasedProductId,
+                    updated_at: new Date().toISOString(),
+                })
+                .eq('user_id', resolvedProfileId)
+                .eq('owned_program', purchasedProgram);
+
+            if (accessRevokeError) {
+                console.error("Program Access Revoke Error:", accessRevokeError);
+                throw accessRevokeError;
+            }
+
+            await repairActiveProgramPreference(supabase, resolvedProfileId, purchasedProgram);
+
+            console.log("RevenueCat program_access revoke completed", {
+                appUserId,
+                resolvedProfileId,
+                purchasedProgram,
+            });
+        } else if (isNegativeLifecycleEvent) {
+            console.warn("RevenueCat negative lifecycle event did not resolve to a known program", {
                 appUserId,
                 eventType,
                 purchasedProductId,

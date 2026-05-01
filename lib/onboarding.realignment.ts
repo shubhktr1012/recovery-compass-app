@@ -74,21 +74,14 @@ export function hasOnboardingContextMismatch(args: {
   questionnaireAnswers?: Record<string, unknown> | null;
   recommendedProgram?: ProgramSlug | null;
 }) {
-  if (!args.onboardingComplete || !args.ownedProgram) {
+  if (!args.onboardingComplete) {
     return false;
   }
 
-  const ownedJourney = getJourneyForProgramSlug(args.ownedProgram);
-  if (!ownedJourney) {
-    return false;
-  }
-
-  const storedJourney = getStoredOnboardingJourney({
+  return !getStoredOnboardingJourney({
     questionnaireAnswers: args.questionnaireAnswers,
     recommendedProgram: args.recommendedProgram,
   });
-
-  return storedJourney !== ownedJourney;
 }
 
 export function buildRealignmentAnswers(args: {
