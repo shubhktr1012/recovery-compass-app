@@ -43,6 +43,10 @@ export interface QuestionDefinition<OptionId extends string = string> {
   required?: boolean;
   allowEmpty?: boolean;
   inputs?: { id: string; label: string; placeholder?: string }[];
+  customOptionId?: string;
+  customInputId?: string;
+  customInputLabel?: string;
+  customInputPlaceholder?: string;
 }
 
 export interface JourneyRecommendation {
@@ -63,7 +67,7 @@ export interface JourneyQuestionSet {
   spend?: QuestionDefinition;
   coping: QuestionDefinition;
   outcome?: QuestionDefinition;
-  readiness: QuestionDefinition;
+  startReason: QuestionDefinition;
 }
 
 export interface JourneyConfig {

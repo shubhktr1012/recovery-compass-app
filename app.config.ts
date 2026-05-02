@@ -1,4 +1,6 @@
 import type { ConfigContext, ExpoConfig } from 'expo/config';
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const withAndroidCompliance = require('./plugins/withAndroidCompliance');
 
 type ExpoPlugin = NonNullable<ExpoConfig['plugins']>[number];
 type ExpoPlugins = NonNullable<ExpoConfig['plugins']>;
@@ -40,9 +42,13 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     ? basePlugins.map(withAudioSafetyConfig)
     : ([...basePlugins, audioPluginConfig] as ExpoPlugins);
 
+  const hasCompliancePlugin = plugins.some(
+    (plugin) => plugin === withAndroidCompliance || (Array.isArray(plugin) && plugin[0] === withAndroidCompliance)
+  );
+
   return {
     ...baseConfig,
-    plugins,
+    plugins: hasCompliancePlugin ? plugins : ([...plugins, withAndroidCompliance] as ExpoPlugins),
     extra: {
       ...(baseConfig.extra ?? {}),
       ...(easProjectId

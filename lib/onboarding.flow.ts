@@ -79,7 +79,7 @@ export function getActiveQuestionSequence(answers: OnboardingAnswers): QuestionD
     journeyQuestions.coping,
     secondarySymptoms,
     ...(journeyQuestions.outcome ? [journeyQuestions.outcome] : []),
-    journeyQuestions.readiness,
+    journeyQuestions.startReason,
   ];
 }
 

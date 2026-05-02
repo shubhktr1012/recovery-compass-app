@@ -17,8 +17,8 @@ export function JournalCheckIn({ prompt, eyebrow = 'Daily check-in' }: JournalCh
         </Svg>
       </View>
       <View className="flex-1">
-        <Text className="font-satoshi-bold uppercase text-[9px] tracking-[0.18em] text-forest/45">{eyebrow}</Text>
-        <Text className="font-erode-medium text-[15px] text-forest leading-snug mt-0.5">
+        <Text className="font-satoshi-bold uppercase text-[10px] tracking-[0.16em] text-forest/45">{eyebrow}</Text>
+        <Text className="font-erode-medium text-[16px] text-forest leading-snug mt-0.5">
           {prompt}
         </Text>
       </View>

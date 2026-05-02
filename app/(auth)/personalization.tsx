@@ -399,7 +399,11 @@ export default function Personalization() {
   const validateQuestion = (question: QuestionDefinition) => {
     const rawValue = answers.questionValues[question.id];
 
-    if (!question.required && question.allowEmpty) {
+    if (
+      !question.required &&
+      question.allowEmpty &&
+      !(question.customOptionId && rawValue === question.customOptionId)
+    ) {
       return true;
     }
 
@@ -419,6 +423,18 @@ export default function Personalization() {
         }
         return true;
       case 'single_select':
+        const customInputValue = question.customInputId
+          ? answers.questionValues[question.customInputId]
+          : null;
+
+        if (
+          question.customOptionId &&
+          rawValue === question.customOptionId &&
+          !(typeof customInputValue === 'string' && customInputValue.trim())
+        ) {
+          return 'Write your reason or choose another option before continuing.';
+        }
+
         return (
           (typeof rawValue === 'string' && Boolean(rawValue)) ||
           'Choose the option that feels most true before continuing.'
@@ -605,6 +621,11 @@ export default function Personalization() {
 
     // single_select — card-based options
     const currentValue = answers.questionValues[question.id];
+    const customInputId = question.customInputId;
+    const shouldShowCustomInput =
+      Boolean(customInputId) &&
+      typeof currentValue === 'string' &&
+      currentValue === question.customOptionId;
 
     return (
       <View style={{ marginTop: 20, gap: 8 }}>
@@ -617,6 +638,28 @@ export default function Personalization() {
             onPress={() => updateQuestionValue(question.id, option.id)}
           />
         ))}
+        {shouldShowCustomInput && customInputId ? (
+          <View style={{ marginTop: 8 }}>
+            <InputText
+              label={question.customInputLabel}
+              value={
+                typeof answers.questionValues[customInputId] === 'string'
+                  ? answers.questionValues[customInputId]
+                  : ''
+              }
+              onChangeText={(value) => updateQuestionValue(customInputId, value)}
+              placeholder={question.customInputPlaceholder}
+              multiline
+              maxLength={160}
+              autoFocus
+            />
+          </View>
+        ) : null}
+        {question.allowEmpty ? (
+          <Text style={{ fontFamily: 'Satoshi-Regular', fontSize: 12, color: 'rgba(6,41,12,0.35)', marginTop: 8, textAlign: 'center' }}>
+            You can skip this for now.
+          </Text>
+        ) : null}
       </View>
     );
   };

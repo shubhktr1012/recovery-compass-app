@@ -1,14 +1,13 @@
 import { View, Text, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Svg, Path, G, Ellipse, Rect, Polygon } from 'react-native-svg';
+import { Svg, Path, G } from 'react-native-svg';
 
 interface DashboardHeaderProps {
   greetingLabel: string;
   firstName: string;
   avatarLetter: string;
   avatarUrl?: string | null;
-  progressLabel: string;
-  secondaryPillLabel?: string | null;
+  activeProgramName: string;
 }
 
 export function DashboardHeader({
@@ -16,15 +15,11 @@ export function DashboardHeader({
   firstName,
   avatarLetter,
   avatarUrl,
-  progressLabel,
-  secondaryPillLabel,
+  activeProgramName,
 }: DashboardHeaderProps) {
   return (
     <SafeAreaView edges={['top']} className="bg-forest">
-      <View 
-        className="bg-forest px-6 pt-3 pb-[52px] relative overflow-hidden"
-        style={{ minHeight: 240 }}
-      >
+      <View className="bg-forest px-5 pt-3 pb-[48px] relative overflow-hidden">
         {/* Header Botanical Watermark */}
         <Svg 
           viewBox="0 0 338 204" 
@@ -45,7 +40,7 @@ export function DashboardHeader({
           </G>
         </Svg>
 
-        <View className="flex-row justify-between items-center mb-5 relative z-10">
+        <View className="mb-5 relative z-10">
           <View
             className="w-[60px] h-[60px] rounded-full"
             style={{
@@ -66,66 +61,25 @@ export function DashboardHeader({
                   resizeMode="cover"
                 />
               ) : (
-                <Text className="font-erode-medium text-[26px] text-sage">{avatarLetter}</Text>
+                <Text className="font-erode-medium text-[26px] text-forest">{avatarLetter}</Text>
               )}
             </View>
           </View>
-          <View className="w-[38px] h-[38px] items-center justify-center">
-            <Svg width="26" height="26" viewBox="19.23 16.92 121.54 125.63">
-              <G>
-                <Ellipse cx="80.02" cy="50.01" rx="3.397" ry="3.445" fill="#fff"/>
-                <Ellipse cx="50.931" cy="79.427" rx="3.397" ry="3.445" fill="#fff"/>
-                <Ellipse cx="109.108" cy="79.427" rx="3.397" ry="3.445" fill="#fff"/>
-                <Ellipse cx="80.02" cy="108.843" rx="3.397" ry="3.445" fill="#fff"/>
-                <G>
-                  <Rect x="79.66" y="84.394" width="0.679" height="53.865" fill="#fff"/>
-                  <Polygon points="80.34 75.688 80.34 20.594 79.66 20.594 79.66 75.734 80.34 75.688" fill="#fff"/>
-                </G>
-                <G>
-                  <Polygon points="82.6 82.587 108.596 108.95 109.076 108.463 82.998 82.016 82.6 82.587" fill="#fff"/>
-                  <Polygon points="76.984 76.892 50.924 50.463 51.404 49.975 77.517 76.457 76.984 76.892" fill="#fff"/>
-                </G>
-                <G>
-                  <Polygon points="77.406 82.587 51.411 108.95 50.93 108.463 77.009 82.016 77.406 82.587" fill="#fff"/>
-                  <Polygon points="83.022 76.892 109.083 50.463 108.603 49.975 82.49 76.457 83.022 76.892" fill="#fff"/>
-                </G>
-                <G>
-                  <Rect x="83.946" y="79.082" width="53.043" height="0.689" fill="#fff"/>
-                  <Rect x="23.012" y="79.082" width="52.825" height="0.689" fill="#fff"/>
-                </G>
-                <Path d="M91.396,67.673c-.169-.156-.361-.193-.575-.11l-7.119,2.782-2.155.842-2.155.842-4.673,1.828c-.195.076-.348.232-.421.429l-1.711,4.623-.804,2.168-.802,2.168-2.718,7.343c-.082.219-.04.415.127.58.167.165.362.208.581.126l7.401-2.767,2.182-.817,2.181-.815,4.531-1.694c.203-.076.362-.238.434-.443l1.719-4.861.776-2.193.776-2.195,2.579-7.29c.076-.259-.043-.44-.156-.547ZM80.053,82.629c-1.723.018-3.133-1.365-3.151-3.087-.017-1.723,1.365-3.133,3.087-3.151,1.722-.017,3.133,1.365,3.15,3.087.017,1.722-1.365,3.133-3.087,3.15Z" fill="#fff"/>
-                <Polygon points="83.755 20.679 76.245 20.679 80.001 16.922 83.755 20.679" fill="#fff"/>
-                <Polygon points="76.245 138.259 83.755 138.259 79.998 142.015 76.245 138.259" fill="#fff"/>
-                <Polygon points="136.988 83.181 136.988 75.672 140.744 79.428 136.988 83.181" fill="#fff"/>
-                <Polygon points="110.939 52.321 106.731 48.112 110.941 48.113 110.939 52.321" fill="#fff"/>
-                <Polygon points="53.265 48.128 49.056 52.337 49.056 48.127 53.265 48.128" fill="#fff"/>
-                <Polygon points="49.146 106.625 53.354 110.833 49.145 110.833 49.146 106.625" fill="#fff"/>
-                <Polygon points="106.779 110.709 110.987 106.5 110.987 110.71 106.779 110.709" fill="#fff"/>
-                <Polygon points="23.012 75.672 23.012 83.181 19.256 79.425 23.012 75.672" fill="#fff"/>
-              </G>
-              <Path d="M140.773,79.99l-3.76-3.757v1.969h-19.101c-.761-2.484-3.073-4.293-5.806-4.293s-5.046,1.809-5.806,4.293h-14.95l.219-.622,1.081-3.062,2.579-7.29,15.225-15.222.847.847.003-4.211h-4.213l.85.85-14.74,14.737-7.9,3.088-3.002,1.176-.557.216v-14.953c2.49-.761,4.302-3.079,4.302-5.818s-1.812-5.057-4.302-5.818v-20.908h2.016l-3.755-3.757-3.76,3.757h1.945v20.908c-2.49.761-4.305,3.079-4.305,5.818s1.815,5.057,4.305,5.818v16.342l-4.045,1.584-22.157-22.154.85-.85h-4.211v4.211l.85-.85,22.193,22.193-1.472,3.971h-16.549c-.758-2.484-3.071-4.293-5.806-4.293s-5.046,1.809-5.806,4.293h-19.048v-1.969l-3.757,3.755,3.757,3.757v-1.99h19.048c.761,2.487,3.074,4.293,5.806,4.293s5.048-1.806,5.806-4.293h15.234l-.195.524-1.119,3.023-2.68,7.243-15.412,15.412-.85-.85v4.211h4.211l-.85-.85,14.642-14.639,8.457-3.162,3.041-1.137.062-.024v14.728c-2.484.761-4.293,3.073-4.293,5.806s1.809,5.046,4.293,5.806v20.943h-1.945l3.757,3.757,3.757-3.757h-2.016v-20.943c2.484-.761,4.293-3.074,4.293-5.806s-1.809-5.046-4.293-5.806v-16.057l4.273-1.596,21.926,21.926-.85.847,4.211.003v-4.213l-.847.85-21.899-21.899,1.534-4.338h16.211c.761,2.487,3.074,4.293,5.806,4.293s5.046-1.806,5.806-4.293h19.101v1.99l3.76-3.755ZM80.212,84.443c-2.401.027-4.367-1.901-4.391-4.302-.024-2.401,1.901-4.367,4.302-4.394,2.401-.024,4.367,1.904,4.394,4.305.024,2.401-1.904,4.367-4.305,4.391Z" fill="#fff"/>
-            </Svg>
-          </View>
         </View>
 
-        <Text className="font-satoshi text-[11px] font-medium tracking-[0.12em] uppercase text-sage/55 relative z-10">{greetingLabel}</Text>
+        <Text className="font-satoshi text-[12px] font-medium tracking-[0.12em] uppercase text-sage/60 relative z-10">{greetingLabel}</Text>
         <Text className="font-erode-medium text-[36px] text-white leading-tight tracking-[-0.02em] relative z-10 mt-0.5">
           Welcome back, <Text className="font-erode-medium-italic">{firstName}.</Text>
         </Text>
 
-        {/* STREAK PILLS */}
-        <View className="flex-row items-center gap-2 mt-4 relative z-10">
-          <View className="flex-row items-center gap-1.5 bg-sage/10 border border-sage/20 rounded-full px-3 py-1.5">
-            <View className="w-1.5 h-1.5 rounded-full bg-success shadow-[0_0_0_3px_rgba(93,207,122,0.22)]" />
-            <Text className="font-satoshi text-[11px] font-medium text-sage/90 tracking-[0.03em]">{progressLabel}</Text>
-          </View>
-          {secondaryPillLabel ? (
-            <View className="flex-row items-center gap-1.5 bg-sage/5 border border-sage/15 rounded-full px-3 py-1.5">
-              <Text className="font-satoshi text-[11px] font-medium text-sage/90 tracking-[0.03em]">
-                {secondaryPillLabel}
-              </Text>
-            </View>
-          ) : null}
+        <View className="relative z-10 mt-4 flex-row items-center">
+          <View className="w-1.5 h-1.5 rounded-full bg-sage/80 mr-2.5" />
+          <Text className="font-satoshi-bold uppercase text-[11px] tracking-[0.14em] text-sage/70 mr-2">
+            Current Journey:
+          </Text>
+          <Text className="font-erode-medium text-[17px] text-white leading-snug">
+            {activeProgramName}
+          </Text>
         </View>
       </View>
     </SafeAreaView>

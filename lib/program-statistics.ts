@@ -41,6 +41,82 @@ function getJourneyForProgram(programSlug: ProgramSlug | null | undefined): Jour
   }
 }
 
+function isSameMetricScope(left: ProgramSlug, right: ProgramSlug) {
+  return getJourneyForProgram(left) === getJourneyForProgram(right);
+}
+
+function isProgramSlug(value: unknown): value is ProgramSlug {
+  return (
+    value === 'six_day_reset' ||
+    value === 'ninety_day_transform' ||
+    value === 'sleep_disorder_reset' ||
+    value === 'energy_vitality' ||
+    value === 'age_reversal' ||
+    value === 'male_sexual_health'
+  );
+}
+
+function isQuestionnaireScopedToProgram(
+  questionnaireAnswers: QuestionnaireAnswersSnapshot | null | undefined,
+  programSlug: ProgramSlug
+) {
+  if (!questionnaireAnswers) {
+    return false;
+  }
+
+  if (
+    isProgramSlug(questionnaireAnswers.recommendedProgram) &&
+    isSameMetricScope(questionnaireAnswers.recommendedProgram, programSlug)
+  ) {
+    return true;
+  }
+
+  return questionnaireAnswers.journey === getJourneyForProgram(programSlug);
+}
+
+function getProgramSlugFromTargetSelection(targetSelection: string | null | undefined): ProgramSlug | null {
+  const normalizedTarget = targetSelection?.trim().toLowerCase() ?? '';
+
+  if (!normalizedTarget) {
+    return null;
+  }
+
+  if (normalizedTarget.includes('6-day') || normalizedTarget.includes('6 day')) {
+    return 'six_day_reset';
+  }
+
+  if (normalizedTarget.includes('smoking')) {
+    return 'ninety_day_transform';
+  }
+
+  if (normalizedTarget.includes('sleep')) {
+    return 'sleep_disorder_reset';
+  }
+
+  if (normalizedTarget.includes('energy')) {
+    return 'energy_vitality';
+  }
+
+  if (normalizedTarget.includes('biohacking') || normalizedTarget.includes('age')) {
+    return 'age_reversal';
+  }
+
+  if (normalizedTarget.includes('men') || normalizedTarget.includes('sexual')) {
+    return 'male_sexual_health';
+  }
+
+  return null;
+}
+
+function isOnboardingResponseScopedToProgram(
+  onboardingResponse: OnboardingResponse | null | undefined,
+  programSlug: ProgramSlug
+) {
+  const responseProgramSlug = getProgramSlugFromTargetSelection(onboardingResponse?.target_selection);
+
+  return responseProgramSlug ? isSameMetricScope(responseProgramSlug, programSlug) : false;
+}
+
 function getAnswerLabel(
   questionnaireAnswers: QuestionnaireAnswersSnapshot | null | undefined,
   questionId: string
@@ -67,13 +143,23 @@ export function getProgramStatisticsSummary(
   onboardingResponse: OnboardingResponse | null,
   questionnaireAnswers?: QuestionnaireAnswersSnapshot | null
 ): ProgramStatisticsSummary | null {
+  if (!isProgramSlug(programSlug)) {
+    return null;
+  }
+
   const journey = getJourneyForProgram(programSlug);
 
   if (!journey) {
     return null;
   }
 
-  const projection = getOnboardingProjection(onboardingResponse);
+  const scopedOnboardingResponse = isOnboardingResponseScopedToProgram(onboardingResponse, programSlug)
+    ? onboardingResponse
+    : null;
+  const scopedQuestionnaireAnswers = isQuestionnaireScopedToProgram(questionnaireAnswers, programSlug)
+    ? questionnaireAnswers
+    : null;
+  const projection = getOnboardingProjection(scopedOnboardingResponse);
   const questions = getJourneyConfig(journey).questions;
 
   if (journey === 'smoking') {
@@ -106,7 +192,7 @@ export function getProgramStatisticsSummary(
         {
           id: 'sleep-affected-nights',
           label: 'Nights affected weekly',
-          value: String(getAnswerLabel(questionnaireAnswers, questions.severity.id) ?? 'Not set'),
+          value: String(getAnswerLabel(scopedQuestionnaireAnswers, questions.severity.id) ?? 'Not set'),
         },
         {
           id: 'daily-reliance',
@@ -116,7 +202,7 @@ export function getProgramStatisticsSummary(
         {
           id: 'sleep-coping',
           label: 'Current coping loop',
-          value: String(getAnswerLabel(questionnaireAnswers, questions.coping.id) ?? 'Not set'),
+          value: String(getAnswerLabel(scopedQuestionnaireAnswers, questions.coping.id) ?? 'Not set'),
         },
       ],
     };
@@ -129,17 +215,17 @@ export function getProgramStatisticsSummary(
         {
           id: 'energy-caffeine',
           label: 'Daily caffeine baseline',
-          value: String(getAnswerLabel(questionnaireAnswers, 'energy_caffeine_count') ?? 'Not set'),
+          value: String(getAnswerLabel(scopedQuestionnaireAnswers, 'energy_caffeine_count') ?? 'Not set'),
         },
         {
           id: 'energy-severity',
           label: 'Desk or screen load',
-          value: String(getAnswerLabel(questionnaireAnswers, questions.severity.id) ?? 'Not set'),
+          value: String(getAnswerLabel(scopedQuestionnaireAnswers, questions.severity.id) ?? 'Not set'),
         },
         {
           id: 'energy-coping',
           label: 'Current fallback',
-          value: String(getAnswerLabel(questionnaireAnswers, questions.coping.id) ?? 'Not set'),
+          value: String(getAnswerLabel(scopedQuestionnaireAnswers, questions.coping.id) ?? 'Not set'),
         },
       ],
     };
@@ -152,17 +238,17 @@ export function getProgramStatisticsSummary(
         {
           id: 'age-disconnect',
           label: 'Always-on load',
-          value: String(getAnswerLabel(questionnaireAnswers, questions.lifestyle.id) ?? 'Not set'),
+          value: String(getAnswerLabel(scopedQuestionnaireAnswers, questions.lifestyle.id) ?? 'Not set'),
         },
         {
           id: 'age-severity',
           label: 'Screen-hour load',
-          value: String(getAnswerLabel(questionnaireAnswers, questions.severity.id) ?? 'Not set'),
+          value: String(getAnswerLabel(scopedQuestionnaireAnswers, questions.severity.id) ?? 'Not set'),
         },
         {
           id: 'age-coping',
           label: 'Current survival habit',
-          value: String(getAnswerLabel(questionnaireAnswers, questions.coping.id) ?? 'Not set'),
+          value: String(getAnswerLabel(scopedQuestionnaireAnswers, questions.coping.id) ?? 'Not set'),
         },
       ],
     };
@@ -174,17 +260,17 @@ export function getProgramStatisticsSummary(
       {
         id: 'male-severity',
         label: 'Weekly impact frequency',
-        value: String(getAnswerLabel(questionnaireAnswers, questions.severity.id) ?? 'Not set'),
+        value: String(getAnswerLabel(scopedQuestionnaireAnswers, questions.severity.id) ?? 'Not set'),
       },
       {
         id: 'male-trigger',
         label: 'Main trigger',
-        value: String(getAnswerLabel(questionnaireAnswers, questions.trigger.id) ?? 'Not set'),
+        value: String(getAnswerLabel(scopedQuestionnaireAnswers, questions.trigger.id) ?? 'Not set'),
       },
       {
         id: 'male-coping',
         label: 'Default response',
-        value: String(getAnswerLabel(questionnaireAnswers, questions.coping.id) ?? 'Not set'),
+        value: String(getAnswerLabel(scopedQuestionnaireAnswers, questions.coping.id) ?? 'Not set'),
       },
     ],
   };

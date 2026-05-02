@@ -7,7 +7,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useQueryClient } from '@tanstack/react-query';
 import * as Haptics from 'expo-haptics';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
-import Svg, { Path, Circle } from 'react-native-svg';
+import Svg, { Path } from 'react-native-svg';
 
 import { useProgram } from '@/content';
 import { useProfile } from '@/providers/profile';
@@ -189,25 +189,10 @@ function ProgramScreenContent({ activeProgram }: { activeProgram: ProgramSlug })
             style={{ position: 'absolute', right: -20, top: 50 }}
           />
 
-          <View className="flex-row justify-between items-center mb-[18px] relative z-10 mt-8">
+          <View className="mb-[18px] relative z-10 mt-8">
             <Text className="font-satoshi-medium text-[11px] uppercase tracking-[2.4px] text-sage/55">
               {access.completionState === 'completed' ? 'Completed Journey' : 'Current Journey'}
             </Text>
-            {access.completionState === 'completed' ? (
-              <View className="flex-row items-center bg-[#5DCF7A]/20 border border-[#5DCF7A]/30 rounded-full px-2.5 py-1">
-                <Svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="rgba(93,207,122,0.9)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <Path d="M20 6L9 17L4 12"/>
-                </Svg>
-                <Text className="font-satoshi-semibold text-[10px] tracking-[1.2px] text-[#5DCF7A] ml-1">DONE</Text>
-              </View>
-            ) : (
-              <View className="w-8 h-8 rounded-full bg-sage/10 border border-sage/20 items-center justify-center">
-                <Svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(227,243,229,0.7)" strokeWidth="1.8" strokeLinecap="round">
-                  <Circle cx="12" cy="12" r="3" />
-                  <Path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83" />
-                </Svg>
-              </View>
-            )}
           </View>
           
           <Text className="font-erode-medium text-[32px] leading-[34px] tracking-[-0.6px] text-white relative z-10 pr-4">

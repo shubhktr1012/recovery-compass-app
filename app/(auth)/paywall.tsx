@@ -12,7 +12,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
-import Purchases, { PurchasesPackage } from 'react-native-purchases';
+import Purchases, { PURCHASES_ERROR_CODE, PurchasesPackage } from 'react-native-purchases';
 import { Ionicons } from '@expo/vector-icons';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -70,6 +70,18 @@ function getProgramSlugFromRouteParam(value: string | string[] | undefined): Pro
   }
 
   return candidate in PROGRAM_METADATA ? (candidate as ProgramSlug) : null;
+}
+
+function isAlreadyOwnedPurchaseError(error: any, combinedErrorMessage: string) {
+  return (
+    error?.code === PURCHASES_ERROR_CODE.PRODUCT_ALREADY_PURCHASED_ERROR ||
+    error?.code === '6' ||
+    combinedErrorMessage.includes('already own') ||
+    combinedErrorMessage.includes('already purchased') ||
+    combinedErrorMessage.includes('already active') ||
+    combinedErrorMessage.includes('item already owned') ||
+    combinedErrorMessage.includes('productalreadypurchasederror')
+  );
 }
 
 function getPreferredOffering(
@@ -347,10 +359,7 @@ export default function Paywall() {
         .filter((value): value is string => typeof value === 'string' && value.length > 0)
         .join(' ')
         .toLowerCase();
-      const isAlreadyOwnedError =
-        combinedErrorMessage.includes('already own') ||
-        combinedErrorMessage.includes('already purchased') ||
-        combinedErrorMessage.includes('item already owned');
+      const isAlreadyOwnedError = isAlreadyOwnedPurchaseError(e, combinedErrorMessage);
       const isCredentialError =
         combinedErrorMessage.includes('credentials issue') ||
         combinedErrorMessage.includes('invalid credentials');

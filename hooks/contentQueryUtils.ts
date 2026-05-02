@@ -167,7 +167,7 @@ export function mapProgramRowToProgramContent(
 
   const programCatalogEntry: ProgramCatalogEntry = {
     slug: row.slug,
-    name: row.title ?? fallbackProgram.name,
+    name: fallbackProgram.name,
     description: row.description ?? fallbackProgram.description,
     totalDays: row.total_days ?? fallbackProgram.totalDays,
     category: isProgramCategory(row.category) ? row.category : fallbackProgram.category,

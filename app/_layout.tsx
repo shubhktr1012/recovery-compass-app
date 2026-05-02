@@ -34,8 +34,12 @@ import SatoshiBold from '@/assets/fonts/Satoshi-Bold.otf';
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
-// Ignore the SafeAreaView deprecation warning as it comes from dependencies
-LogBox.ignoreLogs(['SafeAreaView has been deprecated']);
+// Ignore dependency warnings and expected store responses that are handled in app code.
+LogBox.ignoreLogs([
+  'SafeAreaView has been deprecated',
+  'BillingWrapper purchases failed to update',
+  'PurchasesError(code=ProductAlreadyPurchasedError',
+]);
 
 const publicEnvState = getPublicEnvState();
 const publicEnv = publicEnvState.env;
@@ -220,7 +224,7 @@ function RootLayoutContent() {
   // Initialize Notifications
   useEffect(() => {
     if (session?.user?.id) {
-      NotificationService.initialize(session.user.id);
+      void NotificationService.initialize();
     }
   }, [session?.user?.id]);
 

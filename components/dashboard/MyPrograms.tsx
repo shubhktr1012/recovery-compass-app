@@ -1,41 +1,40 @@
 import { View, Text, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
+import { Svg, Path } from 'react-native-svg';
 
 interface MyProgramsProps {
-  programName: string;
-  programDescription: string;
-  currentDayNumber: number;
-  totalDays: number;
-  percentageComplete: number;
+  activeCount: number;
 }
 
 export function MyPrograms({
-  programName,
-  programDescription,
-  currentDayNumber,
-  totalDays,
-  percentageComplete,
+  activeCount,
 }: MyProgramsProps) {
   const router = useRouter();
 
   return (
     <View className="mt-1">
-      <View className="flex-row justify-between items-baseline px-0.5 mb-3">
-        <Text className="font-erode-medium text-[20px] text-forest tracking-[-0.01em]">My Programs</Text>
-        <Pressable onPress={() => router.push('/account/programs')}>
-          <Text className="font-satoshi-medium text-[11px] text-forest/45 tracking-[0.04em]">View all</Text>
-        </Pressable>
-      </View>
-      <Pressable onPress={() => router.push('/(tabs)/program')} className="bg-forest rounded-[20px] p-[18px]">
-        <Text className="font-satoshi-bold uppercase text-[9px] tracking-[0.18em] text-sage/50">Active · {programName}</Text>
-        <Text className="font-erode-medium text-[18px] text-white leading-snug mt-[5px]">{programName}</Text>
-        <Text className="font-satoshi text-[11px] text-white/50 mt-[3px] leading-relaxed">{programDescription}</Text>
-        <View className="h-[2px] bg-sage/20 rounded-full mt-3.5 overflow-hidden">
-          <View className="h-[2px] bg-sage rounded-full" style={{ width: `${percentageComplete}%` }} />
+      <Pressable
+        onPress={() => router.push('/account/programs')}
+        className="bg-white rounded-[20px] p-4 shadow-sm shadow-forest/5 flex-row gap-3.5 items-start"
+      >
+        <View className="w-[44px] h-[44px] rounded-2xl bg-[#EEF6EF] items-center justify-center shrink-0">
+          <Svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="#06290C" strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round">
+            <Path d="M4 19.5A2.5 2.5 0 016.5 17H20" />
+            <Path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" />
+          </Svg>
         </View>
-        <View className="flex-row justify-between mt-[5px]">
-          <Text className="font-satoshi text-[10px] text-sage/50">Day {currentDayNumber} of {totalDays}</Text>
-          <Text className="font-satoshi text-[10px] text-sage/50">{percentageComplete}%</Text>
+        <View className="flex-1">
+          <Text className="font-erode-medium text-[18px] text-forest leading-snug">My Programs</Text>
+          <Text className="font-satoshi text-[13px] text-forest/50 mt-1 leading-relaxed">
+            {activeCount > 1
+              ? `Switch your current journey or open ${activeCount} unlocked programs.`
+              : 'Open your current journey or manage unlocked programs.'}
+          </Text>
+        </View>
+        <View className="pt-1">
+          <Svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="rgba(6,41,12,0.35)" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+            <Path d="M9 18l6-6-6-6" />
+          </Svg>
         </View>
       </Pressable>
     </View>

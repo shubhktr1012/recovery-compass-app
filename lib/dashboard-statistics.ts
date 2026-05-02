@@ -39,6 +39,98 @@ interface MetricSpec {
   resolve: (context: DashboardStatContext) => string | null;
 }
 
+function getJourneyForProgram(programSlug: ProgramSlug) {
+  switch (programSlug) {
+    case 'six_day_reset':
+    case 'ninety_day_transform':
+      return 'smoking';
+    case 'sleep_disorder_reset':
+      return 'sleep_disorder_reset';
+    case 'energy_vitality':
+      return 'energy_vitality';
+    case 'age_reversal':
+      return 'age_reversal';
+    case 'male_sexual_health':
+      return 'male_sexual_health';
+  }
+}
+
+function isProgramSlug(value: unknown): value is ProgramSlug {
+  return (
+    value === 'six_day_reset' ||
+    value === 'ninety_day_transform' ||
+    value === 'sleep_disorder_reset' ||
+    value === 'energy_vitality' ||
+    value === 'age_reversal' ||
+    value === 'male_sexual_health'
+  );
+}
+
+function isSameMetricScope(left: ProgramSlug, right: ProgramSlug) {
+  return getJourneyForProgram(left) === getJourneyForProgram(right);
+}
+
+function isQuestionnaireScopedToProgram(
+  questionnaireAnswers: QuestionnaireAnswersSnapshot | null | undefined,
+  programSlug: ProgramSlug
+) {
+  if (!questionnaireAnswers) {
+    return false;
+  }
+
+  if (
+    isProgramSlug(questionnaireAnswers.recommendedProgram) &&
+    isSameMetricScope(questionnaireAnswers.recommendedProgram, programSlug)
+  ) {
+    return true;
+  }
+
+  return questionnaireAnswers.journey === getJourneyForProgram(programSlug);
+}
+
+function getProgramSlugFromTargetSelection(targetSelection: string | null | undefined): ProgramSlug | null {
+  const normalizedTarget = targetSelection?.trim().toLowerCase() ?? '';
+
+  if (!normalizedTarget) {
+    return null;
+  }
+
+  if (normalizedTarget.includes('6-day') || normalizedTarget.includes('6 day')) {
+    return 'six_day_reset';
+  }
+
+  if (normalizedTarget.includes('smoking')) {
+    return 'ninety_day_transform';
+  }
+
+  if (normalizedTarget.includes('sleep')) {
+    return 'sleep_disorder_reset';
+  }
+
+  if (normalizedTarget.includes('energy')) {
+    return 'energy_vitality';
+  }
+
+  if (normalizedTarget.includes('biohacking') || normalizedTarget.includes('age')) {
+    return 'age_reversal';
+  }
+
+  if (normalizedTarget.includes('men') || normalizedTarget.includes('sexual')) {
+    return 'male_sexual_health';
+  }
+
+  return null;
+}
+
+function isOnboardingResponseScopedToProgram(
+  onboardingResponse: OnboardingResponse | null | undefined,
+  programSlug: ProgramSlug
+) {
+  const responseProgramSlug = getProgramSlugFromTargetSelection(onboardingResponse?.target_selection);
+
+  return responseProgramSlug ? isSameMetricScope(responseProgramSlug, programSlug) : false;
+}
+
 function getQuestionnaireAnswer(
   questionnaireAnswers: QuestionnaireAnswersSnapshot | null | undefined,
   questionId: string
@@ -241,21 +333,15 @@ function createPendingCard(metric: MetricSpec): DashboardStatItem {
 export function resolveDashboardStatItems(
   args: ResolveDashboardStatItemsArgs
 ): DashboardStatItem[] {
-  const clampedDayNumber = Math.min(Math.max(args.currentDayNumber, 1), args.totalDays);
-  const completionPercentage = Math.min(
-    100,
-    Math.max(0, Math.round((clampedDayNumber / args.totalDays) * 100))
-  );
-
-  const items: DashboardStatItem[] = [
-    {
-      id: 'current-step',
-      label: 'Current step',
-      value: `Day ${clampedDayNumber}`,
-      sublabel: `${completionPercentage}% complete`,
-      state: 'ready',
-    },
-  ];
+  const items: DashboardStatItem[] = [];
+  const scopedContext: DashboardStatContext = {
+    onboardingResponse: isOnboardingResponseScopedToProgram(args.onboardingResponse, args.programSlug)
+      ? args.onboardingResponse
+      : null,
+    questionnaireAnswers: isQuestionnaireScopedToProgram(args.questionnaireAnswers, args.programSlug)
+      ? args.questionnaireAnswers
+      : null,
+  };
 
   if (args.dailySteps?.isLoading) {
     items.push({
@@ -293,10 +379,7 @@ export function resolveDashboardStatItems(
   let fallbackIndex = 0;
 
   for (const metric of metricSpecs) {
-    const value = metric.resolve({
-      onboardingResponse: args.onboardingResponse,
-      questionnaireAnswers: args.questionnaireAnswers,
-    });
+    const value = metric.resolve(scopedContext);
 
     if (value) {
       items.push({

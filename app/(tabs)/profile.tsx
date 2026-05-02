@@ -20,7 +20,6 @@ import { PROGRAM_METADATA } from '@/content/programs/metadata';
 import { useAuth } from '@/providers/auth';
 import { useOnboardingResponse } from '@/hooks/useOnboardingResponse';
 import { useDailySteps } from '@/hooks/useDailySteps';
-import { getOnboardingProjection } from '@/lib/onboarding-metrics';
 import { getProgramStatisticsSummary } from '@/lib/program-statistics';
 import { useProfile } from '@/providers/profile';
 import { supabase } from '@/lib/supabase';
@@ -83,6 +82,57 @@ function getPhaseLabel(dayNumber: number, totalDays: number) {
   return 'Phase 4 · Integration';
 }
 
+function getStartReasonPrefix(programSlug: ProgramSlug | null | undefined) {
+  switch (programSlug) {
+    case 'six_day_reset':
+    case 'ninety_day_transform':
+      return 'smoking';
+    case 'sleep_disorder_reset':
+      return 'sleep';
+    case 'energy_vitality':
+      return 'energy';
+    case 'age_reversal':
+      return 'age';
+    case 'male_sexual_health':
+      return 'male';
+    default:
+      return null;
+  }
+}
+
+function getStoredStartReason(args: {
+  programSlug: ProgramSlug | null | undefined;
+  questionnaireAnswers: Record<string, unknown> | null | undefined;
+}) {
+  const prefix = getStartReasonPrefix(args.programSlug);
+  const answers = args.questionnaireAnswers?.answers;
+
+  if (!prefix || !answers || typeof answers !== 'object') {
+    return null;
+  }
+
+  const answerMap = answers as Record<string, unknown>;
+  const selectedReason = answerMap[`${prefix}_start_reason`];
+  const customReason = answerMap[`${prefix}_start_reason_custom`];
+
+  const selectedCustomReason =
+    selectedReason === 'I will write my own reason' || selectedReason === 'custom_reason';
+
+  if (selectedCustomReason && typeof customReason === 'string' && customReason.trim()) {
+    return customReason.trim();
+  }
+
+  if (
+    typeof selectedReason === 'string' &&
+    selectedReason.trim() &&
+    selectedReason !== 'I will write my own reason'
+  ) {
+    return selectedReason.trim();
+  }
+
+  return null;
+}
+
 export default function AccountScreen() {
   const router = useRouter();
   const { user } = useAuth();
@@ -136,15 +186,15 @@ export default function AccountScreen() {
     return { currentStreak: current, bestStreak: best };
   }, [progress?.completedDays]);
 
-  const stats = useMemo(() => {
-    const projection = getOnboardingProjection(onboardingQuery.data ?? null);
-
-    return {
-      primaryGoal: projection.primaryGoal,
-    };
-  }, [onboardingQuery.data]);
-
   const activeProgram = access.ownedProgram ? PROGRAM_METADATA[access.ownedProgram as ProgramSlug] : null;
+  const startReason = useMemo(
+    () =>
+      getStoredStartReason({
+        programSlug: access.ownedProgram as ProgramSlug | null,
+        questionnaireAnswers: profile?.questionnaire_answers ?? null,
+      }),
+    [access.ownedProgram, profile?.questionnaire_answers]
+  );
 
   const displayName =
     profile?.display_name ||
@@ -481,9 +531,9 @@ export default function AccountScreen() {
             </View>
 
             <Text style={styles.intentionQuote}>
-              {stats.primaryGoal
-                ? `\u201C${stats.primaryGoal}\u201D`
-                : '\u201CTap to add your intention\u201D'}
+              {startReason
+                ? `\u201C${startReason}\u201D`
+                : '\u201CPersonalize this program to add your reason.\u201D'}
             </Text>
 
             <Text style={styles.intentionMeta}>

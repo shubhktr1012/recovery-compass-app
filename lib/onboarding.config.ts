@@ -79,18 +79,24 @@ const JOURNEY_ORDER: JourneyKey[] = [
   'male_sexual_health',
 ];
 
-function createReadinessQuestion(idPrefix: string) {
+function createStartReasonQuestion(idPrefix: string) {
   return {
-    id: `${idPrefix}_readiness`,
-    title: 'If this plan takes 10-15 minutes a day, how ready are you to follow it?',
-    description: 'Choose the answer that feels honest right now.',
+    id: `${idPrefix}_start_reason`,
+    title: 'Why are you starting this now?',
+    description: 'Choose one reason, write your own, or skip this for now. We will keep it as your personal anchor.',
     type: 'single_select' as const,
-    required: true,
+    required: false,
+    allowEmpty: true,
+    customOptionId: 'custom_reason',
+    customInputId: `${idPrefix}_start_reason_custom`,
+    customInputLabel: 'YOUR REASON',
+    customInputPlaceholder: 'Write one honest sentence...',
     options: [
-      { id: 'fully_ready', label: 'I am fully ready to commit' },
-      { id: 'mostly_ready', label: 'I am ready if it feels realistic' },
-      { id: 'need_structure', label: 'I need structure to stay consistent' },
-      { id: 'unsure_but_open', label: 'I am unsure, but open to starting' },
+      { id: 'control_again', label: 'I want to feel in control again' },
+      { id: 'health_energy', label: 'I want better health and energy' },
+      { id: 'stop_hiding', label: 'I want to stop hiding this from people close to me' },
+      { id: 'feel_like_myself', label: 'I want to feel like myself again' },
+      { id: 'custom_reason', label: 'I will write my own reason' },
     ],
   };
 }
@@ -201,7 +207,7 @@ const JOURNEY_CONFIG: Record<JourneyKey, JourneyConfig> = {
           { id: 'not_sure', label: 'I am not sure yet' },
         ],
       },
-      readiness: createReadinessQuestion('smoking'),
+      startReason: createStartReasonQuestion('smoking'),
     },
   },
   sleep_disorder_reset: {
@@ -310,7 +316,7 @@ const JOURNEY_CONFIG: Record<JourneyKey, JourneyConfig> = {
           { id: 'push_through', label: 'I just push through and hope tonight is better' },
         ],
       },
-      readiness: createReadinessQuestion('sleep'),
+      startReason: createStartReasonQuestion('sleep'),
     },
   },
   energy_vitality: {
@@ -419,7 +425,7 @@ const JOURNEY_CONFIG: Record<JourneyKey, JourneyConfig> = {
           { id: 'force_through', label: 'I just force myself through the day' },
         ],
       },
-      readiness: createReadinessQuestion('energy'),
+      startReason: createStartReasonQuestion('energy'),
     },
   },
   age_reversal: {
@@ -517,7 +523,7 @@ const JOURNEY_CONFIG: Record<JourneyKey, JourneyConfig> = {
           { id: 'crash_diets', label: 'Crash diets or extreme fixes' },
         ],
       },
-      readiness: createReadinessQuestion('age'),
+      startReason: createStartReasonQuestion('age'),
     },
   },
   male_sexual_health: {
@@ -615,7 +621,7 @@ const JOURNEY_CONFIG: Record<JourneyKey, JourneyConfig> = {
           { id: 'push_through', label: 'Push through without changing much' },
         ],
       },
-      readiness: createReadinessQuestion('male'),
+      startReason: createStartReasonQuestion('male'),
     },
   },
 };

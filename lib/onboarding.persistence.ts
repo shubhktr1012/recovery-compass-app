@@ -65,7 +65,23 @@ function serializeQuestionEntries(
     ]);
   }
 
-  return [[question.id, serializeQuestionValue(question, answers.questionValues[question.id])]];
+  const entries: [string, string | string[] | null][] = [
+    [question.id, serializeQuestionValue(question, answers.questionValues[question.id])],
+  ];
+
+  if (question.customInputId) {
+    const shouldPersistCustomValue =
+      question.customOptionId && answers.questionValues[question.id] === question.customOptionId;
+
+    entries.push([
+      question.customInputId,
+      shouldPersistCustomValue
+        ? serializeQuestionValue(question, answers.questionValues[question.customInputId])
+        : null,
+    ]);
+  }
+
+  return entries;
 }
 
 function toNumericValue(value: string | string[] | undefined) {

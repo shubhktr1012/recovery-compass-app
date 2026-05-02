@@ -12,7 +12,6 @@ import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
 import { ActionCard } from '@/components/dashboard/ActionCard';
 import { StatsRow } from '@/components/dashboard/StatsRow';
 import { JournalCheckIn } from '@/components/dashboard/JournalCheckIn';
-import { WhyThisMatters } from '@/components/dashboard/WhyThisMatters';
 import { MyPrograms } from '@/components/dashboard/MyPrograms';
 import { ExplorePrograms } from '@/components/dashboard/ExplorePrograms';
 import type { ProgramSlug } from '@/types/content';
@@ -20,7 +19,6 @@ import { programDayQueryKey, programQueryKey } from '@/hooks/contentQueryUtils';
 import { useOnboardingResponse } from '@/hooks/useOnboardingResponse';
 import { useOwnedPrograms } from '@/hooks/useOwnedPrograms';
 import { useDailySteps } from '@/hooks/useDailySteps';
-import { getJourneyConfig } from '@/lib/onboarding.config';
 import { resolveDashboardStatItems } from '@/lib/dashboard-statistics';
 import type { QuestionnaireAnswersSnapshot } from '@/lib/program-statistics';
 import { StepPermissionPrompt } from '@/components/steps/StepPermissionPrompt';
@@ -30,14 +28,6 @@ function getGreetingLabel() {
   if (hour < 12) return 'Good morning';
   if (hour < 17) return 'Good afternoon';
   return 'Good evening';
-}
-
-function getJourneyForProgram(programSlug: ProgramSlug): 'smoking' | 'sleep_disorder_reset' | 'energy_vitality' | 'age_reversal' | 'male_sexual_health' {
-  if (programSlug === 'six_day_reset' || programSlug === 'ninety_day_transform') {
-    return 'smoking';
-  }
-
-  return programSlug;
 }
 
 function HomeScreenContent({ activeProgram }: { activeProgram: ProgramSlug }) {
@@ -85,7 +75,6 @@ function HomeScreenContent({ activeProgram }: { activeProgram: ProgramSlug }) {
     'Friend';
   const avatarUrl = profile?.avatar_url ?? null;
   const avatarLetter = firstName[0]?.toUpperCase() ?? 'S';
-  const percentageComplete = Math.min(100, Math.round((currentDayNumber / programTotalDays) * 100));
   const statsItems = useMemo(
     () =>
       resolveDashboardStatItems({
@@ -128,9 +117,6 @@ function HomeScreenContent({ activeProgram }: { activeProgram: ProgramSlug }) {
     return null;
   }
 
-  const journeyGoal =
-    onboardingResponse?.primary_goal ??
-    getJourneyConfig(getJourneyForProgram(activeProgram)).primaryGoal;
   const ownedProgramSlugSet = new Set([
     activeProgram,
     ...ownedPrograms.map((entry) => entry.slug),
@@ -138,10 +124,6 @@ function HomeScreenContent({ activeProgram }: { activeProgram: ProgramSlug }) {
   const explorePrograms = isOwnedProgramsLoading
     ? []
     : programs.filter((entry) => !ownedProgramSlugSet.has(entry.slug));
-  const secondaryPillLabel = program.hasAudio
-    ? 'Guided audio included'
-    : `${program.totalDays}-day structured plan`;
-
   return (
     <View className="flex-1 bg-surface">
       <StatusBar style="light" />
@@ -153,20 +135,16 @@ function HomeScreenContent({ activeProgram }: { activeProgram: ProgramSlug }) {
           firstName={firstName}
           avatarLetter={avatarLetter}
           avatarUrl={avatarUrl}
-          progressLabel={`Day ${currentDayNumber} of ${program.totalDays}`}
-          secondaryPillLabel={secondaryPillLabel}
+          activeProgramName={program.name}
         />
 
         {/* CONTENT AREA */}
-        {/* CRITICAL: rounded-[28px] top corners ONLY, marginTop: -28px to overlap the dark header */}
         <View 
-          className="bg-surface rounded-t-[28px] -mt-[28px] px-5 pt-6 pb-28 relative z-10 flex-col gap-4"
+          className="bg-surface rounded-t-[32px] -mt-[24px] px-5 pt-6 pb-28 relative z-10 flex-col gap-5"
           style={{ minHeight: 600 }}
         >
           
           <ActionCard
-            currentDayNumber={currentDayNumber}
-            programName={program.name}
             dayTitle={
               currentDay?.dayTitle ? currentDay.dayTitle.split(' ').map((word, i, arr) => 
                 i === arr.length - 1 ? <Text key={i} className="font-erode-medium-italic">{word}</Text> : `${word} `
@@ -190,14 +168,8 @@ function HomeScreenContent({ activeProgram }: { activeProgram: ProgramSlug }) {
             }
           />
           
-          <WhyThisMatters copy={journeyGoal} />
-
           <MyPrograms
-            programName={program.name}
-            programDescription={program.description}
-            currentDayNumber={currentDayNumber}
-            totalDays={program.totalDays}
-            percentageComplete={percentageComplete}
+            activeCount={ownedProgramSlugSet.size}
           />
 
           <ExplorePrograms
