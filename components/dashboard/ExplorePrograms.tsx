@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import { Svg, Path } from 'react-native-svg';
 import type { ProgramContent } from '@/types/content';
 import { SkeletonCircle, SkeletonLine, SkeletonTitle } from '@/components/ui/Skeleton';
+import { AppTypography } from '@/constants/typography';
 
 interface ExploreProgramsProps {
   programs: ProgramContent[];
@@ -150,7 +151,10 @@ export function ExplorePrograms({
         </>
       ) : programs.length === 0 ? (
         <View className="bg-white rounded-[20px] p-4 shadow-sm shadow-forest/5">
-          <Text className="font-satoshi text-[14px] text-forest/55 leading-relaxed">
+          <Text
+            className="text-forest/55"
+            style={AppTypography.body}
+          >
             You have already unlocked the programs currently available here.
           </Text>
         </View>
@@ -166,7 +170,12 @@ export function ExplorePrograms({
             </View>
             <View className="flex-1">
               <Text className="font-erode-medium text-[17px] text-forest leading-snug">{program.name}</Text>
-              <Text className="font-satoshi text-[13px] text-forest/50 mt-1 leading-relaxed">{program.description}</Text>
+              <Text
+                className="text-forest/50 mt-1"
+                style={AppTypography.body}
+              >
+                {program.description}
+              </Text>
               <View className="flex-row items-center flex-wrap gap-2 mt-2">
                 {program.hasAudio ? (
                   <View className="bg-[#EEF6EF] px-2 py-0.5 rounded-full">

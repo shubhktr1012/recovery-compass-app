@@ -6,6 +6,7 @@ import { useRouter } from 'expo-router';
 import * as Linking from 'expo-linking';
 import { Svg, Path, Line, Polyline } from 'react-native-svg';
 import { AppColors } from '@/constants/theme';
+import { AppTypography } from '@/constants/typography';
 import { useAuth } from '@/providers/auth';
 import { useProfile } from '@/providers/profile';
 import Purchases from 'react-native-purchases';
@@ -88,19 +89,17 @@ const SettingsRow = ({ icon, label, sub, right, onPress, isLast, danger }: Setti
           <IconSymbol name={icon} size={15} color={danger ? '#B93A2B' : 'rgba(6,41,12,0.55)'} />
         </View>
         <View style={{ flex: 1 }}>
-          <Text style={{ 
-            fontFamily: 'Satoshi-Medium', 
-            fontSize: 14, 
+          <Text style={{
+            fontFamily: 'Satoshi-Medium',
+            fontSize: 14,
             color: danger ? '#B93A2B' : AppColors.forest,
             lineHeight: 16.8
           }}>{label}</Text>
           {sub && (
-            <Text style={{ 
-              fontFamily: 'Satoshi-Regular', 
-              fontSize: 11, 
+          <Text style={{
+              ...AppTypography.bodyCompact,
               color: danger ? 'rgba(185,58,43,0.6)' : 'rgba(6,41,12,0.45)',
               marginTop: 2,
-              lineHeight: 15.4
             }}>{sub}</Text>
           )}
         </View>
@@ -171,7 +170,7 @@ const DangerCard = ({
           </Svg>
           <Text style={{ fontFamily: 'Satoshi-Bold', fontSize: 8, letterSpacing: 1.2, textTransform: 'uppercase', color: '#B93A2B' }}>Irreversible</Text>
         </View>
-        <Text style={{ flex: 1, fontFamily: 'Satoshi-Regular', fontSize: 11, color: 'rgba(185,58,43,0.75)', lineHeight: 15.95 }}>
+        <Text style={{ flex: 1, ...AppTypography.bodyCompact, color: 'rgba(185,58,43,0.75)' }}>
           {warningText}
         </Text>
       </View>
@@ -201,7 +200,7 @@ const DangerCard = ({
           </View>
           <View style={{ flex: 1 }}>
             <Text style={{ fontFamily: 'Satoshi-Medium', fontSize: 14, color: '#B93A2B', lineHeight: 16.8 }}>{label}</Text>
-            <Text style={{ fontFamily: 'Satoshi-Regular', fontSize: 11, color: 'rgba(185,58,43,0.6)', marginTop: 2, lineHeight: 15.4 }}>{sub}</Text>
+            <Text style={{ ...AppTypography.bodyCompact, color: 'rgba(185,58,43,0.6)', marginTop: 2 }}>{sub}</Text>
           </View>
           <IconSymbol name="chevron.right" size={14} color="rgba(185,58,43,0.3)" />
         </Animated.View>
@@ -526,10 +525,8 @@ function DeleteAccountSheet({ visible, onClose, onConfirm, isDeleting }: { visib
             </Text>
 
             <Text style={{ 
-              fontFamily: 'Satoshi-Regular', 
-              fontSize: 13, 
+              ...AppTypography.bodyCompact,
               color: AppColors.mutedInk, 
-              lineHeight: 20.8,
               marginBottom: 24
             }}>
               This action is permanent and cannot be undone. Your recovery progress, journal entries, and personal data will be erased.
@@ -550,7 +547,7 @@ function DeleteAccountSheet({ visible, onClose, onConfirm, isDeleting }: { visib
               ].map((item, i) => (
                 <View key={i} style={{ flexDirection: 'row', alignItems: 'flex-start', marginBottom: i === 2 ? 0 : 10 }}>
                   <View style={{ width: 5, height: 5, borderRadius: 2.5, backgroundColor: 'rgba(185,58,43,0.45)', marginTop: 6, marginRight: 10 }} />
-                  <Text style={{ flex: 1, fontFamily: 'Satoshi-Regular', fontSize: 12, color: AppColors.mutedInk, lineHeight: 18 }}>{item}</Text>
+                  <Text style={{ flex: 1, ...AppTypography.bodyCompact, color: AppColors.mutedInk }}>{item}</Text>
                 </View>
               ))}
             </View>

@@ -2,6 +2,7 @@ import React from 'react';
 import { Text, View, Pressable, useWindowDimensions } from 'react-native';
 import Svg, { Path, Circle, Polyline, Polygon, Rect } from 'react-native-svg';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing } from 'react-native-reanimated';
+import { AppTypography } from '@/constants/typography';
 
 // ─── Brand tokens ───────────────────────────────────────────────────────────
 const F = {
@@ -181,9 +182,7 @@ function CurrentDayCard({ day, isPartial, isReturningUser, onPress }: {
           {/* Description */}
           <Text
             style={{
-              fontFamily: 'Satoshi-Regular',
-              fontSize: 12,
-              lineHeight: 18,
+              ...AppTypography.bodyCompact,
               color: 'rgba(6,41,12,0.62)',
               marginBottom: 12,
             }}
@@ -277,7 +276,7 @@ function CompletedDayCard({ day, onPress }: { day: ProgramCardDay; onPress?: () 
           <Text style={{ fontFamily: 'Erode-Medium', fontSize: 15, lineHeight: 18, color: 'rgba(6,41,12,0.7)' }}>
             {day.title}
           </Text>
-          <Text style={{ fontFamily: 'Satoshi-Regular', fontSize: 10, color: 'rgba(6,41,12,0.35)', marginTop: 2 }}>
+          <Text style={{ ...AppTypography.meta, color: 'rgba(6,41,12,0.35)', marginTop: 2 }}>
             Tap to revisit
           </Text>
         </View>
@@ -333,7 +332,7 @@ function NextLockedDayCard({ day, availabilityLabel }: { day: ProgramCardDay; av
           {day.title}
         </Text>
         {availabilityLabel && (
-          <Text style={{ fontFamily: 'Satoshi-Regular', fontSize: 10, color: 'rgba(6,41,12,0.28)', marginTop: 2 }}>
+          <Text style={{ ...AppTypography.meta, color: 'rgba(6,41,12,0.28)', marginTop: 2 }}>
             {availabilityLabel}
           </Text>
         )}
@@ -445,7 +444,7 @@ function AvailableDayCard({ day, onPress }: { day: ProgramCardDay; onPress?: () 
           <Text style={{ fontFamily: 'Erode-Medium', fontSize: 15, lineHeight: 18, color: 'rgba(6,41,12,0.7)' }}>
             {day.title}
           </Text>
-          <Text style={{ fontFamily: 'Satoshi-Regular', fontSize: 10, color: 'rgba(6,41,12,0.35)', marginTop: 2 }}>
+          <Text style={{ ...AppTypography.meta, color: 'rgba(6,41,12,0.35)', marginTop: 2 }}>
             Tap to open
           </Text>
         </View>
@@ -500,7 +499,7 @@ function PartialDayCard({ day, onPress }: { day: ProgramCardDay; onPress?: () =>
           <Text style={{ fontFamily: 'Erode-Medium', fontSize: 15, lineHeight: 18, color: 'rgba(6,41,12,0.6)' }}>
             {day.title}
           </Text>
-          <Text style={{ fontFamily: 'Satoshi-Regular', fontSize: 10, color: 'rgba(6,41,12,0.4)', marginTop: 2 }}>
+          <Text style={{ ...AppTypography.meta, color: 'rgba(6,41,12,0.4)', marginTop: 2 }}>
             Tap to continue
           </Text>
         </View>

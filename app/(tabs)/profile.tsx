@@ -27,6 +27,7 @@ import { EditProfileSheet } from '@/components/account/EditProfileSheet';
 import { AccountWatermark } from '@/components/ui/TabWatermarks';
 import type { ProgramSlug } from '@/types/content';
 import { AppColors } from '@/constants/theme';
+import { AppTypography } from '@/constants/typography';
 
 const STAT_CARD_WIDTH = 164;
 const STAT_CARD_GAP = 10;
@@ -769,9 +770,7 @@ const styles = StyleSheet.create({
     maxWidth: '88%',
   },
   programMeta: {
-    fontFamily: 'Satoshi-Regular',
-    fontSize: 11,
-    lineHeight: 16,
+    ...AppTypography.bodyCompact,
     color: 'rgba(227,243,229,0.5)',
     marginTop: 6,
   },
@@ -844,9 +843,7 @@ const styles = StyleSheet.create({
     color: AppColors.forest,
   },
   programLibrarySubtitle: {
-    fontFamily: 'Satoshi-Regular',
-    fontSize: 11,
-    lineHeight: 16,
+    ...AppTypography.bodyCompact,
     color: 'rgba(6,41,12,0.48)',
     marginTop: 2,
   },

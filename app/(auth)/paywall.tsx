@@ -26,6 +26,7 @@ import {
 } from '@/lib/revenuecat/config';
 import { hasOnboardingContextMismatch } from '@/lib/onboarding.realignment';
 import { useProfile } from '@/providers/profile';
+import { AppTypography } from '@/constants/typography';
 
 // Paywall v2 components
 import { PreviewCard } from '@/components/paywall/PreviewCard';
@@ -570,9 +571,7 @@ export default function Paywall() {
           {/* Subtitle */}
           <Text
             style={{
-              fontFamily: 'Satoshi-Regular',
-              fontSize: 14,
-              lineHeight: 21.7,
+              ...AppTypography.body,
               color: 'rgba(6,41,12,0.45)',
               textAlign: 'center',
               marginTop: 10,
@@ -617,9 +616,7 @@ export default function Paywall() {
           >
             <Text
               style={{
-                fontFamily: 'Satoshi-Regular',
-                fontSize: 15,
-                lineHeight: 24,
+                ...AppTypography.bodyLarge,
                 color: 'rgba(6,41,12,0.5)',
                 textAlign: 'center',
               }}

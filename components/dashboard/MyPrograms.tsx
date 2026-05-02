@@ -1,6 +1,7 @@
 import { View, Text, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Svg, Path } from 'react-native-svg';
+import { AppTypography } from '@/constants/typography';
 
 interface MyProgramsProps {
   activeCount: number;
@@ -25,7 +26,10 @@ export function MyPrograms({
         </View>
         <View className="flex-1">
           <Text className="font-erode-medium text-[18px] text-forest leading-snug">My Programs</Text>
-          <Text className="font-satoshi text-[13px] text-forest/50 mt-1 leading-relaxed">
+          <Text
+            className="text-forest/50 mt-1"
+            style={AppTypography.body}
+          >
             {activeCount > 1
               ? `Switch your current journey or open ${activeCount} unlocked programs.`
               : 'Open your current journey or manage unlocked programs.'}

@@ -133,18 +133,23 @@ function RootLayoutContent() {
   const { session, isLoading: isAuthLoading, isRecoveringPassword } = useAuth();
   const { access, profile, isSubscribed, isLoading: isProfileLoading } = useProfile();
   const [fontsLoaded] = useFonts({
+    'Erode': ErodeRegular,
     'Erode-Regular': ErodeRegular,
     'Erode-Italic': ErodeItalic,
     'Erode-Light': ErodeLight,
     'Erode-LightItalic': ErodeLightItalic,
     'Erode-Medium': ErodeMedium,
+    'Erode-Medium-Italic': ErodeMediumItalic,
     'Erode-MediumItalic': ErodeMediumItalic,
+    'Erode-SemiBold': ErodeSemibold,
     'Erode-Semibold': ErodeSemibold,
     'Erode-SemiboldItalic': ErodeSemiboldItalic,
     'Erode-Bold': ErodeBold,
     'Erode-BoldItalic': ErodeBoldItalic,
+    'Satoshi': SatoshiRegular,
     'Satoshi-Regular': SatoshiRegular,
     'Satoshi-Medium': SatoshiMedium,
+    'Satoshi-SemiBold': SatoshiBold,
     'Satoshi-Bold': SatoshiBold,
   });
 

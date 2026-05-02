@@ -1,6 +1,7 @@
 import { View, Text, Pressable } from 'react-native';
 import { useRouter, Href } from 'expo-router';
 import { Svg, Path, Circle, Polygon } from 'react-native-svg';
+import { AppTypography } from '@/constants/typography';
 
 interface ActionCardProps {
   dayTitle: React.ReactNode;
@@ -42,7 +43,10 @@ export function ActionCard({
         <Text className="font-erode-medium text-[22px] text-white leading-tight tracking-[-0.01em] relative z-10">
           {dayTitle}
         </Text>
-        <Text className="font-satoshi text-[14px] text-white/60 mt-1.5 leading-relaxed relative z-10">
+        <Text
+          className="text-white/60 mt-1.5 relative z-10"
+          style={AppTypography.body}
+        >
           {dayPreview}
         </Text>
       </View>

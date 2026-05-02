@@ -12,6 +12,7 @@ import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { AppColors } from '@/constants/theme';
+import { AppTypography } from '@/constants/typography';
 
 const LAST_SIGN_IN_PROVIDER_KEY = 'auth:last-sign-in-provider';
 
@@ -227,10 +228,9 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
     subtitle: {
-        fontFamily: 'Satoshi-Regular',
+        ...AppTypography.bodyLarge,
         color: AppColors.iconMuted,
         textAlign: 'center',
-        fontSize: 18,
     },
     formContainer: {
         gap: 20,
@@ -252,13 +252,13 @@ const styles = StyleSheet.create({
     },
     footerText: {
         color: AppColors.iconMuted,
-        fontFamily: 'Satoshi-Regular',
-        fontSize: 16,
+        ...AppTypography.body,
     },
     footerLink: {
         color: AppColors.forest,
         fontFamily: 'Satoshi-Bold',
         fontWeight: '500',
-        fontSize: 16,
+        fontSize: AppTypography.body.fontSize,
+        lineHeight: AppTypography.body.lineHeight,
     },
 });

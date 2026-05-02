@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { useAuth } from '@/providers/auth';
 import { AppColors } from '@/constants/theme';
+import { AppTypography } from '@/constants/typography';
 import { isStrongPassword, PASSWORD_REQUIREMENTS_HINT } from '@/lib/password';
 import { PasswordStrength } from '@/components/ui/PasswordStrength';
 
@@ -172,10 +173,9 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
     subtitle: {
-        fontFamily: 'Satoshi-Regular',
+        ...AppTypography.bodyLarge,
         color: AppColors.iconMuted,
         textAlign: 'center',
-        fontSize: 18,
     },
     formContainer: {
         gap: 20,
@@ -187,7 +187,6 @@ const styles = StyleSheet.create({
     expiredText: {
         textAlign: 'center',
         color: AppColors.iconMuted,
-        fontFamily: 'Satoshi-Regular',
-        fontSize: 16,
+        ...AppTypography.body,
     },
 });

@@ -18,6 +18,7 @@ import { PaperGrain } from '@/components/ui/PaperGrain';
 import { ProgramWatermark } from '@/components/ui/TabWatermarks';
 import { DayContent, ProgramSlug } from '@/types/content';
 import { programQueryKey } from '@/hooks/contentQueryUtils';
+import { AppTypography } from '@/constants/typography';
 
 function getDayPreview(day: DayContent) {
   const introCard = day.cards.find((card) => card.type === 'intro');
@@ -199,7 +200,10 @@ function ProgramScreenContent({ activeProgram }: { activeProgram: ProgramSlug })
             {namePrefix} <Text className="italic">{nameItalic}</Text>
           </Text>
           
-          <Text className="font-satoshi text-[13px] leading-[19px] text-sage/60 pr-8 mt-2 relative z-10 max-w-[280px]">
+          <Text
+            className="text-sage/60 pr-8 mt-2 relative z-10 max-w-[280px]"
+            style={AppTypography.bodyCompact}
+          >
             {access.completionState === 'completed' 
               ? `You completed this reset. All ${totalDays} days are now available to revisit.` 
               : program.description}
@@ -243,7 +247,10 @@ function ProgramScreenContent({ activeProgram }: { activeProgram: ProgramSlug })
                 <Text className="font-erode-medium text-[17px] leading-[20px] text-forest mt-1">
                   Ready for the <Text className="italic">full 90 days?</Text>
                 </Text>
-                <Text className="font-satoshi text-[12px] leading-[18px] text-forest/60 mt-1">
+                <Text
+                  className="text-forest/60 mt-1"
+                  style={AppTypography.bodyCompact}
+                >
                   {`You've broken the initial autopilot. The 90-Day Quit now takes you to lasting freedom.`}
                 </Text>
                 <View className="flex-row items-center bg-forest rounded-full px-4 py-2 mt-3 self-start">

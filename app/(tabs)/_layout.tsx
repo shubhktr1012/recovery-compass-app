@@ -79,7 +79,14 @@ function TabItem({
   return (
     <View style={styles.tabItem}>
       <Icon color={color} />
-      <Text style={[styles.tabLabel, { color }]}>{label}</Text>
+      <Text
+        allowFontScaling={false}
+        numberOfLines={1}
+        ellipsizeMode="clip"
+        style={[styles.tabLabel, { color }]}
+      >
+        {label}
+      </Text>
     </View>
   );
 }
@@ -95,7 +102,9 @@ function FloatingTabBar({
   navigation: any;
 }) {
   const insets = useSafeAreaInsets();
-  const bottomOffset = Math.max(insets.bottom - 12, 4); // flush against bottom bezel
+  const bottomOffset = Platform.OS === 'android'
+    ? Math.max(insets.bottom + 8, 14)
+    : Math.max(insets.bottom - 12, 4);
 
   const tabs = [
     { name: 'index',   label: 'Home',    Icon: HomeIcon },
@@ -196,23 +205,29 @@ const styles = StyleSheet.create({
   tabBarInner: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingTop: 12,
+    paddingBottom: Platform.OS === 'android' ? 16 : 12,
     paddingHorizontal: 12,
   },
   tabButton: {
     flex: 1,
+    minWidth: 0,
     alignItems: 'center',
     justifyContent: 'center',
   },
   tabItem: {
+    width: '100%',
     alignItems: 'center',
     gap: 3,
     paddingVertical: 4,
-    paddingHorizontal: 4,
+    paddingHorizontal: Platform.OS === 'android' ? 2 : 4,
   },
   tabLabel: {
     fontFamily: 'Satoshi-Medium',
     fontSize: 9,
-    letterSpacing: 0.4, // 0.04em at 9px ≈ 0.36px → ~0.4
+    lineHeight: 11,
+    letterSpacing: Platform.OS === 'android' ? 0.2 : 0.4,
+    textAlign: 'center',
+    width: '100%',
   },
 });

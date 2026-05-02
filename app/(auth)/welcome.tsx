@@ -9,6 +9,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '@/providers/auth';
 import { getPublicEnv } from '@/lib/env';
+import { AppTypography } from '@/constants/typography';
 import * as Google from 'expo-auth-session/providers/google';
 import * as AuthSession from 'expo-auth-session';
 import * as WebBrowser from 'expo-web-browser';
@@ -502,8 +503,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
     tagline: {
-        fontSize: 18,
-        fontFamily: 'Satoshi-Medium',
+        ...AppTypography.bodyLargeMedium,
         color: AppColors.iconMuted,
         textAlign: 'center',
     },
@@ -512,12 +512,10 @@ const styles = StyleSheet.create({
         paddingTop: 24,
     },
     legalText: {
-        fontSize: 12,
-        fontFamily: 'Satoshi-Regular',
+        ...AppTypography.bodyCompact,
         color: AppColors.iconMuted,
         textAlign: 'center',
         marginBottom: 24,
-        lineHeight: 18,
     },
     legalLink: {
         fontSize: 12,
@@ -528,14 +526,14 @@ const styles = StyleSheet.create({
         width: '100%',
     },
     sessionExpiredHint: {
-        fontSize: 13,
+        ...AppTypography.bodyCompact,
         fontFamily: 'Satoshi-Medium',
         color: AppColors.forest,
         textAlign: 'center',
         marginBottom: 10,
     },
     lastProviderHint: {
-        fontSize: 13,
+        ...AppTypography.bodyCompact,
         fontFamily: 'Satoshi-Medium',
         color: AppColors.iconMuted,
         textAlign: 'center',
