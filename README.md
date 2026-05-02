@@ -55,6 +55,7 @@ app/
 Important docs:
 
 - [`docs/SPRINT_STATUS.md`](docs/SPRINT_STATUS.md)
+- [`docs/ENVIRONMENTS.md`](docs/ENVIRONMENTS.md)
 - `docs/plans/` for implementation and design notes
 
 ## Local development
