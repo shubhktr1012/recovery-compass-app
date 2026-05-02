@@ -86,6 +86,17 @@ type SupabaseProfileClient = {
     from: (table: string) => any;
 };
 
+type IntegrationFailurePayload = {
+    source: string;
+    operation: string;
+    severity?: "warning" | "error";
+    userId?: string | null;
+    externalEventId?: string | null;
+    externalTransactionId?: string | null;
+    errorMessage: string;
+    metadata?: Record<string, unknown>;
+};
+
 const parseCandidates = (value: string | null | undefined, fallbacks: string[]) =>
     Array.from(
         new Set(
@@ -216,6 +227,30 @@ const getProgramSlug = (event: Record<string, unknown>) => {
     }
 
     return null;
+};
+
+const recordIntegrationFailure = async (
+    supabase: SupabaseProfileClient,
+    payload: IntegrationFailurePayload,
+) => {
+    const { error } = await supabase.from("integration_failures").insert({
+        source: payload.source,
+        operation: payload.operation,
+        severity: payload.severity ?? "error",
+        user_id: payload.userId ?? null,
+        external_event_id: payload.externalEventId ?? null,
+        external_transaction_id: payload.externalTransactionId ?? null,
+        error_message: payload.errorMessage,
+        metadata: payload.metadata ?? null,
+    });
+
+    if (error) {
+        console.error("Failed to persist integration failure", {
+            source: payload.source,
+            operation: payload.operation,
+            error: error.message,
+        });
+    }
 };
 
 const enforceRateLimit = async (
@@ -454,6 +489,25 @@ serve(async (req: Request) => {
         return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
     }
 
+    const supabase = createClient(supabaseUrl, supabaseServiceKey) as unknown as SupabaseRpcClient & SupabaseProfileClient;
+    let failureContext: {
+        eventType: string | null;
+        appUserId: string | null;
+        purchasedProgram: string | null;
+        purchasedProductId: string | null;
+        revenueCatEventId: string | null;
+        providerTransactionId: string | null;
+        store: string | null;
+    } = {
+        eventType: null,
+        appUserId: null,
+        purchasedProgram: null,
+        purchasedProductId: null,
+        revenueCatEventId: null,
+        providerTransactionId: null,
+        store: null,
+    };
+
     try {
         const payload = await req.json();
         const event = payload.event;
@@ -466,10 +520,6 @@ serve(async (req: Request) => {
         }
 
         console.log(`Received RevenueCat Event: ${event.type} for User ID: ${event.app_user_id}`);
-
-        // Create a Supabase client with the Service Role Key to bypass RLS
-        // The webhook needs administrative privileges to update the profile table directly
-        const supabase = createClient(supabaseUrl, supabaseServiceKey) as unknown as SupabaseRpcClient & SupabaseProfileClient;
 
         const eventType = typeof event.type === "string" ? event.type : "";
         const appUserId = typeof event.app_user_id === "string" ? event.app_user_id : "";
@@ -486,6 +536,16 @@ serve(async (req: Request) => {
         const isPositivePurchaseEvent = ["INITIAL_PURCHASE", "RENEWAL", "UNCANCELLATION", "NON_RENEWING_PURCHASE"].includes(eventType);
         const isNegativeLifecycleEvent = ["CANCELLATION", "EXPIRATION"].includes(eventType);
         const shouldSendPurchaseWelcomeEmail = ["INITIAL_PURCHASE", "NON_RENEWING_PURCHASE"].includes(eventType);
+
+        failureContext = {
+            eventType,
+            appUserId: appUserId || null,
+            purchasedProgram,
+            purchasedProductId,
+            revenueCatEventId,
+            providerTransactionId,
+            store,
+        };
 
         console.log("RevenueCat normalized event", {
             eventType,
@@ -666,12 +726,29 @@ serve(async (req: Request) => {
                         providerTransactionId,
                     });
                 } catch (emailError) {
+                    const errorMessage = emailError instanceof Error ? emailError.message : String(emailError);
                     console.error("RevenueCat app purchase welcome email dispatch failed", {
                         resolvedProfileId,
                         purchasedProgram,
                         revenueCatEventId,
                         providerTransactionId,
-                        error: emailError instanceof Error ? emailError.message : String(emailError),
+                        error: errorMessage,
+                    });
+                    await recordIntegrationFailure(supabase, {
+                        source: "revenuecat-webhook",
+                        operation: "dispatch_app_purchase_welcome_email",
+                        severity: "warning",
+                        userId: resolvedProfileId,
+                        externalEventId: revenueCatEventId,
+                        externalTransactionId: providerTransactionId,
+                        errorMessage,
+                        metadata: {
+                            event_type: eventType,
+                            app_user_id: appUserId,
+                            purchased_program: purchasedProgram,
+                            purchased_product_id: purchasedProductId,
+                            store,
+                        },
                     });
                 }
             }
@@ -729,6 +806,21 @@ serve(async (req: Request) => {
     } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : String(error);
         console.error("Webhook processing error:", errorMessage);
+        await recordIntegrationFailure(supabase, {
+            source: "revenuecat-webhook",
+            operation: "process_event",
+            userId: failureContext.appUserId,
+            externalEventId: failureContext.revenueCatEventId,
+            externalTransactionId: failureContext.providerTransactionId,
+            errorMessage,
+            metadata: {
+                event_type: failureContext.eventType,
+                app_user_id: failureContext.appUserId,
+                purchased_program: failureContext.purchasedProgram,
+                purchased_product_id: failureContext.purchasedProductId,
+                store: failureContext.store,
+            },
+        });
         return new Response(JSON.stringify({ error: errorMessage }), { status: 500 });
     }
 });
