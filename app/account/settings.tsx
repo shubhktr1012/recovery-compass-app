@@ -217,6 +217,36 @@ export default function SettingsScreen() {
   const [isRestoring, setIsRestoring] = useState(false);
   const [showDeleteSheet, setShowDeleteSheet] = useState(false);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+  const appPackageName = Constants.expoConfig?.android?.package ?? 'com.recoverycompass.app';
+
+  const handleOpenSystemNotificationSettings = async () => {
+    try {
+      await Linking.openSettings();
+    } catch (error: any) {
+      Alert.alert('Could not open settings', error?.message ?? 'Please open your device settings and manage notifications there.');
+    }
+  };
+
+  const handleOpenSupport = async () => {
+    try {
+      await Linking.openURL('https://recoverycompass.co/support');
+    } catch (error: any) {
+      Alert.alert('Could not open support', error?.message ?? 'Please try again.');
+    }
+  };
+
+  const handleManageSubscription = async () => {
+    const subscriptionUrl =
+      Platform.OS === 'ios'
+        ? 'https://apps.apple.com/account/subscriptions'
+        : `https://play.google.com/store/account/subscriptions?package=${appPackageName}`;
+
+    try {
+      await Linking.openURL(subscriptionUrl);
+    } catch (error: any) {
+      Alert.alert('Could not open subscriptions', error?.message ?? 'Please try again.');
+    }
+  };
 
   const handleSignOut = async () => {
     try {
@@ -371,8 +401,8 @@ export default function SettingsScreen() {
             <SettingsRow 
               icon="creditcard"
               label="Manage Subscription"
-              sub="View or cancel in App Store"
-              onPress={() => Linking.openURL('https://apps.apple.com/account/subscriptions')}
+              sub={Platform.OS === 'ios' ? 'View or cancel in App Store' : 'View or cancel in Google Play'}
+              onPress={handleManageSubscription}
               isLast={true}
             />
           </SettingsCard>
@@ -383,8 +413,8 @@ export default function SettingsScreen() {
             <SettingsRow 
               icon="bell"
               label="Notifications"
-              sub="Daily reminder · 9:00 am"
-              onPress={() => {}}
+              sub="Manage reminder permission in device settings"
+              onPress={handleOpenSystemNotificationSettings}
             />
             <SettingsRow 
               icon="arrow.right.to.line"
@@ -402,7 +432,7 @@ export default function SettingsScreen() {
               icon="questionmark.circle"
               label="Help & Support"
               sub="Contact us, FAQs"
-              onPress={() => {}}
+              onPress={handleOpenSupport}
             />
             <SettingsRow 
               icon="doc.text"
