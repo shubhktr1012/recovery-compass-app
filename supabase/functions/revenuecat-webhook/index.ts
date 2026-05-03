@@ -1,3 +1,5 @@
+/* eslint-disable import/no-unresolved */
+
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 // eslint-disable-next-line import/no-unresolved -- Deno npm specifier for Supabase Edge Functions bundling
 import { createClient } from "npm:@supabase/supabase-js@2";

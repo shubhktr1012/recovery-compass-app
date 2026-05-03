@@ -35,8 +35,6 @@ export function TimelineItem({
   // Connector Line
   const connectorColor = isCompleted ? 'bg-forest/18' : 'bg-forest/[0.08]';
 
-  // Node styles
-  const isLockedOrNext = isLocked || isNextLocked;
   const dotColorClass = isCurrent
     ? 'bg-forest'
     : isCompleted

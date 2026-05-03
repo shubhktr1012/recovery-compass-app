@@ -1,4 +1,4 @@
-import { Pressable, View, Text } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { Href, useRouter } from 'expo-router';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { AppColors } from '@/constants/theme';

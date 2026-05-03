@@ -434,8 +434,8 @@ export default function DayDetailScreen() {
     pagerRef.current?.setPage(nextIndex);
   };
 
-  const completedDays = progress?.completedDays ?? [];
-  const partialDays = progress?.partialDays ?? [];
+  const completedDays = useMemo(() => progress?.completedDays ?? [], [progress?.completedDays]);
+  const partialDays = useMemo(() => progress?.partialDays ?? [], [progress?.partialDays]);
   const isDayCompleted = normalizedDayNumber ? completedDays.includes(normalizedDayNumber) : false;
   const isDayPartial = normalizedDayNumber ? partialDays.includes(normalizedDayNumber) : false;
   const scheduledDay = useMemo(() => {
@@ -471,6 +471,7 @@ export default function DayDetailScreen() {
   );
   const hasCloseCard = dayContent?.cards.some((card) => card.type === 'close') ?? false;
   const isLastCard = Boolean(dayContent && currentIndex === dayContent.cards.length - 1);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const shouldShowCompletionBar = !hasCloseCard && (isDayCompleted || isDayPartial || isLastCard);
   const nextUnlockLabel = useMemo(() => {
     if (!program || access.completionState === 'completed') return null;
@@ -600,6 +601,7 @@ export default function DayDetailScreen() {
 
   const isCurrentScheduledDay = dayContent.dayNumber === scheduledDay && !isDayCompleted;
   const isFinalProgramDay = dayContent.dayNumber >= program.totalDays;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const completionTitle = isDayCompleted
     ? isFinalProgramDay
       ? 'Program day complete'

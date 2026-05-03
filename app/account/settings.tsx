@@ -213,7 +213,9 @@ export default function SettingsScreen() {
   const router = useRouter();
   const { deleteAccount, signOut } = useAuth();
   const { refreshAccess, access } = useProfile();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isSigningOut, setIsSigningOut] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isRestoring, setIsRestoring] = useState(false);
   const [showDeleteSheet, setShowDeleteSheet] = useState(false);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);

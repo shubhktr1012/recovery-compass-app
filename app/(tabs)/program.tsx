@@ -1,12 +1,12 @@
 import React, { useCallback, useMemo, useRef, memo } from 'react';
 import { NativeSyntheticEvent, NativeScrollEvent, ScrollView, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+
 import { StatusBar } from 'expo-status-bar';
 import { Href, useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { useQueryClient } from '@tanstack/react-query';
 import * as Haptics from 'expo-haptics';
-import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
+
 import Svg, { Path } from 'react-native-svg';
 
 import { useProgram } from '@/content';

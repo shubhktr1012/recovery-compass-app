@@ -147,6 +147,7 @@ export function useProgramAudioPlayback(
     try {
       player.clearLockScreenControls();
       player.setActiveForLockScreen(false);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (err) {
       // Silent fail on deactivation as the object might already be gone.
     }
@@ -269,7 +270,7 @@ export function useProgramAudioPlayback(
       isMountedRef.current = false;
       void stopPlaybackRef.current();
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   }, []);
 
   useEffect(() => {
@@ -354,6 +355,7 @@ export function useProgramAudioPlayback(
     };
 
     void handleToggle();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activateLockScreenControls, claimPlaybackOwnership, deactivateLockScreenControls, isLoading, player, releaseOwnership, runPlayerCall, setErrorIfMounted, setIsLoadingIfMounted, status.isLoaded, status.playing, storagePath, title]);
 
   const seekTo = useCallback((positionSeconds: number) => {

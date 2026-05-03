@@ -24,19 +24,6 @@ import {
 } from '@/lib/api/program-reflections';
 import type { ProgramReflectionIdentity } from '@/lib/api/program-reflections';
 
-export type TransportConfig = {
-  centerIcon?: React.ReactNode;
-  centerLabel?: string;
-  onCenterPress?: () => void;
-  disabled?: boolean;
-};
-
-export const TransportContext = React.createContext<{
-  registerConfig: (index: number, config: TransportConfig) => void;
-}>({
-  registerConfig: () => {},
-});
-
 import type {
   ActionStepCard,
   AudioCard,
@@ -50,6 +37,19 @@ import type {
   MindfulnessExerciseCard,
   BreathingExerciseCard,
 } from '@/types/content';
+
+export type TransportConfig = {
+  centerIcon?: React.ReactNode;
+  centerLabel?: string;
+  onCenterPress?: () => void;
+  disabled?: boolean;
+};
+
+export const TransportContext = React.createContext<{
+  registerConfig: (index: number, config: TransportConfig) => void;
+}>({
+  registerConfig: () => {},
+});
 
 function SafetySheet({
   visible,
@@ -676,6 +676,7 @@ function MindfulExerciseCardView({ card, cardIndex, onContinue }: { card: Mindfu
         }
       },
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cardIndex, isActive, onContinue, registerConfig]);
 
   const isBreathing = card.type === 'breathing_exercise';
@@ -1462,6 +1463,7 @@ function JournalCardView({
         disabled: isSaving,
       });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cardIndex, hasSavedReflection, canSave, isSaving, onContinue, registerConfig]);
 
   if (hasSavedReflection) {

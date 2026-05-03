@@ -78,6 +78,7 @@ export function EditProfileSheet({ isOpen, onClose }: EditProfileSheetProps) {
         setPendingImageUri(uri);
         setAvatarUri(uri);
       }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error: any) {
       Alert.alert(
         'Profile photo unavailable',

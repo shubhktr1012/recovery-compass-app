@@ -107,6 +107,7 @@ function getPreferredOffering(
   return offerings.current ?? null;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function getSelectablePackageId(pack: PurchasesPackage) {
   return getProgramSlugForPackage(pack) ?? pack.product.identifier ?? pack.identifier;
 }

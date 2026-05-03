@@ -6,7 +6,7 @@ import { Href, useRouter } from 'expo-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/providers/auth';
-import { Svg, Path, G, Circle } from 'react-native-svg';
+import { Svg, Path } from 'react-native-svg';
 import { CravingsDragger } from '@/components/journal/CravingsDragger';
 import { MoodChips } from '@/components/journal/MoodChips';
 import { PaperGrain } from '@/components/ui/PaperGrain';
@@ -29,6 +29,7 @@ interface JournalEntry {
 const JOURNAL_COLUMNS = 'id, user_id, entry_date, mood, cravings_level, reflection, created_at, updated_at';
 const JOURNAL_QUERY_KEY = (userId: string | null) => ['journal-entries', userId];
 const REFLECTIONS_QUERY_KEY = (userId: string | null) => ['program-reflections', userId];
+const EMPTY_ENTRIES: JournalEntry[] = [];
 
 export default function JournalScreen() {
   const router = useRouter();
@@ -70,23 +71,11 @@ export default function JournalScreen() {
     enabled: Boolean(userId),
   });
 
-  const entries = journalQuery.data ?? [];
+  const entries = journalQuery.data ?? EMPTY_ENTRIES;
   const editingEntry = useMemo(
     () => entries.find((entry) => entry.id === editingEntryId) ?? null,
     [editingEntryId, entries]
   );
-
-  const pastEntries = useMemo(() => {
-    const combined = [
-      ...(journalQuery.data || []).map(e => ({ ...e, type: 'journal' as const, dateToSort: e.entry_date })),
-      ...(reflectionsQuery.data || []).map(r => ({
-        ...r,
-        type: 'reflection' as const,
-        dateToSort: r.updatedAt
-      }))
-    ];
-    return combined.sort((a, b) => new Date(b.dateToSort).getTime() - new Date(a.dateToSort).getTime());
-  }, [journalQuery.data, reflectionsQuery.data]);
 
   const journalStats = useMemo(() => {
     if (!entries || entries.length === 0) return null;
@@ -184,18 +173,6 @@ export default function JournalScreen() {
     },
   });
 
-  const todayLabel = useMemo(() => {
-    return new Date().toLocaleDateString(undefined, {
-      weekday: 'long',
-      month: 'long',
-      day: 'numeric',
-    });
-  }, []);
-
-  const todayEntry = useMemo(
-    () => entries.find((entry) => entry.entry_date === todayDate) ?? null,
-    [entries, todayDate]
-  );
   const canSaveEntry = (moods.length > 0 || trimmedReflection.length > 0) && !saveEntryMutation.isPending;
 
   useEffect(() => {
@@ -246,11 +223,6 @@ export default function JournalScreen() {
 
   const handleEditEntry = (entry: JournalEntry) => {
     setEditingEntryId(entry.id);
-  };
-
-  const handleCancelEditing = () => {
-    hydratedEntryIdRef.current = null;
-    setEditingEntryId(null);
   };
 
   const handleOpenReflection = (programSlug: string, dayNumber: number) => {

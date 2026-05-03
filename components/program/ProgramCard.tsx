@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, View, Pressable, useWindowDimensions } from 'react-native';
+import { Text, View, Pressable } from 'react-native';
 import Svg, { Path, Circle, Polyline, Polygon, Rect } from 'react-native-svg';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing } from 'react-native-reanimated';
 import { AppTypography } from '@/constants/typography';

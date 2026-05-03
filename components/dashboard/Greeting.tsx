@@ -1,7 +1,6 @@
 import { View, Text, Image, Pressable } from 'react-native';
 import { useMemo } from 'react';
-import { useRouter } from 'expo-router';
-import { Href } from 'expo-router';
+import { useRouter , Href } from 'expo-router';
 import { useOnboardingResponse } from '@/hooks/useOnboardingResponse';
 import { useProfile } from '@/providers/profile';
 import { AppColors } from '@/constants/theme';
