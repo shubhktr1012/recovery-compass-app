@@ -107,6 +107,16 @@ function getPreferredOffering(
   return offerings.current ?? null;
 }
 
+function getSelectablePackageId(pack: PurchasesPackage) {
+  return getProgramSlugForPackage(pack) ?? pack.product.identifier ?? pack.identifier;
+}
+
+type EligiblePackageOption = {
+  pack: PurchasesPackage;
+  selectionId: string;
+  slug: ProgramSlug;
+};
+
 export default function Paywall() {
   const params = useLocalSearchParams<{ program?: string | string[] }>();
   const router = useRouter();
@@ -259,7 +269,7 @@ export default function Paywall() {
     return getRecommendedPrograms(recommendedProgram);
   }, [access.ownedProgram, recommendedProgram, targetedProgram]);
 
-  const eligiblePackages = useMemo(() => {
+  const eligiblePackages = useMemo<EligiblePackageOption[]>(() => {
     const matchingPackages = packages
       .map((pack) => ({
         pack,
@@ -279,8 +289,17 @@ export default function Paywall() {
     });
 
     return visibleProgramSlugs
-      .map((slug) => uniquePackages.get(slug))
-      .filter((pack): pack is PurchasesPackage => Boolean(pack));
+      .flatMap((slug): EligiblePackageOption[] => {
+        const pack = uniquePackages.get(slug);
+
+        return pack
+          ? [{
+              pack,
+              selectionId: slug,
+              slug,
+            }]
+          : [];
+      });
   }, [packages, visibleProgramSlugs]);
 
   const hasVisiblePurchaseIntent = visibleProgramSlugs.length > 0;
@@ -293,12 +312,22 @@ export default function Paywall() {
 
   // Default select the primary package
   useEffect(() => {
-    if (eligiblePackages.length > 0 && !selectedPackageId) {
-      setSelectedPackageId(eligiblePackages[0].identifier);
+    if (eligiblePackages.length === 0) {
+      if (selectedPackageId) {
+        setSelectedPackageId(null);
+      }
+      return;
+    }
+
+    const selectedIsVisible = eligiblePackages.some((option) => option.selectionId === selectedPackageId);
+
+    if (!selectedIsVisible) {
+      setSelectedPackageId(eligiblePackages[0].selectionId);
     }
   }, [eligiblePackages, selectedPackageId]);
 
-  const activePackage = eligiblePackages.find(p => p.identifier === selectedPackageId);
+  const activePackageOption = eligiblePackages.find((option) => option.selectionId === selectedPackageId);
+  const activePackage = activePackageOption?.pack ?? null;
 
   const getPackageDisplayName = (pack: PurchasesPackage) => {
     const programSlug = getProgramSlugForPackage(pack);
@@ -670,14 +699,13 @@ export default function Paywall() {
             </Text>
 
             {/* Purchase cards */}
-            {eligiblePackages.map((pack) => {
-              const programSlug = getProgramSlugForPackage(pack);
-              const isSelected = selectedPackageId === pack.identifier;
-              const meta = programSlug ? PROGRAM_METADATA[programSlug] : null;
+            {eligiblePackages.map(({ pack, selectionId, slug }) => {
+              const isSelected = selectedPackageId === selectionId;
+              const meta = PROGRAM_METADATA[slug];
 
               return (
                 <PurchaseCard
-                  key={pack.identifier}
+                  key={`${selectionId}:${pack.product.identifier}`}
                   programName={getPackageDisplayName(pack)}
                   durationDays={meta?.totalDays ?? 0}
                   description={
@@ -687,7 +715,7 @@ export default function Paywall() {
                   priceString={pack.product.priceString}
                   isSelected={isSelected}
                   showCheckCircle={isMultiOption}
-                  onPress={() => setSelectedPackageId(pack.identifier)}
+                  onPress={() => setSelectedPackageId(selectionId)}
                 />
               );
             })}

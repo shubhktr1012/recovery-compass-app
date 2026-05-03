@@ -66,9 +66,9 @@ export function PurchaseCard({
       ]}
     >
       {/* Upper body */}
-      <View style={styles.body}>
-        <View style={styles.topRow}>
-          <View style={styles.nameRow}>
+      <View style={styles.body} collapsable={false}>
+        <View style={styles.topRow} collapsable={false}>
+          <View style={styles.nameRow} collapsable={false}>
             <Text style={styles.name}>{programName}</Text>
             <View style={styles.durPill}>
               <Text style={styles.durText}>{durationDays} days</Text>
@@ -80,7 +80,7 @@ export function PurchaseCard({
       </View>
 
       {/* Price strip */}
-      <View style={[styles.priceStrip, isSelected && styles.priceStripSelected]}>
+      <View style={[styles.priceStrip, isSelected && styles.priceStripSelected]} collapsable={false}>
         <Text style={styles.price}>{priceString}</Text>
         <View style={styles.priceRight}>
           <View style={styles.onetimePill}>
@@ -102,24 +102,12 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: 'rgba(6,41,12,0.08)',
     borderRadius: 20,
-    overflow: 'hidden',
     marginBottom: 10,
-    // card-shadow
-    shadowColor: F.forest,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.07,
-    shadowRadius: 12,
-    elevation: 3,
   },
   cardSelected: {
     borderColor: 'rgba(6,41,12,0.18)',
     borderLeftWidth: 3,
     borderLeftColor: F.forest,
-    // lift-shadow
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 20,
-    elevation: 6,
   },
   body: {
     paddingHorizontal: 18,
@@ -137,7 +125,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     flexWrap: 'wrap',
-    gap: 8,
+    marginRight: 8,
   },
   name: {
     fontFamily: 'Satoshi-SemiBold',
@@ -145,6 +133,7 @@ const styles = StyleSheet.create({
     color: F.forest,
     lineHeight: 18,
     letterSpacing: -0.15,
+    marginRight: 8,
   },
   durPill: {
     paddingHorizontal: 8,
@@ -190,22 +179,22 @@ const styles = StyleSheet.create({
   },
   priceRight: {
     alignItems: 'flex-end',
-    gap: 3,
   },
   onetimePill: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
     backgroundColor: F.sage,
     borderRadius: 999,
     paddingHorizontal: 10,
     paddingVertical: 3,
+    marginBottom: 3,
   },
   onetimeDot: {
     width: 4,
     height: 4,
     borderRadius: 2,
     backgroundColor: 'rgba(6,41,12,0.4)',
+    marginRight: 4,
   },
   onetimeText: {
     fontFamily: 'Satoshi-Bold',
