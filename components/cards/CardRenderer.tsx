@@ -1282,9 +1282,11 @@ function AudioCardView({ card, cardIndex }: { card: AudioCard; cardIndex?: numbe
 
 function CalmTriggerCardView({ card }: { card: CalmTriggerCard; }) {
   return (
-    <AccentCardShell eyebrow="CALM" title="Need a moment?">
-      <Text style={styles.calmContext}>{card.context}</Text>
-      <PrimaryVisualButton label="Start 10-Minute Calm Session" />
+    <AccentCardShell eyebrow="CALM" title="Expanded calm tools are coming soon">
+      <Text style={styles.calmContext}>
+        We are still finishing this dedicated calm reset. For now, continue with today&apos;s guided sessions and return here in a future update.
+      </Text>
+      <GhostVisualButton label="Coming Soon" />
     </AccentCardShell>
   );
 }
