@@ -24,6 +24,7 @@ import { TransportBar } from '@/components/ui/TransportBar';
 import { useDay, useProgram } from '@/content';
 import { programDayQueryKey, programQueryKey } from '@/hooks/contentQueryUtils';
 import { formatUnlockLabel, getProgramNextUnlockAt, getProgramScheduledDay } from '@/lib/programs/schedule';
+import { buildWidgetPayload, syncWidgetData } from '@/lib/widget-bridge';
 import { useAuth } from '@/providers/auth';
 import { useProfile } from '@/providers/profile';
 import type { DayContent, ProgramSlug } from '@/types/content';
@@ -423,6 +424,16 @@ export default function DayDetailScreen() {
     } catch (error) {
       console.error('Failed to save day card progress', error);
     }
+
+    // Sync card index to the widget so the home screen reflects current progress
+    const widgetPayload = buildWidgetPayload({
+      access,
+      progress,
+      cardIndex: nextIndex,
+      totalCards: dayContent?.cards.length ?? 1,
+      steps: 0,
+    });
+    if (widgetPayload) void syncWidgetData(widgetPayload);
   };
 
   const handleContinueFromCard = () => {

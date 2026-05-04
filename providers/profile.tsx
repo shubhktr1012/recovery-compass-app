@@ -1,5 +1,5 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { Platform } from 'react-native';
+import { AppState, Platform } from 'react-native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { PROGRAM_METADATA } from '@/content/programs/metadata';
 import { supabase } from '@/lib/supabase';
@@ -15,6 +15,7 @@ import { AccessService } from '@/lib/access/service';
 import { OWNED_PROGRAMS_QUERY_ROOT } from '@/hooks/useOwnedPrograms';
 import { decode } from 'base64-arraybuffer';
 import * as FileSystem from 'expo-file-system/legacy';
+import { buildWidgetPayload, syncWidgetData } from '@/lib/widget-bridge';
 
 export interface UserProfile {
   id: string;
@@ -288,6 +289,8 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
       });
       setAccess(snapshot);
       setProgress(nextProgress);
+      const widgetPayload = buildWidgetPayload({ access: snapshot, progress: nextProgress, steps: 0 });
+      if (widgetPayload) void syncWidgetData(widgetPayload);
       return snapshot;
     } catch (error) {
       console.error('Error refreshing access state:', error);
@@ -295,6 +298,8 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
       const fallbackProgress = await AccessService.getProgressRecord(userId, fallbackSnapshot.ownedProgram);
       setAccess(fallbackSnapshot);
       setProgress(fallbackProgress);
+      const fallbackWidgetPayload = buildWidgetPayload({ access: fallbackSnapshot, progress: fallbackProgress, steps: 0 });
+      if (fallbackWidgetPayload) void syncWidgetData(fallbackWidgetPayload);
       return fallbackSnapshot;
     } finally {
       setIsAccessLoading(false);
@@ -496,6 +501,10 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
       });
       setAccess(liveSnapshot);
       setProgress(liveProgress);
+
+      // Sync widget data whenever live access state is resolved
+      const liveWidgetPayload = buildWidgetPayload({ access: liveSnapshot, progress: liveProgress, steps: 0 });
+      if (liveWidgetPayload) void syncWidgetData(liveWidgetPayload);
     } catch (error) {
       console.error('Error bootstrapping access state', error);
     } finally {
@@ -509,6 +518,13 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     if (!userId) {
       return;
     }
+
+    // Re-sync widget data when app returns to foreground
+    const appStateSubscription = AppState.addEventListener('change', (nextState: string) => {
+      if (nextState === 'active') {
+        void bootstrapAccessState();
+      }
+    });
 
     const updateListener = (customerInfo: CustomerInfo) => {
       void AccessService.syncFromRevenueCat(customerInfo, userId)
@@ -534,6 +550,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     Purchases.addCustomerInfoUpdateListener(updateListener);
 
     return () => {
+      appStateSubscription.remove();
       Purchases.removeCustomerInfoUpdateListener(updateListener);
     };
   }, [bootstrapAccessState, queryClient, userId]);

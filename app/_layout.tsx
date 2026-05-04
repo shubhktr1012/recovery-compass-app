@@ -61,7 +61,7 @@ function NavigationGate({
     session: Session | null;
 }) {
   const router = useRouter();
-  const segments = useSegments();
+  const segments = useSegments() as string[];
   const searchParams = useGlobalSearchParams<{ mode?: string | string[] }>();
   const rootNavigationState = useRootNavigationState();
   const pendingRedirectRef = useRef<Href | null>(null);
@@ -72,12 +72,12 @@ function NavigationGate({
 
         const inAuthGroup = segments[0] === '(auth)';
         const inTabsGroup = segments[0] === '(tabs)';
-        const inPaywall = inAuthGroup && (segments[1] as string) === 'paywall';
-        const inDayDetail = (segments[0] as string) === 'day-detail';
-        const inResetPassword = inAuthGroup && (segments[1] as string) === 'reset-password';
-        const inPersonalization = inAuthGroup && (segments[1] as string) === 'personalization';
+        const inPaywall = inAuthGroup && segments[1] === 'paywall';
+        const inDayDetail = segments[0] === 'day-detail';
+        const inResetPassword = inAuthGroup && segments[1] === 'reset-password';
+        const inPersonalization = inAuthGroup && segments[1] === 'personalization';
         const inManualRealignment = inPersonalization && modeParam === 'realign';
-        const inAccountStack = (segments[0] as string) === 'account';
+        const inAccountStack = segments[0] === 'account';
 
         const checkRouting = async () => {
             try {
@@ -102,7 +102,7 @@ function NavigationGate({
                         target = '/' as Href;
                     }
                 } else if (!profile || !profile.onboarding_complete) {
-                    if ((segments[1] as string) !== 'personalization') {
+                    if (segments[1] !== 'personalization') {
                         target = '/personalization' as Href;
                     }
                 } else if (!inPaywall) {
