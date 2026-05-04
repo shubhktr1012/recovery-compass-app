@@ -86,3 +86,11 @@ app-example
 # generated native folders
 /ios
 /android
+
+# Graphify local metadata
+graphify-out/manifest.json
+graphify-out/cost.json
+
+# Optional: Ignore the cache to keep the repo size small
+# (Re-building will take a few seconds longer for others)
+graphify-out/cache/

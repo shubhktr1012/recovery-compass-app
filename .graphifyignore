@@ -1,0 +1,45 @@
+# Node modules
+node_modules/
+app/node_modules/
+web/node_modules/
+
+# Build artifacts
+app/.expo/
+app/dist/
+app/web-build/
+web/.next/
+web/out/
+web/build/
+web/generated/
+/ios/
+/android/
+
+# Testing & Coverage
+coverage/
+.jest/
+
+# Logs & Temporary files
+logs/
+*.log
+tmp/
+temp/
+supabase/.temp/
+
+# Package manager cache/metadata
+.yarn/
+.pnp.*
+*.tsbuildinfo
+
+# IDE & OS Metadata
+.DS_Store
+.idea/
+.vscode/
+.obsidian/
+.cursor/
+.windsurf/
+
+# Agent/Tool config
+.agent/
+.agents/
+.claude/
+.playwright-mcp/
