@@ -1,42 +1,70 @@
-import * as Notifications from 'expo-notifications';
+import { Platform } from 'react-native';
+import * as Device from 'expo-device';
 
-/**
- * Configure how notifications should be handled when the app is foregrounded
- */
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-    shouldShowBanner: true,
-    shouldShowList: true,
-  }),
-});
+type NotificationsModule = typeof import('expo-notifications');
+
+let notificationsModulePromise: Promise<NotificationsModule | null> | null = null;
+let hasConfiguredHandler = false;
+
+function shouldSkipNotificationsModule(): boolean {
+  // expo-notifications touches keychain-backed registration state at module load.
+  // On iOS Simulator that can fail when the app is missing the entitlement path
+  // used for persisted remote registration info. Remote push is device-only anyway.
+  return Platform.OS === 'ios' && !Device.isDevice;
+}
+
+async function getNotificationsModule(): Promise<NotificationsModule | null> {
+  if (shouldSkipNotificationsModule()) {
+    return null;
+  }
+
+  if (!notificationsModulePromise) {
+    notificationsModulePromise = import('expo-notifications').then((module) => {
+      if (!hasConfiguredHandler) {
+        module.setNotificationHandler({
+          handleNotification: async () => ({
+            shouldShowAlert: true,
+            shouldPlaySound: true,
+            shouldSetBadge: false,
+            shouldShowBanner: true,
+            shouldShowList: true,
+          }),
+        });
+        hasConfiguredHandler = true;
+      }
+
+      return module;
+    });
+  }
+
+  return notificationsModulePromise;
+}
 
 export const NotificationService = {
-  /**
-   * Schedules a daily reminder at 9 AM local time
-   */
   async scheduleDaily9AMReminder() {
-    // Clear existing daily reminders to avoid duplicates or overlapping schedules
-    const scheduled = await Notifications.getAllScheduledNotificationsAsync();
-    const reminderIds = scheduled
-      .filter(n => n.content.title === "Daily Progress Check-in")
-      .map(n => n.identifier);
-    
-    for (const id of reminderIds) {
-      await Notifications.cancelScheduledNotificationAsync(id);
+    const notificationsModule = await getNotificationsModule();
+    if (!notificationsModule) {
+      return;
     }
 
-    await Notifications.scheduleNotificationAsync({
+    const scheduled = await notificationsModule.getAllScheduledNotificationsAsync();
+    const reminderIds = scheduled
+      .filter((notification) => notification.content.title === 'Daily Progress Check-in')
+      .map((notification) => notification.identifier);
+
+    for (const id of reminderIds) {
+      await notificationsModule.cancelScheduledNotificationAsync(id);
+    }
+
+    await notificationsModule.scheduleNotificationAsync({
       content: {
-        title: "Daily Progress Check-in",
-        body: "Time for your Recovery Compass session. Take a moment for yourself today.",
+        title: 'Daily Progress Check-in',
+        body: 'Time for your Recovery Compass session. Take a moment for yourself today.',
         sound: true,
-        priority: Notifications.AndroidNotificationPriority.HIGH,
+        priority: notificationsModule.AndroidNotificationPriority.HIGH,
       },
       trigger: {
-        type: Notifications.SchedulableTriggerInputTypes.CALENDAR,
+        type: notificationsModule.SchedulableTriggerInputTypes.CALENDAR,
         hour: 9,
         minute: 0,
         repeats: true,
@@ -44,15 +72,11 @@ export const NotificationService = {
     });
   },
 
-  /**
-   * Initialize local notification logic for a user.
-   * Remote push token registration is handled by usePushNotifications/ProfileProvider.
-   */
   async initialize() {
     try {
       await this.scheduleDaily9AMReminder();
     } catch (error) {
       console.error('[NotificationService] Initialization failed:', error);
     }
-  }
+  },
 };

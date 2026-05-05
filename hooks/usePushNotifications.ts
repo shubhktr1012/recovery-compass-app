@@ -57,6 +57,13 @@ export const usePushNotifications = (
       return;
     }
 
+    if (isUnsupportedIosSimulatorRuntime()) {
+      setPermissionStatus('undetermined');
+      setExpoPushToken(undefined);
+      setError(undefined);
+      return;
+    }
+
     let isMounted = true;
     setError(undefined);
     setExpoPushToken(undefined);
@@ -130,8 +137,12 @@ function isUnsupportedExpoGoAndroidRuntime(): boolean {
   return Platform.OS === 'android' && isExpoGo;
 }
 
+function isUnsupportedIosSimulatorRuntime(): boolean {
+  return Platform.OS === 'ios' && !Device.isDevice;
+}
+
 async function getNotificationsModule(): Promise<NotificationsModule | null> {
-  if (isUnsupportedExpoGoAndroidRuntime()) {
+  if (isUnsupportedExpoGoAndroidRuntime() || isUnsupportedIosSimulatorRuntime()) {
     return null;
   }
 

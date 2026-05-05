@@ -14,12 +14,18 @@
  *   Then rebuild native: npx expo run:ios
  */
 
-import { Platform } from 'react-native';
+import { NativeModules, Platform } from 'react-native';
 import { PROGRAM_METADATA } from '@/content/programs/metadata';
 import type { ProgramAccessSnapshot, ProgramProgressRecord, ProgramSlug } from '@/lib/programs/types';
 
 const APP_GROUP_ID = 'group.com.recoverycompass.shared';
 const WIDGET_DATA_KEY = 'widget_data';
+export const RECOVERY_COMPASS_WIDGET_KIND = 'RecoveryCompassWidget';
+
+type NativeWidgetBridgeModule = {
+  reloadTimelines?: (kind: string) => void;
+  reloadAllTimelines?: () => void;
+};
 
 // The AsyncStorage key used in day-detail.tsx for card progress
 export function getCardProgressStorageKey(programSlug: ProgramSlug, dayNumber: number) {
@@ -63,13 +69,32 @@ export async function syncWidgetData(payload: WidgetPayload): Promise<void> {
       APP_GROUP_ID
     );
 
-    // Tell WidgetKit to reload all widget timelines so the display updates
+    // Prefer a targeted reload for this widget kind, with a fallback for
+    // older or partial installs of the optional WidgetKit bridge.
     try {
+      const nativeWidgetBridge = NativeModules.WidgetBridge as NativeWidgetBridgeModule | undefined;
+
+      if (nativeWidgetBridge?.reloadTimelines) {
+        nativeWidgetBridge.reloadTimelines(RECOVERY_COMPASS_WIDGET_KIND);
+        return;
+      }
+
+      if (nativeWidgetBridge?.reloadAllTimelines) {
+        nativeWidgetBridge.reloadAllTimelines();
+        return;
+      }
+
       // @ts-expect-error — react-native-widgetkit is an optional peer dep with no bundled types
-      const { reloadAllTimelines } = await import('react-native-widgetkit')
-        .then((m: { reloadAllTimelines?: () => void }) => m)
-        .catch(() => ({ reloadAllTimelines: null }));
-      reloadAllTimelines?.();
+      // eslint-disable-next-line import/no-unresolved
+      const widgetKit = await import('react-native-widgetkit')
+        .then((m: NativeWidgetBridgeModule) => m)
+        .catch(() => ({ reloadTimelines: null, reloadAllTimelines: null }));
+
+      if (widgetKit.reloadTimelines) {
+        widgetKit.reloadTimelines(RECOVERY_COMPASS_WIDGET_KIND);
+      } else {
+        widgetKit.reloadAllTimelines?.();
+      }
     } catch {
       // react-native-widgetkit is optional — widget will refresh on its own 30-min schedule
     }
