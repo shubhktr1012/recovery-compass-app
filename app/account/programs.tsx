@@ -11,6 +11,7 @@ import { useOwnedPrograms } from '@/hooks/useOwnedPrograms';
 import { useProfile } from '@/providers/profile';
 import { ProgramIcon } from '@/components/dashboard/ExplorePrograms';
 import { SkeletonCircle, SkeletonLine, SkeletonTitle } from '@/components/ui/Skeleton';
+import { AppTypography } from '@/constants/typography';
 import type { ProgramContent, ProgramSlug } from '@/types/content';
 import { getJourneyForProgramSlug, getStoredOnboardingJourney } from '@/lib/onboarding.realignment';
 import { supabase } from '@/lib/supabase';
@@ -48,29 +49,41 @@ function ProgramLibraryCard({
           <ProgramIcon category={program.category} />
         </View>
         <View className="flex-1">
-          <Text className={`font-satoshi-bold uppercase text-[9px] tracking-[0.18em] ${dark ? 'text-sage/55' : 'text-forest/40'}`}>
+          <Text
+            className={`uppercase ${dark ? 'text-sage/55' : 'text-forest/40'}`}
+            style={[AppTypography.eyebrow, { letterSpacing: 1.76 }]}
+          >
             {eyebrow}
           </Text>
-          <Text className={`font-erode-medium text-[20px] leading-tight mt-1 ${dark ? 'text-white' : 'text-forest'}`}>
+          <Text className={`mt-1 ${dark ? 'text-white' : 'text-forest'}`} style={AppTypography.displayCardMd}>
             {program.name}
           </Text>
-          <Text className={`font-satoshi text-[12px] leading-relaxed mt-1.5 ${dark ? 'text-white/60' : 'text-forest/55'}`}>
-            {body}
-          </Text>
+            <Text
+              className={`mt-1.5 ${dark ? 'text-white/60' : 'text-forest/55'}`}
+              style={AppTypography.meta}
+            >
+              {body}
+            </Text>
           {notice ? (
-            <Text className={`font-satoshi-bold text-[11px] leading-relaxed mt-2 ${dark ? 'text-sage/80' : 'text-forest/55'}`}>
+            <Text className={`mt-2 ${dark ? 'text-sage/80' : 'text-forest/55'}`} style={AppTypography.eyebrow}>
               {notice}
             </Text>
           ) : null}
           <View className="flex-row items-center flex-wrap gap-2 mt-3">
             <View className={`${dark ? 'bg-white/8 border border-white/10' : 'bg-sageSoft'} rounded-full px-2.5 py-1`}>
-              <Text className={`font-satoshi-bold uppercase text-[8px] tracking-[0.12em] ${dark ? 'text-sage/75' : 'text-forest/65'}`}>
+              <Text
+                className={`uppercase ${dark ? 'text-sage/75' : 'text-forest/65'}`}
+                style={[AppTypography.eyebrow, { letterSpacing: 1.1 }]}
+              >
                 {program.totalDays} days
               </Text>
             </View>
             {program.hasAudio ? (
               <View className={`${dark ? 'bg-white/8 border border-white/10' : 'bg-sageSoft'} rounded-full px-2.5 py-1`}>
-                <Text className={`font-satoshi-bold uppercase text-[8px] tracking-[0.12em] ${dark ? 'text-sage/75' : 'text-forest/65'}`}>
+                <Text
+                  className={`uppercase ${dark ? 'text-sage/75' : 'text-forest/65'}`}
+                  style={[AppTypography.eyebrow, { letterSpacing: 1.1 }]}
+                >
                   Guided audio
                 </Text>
               </View>
@@ -82,7 +95,7 @@ function ProgramLibraryCard({
       {actionLabel ? (
         <View className="mt-4 flex-row justify-end">
           <View className={`${dark ? 'bg-white/10' : 'bg-forest'} rounded-full px-4 py-2`}>
-            <Text className={`font-satoshi-medium text-[12px] ${dark ? 'text-white' : 'text-white'}`}>
+            <Text className="text-white" style={AppTypography.metaMedium}>
               {actionLabel}
             </Text>
           </View>
@@ -260,10 +273,10 @@ export default function ProgramsLibraryScreen() {
         </Pressable>
 
         <View className="mb-8">
-          <Text className="font-erode-medium text-[34px] leading-[38px] tracking-[-0.02em] text-forest">
+          <Text className="tracking-[-0.02em] text-forest" style={AppTypography.displayHero}>
             My programs
           </Text>
-          <Text className="font-satoshi text-[15px] leading-6 text-forest/60 mt-3 pr-6">
+          <Text className="text-forest/60 mt-3 pr-6" style={AppTypography.body}>
             Your dashboard stays focused on the journey you are actively moving through. The rest of your unlocked library lives here.
           </Text>
         </View>
@@ -289,13 +302,13 @@ export default function ProgramsLibraryScreen() {
             ) : null}
 
             <View className="pt-1">
-              <Text className="font-satoshi-bold uppercase text-[10px] tracking-[0.18em] text-forest/42 mb-3">
+              <Text className="uppercase text-forest/42 mb-3" style={[AppTypography.eyebrow, { letterSpacing: 1.98 }]}>
                 Unlocked library
               </Text>
 
               {otherOwnedPrograms.length === 0 ? (
                 <View className="bg-white rounded-[24px] border border-forest/5 p-5 shadow-sm shadow-forest/5">
-                  <Text className="font-satoshi text-[13px] leading-6 text-forest/55">
+                  <Text className="text-forest/55" style={AppTypography.label}>
                     Additional unlocked programs will appear here as you add them to your library.
                   </Text>
                 </View>

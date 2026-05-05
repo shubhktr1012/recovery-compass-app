@@ -10,6 +10,12 @@ interface ExploreProgramsProps {
   isLoading?: boolean;
 }
 
+const programStatusTextStyle = {
+  ...AppTypography.eyebrow,
+  letterSpacing: 0.66,
+  textTransform: 'uppercase' as const,
+};
+
 function parsePriceString(priceString: string): number | null {
   const numeric = Number(priceString.replace(/[^\d.]/g, ''));
   return Number.isFinite(numeric) ? numeric : null;
@@ -39,8 +45,8 @@ function getStatusTagProps(program: ProgramContent) {
   if (program.contentStatus === 'ready') {
     return {
       label: 'Available now',
-      containerClass: 'bg-[#EEF6EF] px-2 py-0.5 rounded-full',
-      textClass: 'font-satoshi-bold uppercase text-[9px] tracking-[0.08em] text-forest',
+      containerClass: 'bg-[#E3F2E5] px-2 py-0.5 rounded-full',
+      textClass: 'text-forest',
     };
   }
 
@@ -48,14 +54,14 @@ function getStatusTagProps(program: ProgramContent) {
     return {
       label: 'Preview available',
       containerClass: 'bg-[#FDF6E3] px-2 py-0.5 rounded-full border border-[#E8DCC2]',
-      textClass: 'font-satoshi-bold uppercase text-[9px] tracking-[0.08em] text-[#916A15]',
+      textClass: 'text-[#916A15]',
     };
   }
 
   return {
     label: 'Coming soon',
     containerClass: 'bg-surface px-2 py-0.5 rounded-full border border-forest/10',
-    textClass: 'font-satoshi-bold uppercase text-[9px] tracking-[0.08em] text-forest/40',
+    textClass: 'text-forest/40',
   };
 }
 
@@ -126,7 +132,7 @@ export function ExplorePrograms({
   return (
     <View className="mt-2">
       <View className="px-0.5 mb-3">
-        <Text className="font-erode-medium text-[21px] text-forest tracking-[-0.01em]">Explore Programs</Text>
+        <Text className="text-forest tracking-[-0.01em]" style={AppTypography.displaySectionTitle}>Explore Programs</Text>
       </View>
 
       {isLoading ? (
@@ -165,11 +171,11 @@ export function ExplorePrograms({
             onPress={() => handleProgramPress(program.slug)}
             className={`bg-white rounded-[20px] p-4 shadow-sm shadow-forest/5 flex-row gap-3.5 items-start ${index < programs.length - 1 ? 'mb-2.5' : ''}`}
           >
-            <View className="w-[44px] h-[44px] rounded-2xl bg-[#EEF6EF] items-center justify-center shrink-0">
+            <View className="w-[44px] h-[44px] rounded-2xl bg-[#E3F2E5] items-center justify-center shrink-0">
               <ProgramIcon category={program.category} />
             </View>
             <View className="flex-1">
-              <Text className="font-erode-medium text-[17px] text-forest leading-snug">{program.name}</Text>
+              <Text className="text-forest" style={AppTypography.displayCardSm}>{program.name}</Text>
               <Text
                 className="text-forest/50 mt-1"
                 style={AppTypography.body}
@@ -178,15 +184,15 @@ export function ExplorePrograms({
               </Text>
               <View className="flex-row items-center flex-wrap gap-2 mt-2">
                 {program.hasAudio ? (
-                  <View className="bg-[#EEF6EF] px-2 py-0.5 rounded-full">
-                    <Text className="font-satoshi-bold uppercase text-[9px] tracking-[0.08em] text-forest">Audio</Text>
+                  <View className="bg-[#E3F2E5] px-2 py-0.5 rounded-full">
+                    <Text className="text-forest" style={programStatusTextStyle}>Audio</Text>
                   </View>
                 ) : null}
                 {(() => {
                   const tag = getStatusTagProps(program);
                   return (
                     <View className={tag.containerClass}>
-                      <Text className={tag.textClass}>
+                      <Text className={tag.textClass} style={programStatusTextStyle}>
                         {tag.label}
                       </Text>
                     </View>
@@ -198,18 +204,18 @@ export function ExplorePrograms({
                   <View>
                     <View className="flex-row items-center gap-2">
                       <Text
-                        className="font-satoshi text-[12px] text-forest/38"
-                        style={{ textDecorationLine: 'line-through' }}
+                        className="text-forest/38"
+                        style={[AppTypography.meta, { textDecorationLine: 'line-through' }]}
                       >
                         {getOriginalPrice(program.priceString) ?? program.priceString}
                       </Text>
-                      <View className="bg-[#EEF6EF] px-2 py-0.5 rounded-full">
-                        <Text className="font-satoshi-bold uppercase text-[9px] tracking-[0.08em] text-forest">
+                      <View className="bg-[#E3F2E5] px-2 py-0.5 rounded-full">
+                        <Text className="text-forest" style={programStatusTextStyle}>
                           50% OFF
                         </Text>
                       </View>
                     </View>
-                    <Text className="font-satoshi-bold text-[15px] text-forest tracking-[0.02em] mt-1">
+                    <Text className="text-forest mt-1" style={[AppTypography.bodyStrong, { letterSpacing: 0.3 }]}>
                       {getDiscountedPrice(program.priceString) ?? program.priceString}
                     </Text>
                   </View>

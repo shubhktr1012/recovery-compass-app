@@ -7,7 +7,7 @@ module.exports = {
       colors: {
         forest: "#06290C",
         sage: "#E3F3E5",
-        sageSoft: "#EEF6EF",
+        sageSoft: "#E3F2E5",
         surface: "#F5F5F7",
         success: "#056936",
         danger: "#EF4444",

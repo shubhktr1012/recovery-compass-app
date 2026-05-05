@@ -3,6 +3,7 @@ import { TouchableOpacity, Text, ActivityIndicator, TouchableOpacityProps } from
 import { twMerge } from 'tailwind-merge';
 import * as Haptics from 'expo-haptics';
 import { AppColors } from '@/constants/theme';
+import { AppTypography } from '@/constants/typography';
 
 interface ButtonProps extends TouchableOpacityProps {
     variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'destructive';
@@ -50,9 +51,9 @@ export function Button({
     };
 
     const textSizes = {
-        sm: 'text-sm',
-        md: 'text-base',
-        lg: 'text-lg',
+        sm: AppTypography.buttonSm,
+        md: AppTypography.buttonMd,
+        lg: AppTypography.buttonLg,
     };
 
     const isInactive = disabled || loading;
@@ -101,11 +102,10 @@ export function Button({
                     {icon && <>{icon}</>}
                     <Text
                         className={twMerge(
-                            'font-satoshi',
                             isInactive ? disabledTextVariants[variant] : textVariants[variant],
-                            textSizes[size],
                             textClassName
                         )}
+                        style={textSizes[size]}
                     >
                         {label}
                     </Text>

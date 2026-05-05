@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/providers/auth';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { AppColors } from '@/constants/theme';
+import { AppTypography } from '@/constants/typography';
 
 export function JournalPrompt() {
     const router = useRouter();
@@ -37,7 +38,7 @@ export function JournalPrompt() {
         return (
             <View className="mb-6 flex-row items-center justify-center gap-2 py-3">
                 <IconSymbol name="checkmark.circle.fill" size={14} color={AppColors.success} />
-                <Text className="font-satoshi-medium text-[13px] tracking-[0.5px] text-success">
+                <Text className="text-success" style={[AppTypography.label, { letterSpacing: 0.5 }]}>
                     Reflected today
                 </Text>
             </View>
@@ -51,10 +52,10 @@ export function JournalPrompt() {
         >
             <View className="rounded-2xl bg-sage/50 border border-forest/5 px-5 py-4 flex-row items-center justify-between">
                 <View className="flex-1 mr-4">
-                    <Text className="font-satoshi-medium text-[11px] uppercase tracking-[2px] text-forest/35 mb-1">
+                    <Text className="uppercase text-forest/35 mb-1" style={[AppTypography.metaMedium, { letterSpacing: 1.6 }]}>
                         Daily Check-in
                     </Text>
-                    <Text className="font-erode-medium text-[18px] leading-[24px] text-forest">
+                    <Text className="text-forest" style={AppTypography.displaySection}>
                         How are you feeling right now?
                     </Text>
                 </View>

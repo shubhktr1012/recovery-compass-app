@@ -15,7 +15,7 @@ export function FocusPill({ text }: FocusPillProps) {
 
 const styles = StyleSheet.create({
   pill: {
-    backgroundColor: '#EEF6EF', // sage-soft
+    backgroundColor: '#E3F2E5', // sage-soft
     borderRadius: 999,
     paddingVertical: 5,
     paddingHorizontal: 12,

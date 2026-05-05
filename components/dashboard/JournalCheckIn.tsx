@@ -10,7 +10,7 @@ interface JournalCheckInProps {
 export function JournalCheckIn({ prompt, eyebrow = 'Daily check-in' }: JournalCheckInProps) {
   const router = useRouter();
   return (
-    <Pressable onPress={() => router.push('/(tabs)/journal')} className="bg-[#EEF6EF] rounded-[20px] p-4 flex-row items-center gap-3.5">
+    <Pressable onPress={() => router.push('/(tabs)/journal')} className="bg-[#E3F2E5] rounded-[20px] p-4 flex-row items-center gap-3.5">
       <View className="w-10 h-10 rounded-full bg-white items-center justify-center shrink-0">
         <Svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#06290C" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
           <Path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/>

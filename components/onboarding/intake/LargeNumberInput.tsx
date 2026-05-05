@@ -219,7 +219,7 @@ const ageStyles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#EEF6EF', // sage-soft
+    backgroundColor: '#E3F2E5', // sage-soft
     alignItems: 'center',
     justifyContent: 'center',
   },

@@ -54,7 +54,7 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   cardSelected: {
-    backgroundColor: '#EEF6EF', // sage-soft
+    backgroundColor: '#E3F2E5', // sage-soft
     borderColor: 'rgba(6,41,12,0.2)',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,

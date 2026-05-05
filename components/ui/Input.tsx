@@ -2,6 +2,7 @@ import React, { forwardRef, useState, ReactNode } from 'react';
 import { TextInput, View, Text, TextInputProps, TouchableOpacity } from 'react-native';
 import { twMerge } from 'tailwind-merge';
 import { AppColors } from '@/constants/theme';
+import { AppTypography } from '@/constants/typography';
 import { Ionicons } from '@expo/vector-icons';
 
 interface InputProps extends TextInputProps {
@@ -20,7 +21,7 @@ export const Input = forwardRef<TextInput, InputProps>(
         return (
             <View className={twMerge('space-y-2', containerClassName)}>
                 {label && (
-                    <Text className="text-forest font-satoshi font-medium text-sm ml-1">
+                    <Text className="text-forest ml-1" style={AppTypography.label}>
                         {label}
                     </Text>
                 )}
@@ -53,13 +54,13 @@ export const Input = forwardRef<TextInput, InputProps>(
                     )}
                 </View>
                 {error && (
-                    <Text className="text-red-500 text-xs ml-1 font-satoshi">
+                    <Text className="text-red-500 ml-1" style={AppTypography.meta}>
                         {error}
                     </Text>
                 )}
                 {!error && helperText ? (
                     typeof helperText === 'string' ? (
-                        <Text className="text-forest/45 text-xs ml-1 font-satoshi">
+                        <Text className="text-forest/45 ml-1" style={AppTypography.meta}>
                             {helperText}
                         </Text>
                     ) : (

@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
     borderRadius: 15,
-    backgroundColor: '#EEF6EF', // sage-soft
+    backgroundColor: '#E3F2E5', // sage-soft
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: 0,

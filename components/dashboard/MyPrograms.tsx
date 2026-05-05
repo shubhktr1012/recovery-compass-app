@@ -18,7 +18,7 @@ export function MyPrograms({
         onPress={() => router.push('/account/programs')}
         className="bg-white rounded-[20px] p-4 shadow-sm shadow-forest/5 flex-row gap-3.5 items-start"
       >
-        <View className="w-[44px] h-[44px] rounded-2xl bg-[#EEF6EF] items-center justify-center shrink-0">
+        <View className="w-[44px] h-[44px] rounded-2xl bg-[#E3F2E5] items-center justify-center shrink-0">
           <Svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="#06290C" strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round">
             <Path d="M4 19.5A2.5 2.5 0 016.5 17H20" />
             <Path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" />

@@ -1755,7 +1755,7 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     borderWidth: 1,
     borderColor: 'rgba(6, 41, 12, 0.1)',
-    backgroundColor: '#EEF6EF', // sage-soft
+    backgroundColor: '#E3F2E5', // sage-soft
     paddingHorizontal: 24,
     paddingVertical: 28,
     overflow: 'hidden',
@@ -1975,7 +1975,7 @@ const styles = StyleSheet.create({
   // Individual param box — sage-soft bg, centered text
   introParamBox: {
     flex: 1,
-    backgroundColor: '#EEF6EF',
+    backgroundColor: '#E3F2E5',
     borderRadius: 14,
     paddingVertical: 10,
     paddingHorizontal: 8,

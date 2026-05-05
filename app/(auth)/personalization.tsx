@@ -825,11 +825,8 @@ export default function Personalization() {
   const ctaVariant: 'primary' | 'highlight' =
     currentStep.type === 'recommendation' ? 'highlight' : 'primary';
 
-  // Determine headline variant: serif for emotional questions, sans for utility
-  const headlineVariant: 'serif' | 'sans' =
-    currentStep.type === 'quick_profile' || currentStep.type === 'path_choice'
-      ? 'sans'
-      : 'serif';
+  // Keep onboarding question headlines visually consistent across the flow.
+  const headlineVariant: 'serif' | 'sans' = 'serif';
 
   // ─── Loading state ─────────────────────────────────────────────────────
   if (!isDraftReady) {

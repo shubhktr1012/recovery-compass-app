@@ -11,6 +11,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { Skeleton } from '@/components/ui/Skeleton';
+import { AppTypography } from '@/constants/typography';
 import type { DashboardStatItem } from '@/lib/dashboard-statistics';
 
 interface StatsRowProps {
@@ -108,7 +109,7 @@ export function StatsRow({ items }: StatsRowProps) {
                     height: 28,
                     backgroundColor: isFirst
                       ? 'rgba(227,243,229,0.15)'
-                      : '#EEF6EF',
+                      : '#E3F2E5',
                   }}
                 >
                   <Svg
@@ -137,9 +138,10 @@ export function StatsRow({ items }: StatsRowProps) {
                 />
               ) : (
                 <Text
-                  className={`font-erode-semibold text-[22px] tracking-[-0.03em] leading-none ${
+                  className={`tracking-[-0.03em] ${
                     isFirst ? 'text-white' : 'text-forest'
                   }`}
+                  style={AppTypography.displayMetricSemibold}
                   numberOfLines={1}
                   adjustsFontSizeToFit
                   minimumFontScale={0.7}
@@ -150,9 +152,10 @@ export function StatsRow({ items }: StatsRowProps) {
 
               {/* Label */}
               <Text
-                className={`font-satoshi-bold uppercase text-[10px] tracking-[0.12em] mt-1.5 ${
+                className={`uppercase mt-1.5 ${
                   isFirst ? 'text-sage/55' : 'text-forest/38'
                 }`}
+                style={[AppTypography.eyebrow, { letterSpacing: 1.1 }]}
                 numberOfLines={1}
               >
                 {item.label}
@@ -168,9 +171,10 @@ export function StatsRow({ items }: StatsRowProps) {
                 />
               ) : (
                 <Text
-                  className={`font-satoshi text-[11px] leading-snug mt-1 ${
+                  className={`mt-1 ${
                     isFirst ? 'text-sage/45' : 'text-forest/35'
                   }`}
+                  style={AppTypography.meta}
                   numberOfLines={1}
                 >
                   {item.sublabel ?? '\u00A0'}

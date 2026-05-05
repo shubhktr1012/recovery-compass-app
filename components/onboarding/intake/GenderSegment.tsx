@@ -32,34 +32,40 @@ export function GenderSegment({ options, selected, onSelect }: GenderSegmentProp
 
 const styles = StyleSheet.create({
   track: {
-    backgroundColor: '#F5F5F7', // surface
-    borderRadius: 999,
-    padding: 3,
     flexDirection: 'row',
-    gap: 0,
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 10,
     marginBottom: 10,
   },
   option: {
-    flex: 1,
+    minWidth: 96,
+    maxWidth: '100%',
     alignItems: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 8,
+    justifyContent: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
     minHeight: 44,
     borderRadius: 999,
+    backgroundColor: '#F5F5F7',
+    borderWidth: 1,
+    borderColor: 'rgba(6,41,12,0.07)',
   },
   optionSelected: {
     backgroundColor: '#FFFFFF',
+    borderColor: 'rgba(6,41,12,0.16)',
     shadowColor: '#06290C',
-    shadowOffset: { width: 0, height: 1 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.08,
-    shadowRadius: 4,
+    shadowRadius: 12,
     elevation: 2,
   },
   optionText: {
     fontFamily: 'Satoshi-Medium',
     fontSize: 13,
     color: 'rgba(6,41,12,0.45)', // subtle-ink
-    letterSpacing: -0.005 * 13,
+    lineHeight: 18,
+    textAlign: 'center',
   },
   optionTextSelected: {
     color: '#06290C', // forest

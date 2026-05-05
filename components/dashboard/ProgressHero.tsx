@@ -4,6 +4,7 @@ import { useOnboardingResponse } from '@/hooks/useOnboardingResponse';
 import { formatInr, getOnboardingProjection } from '@/lib/onboarding-metrics';
 import { useProfile } from '@/providers/profile';
 import { PROGRAM_METADATA } from '@/content/programs/metadata';
+import { AppTypography } from '@/constants/typography';
 
 export function ProgressHero() {
     const { access, profile } = useProfile();
@@ -49,22 +50,22 @@ export function ProgressHero() {
             {/* Primary metric — the anchor */}
             {hasMoneyProjection ? (
                 <View className="mb-5">
-                    <Text className="font-satoshi text-[11px] uppercase tracking-[3px] text-forest/35 mb-1">
+                    <Text className="uppercase text-forest/35 mb-1" style={[AppTypography.meta, { letterSpacing: 2.2 }]}>
                         90-Day Projection
                     </Text>
-                    <Text className="font-erode-medium text-[48px] leading-[52px] tracking-tight text-forest">
+                    <Text className="text-forest tracking-tight" style={AppTypography.displayNumberXl}>
                         {formatInr(metrics.projectedSavings90Days)}
                     </Text>
-                    <Text className="mt-1 font-satoshi text-[14px] leading-5 text-forest/40">
+                    <Text className="mt-1 text-forest/40" style={AppTypography.bodyCompact}>
                         Potential savings if you stay on track
                     </Text>
                 </View>
             ) : (
                 <View className="mb-5">
-                    <Text className="font-satoshi text-[11px] uppercase tracking-[3px] text-forest/35 mb-1">
+                    <Text className="uppercase text-forest/35 mb-1" style={[AppTypography.meta, { letterSpacing: 2.2 }]}>
                         Your Path
                     </Text>
-                    <Text className="font-erode-medium text-[32px] leading-[38px] tracking-tight text-forest">
+                    <Text className="text-forest tracking-tight" style={AppTypography.displayHero}>
                         {activeProgramName ?? metrics.targetSelection ?? 'Recovery'}
                     </Text>
                 </View>
@@ -73,19 +74,19 @@ export function ProgressHero() {
             {/* Secondary stats — quiet inline row */}
             <View className="flex-row gap-4 mb-2">
                 <View className="flex-1 rounded-2xl bg-sage/60 p-4">
-                    <Text className="font-satoshi text-[11px] uppercase tracking-[2px] text-forest/40 mb-1">
+                    <Text className="uppercase text-forest/40 mb-1" style={[AppTypography.meta, { letterSpacing: 1.6 }]}>
                         In Motion
                     </Text>
-                    <Text className="font-satoshi-bold text-[20px] text-forest">
+                    <Text className="text-forest" style={AppTypography.dataPoint}>
                         {metrics.days}d {metrics.hours}h
                     </Text>
                 </View>
                 {hasMoneyProjection && (
                     <View className="flex-1 rounded-2xl bg-sage/60 p-4">
-                        <Text className="font-satoshi text-[11px] uppercase tracking-[2px] text-forest/40 mb-1">
+                        <Text className="uppercase text-forest/40 mb-1" style={[AppTypography.meta, { letterSpacing: 1.6 }]}>
                             {unitsLabel}
                         </Text>
-                        <Text className="font-satoshi-bold text-[20px] text-forest">
+                        <Text className="text-forest" style={AppTypography.dataPoint}>
                             {metrics.avoidedUnits90Days.toLocaleString()}
                         </Text>
                     </View>
@@ -95,10 +96,10 @@ export function ProgressHero() {
             {/* Primary goal — editorial quote block */}
             {metrics.primaryGoal ? (
                 <View className="mt-3 border-l-2 border-forest/10 pl-4 py-1">
-                    <Text className="font-satoshi-medium text-[11px] uppercase tracking-[2px] text-forest/30 mb-1">
+                    <Text className="uppercase text-forest/30 mb-1" style={[AppTypography.metaMedium, { letterSpacing: 1.6 }]}>
                         Why this matters
                     </Text>
-                    <Text className="font-erode-italic text-[16px] leading-7 text-forest/60">
+                    <Text className="text-forest/60" style={AppTypography.displayQuoteLarge}>
                         {metrics.primaryGoal}
                     </Text>
                 </View>

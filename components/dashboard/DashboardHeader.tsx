@@ -1,6 +1,7 @@
 import { View, Text, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Svg, Path, G } from 'react-native-svg';
+import { AppTypography } from '@/constants/typography';
 
 interface DashboardHeaderProps {
   greetingLabel: string;
@@ -61,23 +62,23 @@ export function DashboardHeader({
                   resizeMode="cover"
                 />
               ) : (
-                <Text className="font-erode-medium text-[26px] text-forest">{avatarLetter}</Text>
+                <Text className="text-forest" style={AppTypography.displayAvatar}>{avatarLetter}</Text>
               )}
             </View>
           </View>
         </View>
 
-        <Text className="font-satoshi text-[12px] font-medium tracking-[0.12em] uppercase text-sage/60 relative z-10">{greetingLabel}</Text>
-        <Text className="font-erode-medium text-[36px] text-white leading-tight tracking-[-0.02em] relative z-10 mt-0.5">
+        <Text className="uppercase text-sage/60 relative z-10" style={[AppTypography.metaMedium, { letterSpacing: 1.44 }]}>{greetingLabel}</Text>
+        <Text className="text-white tracking-[-0.02em] relative z-10 mt-0.5" style={AppTypography.displayWelcome}>
           Welcome back, <Text className="font-erode-medium-italic">{firstName}.</Text>
         </Text>
 
         <View className="relative z-10 mt-4 flex-row items-center">
           <View className="w-1.5 h-1.5 rounded-full bg-sage/80 mr-2.5" />
-          <Text className="font-satoshi-bold uppercase text-[11px] tracking-[0.14em] text-sage/70 mr-2">
+          <Text className="uppercase text-sage/70 mr-2" style={[AppTypography.metaMedium, { letterSpacing: 1.44 }]}>
             Current Journey:
           </Text>
-          <Text className="font-erode-medium text-[17px] text-white leading-snug">
+          <Text className="text-white" style={AppTypography.displayCardSm}>
             {activeProgramName}
           </Text>
         </View>

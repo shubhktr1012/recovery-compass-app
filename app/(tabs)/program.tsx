@@ -191,12 +191,12 @@ function ProgramScreenContent({ activeProgram }: { activeProgram: ProgramSlug })
           />
 
           <View className="mb-[18px] relative z-10 mt-8">
-            <Text className="font-satoshi-medium text-[11px] uppercase tracking-[2.4px] text-sage/55">
+            <Text className="uppercase text-sage/55" style={[AppTypography.metaMedium, { letterSpacing: 2 }]}>
               {access.completionState === 'completed' ? 'Completed Journey' : 'Current Journey'}
             </Text>
           </View>
           
-          <Text className="font-erode-medium text-[32px] leading-[34px] tracking-[-0.6px] text-white relative z-10 pr-4">
+          <Text className="tracking-[-0.6px] text-white relative z-10 pr-4" style={AppTypography.displayHeroTight}>
             {namePrefix} <Text className="italic">{nameItalic}</Text>
           </Text>
           
@@ -211,10 +211,10 @@ function ProgramScreenContent({ activeProgram }: { activeProgram: ProgramSlug })
 
           <View className="mt-4 relative z-10">
             <View className="flex-row justify-between items-baseline mb-2">
-              <Text className="font-erode-medium text-[22px] leading-[22px] text-white tracking-[-0.4px]">
-                {access.completionState === 'completed' ? totalDays : Math.min(currentDay, program.totalDays)} <Text className="font-satoshi text-[13px] text-sage/55 tracking-normal">of {totalDays} days</Text>
+              <Text className="text-white tracking-[-0.4px]" style={AppTypography.displayMetric}>
+                {access.completionState === 'completed' ? totalDays : Math.min(currentDay, program.totalDays)} <Text className="text-sage/55 tracking-normal" style={AppTypography.label}>of {totalDays} days</Text>
               </Text>
-              <Text className="font-satoshi-medium text-[11px] text-sage/60 tracking-[0.4px]">
+              <Text className="text-sage/60" style={[AppTypography.metaMedium, { letterSpacing: 0.3 }]}>
                 {progressPercent}% complete
               </Text>
             </View>
@@ -227,7 +227,7 @@ function ProgramScreenContent({ activeProgram }: { activeProgram: ProgramSlug })
             </View>
             
             {nextUnlockLabel && access.completionState !== 'completed' ? (
-              <Text className="font-satoshi text-[10px] text-sage/40 mt-[6px] tracking-[0.3px]">
+              <Text className="text-sage/40 mt-[6px]" style={[AppTypography.meta, { letterSpacing: 0.2 }]}>
                 {nextUnlockLabel}
               </Text>
             ) : null}
@@ -241,10 +241,10 @@ function ProgramScreenContent({ activeProgram }: { activeProgram: ProgramSlug })
             
             {isArchivedReset && access.completionState === 'completed' ? (
               <View className="mx-5 mb-4 bg-white rounded-[20px] px-[18px] py-4 shadow-sm shadow-forest/5" style={{ shadowColor: '#06290C', shadowOpacity: 0.06, shadowRadius: 24, shadowOffset: { width: 0, height: 8 }, borderLeftWidth: 3, borderLeftColor: '#06290C' }}>
-                <Text className="font-satoshi-bold text-[9px] uppercase tracking-[1.8px] text-forest/40">
+                <Text className="uppercase text-forest/40" style={[AppTypography.eyebrow, { letterSpacing: 1.4 }]}>
                   {`What's Next`}
                 </Text>
-                <Text className="font-erode-medium text-[17px] leading-[20px] text-forest mt-1">
+                <Text className="text-forest mt-1" style={AppTypography.displayCardSmTight}>
                   Ready for the <Text className="italic">full 90 days?</Text>
                 </Text>
                 <Text
@@ -257,12 +257,12 @@ function ProgramScreenContent({ activeProgram }: { activeProgram: ProgramSlug })
                   <Svg width="11" height="11" viewBox="0 0 24 24" fill="#fff" stroke="none" className="mr-1.5">
                     <Path d="M5 3 L19 12 L5 21 Z" />
                   </Svg>
-                  <Text className="font-satoshi-medium text-[12px] text-white">Explore 90-Day Quit</Text>
+                  <Text className="text-white" style={AppTypography.metaMedium}>Explore 90-Day Quit</Text>
                 </View>
               </View>
             ) : null}
 
-            <Text className="font-satoshi-bold text-[9px] uppercase tracking-[2px] text-forest/35 px-6 mb-4">
+            <Text className="uppercase text-forest/35 px-6 mb-4" style={[AppTypography.eyebrow, { letterSpacing: 1.6 }]}>
               {access.completionState === 'completed' ? `All ${totalDays} Days · Revisit Anytime` : 'Day Timeline'}
             </Text>
 

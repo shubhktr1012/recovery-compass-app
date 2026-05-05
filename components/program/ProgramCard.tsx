@@ -8,7 +8,7 @@ import { AppTypography } from '@/constants/typography';
 const F = {
   forest: '#06290C',
   sage: '#E3F3E5',
-  sageSoft: '#EEF6EF',
+  sageSoft: '#E3F2E5',
   surface: '#F5F5F7',
   canvas: '#FFFFFF',
 };
@@ -251,7 +251,7 @@ function CompletedDayCard({ day, onPress }: { day: ProgramCardDay; onPress?: () 
             width: 32,
             height: 32,
             borderRadius: 16,
-            backgroundColor: F.sageSoft,   // #EEF6EF per spec
+            backgroundColor: F.sageSoft,   // #E3F2E5 per spec
             alignItems: 'center',
             justifyContent: 'center',
             flexShrink: 0,
@@ -290,7 +290,7 @@ function NextLockedDayCard({ day, availabilityLabel }: { day: ProgramCardDay; av
   return (
     <View
       style={{
-        backgroundColor: F.sageSoft,   // #EEF6EF per spec
+        backgroundColor: F.sageSoft,   // #E3F2E5 per spec
         borderRadius: 18,
         paddingHorizontal: 16,
         paddingVertical: 14,

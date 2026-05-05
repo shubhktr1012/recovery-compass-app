@@ -12,6 +12,7 @@ import { MoodChips } from '@/components/journal/MoodChips';
 import { PaperGrain } from '@/components/ui/PaperGrain';
 import { listProgramReflections } from '@/lib/api/program-reflections';
 import { AppColors } from '@/constants/theme';
+import { AppTypography } from '@/constants/typography';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing } from 'react-native-reanimated';
 import { JournalWatermark } from '@/components/ui/TabWatermarks';
 
@@ -254,34 +255,34 @@ export default function JournalScreen() {
                 style={{ position: 'absolute', right: -20, top: 10}}
               />
 
-              <Text className="font-satoshi-medium text-[11px] uppercase tracking-[2.4px] text-sage/55 relative z-10 mt-8">
+              <Text className="uppercase text-sage/55 relative z-10 mt-8" style={[AppTypography.metaMedium, { letterSpacing: 2 }]}>
                 Your reflections
               </Text>
-              <Text className="font-erode-medium text-[34px] leading-[37px] tracking-tight text-white relative z-10 mt-1.5">
+              <Text className="tracking-tight text-white relative z-10 mt-1.5" style={AppTypography.displayHeroLarge}>
                 Journal
               </Text>
 
               {journalStats && journalStats.total > 0 ? (
                 <View className="flex-row mt-[18px] relative z-10">
                   <View className="pr-5 mr-5" style={{ borderRightWidth: 1, borderRightColor: 'rgba(227,243,229,0.15)' }}>
-                    <Text className="font-erode-medium text-[22px] text-white tracking-tight" style={{ lineHeight: 22 }}>{journalStats.total}</Text>
-                    <Text className="font-satoshi-medium text-[9px] uppercase tracking-[2px] text-sage/45 mt-1">Entries</Text>
+                    <Text className="text-white tracking-tight" style={AppTypography.displayMetric}>{journalStats.total}</Text>
+                    <Text className="uppercase text-sage/45 mt-1" style={[AppTypography.eyebrow, { letterSpacing: 1.6 }]}>Entries</Text>
                   </View>
                   {journalStats.streak > 0 && (
                     <View className="pr-5 mr-5" style={{ borderRightWidth: 1, borderRightColor: 'rgba(227,243,229,0.15)' }}>
-                      <Text className="font-erode-medium text-[22px] text-white tracking-tight" style={{ lineHeight: 22 }}>{journalStats.streak}</Text>
-                      <Text className="font-satoshi-medium text-[9px] uppercase tracking-[2px] text-sage/45 mt-1">Day streak</Text>
+                      <Text className="text-white tracking-tight" style={AppTypography.displayMetric}>{journalStats.streak}</Text>
+                      <Text className="uppercase text-sage/45 mt-1" style={[AppTypography.eyebrow, { letterSpacing: 1.6 }]}>Day streak</Text>
                     </View>
                   )}
                   {journalStats.avgCraving !== null && (
                     <View>
-                      <Text className="font-erode-medium text-[22px] text-white tracking-tight" style={{ lineHeight: 22 }}>{journalStats.avgCraving}</Text>
-                      <Text className="font-satoshi-medium text-[9px] uppercase tracking-[2px] text-sage/45 mt-1">Avg craving</Text>
+                      <Text className="text-white tracking-tight" style={AppTypography.displayMetric}>{journalStats.avgCraving}</Text>
+                      <Text className="uppercase text-sage/45 mt-1" style={[AppTypography.eyebrow, { letterSpacing: 1.6 }]}>Avg craving</Text>
                     </View>
                   )}
                 </View>
               ) : (
-                <Text className="font-satoshi text-[13px] text-sage/55 leading-[19px] mt-2 relative z-10">
+                <Text className="text-sage/55 mt-2 relative z-10" style={AppTypography.label}>
                   {`A quiet place to notice what's shifting.`}
                 </Text>
               )}
@@ -302,11 +303,11 @@ export default function JournalScreen() {
             {/* ─── Entry Card ─── */}
             <View className="rounded-3xl bg-white overflow-hidden mb-6" style={softShadow}>
               {/* Prompt Strip */}
-              <View style={{ backgroundColor: '#EEF6EF', paddingHorizontal: 20, paddingTop: 18, paddingBottom: 16 }}>
+              <View style={{ backgroundColor: '#E3F2E5', paddingHorizontal: 20, paddingTop: 18, paddingBottom: 16 }}>
                 <Text style={{ fontFamily: 'Satoshi-Medium', fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(6,41,12,0.45)', marginBottom: 8 }}>
                   {`Today's entry`}
                 </Text>
-                <Text className="font-erode-medium text-[23px] text-forest tracking-tight" style={{ lineHeight: 28 }}>
+                <Text className="text-forest tracking-tight" style={AppTypography.displayPrompt}>
                   How are you <Text className="font-erode-medium-italic" style={{ color: 'rgba(6,41,12,0.65)' }}>feeling?</Text>
                 </Text>
               </View>
@@ -409,8 +410,8 @@ export default function JournalScreen() {
                       <Path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/>
                     </Svg>
                   </View>
-                  <Text className="font-erode-medium text-[22px] text-forest tracking-tight" style={{ fontStyle: 'italic' }}>No entries yet.</Text>
-                  <Text className="font-satoshi text-[13px] text-forest/45 leading-[20px] mt-2 text-center" style={{ maxWidth: 220 }}>
+                  <Text className="text-forest tracking-tight" style={AppTypography.displayMetricItalic}>No entries yet.</Text>
+                  <Text className="text-forest/45 mt-2 text-center" style={[AppTypography.label, { maxWidth: 220 }]}>
                     Your first reflection starts above. Even a few words are enough.
                   </Text>
                 </View>
@@ -467,8 +468,8 @@ export default function JournalScreen() {
                       <Path d="M20 4C10 4 4 10 4 20c8 0 16-6 16-16zM4 20C8 16 12 12 20 4"/>
                     </Svg>
                   </View>
-                  <Text className="font-erode-medium text-[22px] text-forest tracking-tight" style={{ fontStyle: 'italic' }}>No reflections yet.</Text>
-                  <Text className="font-satoshi text-[13px] text-forest/45 leading-[20px] mt-2 text-center" style={{ maxWidth: 220 }}>
+                  <Text className="text-forest tracking-tight" style={AppTypography.displayMetricItalic}>No reflections yet.</Text>
+                  <Text className="text-forest/45 mt-2 text-center" style={[AppTypography.label, { maxWidth: 220 }]}>
                     Reflections from your program will appear here.
                   </Text>
                 </View>
@@ -476,7 +477,7 @@ export default function JournalScreen() {
                 <View style={{ gap: 12 }}>
                   {reflections.map((ref: any) => (
                     <Pressable key={`r-${ref.id}`} onPress={() => handleOpenReflection(ref.programSlug, ref.dayNumber)}>
-                      <View style={{ backgroundColor: '#EEF6EF', borderRadius: 20, borderLeftWidth: 3, borderLeftColor: AppColors.sage, paddingHorizontal: 18, paddingVertical: 16 }}>
+                      <View style={{ backgroundColor: '#E3F2E5', borderRadius: 20, borderLeftWidth: 3, borderLeftColor: AppColors.sage, paddingHorizontal: 18, paddingVertical: 16 }}>
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 10 }}>
                           <View style={{ width: 18, height: 18, borderRadius: 9, backgroundColor: AppColors.sage, alignItems: 'center', justifyContent: 'center' }}>
                             <Svg width={10} height={10} viewBox="0 0 24 24" fill="none" stroke={AppColors.forest} strokeWidth="2" strokeLinecap="round">
@@ -487,7 +488,7 @@ export default function JournalScreen() {
                             Program reflection · Day {ref.dayNumber}
                           </Text>
                         </View>
-                        <Text className="font-erode-medium text-[17px] text-forest leading-[23px] tracking-tight mb-2" style={{ fontStyle: 'italic' }}>
+                        <Text className="text-forest tracking-tight mb-2" style={AppTypography.displayCardSmItalic}>
                           {`"${ref.prompt}"`}
                         </Text>
                         <Text style={{ fontFamily: 'Satoshi-Regular', fontSize: 13, lineHeight: 21, color: 'rgba(6,41,12,0.62)' }}>
