@@ -1,5 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { View, StyleSheet, Linking, Platform, Alert } from 'react-native';
+import ReanimatedAnimated, {
+    useSharedValue,
+    useAnimatedStyle,
+    withTiming,
+    withDelay,
+    Easing,
+} from 'react-native-reanimated';
+import { isFirstAppLaunch } from '@/lib/preloader-state';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Button } from '@/components/ui/Button';
@@ -71,6 +79,31 @@ export default function WelcomeScreen() {
     const [lastSignInProvider, setLastSignInProvider] = useState<LastSignInProvider | null>(null);
     const [sessionExpiredNotice, setSessionExpiredNotice] = useState<string | null>(null);
     const isIOS = Platform.OS === 'ios';
+
+    // ─── Entrance animation (synced with preloader curtain) ────────────────
+    const shouldAnimateEntrance = useRef(isFirstAppLaunch()).current;
+    const footerOpacity = useSharedValue(shouldAnimateEntrance ? 0 : 1);
+    const footerTranslateY = useSharedValue(shouldAnimateEntrance ? 28 : 0);
+
+    useEffect(() => {
+        if (!shouldAnimateEntrance) return;
+        // The curtain starts at ~4000ms and takes 900ms.
+        // The footer is at the bottom, so it's revealed last (~4500ms).
+        const FOOTER_DELAY = 4200;
+        footerOpacity.value = withDelay(
+            FOOTER_DELAY,
+            withTiming(1, { duration: 600, easing: Easing.out(Easing.ease) })
+        );
+        footerTranslateY.value = withDelay(
+            FOOTER_DELAY,
+            withTiming(0, { duration: 600, easing: Easing.out(Easing.ease) })
+        );
+    }, [footerOpacity, footerTranslateY, shouldAnimateEntrance]);
+
+    const footerAnimatedStyle = useAnimatedStyle(() => ({
+        opacity: footerOpacity.value,
+        transform: [{ translateY: footerTranslateY.value }],
+    }));
     const { signInWithGoogleIdToken, signInWithAppleIdToken } = useAuth();
     const {
         googleWebClientId,
@@ -385,7 +418,7 @@ export default function WelcomeScreen() {
                 </View>
 
                 {/* Footer and Auth Controls */}
-                <View style={styles.footerContainer}>
+                <ReanimatedAnimated.View style={[styles.footerContainer, footerAnimatedStyle]}>
                     <ThemedText style={styles.legalText}>
                         By tapping Sign in or Create account, you agree to our{' '}
                         <ThemedText 
@@ -468,7 +501,7 @@ export default function WelcomeScreen() {
                             style={[flatButtonStyle, styles.createAccountButton]}
                         />
                     </View>
-                </View>
+                </ReanimatedAnimated.View>
             </View>
         </ThemedView>
     );

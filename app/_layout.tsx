@@ -12,6 +12,7 @@ import Purchases, { LOG_LEVEL } from 'react-native-purchases';
 import { LogBox, Platform, Text, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { AppErrorBoundary } from '@/components/AppErrorBoundary';
+import { AppPreloader } from '@/components/ui/AppPreloader';
 import { getPublicEnvState } from '@/lib/env';
 import { installGlobalErrorHandler } from '@/lib/monitoring';
 import { hasOnboardingContextMismatch } from '@/lib/onboarding.realignment';
@@ -165,10 +166,8 @@ function RootLayoutContent() {
   const revenueCatLoginInFlightRef = useRef<string | null>(null);
   const lastRevenueCatUserIdRef = useRef<string | null>(null);
 
-  useEffect(() => {
-    if (!isNavigationReady) return;
-    void SplashScreen.hideAsync();
-  }, [isNavigationReady]);
+
+
 
   // Initialize RevenueCat once.
   useEffect(() => {
@@ -249,6 +248,7 @@ function RootLayoutContent() {
         profile={profile}
         session={session}
       />
+      <AppPreloader isNavigationReady={isNavigationReady} isAuthenticated={!!session} />
     </>
   );
 }
