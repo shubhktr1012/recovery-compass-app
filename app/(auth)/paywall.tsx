@@ -73,6 +73,10 @@ function getProgramSlugFromRouteParam(value: string | string[] | undefined): Pro
   return candidate in PROGRAM_METADATA ? (candidate as ProgramSlug) : null;
 }
 
+function getProgramSortIndex(programSlug: ProgramSlug) {
+  return Object.keys(PROGRAM_METADATA).indexOf(programSlug);
+}
+
 function isAlreadyOwnedPurchaseError(error: any, combinedErrorMessage: string) {
   return (
     error?.code === PURCHASES_ERROR_CODE.PRODUCT_ALREADY_PURCHASED_ERROR ||
@@ -303,6 +307,33 @@ export default function Paywall() {
       });
   }, [packages, visibleProgramSlugs]);
 
+  const secondaryPackageOptions = useMemo<EligiblePackageOption[]>(() => {
+    const visibleSlugSet = new Set(visibleProgramSlugs);
+    const uniquePackages = new Map<ProgramSlug, PurchasesPackage>();
+
+    packages.forEach((pack) => {
+      const slug = getProgramSlugForPackage(pack);
+      if (!slug || visibleSlugSet.has(slug) || uniquePackages.has(slug)) {
+        return;
+      }
+
+      uniquePackages.set(slug, pack);
+    });
+
+    return [...uniquePackages.entries()]
+      .sort(([leftSlug], [rightSlug]) => getProgramSortIndex(leftSlug) - getProgramSortIndex(rightSlug))
+      .map(([slug, pack]) => ({
+        pack,
+        selectionId: slug,
+        slug,
+      }));
+  }, [packages, visibleProgramSlugs]);
+
+  const selectablePackageOptions = useMemo(
+    () => [...eligiblePackages, ...secondaryPackageOptions],
+    [eligiblePackages, secondaryPackageOptions]
+  );
+
   const hasVisiblePurchaseIntent = visibleProgramSlugs.length > 0;
   const hasStorePackages = packages.length > 0;
   const purchaseOptionsUnavailable =
@@ -313,21 +344,21 @@ export default function Paywall() {
 
   // Default select the primary package
   useEffect(() => {
-    if (eligiblePackages.length === 0) {
+    if (selectablePackageOptions.length === 0) {
       if (selectedPackageId) {
         setSelectedPackageId(null);
       }
       return;
     }
 
-    const selectedIsVisible = eligiblePackages.some((option) => option.selectionId === selectedPackageId);
+    const selectedIsVisible = selectablePackageOptions.some((option) => option.selectionId === selectedPackageId);
 
     if (!selectedIsVisible) {
-      setSelectedPackageId(eligiblePackages[0].selectionId);
+      setSelectedPackageId(selectablePackageOptions[0].selectionId);
     }
-  }, [eligiblePackages, selectedPackageId]);
+  }, [selectablePackageOptions, selectedPackageId]);
 
-  const activePackageOption = eligiblePackages.find((option) => option.selectionId === selectedPackageId);
+  const activePackageOption = selectablePackageOptions.find((option) => option.selectionId === selectedPackageId);
   const activePackage = activePackageOption?.pack ?? null;
 
   const getPackageDisplayName = (pack: PurchasesPackage) => {
@@ -629,7 +660,7 @@ export default function Paywall() {
           <View style={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 64 }}>
             <ActivityIndicator size="small" color="#06290C" />
           </View>
-        ) : eligiblePackages.length === 0 ? (
+        ) : selectablePackageOptions.length === 0 ? (
           /* ── Empty / locked / unavailable states ── */
           <View
             style={{
@@ -715,17 +746,55 @@ export default function Paywall() {
                   }
                   priceString={pack.product.priceString}
                   isSelected={isSelected}
-                  showCheckCircle={isMultiOption}
+                  showCheckCircle={selectablePackageOptions.length > 1}
                   onPress={() => setSelectedPackageId(selectionId)}
                 />
               );
             })}
+
+            {secondaryPackageOptions.length > 0 && (
+              <View style={{ marginTop: 22 }}>
+                <Text
+                  style={{
+                    fontFamily: 'Satoshi-Bold',
+                    fontSize: 9,
+                    letterSpacing: 1.8,
+                    textTransform: 'uppercase',
+                    color: 'rgba(6,41,12,0.3)',
+                    marginBottom: 10,
+                  }}
+                >
+                  Other programs
+                </Text>
+
+                {secondaryPackageOptions.map(({ pack, selectionId, slug }) => {
+                  const isSelected = selectedPackageId === selectionId;
+                  const meta = PROGRAM_METADATA[slug];
+
+                  return (
+                    <PurchaseCard
+                      key={`${selectionId}:${pack.product.identifier}`}
+                      programName={getPackageDisplayName(pack)}
+                      durationDays={meta?.totalDays ?? 0}
+                      description={
+                        pack.product.description ||
+                        (meta ? meta.description : 'A guided Recovery Compass program.')
+                      }
+                      priceString={pack.product.priceString}
+                      isSelected={isSelected}
+                      showCheckCircle={selectablePackageOptions.length > 1}
+                      onPress={() => setSelectedPackageId(selectionId)}
+                    />
+                  );
+                })}
+              </View>
+            )}
           </View>
         )}
       </ScrollView>
 
       {/* ── Sticky CTA footer ── */}
-      {eligiblePackages.length > 0 && !fetchingOfferings && (
+      {selectablePackageOptions.length > 0 && !fetchingOfferings && (
         <StickyCtaFooter
           ctaLabel={`Unlock ${activePackage ? getPackageDisplayName(activePackage) : 'Access'}`}
           onPurchase={handlePurchase}
