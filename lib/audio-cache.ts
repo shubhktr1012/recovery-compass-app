@@ -50,6 +50,8 @@ function looksLikeAudioBytes(bytes: Uint8Array) {
   return hasId3 || hasMp3Frame || hasMp4Box || hasRiff || hasOgg;
 }
 
+// Kept for manual debugging; range requests caused playback issues on some signed URLs.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function validateAudioResponse(url: string, storagePath: string) {
   const response = await fetch(url, {
     method: 'GET',
@@ -96,14 +98,6 @@ export async function prefetchAudioAsset(storagePath: string): Promise<{ cached:
   if (fileInfo.exists) {
     // Basic corruption check: If the file is extremely small (< 1KB), it's likely a failed download
     if (fileInfo.size > 1024) {
-      let headerSnippet = 'unknown';
-      try {
-        headerSnippet = await FileSystem.readAsStringAsync(fileInfo.uri, { 
-          encoding: FileSystem.EncodingType.Base64,
-          length: 16 
-        });
-      } catch (e) {}
-
       return {
         cached: true,
         uri: fileInfo.uri,
@@ -113,7 +107,7 @@ export async function prefetchAudioAsset(storagePath: string): Promise<{ cached:
     console.warn(`[Audio] Cached file for ${storagePath} is too small (${fileInfo.size} bytes). Re-downloading...`);
     try {
       await FileSystem.deleteAsync(cachePath, { idempotent: true });
-    } catch (e) {}
+    } catch {}
   }
 
   // 3. Start download process
@@ -129,22 +123,9 @@ export async function prefetchAudioAsset(storagePath: string): Promise<{ cached:
       // Ensure we start with a clean slate
       try {
         await FileSystem.deleteAsync(cachePath, { idempotent: true });
-      } catch (e) {}
+      } catch {}
 
       const result = await FileSystem.downloadAsync(signedUrl, cachePath);
-      
-      // Verify download integrity and inspect content more deeply
-      const finalInfo = await FileSystem.getInfoAsync(result.uri);
-      
-      let headerSnippet = 'unknown';
-      try {
-        // Read 512 bytes to see if it's mostly zeros or actually data
-        headerSnippet = await FileSystem.readAsStringAsync(result.uri, { 
-          encoding: FileSystem.EncodingType.Base64,
-          length: 512
-        });
-      } catch (e) {}
-
 
       
       return {

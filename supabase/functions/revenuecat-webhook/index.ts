@@ -1,8 +1,8 @@
 /* eslint-disable import/no-unresolved */
 
-import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
-// eslint-disable-next-line import/no-unresolved -- Deno npm specifier for Supabase Edge Functions bundling
-import { createClient } from "npm:@supabase/supabase-js@2";
+// eslint-disable-next-line import/no-unresolved -- resolved via supabase/functions/deno.json import map
+import { serve } from "std/http/server.ts";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 console.log("RevenueCat Webhook Function Started!");
 
@@ -85,7 +85,7 @@ type SupabaseRpcClient = {
 };
 
 type SupabaseProfileClient = {
-    from: (table: string) => any;
+    from: (table: string) => ReturnType<SupabaseClient["from"]>;
 };
 
 type IntegrationFailurePayload = {
