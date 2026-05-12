@@ -1,6 +1,5 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet, Linking, Alert } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 
 import { CompassCTA } from '@/components/onboarding/intake/CompassCTA';
 
@@ -33,31 +32,23 @@ export function StickyCtaFooter({
   disabled,
   insetBottom,
 }: StickyCtaFooterProps) {
+  const footerBottomPadding = Math.max(insetBottom, 12) + 12;
+
   return (
-    <View style={[styles.container, { paddingBottom: Math.max(insetBottom, 12) + 12 }]}>
-      {/* Gradient fade at top */}
-      <LinearGradient
-        colors={['rgba(245,245,247,0)', 'rgba(245,245,247,1)']}
-        style={styles.gradient}
-        pointerEvents="none"
-      />
+    <View style={styles.container}>
 
       {/* CTA */}
-      <View style={styles.content}>
+      <View style={[styles.content, { paddingBottom: footerBottomPadding }]}>
         <CompassCTA
           label={ctaLabel}
           onPress={onPurchase}
           loading={loading}
           disabled={disabled}
-          variant="highlight"
+          variant="white"
         />
 
         {/* Meta row */}
         <View style={styles.metaRow}>
-          <View style={styles.onetimeRow}>
-            <View style={styles.greenDot} />
-            <Text style={styles.metaText}>One-time payment</Text>
-          </View>
           <Pressable onPress={onRestore} disabled={loading} hitSlop={20}>
             <Text style={styles.restoreText}>Restore Purchases</Text>
           </Pressable>
@@ -79,7 +70,7 @@ export function StickyCtaFooter({
           >
             Privacy Policy
           </Text>
-          .{'\n'}No recurring charges, ever.
+          .
         </Text>
       </View>
     </View>
@@ -95,59 +86,44 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     zIndex: 20,
-  },
-  gradient: {
-    position: 'absolute',
-    top: -40,
-    left: 0,
-    right: 0,
-    height: 40,
+    backgroundColor: '#06290C', // forest
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    // Shadow so it lifts off the page content
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.18,
+    shadowRadius: 16,
+    elevation: 16,
   },
   content: {
-    backgroundColor: '#F5F5F7', // surface
     paddingHorizontal: 20,
-    paddingTop: 0,
+    paddingTop: 20,
   },
   metaRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     alignItems: 'center',
     marginTop: 11,
     marginBottom: 7,
   },
-  onetimeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-  },
-  greenDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#3a8a4a',
-  },
-  metaText: {
-    fontFamily: 'Satoshi-Medium',
-    fontSize: 11,
-    color: 'rgba(6,41,12,0.62)', // muted-ink
-  },
   restoreText: {
     fontFamily: 'Satoshi-Regular',
     fontSize: 11,
-    color: 'rgba(6,41,12,0.45)', // subtle-ink
+    color: 'rgba(255,255,255,0.40)',
     textDecorationLine: 'underline',
-    textDecorationColor: 'rgba(6,41,12,0.15)',
+    textDecorationColor: 'rgba(255,255,255,0.18)',
   },
   legal: {
     fontFamily: 'Satoshi-Regular',
     fontSize: 10,
     lineHeight: 15.5,
-    color: 'rgba(6,41,12,0.28)', // faint-ink
+    color: 'rgba(255,255,255,0.28)',
     textAlign: 'center',
   },
   legalLink: {
-    color: 'rgba(6,41,12,0.45)', // subtle-ink
+    color: 'rgba(255,255,255,0.50)',
     textDecorationLine: 'underline',
-    textDecorationColor: 'rgba(6,41,12,0.18)',
+    textDecorationColor: 'rgba(255,255,255,0.20)',
   },
 });

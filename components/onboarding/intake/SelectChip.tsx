@@ -28,19 +28,10 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     paddingVertical: 10,
     paddingHorizontal: 16,
-    // --card-shadow
-    shadowColor: '#06290C',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 1,
   },
   chipSelected: {
     backgroundColor: '#E3F3E5', // sage
     borderColor: 'rgba(6,41,12,0.15)',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
   },
   text: {
     fontFamily: 'Satoshi-Regular',

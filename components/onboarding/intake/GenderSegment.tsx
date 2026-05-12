@@ -54,11 +54,6 @@ const styles = StyleSheet.create({
   optionSelected: {
     backgroundColor: '#FFFFFF',
     borderColor: 'rgba(6,41,12,0.16)',
-    shadowColor: '#06290C',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 2,
   },
   optionText: {
     fontFamily: 'Satoshi-Medium',

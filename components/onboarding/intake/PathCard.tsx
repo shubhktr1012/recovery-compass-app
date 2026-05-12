@@ -57,19 +57,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 14,
-    // --card-shadow
-    shadowColor: '#06290C',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 12,
-    elevation: 2,
   },
   cardSelected: {
     backgroundColor: '#E3F2E5', // sage-soft
     borderColor: 'rgba(6,41,12,0.2)',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 16,
   },
   iconBadge: {
     width: 38,

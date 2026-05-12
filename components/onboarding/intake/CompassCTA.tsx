@@ -7,7 +7,7 @@ interface CompassCTAProps {
   onPress: () => void;
   disabled?: boolean;
   loading?: boolean;
-  variant?: 'primary' | 'secondary' | 'highlight';
+  variant?: 'primary' | 'secondary' | 'highlight' | 'white';
 }
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
@@ -24,6 +24,7 @@ export function CompassCTA({
   }));
 
   const isPrimary = variant === 'primary' || variant === 'highlight';
+  const isWhite = variant === 'white';
 
   return (
     <AnimatedPressable
@@ -32,7 +33,7 @@ export function CompassCTA({
       style={[
         animatedStyle,
         styles.base,
-        isPrimary ? styles.primary : styles.secondary,
+        isPrimary ? styles.primary : isWhite ? styles.white : styles.secondary,
         variant === 'highlight' && styles.highlight,
         disabled && isPrimary && styles.primaryDisabled,
       ]}
@@ -74,6 +75,11 @@ const styles = StyleSheet.create({
   },
   secondary: {
     backgroundColor: '#F5F5F7', // surface
+    borderWidth: 1,
+    borderColor: 'rgba(6,41,12,0.10)',
+  },
+  white: {
+    backgroundColor: '#FFFFFF', // pure white
     borderWidth: 1,
     borderColor: 'rgba(6,41,12,0.10)',
   },
