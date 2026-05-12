@@ -1,6 +1,6 @@
 # Android Billing QA
 
-Last updated: April 8, 2026
+Last updated: May 11, 2026
 
 This runbook is the Android equivalent of the iOS StoreKit simulator verification that is already complete in the repo. The app-side RevenueCat wiring is already in place. The remaining work is validating the real Google Play billing loop end-to-end.
 
@@ -26,7 +26,45 @@ Before running Android billing QA, confirm all of the following:
 - The device is logged into Play Store with that same tester account
 - The installed app comes from Google Play internal testing, not from Android Studio or `adb install`
 - The tester has accepted the internal testing opt-in link
-- RevenueCat `main_production` is still the current offering with the intended packages attached
+- RevenueCat `main_android` is preferred for Android if present; otherwise `main_production` is used as fallback
+- Every Android package in the selected RevenueCat offering is attached to the intended Google Play product ID
+- The tester account has not already purchased the same non-consumable Google Play product unless you are specifically testing restore
+
+## Product mapping gate
+
+Before shipping any Android billing build, verify this exact mapping in RevenueCat and Google Play:
+
+| Program | App slug | Expected Google Play product ID |
+| --- | --- | --- |
+| 6-Day Control | `six_day_reset` | `six_day_control` |
+| 90-Day Quit Smoking | `ninety_day_transform` | `ninety_day_quit` |
+| Sleep Reset | `sleep_disorder_reset` | `sleep_disorder_reset` |
+| Energy / Vitality | `energy_vitality` | `energy_vitality` |
+| Age Reversal / Biohacking | `age_reversal` | `age_reversal` |
+| Men's Vitality | `male_sexual_health` | `male_sexual_health` |
+
+If the Google Play drawer says "already own this item" while testing a new app
+account, first check whether the same Google Play account already owns that
+product. Google purchase ownership follows the Play account, not the Supabase
+app account.
+
+## Purchase QA logs
+
+For QA builds, set:
+
+```env
+EXPO_PUBLIC_ENABLE_PURCHASE_QA_LOGS=true
+```
+
+The paywall will emit `[PurchaseQA]` logs for loaded packages, purchase start,
+purchase result, and already-owned errors. For every purchase attempt, confirm:
+
+- `mappedProgramSlug` is the program the user selected
+- `productIdentifier` is the expected Google Play product ID from the table above
+- `packageIdentifier` is not accidentally reused for the wrong program
+- `productTitle` in logs matches the product shown in Google Play
+
+Turn this flag back off for normal production builds.
 
 ## Primary test path
 
@@ -36,11 +74,23 @@ Use `ninety_day_quit` first because it is already the best-verified purchase pat
 2. Launch the app and sign in with a normal app account
 3. Complete the questionnaire until the paywall appears
 4. Verify the paywall loads products and prices instead of showing the empty/offering error state
-5. Purchase the `ninety_day_quit` product
-6. Confirm Google Play completes the transaction
-7. Confirm the app routes only after unlock is confirmed
-8. Confirm the Program tab opens with access unlocked
-9. Confirm Profile shows the expected owned program / purchase state
+5. Confirm `[PurchaseQA]` logs show `mappedProgramSlug: ninety_day_transform` and `productIdentifier: ninety_day_quit`
+6. Purchase the `ninety_day_quit` product
+7. Confirm Google Play completes the transaction
+8. Confirm the app routes only after unlock is confirmed
+9. Confirm the Program tab opens with access unlocked
+10. Confirm Profile shows the expected owned program / purchase state
+
+## Full catalog smoke test
+
+Run this once before each payment-related release:
+
+1. Use a clean Google Play tester account, or revoke/refund prior purchases before testing purchase paths.
+2. Open the paywall for each of the six programs.
+3. Confirm `[PurchaseQA]` shows the correct `mappedProgramSlug` and `productIdentifier`.
+4. Start only one real purchase if you want to avoid buying all six products.
+5. For the remaining programs, stop at the Google Play drawer and confirm the drawer product title is correct.
+6. If any selected program opens a drawer for `six_day_control`, stop the release and fix the RevenueCat package attachment.
 
 ## Restore path
 
@@ -56,8 +106,9 @@ If the six-day smoking flow is still part of launch QA, also verify:
 2. Complete enough flow to reach the upgrade state
 3. Return to paywall
 4. Confirm only the eligible upgrade package is shown
-5. Purchase `ninety_day_quit`
-6. Confirm access upgrades cleanly
+5. Confirm `[PurchaseQA]` shows `mappedProgramSlug: ninety_day_transform` and `productIdentifier: ninety_day_quit`
+6. Purchase `ninety_day_quit`
+7. Confirm access upgrades cleanly
 
 ## What success looks like
 
@@ -89,6 +140,7 @@ Capture these artifacts during QA:
 - Screenshot of the unlocked program / profile state
 - Short note with tested product ID and tester account email
 - Any RevenueCat dashboard confirmation if available
+- `[PurchaseQA]` log line for each tested package
 
 ## If the Android purchase does not unlock
 
@@ -99,6 +151,8 @@ Check these in order:
 3. Does RevenueCat show the transaction for the expected app user ID?
 4. Does `Restore Purchases` recover the entitlement?
 5. Is the tester using the same Recovery Compass account that logged into RevenueCat?
+6. Does `[PurchaseQA]` show the selected program mapped to the correct product ID?
+7. Is the RevenueCat Android package attached to the wrong Google Play product?
 
 ## Repo references
 

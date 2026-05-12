@@ -15,6 +15,7 @@ import { useProfile } from '@/providers/profile';
 import { useAuth } from '@/providers/auth';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
+import { normalizeDisplayName, resolveProfileIdentity, validateDisplayNameInput } from '@/lib/profile-identity';
 
 interface EditProfileSheetProps {
   isOpen: boolean;
@@ -26,14 +27,14 @@ export function EditProfileSheet({ isOpen, onClose }: EditProfileSheetProps) {
   const { user } = useAuth();
   const bottomSheetRef = useRef<BottomSheet>(null);
 
-  const [displayName, setDisplayName] = useState(profile?.display_name ?? '');
+  const [displayName, setDisplayName] = useState(normalizeDisplayName(profile?.display_name));
   const [avatarUri, setAvatarUri] = useState<string | null>(profile?.avatar_url ?? null);
   const [pendingImageUri, setPendingImageUri] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
-      setDisplayName(profile?.display_name ?? '');
+      setDisplayName(normalizeDisplayName(profile?.display_name));
       setAvatarUri(profile?.avatar_url ?? null);
       setPendingImageUri(null);
       bottomSheetRef.current?.expand();
@@ -96,9 +97,9 @@ export function EditProfileSheet({ isOpen, onClose }: EditProfileSheetProps) {
         await uploadAvatar(pendingImageUri);
       }
 
-      const trimmedName = displayName.trim();
-      if (trimmedName !== (profile?.display_name ?? '')) {
-        await updateProfile({ display_name: trimmedName || null });
+      const validatedName = validateDisplayNameInput(displayName);
+      if (validatedName !== normalizeDisplayName(profile?.display_name)) {
+        await updateProfile({ display_name: validatedName });
       }
 
       onClose();
@@ -110,11 +111,15 @@ export function EditProfileSheet({ isOpen, onClose }: EditProfileSheetProps) {
   };
 
   const hasChanges =
-    displayName.trim() !== (profile?.display_name ?? '') ||
+    normalizeDisplayName(displayName) !== normalizeDisplayName(profile?.display_name) ||
     pendingImageUri !== null;
 
   const currentAvatarDisplay = avatarUri;
-  const emailPrefix = user?.email?.split('@')[0] ?? '';
+  const draftIdentity = resolveProfileIdentity({
+    displayName,
+    email: user?.email,
+    fallbackLabel: 'Account',
+  });
 
   return (
     <BottomSheet
@@ -153,7 +158,7 @@ export function EditProfileSheet({ isOpen, onClose }: EditProfileSheetProps) {
               />
             ) : (
               <Text className="font-erode-bold text-3xl text-forest/40">
-                {emailPrefix.charAt(0).toUpperCase() || '?'}
+                {draftIdentity.initial}
               </Text>
             )}
           </View>
@@ -168,6 +173,7 @@ export function EditProfileSheet({ isOpen, onClose }: EditProfileSheetProps) {
           value={displayName}
           onChangeText={setDisplayName}
           placeholder="Enter your name"
+          maxLength={32}
           autoCapitalize="words"
           returnKeyType="done"
           onSubmitEditing={Keyboard.dismiss}

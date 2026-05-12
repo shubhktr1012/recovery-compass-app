@@ -40,6 +40,7 @@ const ACCESS_CONFIRMATION_RETRY_COUNT = 4;
 const PROGRAM_TAB_ROUTE = '/(tabs)/program' as const;
 const PROGRAM_LIBRARY_ROUTE = '/account/programs' as const;
 const REALIGNMENT_ROUTE = '/personalization?mode=realign' as const;
+const ENABLE_PURCHASE_QA_LOGS = process.env.EXPO_PUBLIC_ENABLE_PURCHASE_QA_LOGS === 'true';
 
 function wait(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -92,13 +93,14 @@ function isAlreadyOwnedPurchaseError(error: any, combinedErrorMessage: string) {
 function getPreferredOffering(
   offerings: Awaited<ReturnType<typeof Purchases.getOfferings>>
 ) {
-  // Prefer platform-specific offerings so StoreKit/Play only receive products
-  // for the current store. main_production stays as a fallback for continuity.
+  // `main_production` is the canonical live catalog. Keep store-specific
+  // offerings as fallback only so stale `main_android` / `main_ios` catalogs
+  // cannot silently override production package mappings.
   const preferredKeys =
     Platform.OS === 'ios'
-      ? ['main_ios', 'main_production', 'main', 'default']
+      ? ['main_production', 'main_ios', 'main', 'default']
       : Platform.OS === 'android'
-        ? ['main_android', 'main_production', 'main', 'default']
+        ? ['main_production', 'main_android', 'main', 'default']
         : ['main_production', 'main', 'default'];
 
   for (const key of preferredKeys) {
@@ -114,6 +116,29 @@ function getPreferredOffering(
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function getSelectablePackageId(pack: PurchasesPackage) {
   return getProgramSlugForPackage(pack) ?? pack.product.identifier ?? pack.identifier;
+}
+
+function logPurchaseQaEvent(
+  stage: string,
+  pack: PurchasesPackage | null,
+  mappedProgramSlug: ProgramSlug | null,
+  extra: Record<string, unknown> = {}
+) {
+  if (!__DEV__ && !ENABLE_PURCHASE_QA_LOGS) {
+    return;
+  }
+
+  console.info('[PurchaseQA]', {
+    stage,
+    platform: Platform.OS,
+    mappedProgramSlug,
+    packageIdentifier: pack?.identifier ?? null,
+    productIdentifier: pack?.product.identifier ?? null,
+    productTitle: pack?.product.title ?? null,
+    productDescription: pack?.product.description ?? null,
+    priceString: pack?.product.priceString ?? null,
+    ...extra,
+  });
 }
 
 type EligiblePackageOption = {
@@ -152,10 +177,11 @@ export default function Paywall() {
         snapshotPurchaseState: snapshot.purchaseState,
         snapshotOwnerUserId: snapshot.ownerUserId ?? null,
       });
-      const confirmedProgram =
-        expectedProgram && snapshot.ownedProgram === expectedProgram
+      const confirmedProgram = expectedProgram
+        ? snapshot.ownedProgram === expectedProgram
           ? expectedProgram
-          : snapshot.ownedProgram;
+          : null
+        : snapshot.ownedProgram;
 
       if (confirmedProgram) {
         return confirmedProgram;
@@ -205,6 +231,11 @@ export default function Paywall() {
 
         if (currentOffering && currentOffering.availablePackages.length > 0) {
           setPackages(currentOffering.availablePackages);
+          currentOffering.availablePackages.forEach((pack) => {
+            logPurchaseQaEvent('offering_package_loaded', pack, getProgramSlugForPackage(pack), {
+              offeringIdentifier: currentOffering.identifier,
+            });
+          });
         } else {
           setPackages([]);
         }
@@ -393,9 +424,17 @@ export default function Paywall() {
     setLoading(true);
     const pack = activePackage;
     const programSlug = getProgramSlugForPackage(pack);
+    logPurchaseQaEvent('purchase_start', pack, programSlug, {
+      selectedPackageId,
+      expectedProgramSlug: activePackageOption?.slug ?? null,
+    });
     try {
       const result = await Purchases.purchasePackage(pack);
       const ownedPrograms = getOwnedProgramsFromCustomerInfo(result.customerInfo);
+      logPurchaseQaEvent('purchase_result', pack, programSlug, {
+        ownedPrograms,
+        revenueCatAppUserId: result.customerInfo.originalAppUserId,
+      });
       if (__DEV__) console.log('[Paywall] purchasePackage:result', {
         selectedProgram: programSlug,
         ownedPrograms,
@@ -427,6 +466,11 @@ export default function Paywall() {
         combinedErrorMessage.includes('invalid credentials');
 
       if (isAlreadyOwnedError) {
+        logPurchaseQaEvent('purchase_already_owned', pack, programSlug, {
+          selectedPackageId,
+          expectedProgramSlug: activePackageOption?.slug ?? null,
+          errorMessage: combinedErrorMessage,
+        });
         if (__DEV__) console.log('[Paywall] purchasePackage:alreadyOwned', {
           selectedProgram: programSlug,
           errorMessage: combinedErrorMessage,

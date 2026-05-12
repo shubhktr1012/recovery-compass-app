@@ -16,6 +16,7 @@ import { OWNED_PROGRAMS_QUERY_ROOT } from '@/hooks/useOwnedPrograms';
 import { decode } from 'base64-arraybuffer';
 import * as FileSystem from 'expo-file-system/legacy';
 import { buildWidgetPayload, syncWidgetData } from '@/lib/widget-bridge';
+import { validateDisplayNameInput } from '@/lib/profile-identity';
 
 export interface UserProfile {
   id: string;
@@ -666,10 +667,16 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     async (fields: { display_name?: string | null }) => {
       if (!userId) return;
 
+      const nextDisplayName =
+        fields.display_name === undefined
+          ? undefined
+          : validateDisplayNameInput(fields.display_name ?? '');
+
       const { error } = await supabase
         .from('profiles')
         .update({
           ...fields,
+          ...(nextDisplayName !== undefined ? { display_name: nextDisplayName } : {}),
           updated_at: new Date().toISOString(),
         })
         .eq('id', userId);
@@ -680,7 +687,12 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         PROFILE_QUERY_KEY(userId),
         (current) =>
           current
-            ? { ...current, ...fields, updated_at: new Date().toISOString() }
+            ? {
+                ...current,
+                ...fields,
+                ...(nextDisplayName !== undefined ? { display_name: nextDisplayName } : {}),
+                updated_at: new Date().toISOString(),
+              }
             : current
       );
     },

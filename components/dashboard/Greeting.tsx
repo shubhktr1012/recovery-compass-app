@@ -4,6 +4,7 @@ import { useRouter , Href } from 'expo-router';
 import { useOnboardingResponse } from '@/hooks/useOnboardingResponse';
 import { useProfile } from '@/providers/profile';
 import { AppColors } from '@/constants/theme';
+import { resolveProfileIdentity } from '@/lib/profile-identity';
 
 function getMotivationalLine(accountAgeDays: number, isReturningUser: boolean, hour: number): string {
     // Late night / early morning — softer, more empathetic
@@ -73,12 +74,15 @@ export function Greeting() {
         []
     );
 
-    const firstName = profile?.display_name?.trim().split(/\s+/)[0]
-        ?? onboardingQuery.data?.full_name?.trim().split(/\s+/)[0]
-        ?? 'Recovery Warrior';
+    const profileIdentity = resolveProfileIdentity({
+        displayName: profile?.display_name,
+        fullName: onboardingQuery.data?.full_name,
+        email: profile?.email ?? null,
+        fallbackLabel: 'Recovery Warrior',
+    });
 
     const avatarUrl = profile?.avatar_url ?? null;
-    const avatarInitial = firstName.charAt(0).toUpperCase();
+    const avatarInitial = profileIdentity.initial;
 
     // Calculate account age
     const accountAgeDays = useMemo(() => {
@@ -133,7 +137,7 @@ export function Greeting() {
                 {greeting}
             </Text>
             <Text className="font-erode-medium text-[40px] leading-[48px] tracking-tight text-forest">
-                {firstName}
+                {profileIdentity.displayName}
             </Text>
 
             {/* Dynamic motivational line */}

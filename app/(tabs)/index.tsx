@@ -20,6 +20,7 @@ import { useOnboardingResponse } from '@/hooks/useOnboardingResponse';
 import { useOwnedPrograms } from '@/hooks/useOwnedPrograms';
 import { useDailySteps } from '@/hooks/useDailySteps';
 import { resolveDashboardStatItems } from '@/lib/dashboard-statistics';
+import { resolveProfileIdentity } from '@/lib/profile-identity';
 import type { QuestionnaireAnswersSnapshot } from '@/lib/program-statistics';
 import { StepPermissionPrompt } from '@/components/steps/StepPermissionPrompt';
 
@@ -69,12 +70,14 @@ function HomeScreenContent({ activeProgram }: { activeProgram: ProgramSlug }) {
   })();
 
   const journalCard = currentDay?.cards.find((card) => card.type === 'journal');
-  const firstName =
-    profile?.display_name?.trim().split(/\s+/)[0] ||
-    onboardingResponse?.full_name?.trim().split(/\s+/)[0] ||
-    'Friend';
+  const profileIdentity = resolveProfileIdentity({
+    displayName: profile?.display_name,
+    fullName: onboardingResponse?.full_name,
+    email: profile?.email ?? null,
+    fallbackLabel: 'Friend',
+  });
   const avatarUrl = profile?.avatar_url ?? null;
-  const avatarLetter = firstName[0]?.toUpperCase() ?? 'S';
+  const avatarLetter = profileIdentity.initial;
   const statsItems = useMemo(
     () =>
       resolveDashboardStatItems({
@@ -132,7 +135,7 @@ function HomeScreenContent({ activeProgram }: { activeProgram: ProgramSlug }) {
         {/* HEADER */}
         <DashboardHeader
           greetingLabel={getGreetingLabel()}
-          firstName={firstName}
+          firstName={profileIdentity.displayName}
           avatarLetter={avatarLetter}
           avatarUrl={avatarUrl}
           activeProgramName={program.name}

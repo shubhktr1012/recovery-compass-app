@@ -28,6 +28,7 @@ import { AccountWatermark } from '@/components/ui/TabWatermarks';
 import type { ProgramSlug } from '@/types/content';
 import { AppColors } from '@/constants/theme';
 import { AppTypography } from '@/constants/typography';
+import { resolveProfileIdentity } from '@/lib/profile-identity';
 
 const STAT_CARD_WIDTH = 164;
 const STAT_CARD_GAP = 10;
@@ -197,15 +198,16 @@ export default function AccountScreen() {
     [access.ownedProgram, profile?.questionnaire_answers]
   );
 
-  const displayName =
-    profile?.display_name ||
-    onboardingQuery.data?.full_name?.trim().split(/\s+/)[0] ||
-    user?.email?.split('@')[0] ||
-    'Your Account';
-
+  const profileIdentity = resolveProfileIdentity({
+    displayName: profile?.display_name,
+    fullName: onboardingQuery.data?.full_name,
+    email: user?.email,
+    fallbackLabel: 'Your Account',
+  });
   const avatarUrl = profile?.avatar_url ?? null;
   const emailDisplay = user?.email ?? 'Signed in';
-  const displayInitial = displayName.charAt(0).toUpperCase();
+  const displayName = profileIdentity.displayName;
+  const displayInitial = profileIdentity.initial;
   const startedDate = formatStartedDate(profile?.created_at);
 
   const progressSummary = activeProgram
