@@ -56,13 +56,27 @@ export const NotificationService = {
       await notificationsModule.cancelScheduledNotificationAsync(id);
     }
 
+    const content = {
+      title: 'Daily Progress Check-in',
+      body: 'Time for your Recovery Compass session. Take a moment for yourself today.',
+      sound: true,
+      priority: notificationsModule.AndroidNotificationPriority.HIGH,
+    };
+
+    if (Platform.OS === 'android') {
+      await notificationsModule.scheduleNotificationAsync({
+        content,
+        trigger: {
+          type: notificationsModule.SchedulableTriggerInputTypes.DAILY,
+          hour: 9,
+          minute: 0,
+        },
+      });
+      return;
+    }
+
     await notificationsModule.scheduleNotificationAsync({
-      content: {
-        title: 'Daily Progress Check-in',
-        body: 'Time for your Recovery Compass session. Take a moment for yourself today.',
-        sound: true,
-        priority: notificationsModule.AndroidNotificationPriority.HIGH,
-      },
+      content,
       trigger: {
         type: notificationsModule.SchedulableTriggerInputTypes.CALENDAR,
         hour: 9,

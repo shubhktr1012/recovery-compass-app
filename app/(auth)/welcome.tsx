@@ -80,16 +80,15 @@ export default function WelcomeScreen() {
     const [sessionExpiredNotice, setSessionExpiredNotice] = useState<string | null>(null);
     const isIOS = Platform.OS === 'ios';
 
-    // ─── Entrance animation (synced with preloader curtain) ────────────────
+    // Keep the welcome footer in sync with the preloader curtain reveal.
     const shouldAnimateEntrance = useRef(isFirstAppLaunch()).current;
     const footerOpacity = useSharedValue(shouldAnimateEntrance ? 0 : 1);
     const footerTranslateY = useSharedValue(shouldAnimateEntrance ? 28 : 0);
 
     useEffect(() => {
         if (!shouldAnimateEntrance) return;
-        // The curtain starts at ~4000ms and takes 900ms.
-        // The footer is at the bottom, so it's revealed last (~4500ms).
-        const FOOTER_DELAY = 4200;
+
+        const FOOTER_DELAY = 3800;
         footerOpacity.value = withDelay(
             FOOTER_DELAY,
             withTiming(1, { duration: 600, easing: Easing.out(Easing.ease) })

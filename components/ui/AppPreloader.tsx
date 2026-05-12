@@ -16,9 +16,13 @@ import { AppColors } from '@/constants/theme';
 import { markFirstLaunchComplete } from '@/lib/preloader-state';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
+const LOGO_REVEAL_DURATION = 2100;
+const TEXT_REVEAL_DURATION = 1400;
+const GUEST_EXIT_DELAY = 3600;
+const AUTHENTICATED_EXIT_DELAY = 3900;
 
-// Module-level flag — persists across hot-reloads within the same JS session.
-let hasSeenPreloader = false;
+// Module-level guard: once a preloader run starts, remounts in the same JS session should not replay it.
+let hasPreloaderRun = false;
 
 interface AppPreloaderProps {
   isNavigationReady: boolean;
@@ -26,7 +30,7 @@ interface AppPreloaderProps {
 }
 
 export function AppPreloader({ isNavigationReady, isAuthenticated }: AppPreloaderProps) {
-  const [isVisible, setIsVisible] = useState(!hasSeenPreloader);
+  const [isVisible, setIsVisible] = useState(!hasPreloaderRun);
   const animationStarted = useRef(false);
 
   // Shared values — always declared unconditionally (Rules of Hooks).
@@ -39,42 +43,42 @@ export function AppPreloader({ isNavigationReady, isAuthenticated }: AppPreloade
 
   // ─── Step 1: Hide the native splash immediately on mount ─────────────────
   useEffect(() => {
-    if (hasSeenPreloader) return;
+    if (hasPreloaderRun) return;
     void SplashScreen.hideAsync();
   }, []);
 
   // ─── Step 2: Start the animation once fonts + auth are ready ─────────────
   useEffect(() => {
-    if (!isNavigationReady || hasSeenPreloader || animationStarted.current) return;
+    if (!isNavigationReady || hasPreloaderRun || animationStarted.current) return;
     animationStarted.current = true;
+    hasPreloaderRun = true;
 
     const completePreloader = () => {
-      hasSeenPreloader = true;
       markFirstLaunchComplete();
       setIsVisible(false);
     };
 
     // Logo: breathe in (scale up) → settle back to 1
     logoScale.value = withSequence(
-      withTiming(1.4, { duration: 2100, easing: Easing.bezier(0.76, 0, 0.24, 1) }),
-      withTiming(1, { duration: 1400, easing: Easing.bezier(0.76, 0, 0.24, 1) })
+      withTiming(1.4, { duration: LOGO_REVEAL_DURATION, easing: Easing.bezier(0.76, 0, 0.24, 1) }),
+      withTiming(1, { duration: TEXT_REVEAL_DURATION, easing: Easing.bezier(0.76, 0, 0.24, 1) })
     );
 
     // Text: reveal after the logo peaks
     textWidth.value = withDelay(
-      2100,
-      withTiming(1, { duration: 1400, easing: Easing.bezier(0.76, 0, 0.24, 1) })
+      LOGO_REVEAL_DURATION,
+      withTiming(1, { duration: TEXT_REVEAL_DURATION, easing: Easing.bezier(0.76, 0, 0.24, 1) })
     );
     textOpacity.value = withDelay(
-      2100,
-      withTiming(1, { duration: 1400, easing: Easing.bezier(0.76, 0, 0.24, 1) })
+      LOGO_REVEAL_DURATION,
+      withTiming(1, { duration: TEXT_REVEAL_DURATION, easing: Easing.bezier(0.76, 0, 0.24, 1) })
     );
 
     // ─── Exit animation ────────────────────────────────────────────────────
     if (!isAuthenticated) {
       // "Curtain slide" — the green screen lifts upward to reveal the welcome screen.
       curtainTranslateY.value = withDelay(
-        4000,
+        GUEST_EXIT_DELAY,
         withTiming(-SCREEN_HEIGHT, {
           duration: 900,
           easing: Easing.bezier(0.76, 0, 0.24, 1),
@@ -85,7 +89,7 @@ export function AppPreloader({ isNavigationReady, isAuthenticated }: AppPreloade
     } else {
       // Simple dissolve for authenticated users heading to the dashboard.
       opacity.value = withDelay(
-        4500,
+        AUTHENTICATED_EXIT_DELAY,
         withTiming(0, { duration: 800, easing: Easing.inOut(Easing.ease) }, (finished) => {
           if (finished) runOnJS(completePreloader)();
         })

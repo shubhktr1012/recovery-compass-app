@@ -166,8 +166,10 @@ function RootLayoutContent() {
   const revenueCatLoginInFlightRef = useRef<string | null>(null);
   const lastRevenueCatUserIdRef = useRef<string | null>(null);
 
-
-
+  useEffect(() => {
+    if (!isNavigationReady) return;
+    void SplashScreen.hideAsync();
+  }, [isNavigationReady]);
 
   // Initialize RevenueCat once.
   useEffect(() => {
@@ -258,6 +260,12 @@ export default function RootLayout() {
 
   useEffect(() => () => {
     uninstallGlobalErrorHandler();
+  }, []);
+
+  useEffect(() => {
+    if (!publicEnvState.isValid) {
+      void SplashScreen.hideAsync();
+    }
   }, []);
 
   if (!publicEnvState.isValid) {
