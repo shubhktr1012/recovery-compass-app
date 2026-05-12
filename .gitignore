@@ -9,9 +9,6 @@ dist/
 web-build/
 expo-env.d.ts
 
-# EAS builds
-.easignore
-
 # Native
 .kotlin/
 *.orig.*
@@ -84,7 +81,6 @@ supabase/.temp/
 app-example
 
 # generated native folders
-/ios
 /android
 
 # Graphify local metadata

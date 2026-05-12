@@ -1,0 +1,50 @@
+# dependencies
+node_modules/
+
+# Expo/local build output
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+
+# Native build output and generated dependencies
+android/
+ios/Pods/
+ios/build/
+ios/DerivedData/
+ios/**/*.xcuserdata/
+ios/**/*.xcuserstate
+ios/**/*.ipa
+ios/.xcode.env.local
+
+# Local environment and secrets
+.env
+.env.*
+.env*.local
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.pem
+*.secret
+secrets/
+
+# Tooling output
+coverage/
+.jest/
+logs/
+*.log
+tmp/
+temp/
+supabase/.temp/
+graphify-out/
+
+# IDE / OS metadata
+.DS_Store
+.idea/
+.cursor/
+.windsurf/
+.agent/
+.agents/
+.claude/
