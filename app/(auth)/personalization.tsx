@@ -51,6 +51,10 @@ function isPositiveInteger(value: string) {
   return Number.isInteger(Number(value)) && Number(value) > 0;
 }
 
+function isIntegerAtLeast(value: string, minValue: number) {
+  return Number.isInteger(Number(value)) && Number(value) >= minValue;
+}
+
 function hasAppleIdentity(user: ReturnType<typeof useAuth>['user']) {
   if (!user) {
     return false;
@@ -409,15 +413,17 @@ export default function Personalization() {
 
     switch (question.type) {
       case 'number_input':
+        const minValue = question.minValue ?? 1;
         return (
-          (typeof rawValue === 'string' && isPositiveInteger(rawValue)) ||
+          (typeof rawValue === 'string' && isIntegerAtLeast(rawValue, minValue)) ||
           'Enter a valid number before continuing.'
         );
       case 'compound_number_input':
         if (!question.inputs || question.inputs.length === 0) return true;
+        const compoundMinValue = question.minValue ?? 1;
         for (const input of question.inputs) {
           const val = answers.questionValues[input.id];
-          if (!(typeof val === 'string' && isPositiveInteger(val))) {
+          if (!(typeof val === 'string' && isIntegerAtLeast(val, compoundMinValue))) {
             return 'Enter valid numbers for all fields before continuing.';
           }
         }

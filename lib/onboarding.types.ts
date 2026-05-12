@@ -40,6 +40,7 @@ export interface QuestionDefinition<OptionId extends string = string> {
   options?: SelectionOption<OptionId>[];
   placeholder?: string;
   keyboardType?: 'default' | 'number-pad';
+  minValue?: number;
   required?: boolean;
   allowEmpty?: boolean;
   inputs?: { id: string; label: string; placeholder?: string }[];
