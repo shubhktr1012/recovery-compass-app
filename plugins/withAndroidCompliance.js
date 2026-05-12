@@ -2,6 +2,8 @@ const { withAndroidManifest, withAndroidStyles } = require('expo/config-plugins'
 
 const NOTIFICATIONS_BOOT_RECEIVER = 'expo.modules.notifications.service.NotificationsService';
 const AUDIO_RECORDING_SERVICE = 'expo.modules.audio.service.AudioRecordingService';
+const BARCODE_SCANNER_DELEGATE_ACTIVITY =
+  'com.google.mlkit.vision.codescanner.internal.GmsBarcodeScanningDelegateActivity';
 
 function asArray(value) {
   if (!value) return [];
@@ -23,6 +25,24 @@ module.exports = function withAndroidCompliance(config) {
 
     if (mainActivity?.$?.['android:screenOrientation']) {
       delete mainActivity.$['android:screenOrientation'];
+    }
+
+    const barcodeScannerDelegateActivity = activities.find(
+      (activity) => activity?.$?.['android:name'] === BARCODE_SCANNER_DELEGATE_ACTIVITY
+    );
+
+    if (barcodeScannerDelegateActivity?.$?.['android:screenOrientation']) {
+      delete barcodeScannerDelegateActivity.$['android:screenOrientation'];
+    }
+
+    if (!barcodeScannerDelegateActivity) {
+      activities.push({
+        $: {
+          'android:name': BARCODE_SCANNER_DELEGATE_ACTIVITY,
+          'tools:remove': 'android:screenOrientation',
+        },
+      });
+      application.activity = activities;
     }
 
     const receivers = asArray(application.receiver).filter(
