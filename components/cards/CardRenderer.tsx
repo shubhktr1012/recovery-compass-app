@@ -309,14 +309,19 @@ function PrimaryVisualButton({
   label,
   inverted = false,
   onPress,
+  disabled = false,
 }: {
   label: string;
   inverted?: boolean;
   onPress?: () => void;
+  disabled?: boolean;
 }) {
   const content = (
     <View
-      style={inverted ? styles.primaryButtonLight : styles.primaryButtonDark}
+      style={[
+        inverted ? styles.primaryButtonLight : styles.primaryButtonDark,
+        disabled && styles.primaryButtonDisabled,
+      ]}
     >
       <Text
         style={inverted ? styles.primaryButtonTextLight : styles.primaryButtonTextDark}
@@ -326,7 +331,7 @@ function PrimaryVisualButton({
     </View>
   );
 
-  if (!onPress) {
+  if (!onPress || disabled) {
     return content;
   }
 
@@ -1542,6 +1547,7 @@ function CloseCardViewWithState({
   completionDescription,
   isCompleting = false,
   primaryActionLabel,
+  primaryActionDisabled = false,
   onCompleteDay,
   onBackToProgram,
 }: {
@@ -1552,6 +1558,7 @@ function CloseCardViewWithState({
   completionDescription?: string | null;
   isCompleting?: boolean;
   primaryActionLabel?: string;
+  primaryActionDisabled?: boolean;
   onCompleteDay?: () => void;
   onBackToProgram?: () => void;
 }) {
@@ -1586,6 +1593,7 @@ function CloseCardViewWithState({
         label={actionLabel}
         inverted
         onPress={isCompleted ? onBackToProgram : onCompleteDay}
+        disabled={primaryActionDisabled}
       />
     </DarkCardShell>
   );
@@ -1628,6 +1636,7 @@ export function CardRenderer({
     completionDescription?: string | null;
     isCompleting?: boolean;
     primaryActionLabel?: string;
+    primaryActionDisabled?: boolean;
     onCompleteDay?: () => void;
     onBackToProgram?: () => void;
   };
@@ -1823,6 +1832,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
     backgroundColor: '#06290C',
+  },
+  primaryButtonDisabled: {
+    opacity: 0.45,
   },
   primaryButtonTextLight: {
     fontFamily: 'Satoshi-Bold',

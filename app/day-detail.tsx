@@ -23,11 +23,13 @@ import { Button } from '@/components/ui/Button';
 import { TransportBar } from '@/components/ui/TransportBar';
 import { useDay, useProgram } from '@/content';
 import { programDayQueryKey, programQueryKey } from '@/hooks/contentQueryUtils';
+import { getCardState, toLocalHHMM } from '@/lib/card-state';
 import { formatUnlockLabel, getProgramNextUnlockAt, getProgramScheduledDay } from '@/lib/programs/schedule';
 import { buildWidgetPayload, syncWidgetData } from '@/lib/widget-bridge';
 import { useAuth } from '@/providers/auth';
 import { useProfile } from '@/providers/profile';
 import type { DayContent, ProgramSlug } from '@/types/content';
+import { TIME_SLOT_WINDOWS, type CardState, type TimeSlot } from '@/types/resolver';
 
 const PROGRAM_SLUGS: ProgramSlug[] = [
   'six_day_reset',
@@ -53,6 +55,78 @@ function getRoutineStorageKey(programSlug: ProgramSlug, dayNumber: number, cardI
 
 function getRoutineItemKey(name: string, index: number) {
   return `${name}-${index}`;
+}
+
+type RuntimeDayCard = DayContent['cards'][number] & {
+  timeSlot?: TimeSlot;
+  isTimeSensitive?: boolean;
+  hasEffortCheck?: boolean;
+};
+
+const DEFAULT_CARD_TIME_META = {
+  timeSlot: 'anytime' as const,
+  isTimeSensitive: false,
+  hasEffortCheck: false,
+};
+
+function getCardTimeMeta(card: DayContent['cards'][number]) {
+  const runtimeCard = card as RuntimeDayCard;
+
+  return {
+    timeSlot: runtimeCard.timeSlot ?? DEFAULT_CARD_TIME_META.timeSlot,
+    isTimeSensitive: runtimeCard.isTimeSensitive ?? DEFAULT_CARD_TIME_META.isTimeSensitive,
+    hasEffortCheck: runtimeCard.hasEffortCheck ?? DEFAULT_CARD_TIME_META.hasEffortCheck,
+  };
+}
+
+function formatSlotLabel(slot: TimeSlot) {
+  switch (slot) {
+    case 'morning':
+      return 'Morning';
+    case 'afternoon':
+      return 'Afternoon';
+    case 'evening':
+      return 'Evening';
+    case 'anytime':
+      return 'Today';
+  }
+}
+
+function formatWindowTime(hhmm: string) {
+  const [hourValue, minuteValue] = hhmm.split(':').map((value) => Number.parseInt(value, 10));
+  const safeHour = Number.isFinite(hourValue) ? hourValue : 0;
+  const safeMinute = Number.isFinite(minuteValue) ? minuteValue : 0;
+  const suffix = safeHour >= 12 ? 'PM' : 'AM';
+  const normalizedHour = safeHour % 12 || 12;
+  return `${normalizedHour}:${String(safeMinute).padStart(2, '0')} ${suffix}`;
+}
+
+function getCardStateNotice(state: CardState, slot: TimeSlot) {
+  switch (state) {
+    case 'locked':
+      return {
+        eyebrow: 'Locked',
+        message:
+          slot === 'anytime'
+            ? `Today's session opens at ${formatWindowTime(TIME_SLOT_WINDOWS.anytime.opens)}.`
+            : `${formatSlotLabel(slot)} unlocks at ${formatWindowTime(TIME_SLOT_WINDOWS[slot].opens)}.`,
+        tone: 'muted' as const,
+      };
+    case 'catch_up':
+      return {
+        eyebrow: 'Catch-up available',
+        message: `You missed the ${formatSlotLabel(slot).toLowerCase()} window, but this card is still available until ${formatWindowTime(TIME_SLOT_WINDOWS.anytime.closes)}.`,
+        tone: 'warm' as const,
+      };
+    case 'blocked':
+      return {
+        eyebrow: 'Window closed',
+        message: `This ${formatSlotLabel(slot).toLowerCase()} card was time-sensitive and closed at ${formatWindowTime(TIME_SLOT_WINDOWS[slot].closes)}.`,
+        tone: 'critical' as const,
+      };
+    default:
+      return null;
+  }
 }
 
 /**
@@ -198,8 +272,68 @@ function ResumeToast() {
   );
 }
 
+function CardStatePlaceholder({
+  card,
+  state,
+  slot,
+}: {
+  card: DayContent['cards'][number];
+  state: Extract<CardState, 'locked' | 'blocked'>;
+  slot: TimeSlot;
+}) {
+  const title =
+    state === 'locked'
+      ? slot === 'evening'
+        ? 'All caught up for now'
+        : `${formatSlotLabel(slot)} session coming up`
+      : `${formatSlotLabel(slot)} window closed`;
+
+  const message =
+    state === 'locked'
+      ? slot === 'evening'
+        ? `Check back at ${formatWindowTime(TIME_SLOT_WINDOWS.evening.opens)} for your evening cards and closeout.`
+        : `${card.type === 'close' ? 'This close step' : 'This card'} unlocks at ${formatWindowTime(TIME_SLOT_WINDOWS[slot].opens)}.`
+      : `This ${formatSlotLabel(slot).toLowerCase()} card closed at ${formatWindowTime(TIME_SLOT_WINDOWS[slot].closes)}.`;
+
+  return (
+    <View style={styles.placeholderCard}>
+      <View style={styles.placeholderEyebrowRow}>
+        <Text style={styles.placeholderEyebrow}>
+          {state === 'locked' ? 'Locked' : 'Missed'}
+        </Text>
+        <View
+          style={[
+            styles.placeholderSlotPill,
+            state === 'locked' ? styles.placeholderSlotPillLocked : styles.placeholderSlotPillMissed,
+          ]}
+        >
+          <Text style={styles.placeholderSlotPillText}>{formatSlotLabel(slot)}</Text>
+        </View>
+      </View>
+
+      <Text style={styles.placeholderTitle}>{title}</Text>
+      <Text style={styles.placeholderBody}>{message}</Text>
+
+      <View style={styles.placeholderMetaRow}>
+        <Ionicons
+          name={state === 'locked' ? 'time-outline' : 'alert-circle-outline'}
+          size={16}
+          color="rgba(6, 41, 12, 0.45)"
+        />
+        <Text style={styles.placeholderMetaText}>
+          {card.type === 'close'
+            ? 'This step stays visible so the day still feels coherent.'
+            : 'You can keep moving through the rest of today’s session.'}
+        </Text>
+      </View>
+    </View>
+  );
+}
+
 const SwipeDeckCard = memo(function SwipeDeckCard({
   card,
+  cardState,
+  cardTimeSlot,
   index,
   totalCards,
   progress,
@@ -212,6 +346,8 @@ const SwipeDeckCard = memo(function SwipeDeckCard({
   closeCardState,
 }: {
   card: DayContent['cards'][number];
+  cardState?: CardState;
+  cardTimeSlot?: TimeSlot;
   index: number;
   totalCards: number;
   progress: SharedValue<number>;
@@ -234,6 +370,7 @@ const SwipeDeckCard = memo(function SwipeDeckCard({
     completionDescription?: string | null;
     isCompleting?: boolean;
     primaryActionLabel?: string;
+    primaryActionDisabled?: boolean;
     onCompleteDay?: () => void;
     onBackToProgram?: () => void;
   };
@@ -258,20 +395,28 @@ const SwipeDeckCard = memo(function SwipeDeckCard({
           style={styles.animatedCardContainer}
         >
           <Animated.View style={[styles.animatedCardContainer, animatedStyle]}>
-            <CardRenderer
-              card={card}
-              cardIndex={index}
-              programName={programName}
-              totalCards={totalCards}
-              onContinue={onContinue}
-              reflectionStorageKey={reflectionStorageKey}
-              routineStorageKey={routineStorageKey}
-              onRoutineProgressChange={onRoutineProgressChange}
-              closeCardState={closeCardState}
-              programReflectionContext={
-                card.type === 'journal' ? programReflectionContext : undefined
-              }
-            />
+            {cardState === 'locked' || cardState === 'blocked' ? (
+              <CardStatePlaceholder
+                card={card}
+                state={cardState}
+                slot={cardTimeSlot ?? DEFAULT_CARD_TIME_META.timeSlot}
+              />
+            ) : (
+              <CardRenderer
+                card={card}
+                cardIndex={index}
+                programName={programName}
+                totalCards={totalCards}
+                onContinue={onContinue}
+                reflectionStorageKey={reflectionStorageKey}
+                routineStorageKey={routineStorageKey}
+                onRoutineProgressChange={onRoutineProgressChange}
+                closeCardState={closeCardState}
+                programReflectionContext={
+                  card.type === 'journal' ? programReflectionContext : undefined
+                }
+              />
+            )}
           </Animated.View>
         </Animated.View>
       </View>
@@ -291,6 +436,7 @@ export default function DayDetailScreen() {
   const [isRestored, setIsRestored] = useState(false);
   const [showResumeToast, setShowResumeToast] = useState(false);
   const [isCompletingDay, setIsCompletingDay] = useState(false);
+  const [clockTick, setClockTick] = useState(() => Date.now());
   const [transportConfigs, setTransportConfigs] = useState<Record<number, TransportConfig>>({});
   const transportConfigsRef = useRef<Record<number, TransportConfig>>({});
   const [routineSummary, setRoutineSummary] = useState({
@@ -414,6 +560,14 @@ export default function DayDetailScreen() {
     return () => clearTimeout(timer);
   }, [showResumeToast]);
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setClockTick(Date.now());
+    }, 60 * 1000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   const handlePageSelected = async (nextIndex: number) => {
     setCurrentIndex(nextIndex);
 
@@ -449,6 +603,7 @@ export default function DayDetailScreen() {
   const partialDays = useMemo(() => progress?.partialDays ?? [], [progress?.partialDays]);
   const isDayCompleted = normalizedDayNumber ? completedDays.includes(normalizedDayNumber) : false;
   const isDayPartial = normalizedDayNumber ? partialDays.includes(normalizedDayNumber) : false;
+  const currentTime = useMemo(() => new Date(clockTick), [clockTick]);
   const scheduledDay = useMemo(() => {
     if (!program) {
       return access.currentDay ?? 1;
@@ -488,6 +643,36 @@ export default function DayDetailScreen() {
     if (!program || access.completionState === 'completed') return null;
     return formatUnlockLabel(getProgramNextUnlockAt(access.startedAt, program.totalDays));
   }, [access.completionState, access.startedAt, program]);
+  const runtimeCards = useMemo(
+    () => dayContent?.cards.map((card) => ({ card, meta: getCardTimeMeta(card) })) ?? [],
+    [dayContent?.cards]
+  );
+  const cardStates = useMemo(
+    () =>
+      runtimeCards.map(({ meta }) =>
+        getCardState(meta, toLocalHHMM(currentTime), isDayCompleted ? { state: 'completed' } : undefined)
+      ),
+    [currentTime, isDayCompleted, runtimeCards]
+  );
+  const currentCard = dayContent?.cards[currentIndex];
+  const currentCardMeta = runtimeCards[currentIndex]?.meta ?? DEFAULT_CARD_TIME_META;
+  const currentCardState = cardStates[currentIndex] ?? 'available';
+  const currentCardStateNotice = useMemo(
+    () =>
+      isDayCompleted || currentCardState === 'locked' || currentCardState === 'blocked'
+        ? null
+        : getCardStateNotice(currentCardState, currentCardMeta.timeSlot),
+    [currentCardMeta.timeSlot, currentCardState, isDayCompleted]
+  );
+  const isCurrentCardActionLocked = currentCardState === 'locked' || currentCardState === 'blocked';
+  const canCompleteFromCurrentCard = Boolean(
+    dayContent &&
+      currentIndex === dayContent.cards.length - 1 &&
+      !isCurrentCardActionLocked &&
+      !isDayCompleted &&
+      (!hasCloseCard || currentCard?.type === 'close')
+  );
+  const hasNextAction = Boolean(dayContent && currentIndex < dayContent.cards.length - 1) || canCompleteFromCurrentCard;
 
   const refreshRoutineSummary = useCallback(async () => {
     if (!dayContent) {
@@ -637,13 +822,17 @@ export default function DayDetailScreen() {
           ? 'Required routine steps are still unfinished. You can save this day as partial and come back later.'
           : 'When you are ready, mark today complete.'
       : 'This earlier practice will stay available even after you complete it.';
-  const primaryCompletionLabel = isDayPartial
-    ? 'Mark fully complete'
-    : routineSummary.hasRequiredRoutines && !routineSummary.allRequiredRoutinesComplete
-      ? 'Save as partial'
-      : isFinalProgramDay
-        ? 'Complete program day'
-        : 'Complete day';
+  const primaryCompletionLabel = currentCard?.type === 'close' && currentCardState === 'locked'
+      ? 'Locked'
+      : currentCard?.type === 'close' && currentCardState === 'blocked'
+        ? 'Missed'
+        : isDayPartial
+          ? 'Mark fully complete'
+          : routineSummary.hasRequiredRoutines && !routineSummary.allRequiredRoutinesComplete
+            ? 'Save as partial'
+            : isFinalProgramDay
+              ? 'Complete program day'
+              : 'Complete day';
 
   return (
     <SafeAreaView style={styles.container}>
@@ -698,6 +887,22 @@ export default function DayDetailScreen() {
         })}
       </View>
 
+      {currentCardStateNotice ? (
+        <View
+          style={[
+            styles.cardStateNotice,
+            currentCardStateNotice.tone === 'warm'
+              ? styles.cardStateNoticeWarm
+              : currentCardStateNotice.tone === 'critical'
+                ? styles.cardStateNoticeCritical
+                : styles.cardStateNoticeMuted,
+          ]}
+        >
+          <Text style={styles.cardStateNoticeEyebrow}>{currentCardStateNotice.eyebrow}</Text>
+          <Text style={styles.cardStateNoticeText}>{currentCardStateNotice.message}</Text>
+        </View>
+      ) : null}
+
       {showResumeToast ? <ResumeToast /> : null}
 
       <TransportContext.Provider value={transportContextValue}>
@@ -723,6 +928,8 @@ export default function DayDetailScreen() {
             >
               <SwipeDeckCard
                 card={card}
+                cardState={cardStates[index]}
+                cardTimeSlot={runtimeCards[index]?.meta.timeSlot}
                 index={index}
                 totalCards={dayContent.cards.length}
                 progress={swipeProgress}
@@ -743,6 +950,7 @@ export default function DayDetailScreen() {
                   completionDescription,
                   isCompleting: isCompletingDay,
                   primaryActionLabel: primaryCompletionLabel,
+                  primaryActionDisabled: currentCard?.type === 'close' && isCurrentCardActionLocked,
                   onCompleteDay: () => {
                     void handlePrimaryDayAction();
                   },
@@ -767,13 +975,19 @@ export default function DayDetailScreen() {
         onNext={() => {
           if (currentIndex < dayContent.cards.length - 1) {
             pagerRef.current?.setPage(currentIndex + 1);
-          } else {
+          } else if (!isCurrentCardActionLocked) {
             void handlePrimaryDayAction();
           }
         }}
         hasPrev={currentIndex > 0}
-        hasNext={currentIndex < dayContent.cards.length}
+        hasNext={hasNextAction}
         centerLabel={(() => {
+          if (currentCardState === 'locked') {
+            return 'LOCKED';
+          }
+          if (currentCardState === 'blocked') {
+            return 'MISSED';
+          }
           if (transportConfigs[currentIndex]?.centerLabel) {
             return transportConfigs[currentIndex]!.centerLabel;
           }
@@ -782,6 +996,12 @@ export default function DayDetailScreen() {
           return getDefaultCenterConfig(currentCard?.type ?? '', isLastCard).label;
         })()}
         centerIcon={(() => {
+          if (currentCardState === 'locked') {
+            return <Ionicons name="lock-closed-outline" size={28} color="#06290C" />;
+          }
+          if (currentCardState === 'blocked') {
+            return <Ionicons name="time-outline" size={28} color="#06290C" />;
+          }
           if (transportConfigs[currentIndex]?.centerIcon !== undefined) {
             return transportConfigs[currentIndex]!.centerIcon;
           }
@@ -797,6 +1017,10 @@ export default function DayDetailScreen() {
           );
         })()}
         onCenterPress={() => {
+          if (isCurrentCardActionLocked) {
+            return;
+          }
+
           const customAction = transportConfigsRef.current[currentIndex]?.onCenterPress;
           if (customAction) {
             customAction();
@@ -808,7 +1032,7 @@ export default function DayDetailScreen() {
             }
           }
         }}
-        disabled={transportConfigs[currentIndex]?.disabled}
+        disabled={transportConfigs[currentIndex]?.disabled || isCurrentCardActionLocked}
       />
     </SafeAreaView>
   );
@@ -891,6 +1115,108 @@ const styles = StyleSheet.create({
   },
   progressSegmentTodo: {
     backgroundColor: 'rgba(227, 243, 229, 0.20)',
+  },
+  cardStateNotice: {
+    marginHorizontal: 20,
+    marginBottom: 8,
+    borderRadius: 18,
+    borderWidth: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    gap: 4,
+  },
+  cardStateNoticeMuted: {
+    backgroundColor: 'rgba(227, 243, 229, 0.08)',
+    borderColor: 'rgba(227, 243, 229, 0.16)',
+  },
+  cardStateNoticeWarm: {
+    backgroundColor: 'rgba(196, 153, 73, 0.16)',
+    borderColor: 'rgba(214, 180, 94, 0.32)',
+  },
+  cardStateNoticeCritical: {
+    backgroundColor: 'rgba(185, 58, 43, 0.16)',
+    borderColor: 'rgba(214, 108, 96, 0.32)',
+  },
+  cardStateNoticeEyebrow: {
+    fontFamily: 'Satoshi-Bold',
+    fontSize: 10,
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
+    color: 'rgba(227, 243, 229, 0.72)',
+  },
+  cardStateNoticeText: {
+    fontFamily: 'Satoshi',
+    fontSize: 13,
+    lineHeight: 20,
+    color: 'rgba(227, 243, 229, 0.88)',
+  },
+  placeholderCard: {
+    flex: 1,
+    borderRadius: 32,
+    backgroundColor: '#F6F5F1',
+    paddingHorizontal: 26,
+    paddingVertical: 28,
+    justifyContent: 'space-between',
+  },
+  placeholderEyebrowRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  placeholderEyebrow: {
+    fontFamily: 'Satoshi-Bold',
+    fontSize: 11,
+    letterSpacing: 1.4,
+    textTransform: 'uppercase',
+    color: 'rgba(6, 41, 12, 0.45)',
+  },
+  placeholderSlotPill: {
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  placeholderSlotPillLocked: {
+    backgroundColor: 'rgba(6, 41, 12, 0.08)',
+  },
+  placeholderSlotPillMissed: {
+    backgroundColor: 'rgba(185, 58, 43, 0.10)',
+  },
+  placeholderSlotPillText: {
+    fontFamily: 'Satoshi-Bold',
+    fontSize: 11,
+    letterSpacing: 0.5,
+    color: 'rgba(6, 41, 12, 0.7)',
+  },
+  placeholderTitle: {
+    marginTop: 16,
+    fontFamily: 'Erode-Medium',
+    fontSize: 34,
+    lineHeight: 38,
+    color: '#06290C',
+  },
+  placeholderBody: {
+    marginTop: 14,
+    fontFamily: 'Satoshi',
+    fontSize: 18,
+    lineHeight: 29,
+    color: 'rgba(6, 41, 12, 0.68)',
+  },
+  placeholderMetaRow: {
+    marginTop: 24,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+    paddingTop: 18,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(6, 41, 12, 0.08)',
+  },
+  placeholderMetaText: {
+    flex: 1,
+    fontFamily: 'Satoshi-Medium',
+    fontSize: 13,
+    lineHeight: 20,
+    color: 'rgba(6, 41, 12, 0.48)',
   },
   pager: {
     flex: 1,
