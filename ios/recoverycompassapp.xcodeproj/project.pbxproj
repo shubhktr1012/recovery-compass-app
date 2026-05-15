@@ -34,8 +34,8 @@
 /* Begin PBXCopyFilesBuildPhase section */
 		52792BC42FA7E5BD0066202C /* Embed Foundation Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
-			dstSubfolderSpec = 13;
 			dstPath = "";
+			dstSubfolderSpec = 13;
 			files = (
 				52792BC32FA7E5BD0066202C /* RecoveryCompassWidgetExtension.appex in Embed Foundation Extensions */,
 			);
