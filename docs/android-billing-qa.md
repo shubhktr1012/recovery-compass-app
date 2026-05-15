@@ -26,8 +26,8 @@ Before running Android billing QA, confirm all of the following:
 - The device is logged into Play Store with that same tester account
 - The installed app comes from Google Play internal testing, not from Android Studio or `adb install`
 - The tester has accepted the internal testing opt-in link
-- RevenueCat `main_android` is preferred for Android if present; otherwise `main_production` is used as fallback
-- Every Android package in the selected RevenueCat offering is attached to the intended Google Play product ID
+- RevenueCat `main_production` is the only canonical offering the app should use
+- Every Android product attached to the selected `main_production` package maps to the intended Google Play product ID
 - The tester account has not already purchased the same non-consumable Google Play product unless you are specifically testing restore
 
 ## Product mapping gate

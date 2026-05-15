@@ -155,7 +155,7 @@ Launch → V4 Splash → Onboarding Carousel → Sign Up / Sign In
 ## Known Bugs
 
 - [ ] iOS purchase environment still noisy unless tested via Xcode StoreKit config or real-device sandbox
-- [ ] RevenueCat / App Store Connect production purchase path still blocked by `MISSING_METADATA` on all 6 iOS IAP products and noisy unused offerings (`default`, `main`, `main_android`)
+- [ ] RevenueCat / App Store Connect production purchase path still blocked by `MISSING_METADATA` on all 6 iOS IAP products; noisy unused offerings still need dashboard archival (`default`, `main`, `main_ios`, `main_android`)
 
 ## Latest Verification
 

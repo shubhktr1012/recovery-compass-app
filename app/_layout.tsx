@@ -45,6 +45,7 @@ LogBox.ignoreLogs([
 const publicEnvState = getPublicEnvState();
 const publicEnv = publicEnvState.env;
 const uninstallGlobalErrorHandler = installGlobalErrorHandler();
+const enablePurchaseQaLogs = process.env.EXPO_PUBLIC_ENABLE_PURCHASE_QA_LOGS === 'true';
 
 function NavigationGate({
     needsOnboardingRealignment,
@@ -176,7 +177,7 @@ function RootLayoutContent() {
     if (isAuthLoading) return;
     if (hasConfiguredPurchasesRef.current) return;
 
-    Purchases.setLogLevel(LOG_LEVEL.VERBOSE);
+    Purchases.setLogLevel(__DEV__ || enablePurchaseQaLogs ? LOG_LEVEL.VERBOSE : LOG_LEVEL.WARN);
 
     const iosApiKey = publicEnv.revenueCatAppleKey;
     const androidApiKey = publicEnv.revenueCatGoogleKey;

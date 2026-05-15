@@ -113,6 +113,7 @@ Notes:
 - `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_ANON_KEY` are required at runtime.
 - `app/.env.example` now includes the full public multi-program key set.
 - Use `six_day_control` and `ninety_day_quit` as the canonical smoking RevenueCat identifiers across app and webhook config.
+- Use `main_production` as the only canonical RevenueCat offering. Keep legacy offerings archived; see [`docs/revenuecat-offerings-runbook.md`](docs/revenuecat-offerings-runbook.md).
 - `EXPO_PUBLIC_EAS_PROJECT_ID` is optional locally, but required if you want EAS config to resolve cleanly from environment.
 - Android Google sign-in setup notes live in [`docs/android-google-signin.md`](docs/android-google-signin.md).
 

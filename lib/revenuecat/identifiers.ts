@@ -1,5 +1,6 @@
 export const DEFAULT_SIX_DAY_REVENUECAT_ID = 'six_day_control';
 export const DEFAULT_NINETY_DAY_REVENUECAT_ID = 'ninety_day_quit';
+export const REVENUECAT_CANONICAL_OFFERING_ID = 'main_production';
 
 export const SIX_DAY_REVENUECAT_ALIASES = [
   DEFAULT_SIX_DAY_REVENUECAT_ID,

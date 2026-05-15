@@ -24,6 +24,7 @@ import {
   getOwnedProgramsFromCustomerInfo,
   getProgramSlugForPackage,
 } from '@/lib/revenuecat/config';
+import { REVENUECAT_CANONICAL_OFFERING_ID } from '@/lib/revenuecat/identifiers';
 import { hasOnboardingContextMismatch } from '@/lib/onboarding.realignment';
 import { useProfile } from '@/providers/profile';
 import { AppTypography } from '@/constants/typography';
@@ -93,24 +94,20 @@ function isAlreadyOwnedPurchaseError(error: any, combinedErrorMessage: string) {
 function getPreferredOffering(
   offerings: Awaited<ReturnType<typeof Purchases.getOfferings>>
 ) {
-  // `main_production` is the canonical live catalog. Keep store-specific
-  // offerings as fallback only so stale `main_android` / `main_ios` catalogs
-  // cannot silently override production package mappings.
-  const preferredKeys =
-    Platform.OS === 'ios'
-      ? ['main_production', 'main_ios', 'main', 'default']
-      : Platform.OS === 'android'
-        ? ['main_production', 'main_android', 'main', 'default']
-        : ['main_production', 'main', 'default'];
+  const canonicalOffering = offerings.all[REVENUECAT_CANONICAL_OFFERING_ID];
 
-  for (const key of preferredKeys) {
-    const offering = offerings.all[key];
-    if (offering?.availablePackages?.length) {
-      return offering;
-    }
+  if (canonicalOffering?.availablePackages?.length) {
+    return canonicalOffering;
   }
 
-  return offerings.current ?? null;
+  if (offerings.current?.availablePackages?.length) {
+    console.warn(
+      `RevenueCat canonical offering '${REVENUECAT_CANONICAL_OFFERING_ID}' is unavailable; falling back to current offering '${offerings.current.identifier}'.`
+    );
+    return offerings.current;
+  }
+
+  return null;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
