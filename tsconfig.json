@@ -17,6 +17,7 @@
     "types/assets.d.ts"
   ],
   "exclude": [
-    "supabase/functions/**/*"
+    "supabase/functions/**/*",
+    "docs/claude-files-temporary/**/*"
   ]
 }

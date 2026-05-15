@@ -77,6 +77,8 @@ secrets/
 tmp/
 temp/
 supabase/.temp/
+supabase/.branches/
+docs/claude-files-temporary/
 
 app-example
 

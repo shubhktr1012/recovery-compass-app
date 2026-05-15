@@ -8,12 +8,16 @@ import {
   CONTENT_QUERY_STALE_TIME,
   MissingContentError,
   ProgramDayRow,
+  ProgramProgressionRow,
   ProgramRow,
+  ProgramTemplateRow,
   getCachedProgram,
   getFallbackProgram,
+  getProgramContentMode,
   mapProgramDayRowToDayContent,
   mapProgramRowToProgramContent,
   programQueryKey,
+  resolveTemplateDays,
 } from './contentQueryUtils';
 
 export function useProgram(programSlug: ProgramSlug | null) {
@@ -26,28 +30,25 @@ export function useProgram(programSlug: ProgramSlug | null) {
         throw new Error('Program slug is required.');
       }
 
-      const [{ data: programRows, error: programError }, { data: dayRows, error: dayError }] =
-        await Promise.all([
-          supabase.from('programs').select('*').eq('slug', programSlug),
-          supabase.from('program_days').select('*').eq('program_slug', programSlug).order('day_number'),
-        ]);
+      const { data: programRows, error: programError } = await supabase
+        .from('programs')
+        .select('*')
+        .eq('slug', programSlug);
 
       if (programError) {
         throw programError;
       }
 
-      if (dayError) {
-        throw dayError;
-      }
-
       const programRow = ((programRows ?? []) as unknown as ProgramRow[])[0] ?? null;
-      const days = ((dayRows ?? []) as unknown as ProgramDayRow[]).map((row) =>
-        mapProgramDayRowToDayContent(row, programSlug)
-      );
 
       if (!programRow) {
         throw new MissingContentError(`Program ${programSlug} was not found in Supabase.`);
       }
+
+      const days =
+        getProgramContentMode(programRow) === 'template'
+          ? await loadTemplateDays(programSlug)
+          : await loadUniqueDays(programSlug);
 
       const program = mapProgramRowToProgramContent(programRow, days);
       if (!program) {
@@ -68,4 +69,43 @@ export function useProgram(programSlug: ProgramSlug | null) {
     isLoading: query.isPending && !query.data,
     error: query.error ?? null,
   };
+}
+
+async function loadUniqueDays(programSlug: ProgramSlug): Promise<ProgramContent['days']> {
+  const { data, error } = await supabase
+    .from('program_days')
+    .select('*')
+    .eq('program_slug', programSlug)
+    .order('day_number');
+
+  if (error) {
+    throw error;
+  }
+
+  return ((data ?? []) as unknown as ProgramDayRow[]).map((row) => mapProgramDayRowToDayContent(row, programSlug));
+}
+
+async function loadTemplateDays(programSlug: ProgramSlug): Promise<ProgramContent['days']> {
+  const [{ data: templateData, error: templateError }, { data: progressionData, error: progressionError }] =
+    await Promise.all([
+      supabase.from('program_templates').select('*').eq('program_slug', programSlug).single(),
+      supabase.from('program_progressions').select('*').eq('program_slug', programSlug).order('day_number'),
+    ]);
+
+  if (templateError) {
+    throw templateError;
+  }
+
+  if (progressionError) {
+    throw progressionError;
+  }
+
+  const templateRow = (templateData as unknown as ProgramTemplateRow | null) ?? null;
+  const progressionRows = (progressionData ?? []) as unknown as ProgramProgressionRow[];
+
+  if (!templateRow) {
+    throw new MissingContentError(`Program template for ${programSlug} was not found in Supabase.`);
+  }
+
+  return resolveTemplateDays(programSlug, templateRow, progressionRows);
 }

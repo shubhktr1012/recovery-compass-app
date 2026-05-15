@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      checkout_carts: {
+        Row: {
+          created_at: string
+          items: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          items?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          items?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       client_error_events: {
         Row: {
           component_stack: string | null
@@ -113,6 +134,78 @@ export type Database = {
         }
         Relationships: []
       }
+      enquiries: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          message: string
+          name: string
+          phone: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          message: string
+          name: string
+          phone: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          message?: string
+          name?: string
+          phone?: string
+        }
+        Relationships: []
+      }
+      integration_failures: {
+        Row: {
+          created_at: string
+          error_message: string
+          external_event_id: string | null
+          external_transaction_id: string | null
+          id: string
+          metadata: Json | null
+          operation: string
+          resolved_at: string | null
+          severity: string
+          source: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          error_message: string
+          external_event_id?: string | null
+          external_transaction_id?: string | null
+          id?: string
+          metadata?: Json | null
+          operation: string
+          resolved_at?: string | null
+          severity?: string
+          source: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          error_message?: string
+          external_event_id?: string | null
+          external_transaction_id?: string | null
+          id?: string
+          metadata?: Json | null
+          operation?: string
+          resolved_at?: string | null
+          severity?: string
+          source?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       journal_entries: {
         Row: {
           cravings_level: number | null
@@ -190,48 +283,6 @@ export type Database = {
           },
         ]
       }
-      questionnaire_runs: {
-        Row: {
-          completed_at: string
-          created_at: string
-          id: string
-          journey_key: string
-          primary_concern_label: string | null
-          questionnaire_answers: Json
-          questionnaire_version: string
-          recommended_program: string
-          source: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          completed_at?: string
-          created_at?: string
-          id?: string
-          journey_key: string
-          primary_concern_label?: string | null
-          questionnaire_answers: Json
-          questionnaire_version: string
-          recommended_program: string
-          source: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          completed_at?: string
-          created_at?: string
-          id?: string
-          journey_key?: string
-          primary_concern_label?: string | null
-          questionnaire_answers?: Json
-          questionnaire_version?: string
-          recommended_program?: string
-          source?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       onboarding_responses: {
         Row: {
           age: number | null
@@ -289,54 +340,123 @@ export type Database = {
         }
         Relationships: []
       }
+      outbound_email_deliveries: {
+        Row: {
+          created_at: string
+          dedupe_key: string
+          email_type: string
+          id: string
+          last_error: string | null
+          metadata: Json | null
+          program_slug: string | null
+          provider: string | null
+          provider_event_id: string | null
+          provider_transaction_id: string | null
+          recipient_email: string | null
+          sent_at: string | null
+          status: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          dedupe_key: string
+          email_type: string
+          id?: string
+          last_error?: string | null
+          metadata?: Json | null
+          program_slug?: string | null
+          provider?: string | null
+          provider_event_id?: string | null
+          provider_transaction_id?: string | null
+          recipient_email?: string | null
+          sent_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          dedupe_key?: string
+          email_type?: string
+          id?: string
+          last_error?: string | null
+          metadata?: Json | null
+          program_slug?: string | null
+          provider?: string | null
+          provider_event_id?: string | null
+          provider_transaction_id?: string | null
+          recipient_email?: string | null
+          sent_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
+          consecutive_absent_days: number
           created_at: string | null
           display_name: string | null
           email: string | null
           expo_push_token: string | null
           id: string
+          notifications_enabled: boolean
           onboarding_complete: boolean | null
           onboarding_completed_at: string | null
+          primary_concern: string | null
           push_opt_in: boolean
           questionnaire_answers: Json | null
           recommended_program: string | null
           revenuecat_app_user_id: string | null
+          sleep_time: string
           timezone: string
           updated_at: string | null
+          wake_time: string
         }
         Insert: {
           avatar_url?: string | null
+          consecutive_absent_days?: number
           created_at?: string | null
           display_name?: string | null
           email?: string | null
           expo_push_token?: string | null
           id: string
+          notifications_enabled?: boolean
           onboarding_complete?: boolean | null
           onboarding_completed_at?: string | null
+          primary_concern?: string | null
           push_opt_in?: boolean
           questionnaire_answers?: Json | null
           recommended_program?: string | null
           revenuecat_app_user_id?: string | null
+          sleep_time?: string
           timezone?: string
           updated_at?: string | null
+          wake_time?: string
         }
         Update: {
           avatar_url?: string | null
+          consecutive_absent_days?: number
           created_at?: string | null
           display_name?: string | null
           email?: string | null
           expo_push_token?: string | null
           id?: string
+          notifications_enabled?: boolean
           onboarding_complete?: boolean | null
           onboarding_completed_at?: string | null
+          primary_concern?: string | null
           push_opt_in?: boolean
           questionnaire_answers?: Json | null
           recommended_program?: string | null
           revenuecat_app_user_id?: string | null
+          sleep_time?: string
           timezone?: string
           updated_at?: string | null
+          wake_time?: string
         }
         Relationships: []
       }
@@ -349,8 +469,11 @@ export type Database = {
           current_day: number | null
           id: string
           owned_program: string | null
+          paused_at: string | null
+          program_state: string
           purchase_state: string
           revenuecat_product_id: string | null
+          scheduled_start_date: string | null
           started_at: string | null
           updated_at: string
           user_id: string
@@ -363,8 +486,11 @@ export type Database = {
           current_day?: number | null
           id?: string
           owned_program?: string | null
+          paused_at?: string | null
+          program_state?: string
           purchase_state?: string
           revenuecat_product_id?: string | null
+          scheduled_start_date?: string | null
           started_at?: string | null
           updated_at?: string
           user_id: string
@@ -377,30 +503,12 @@ export type Database = {
           current_day?: number | null
           id?: string
           owned_program?: string | null
+          paused_at?: string | null
+          program_state?: string
           purchase_state?: string
           revenuecat_product_id?: string | null
+          scheduled_start_date?: string | null
           started_at?: string | null
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      user_program_preferences: {
-        Row: {
-          active_program: string
-          created_at: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          active_program: string
-          created_at?: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          active_program?: string
-          created_at?: string
           updated_at?: string
           user_id?: string
         }
@@ -498,6 +606,53 @@ export type Database = {
         }
         Relationships: []
       }
+      program_progressions: {
+        Row: {
+          created_at: string
+          day_goal: string
+          day_number: number
+          day_title: string
+          id: string
+          overrides: Json | null
+          phase: string | null
+          program_slug: string
+          updated_at: string
+          variables: Json
+        }
+        Insert: {
+          created_at?: string
+          day_goal?: string
+          day_number: number
+          day_title: string
+          id?: string
+          overrides?: Json | null
+          phase?: string | null
+          program_slug: string
+          updated_at?: string
+          variables?: Json
+        }
+        Update: {
+          created_at?: string
+          day_goal?: string
+          day_number?: number
+          day_title?: string
+          id?: string
+          overrides?: Json | null
+          phase?: string | null
+          program_slug?: string
+          updated_at?: string
+          variables?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "program_progressions_program_slug_fkey"
+            columns: ["program_slug"]
+            isOneToOne: false
+            referencedRelation: "programs"
+            referencedColumns: ["slug"]
+          },
+        ]
+      }
       program_reflections: {
         Row: {
           card_index: number
@@ -537,9 +692,42 @@ export type Database = {
         }
         Relationships: []
       }
+      program_templates: {
+        Row: {
+          created_at: string
+          id: string
+          program_slug: string
+          template_slots: Json
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          program_slug: string
+          template_slots?: Json
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          program_slug?: string
+          template_slots?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "program_templates_program_slug_fkey"
+            columns: ["program_slug"]
+            isOneToOne: true
+            referencedRelation: "programs"
+            referencedColumns: ["slug"]
+          },
+        ]
+      }
       programs: {
         Row: {
           category: string | null
+          content_mode: string
           created_at: string | null
           description: string | null
           display_order: number | null
@@ -547,12 +735,14 @@ export type Database = {
           id: string
           is_active: boolean | null
           slug: string | null
+          time_slots_enabled: boolean
           title: string
           total_days: number | null
           updated_at: string | null
         }
         Insert: {
           category?: string | null
+          content_mode?: string
           created_at?: string | null
           description?: string | null
           display_order?: number | null
@@ -560,12 +750,14 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           slug?: string | null
+          time_slots_enabled?: boolean
           title: string
           total_days?: number | null
           updated_at?: string | null
         }
         Update: {
           category?: string | null
+          content_mode?: string
           created_at?: string | null
           description?: string | null
           display_order?: number | null
@@ -573,9 +765,52 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           slug?: string | null
+          time_slots_enabled?: boolean
           title?: string
           total_days?: number | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      questionnaire_runs: {
+        Row: {
+          completed_at: string
+          created_at: string
+          id: string
+          journey_key: string
+          primary_concern_label: string | null
+          questionnaire_answers: Json
+          questionnaire_version: string
+          recommended_program: string
+          source: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string
+          created_at?: string
+          id?: string
+          journey_key: string
+          primary_concern_label?: string | null
+          questionnaire_answers: Json
+          questionnaire_version: string
+          recommended_program: string
+          source: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string
+          created_at?: string
+          id?: string
+          journey_key?: string
+          primary_concern_label?: string | null
+          questionnaire_answers?: Json
+          questionnaire_version?: string
+          recommended_program?: string
+          source?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -634,6 +869,53 @@ export type Database = {
             columns: ["routine_id"]
             isOneToOne: false
             referencedRelation: "user_routines"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sales_checkout_sessions: {
+        Row: {
+          amount_inr: number
+          created_at: string
+          email: string
+          items: Json
+          paid_at: string | null
+          paid_transaction_id: string | null
+          status: string
+          token: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          amount_inr: number
+          created_at?: string
+          email: string
+          items?: Json
+          paid_at?: string | null
+          paid_transaction_id?: string | null
+          status?: string
+          token: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          amount_inr?: number
+          created_at?: string
+          email?: string
+          items?: Json
+          paid_at?: string | null
+          paid_transaction_id?: string | null
+          status?: string
+          token?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_checkout_sessions_paid_transaction_id_fkey"
+            columns: ["paid_transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
             referencedColumns: ["id"]
           },
         ]
@@ -701,6 +983,57 @@ export type Database = {
         }
         Relationships: []
       }
+      testimonials: {
+        Row: {
+          age: number | null
+          city: string | null
+          consent_status: string
+          created_at: string
+          display_name: string
+          id: string
+          internal_notes: string | null
+          is_active: boolean
+          is_featured_homepage: boolean
+          program_slug: string | null
+          quote: string
+          sort_order: number
+          source_type: string
+          updated_at: string
+        }
+        Insert: {
+          age?: number | null
+          city?: string | null
+          consent_status?: string
+          created_at?: string
+          display_name: string
+          id?: string
+          internal_notes?: string | null
+          is_active?: boolean
+          is_featured_homepage?: boolean
+          program_slug?: string | null
+          quote: string
+          sort_order?: number
+          source_type?: string
+          updated_at?: string
+        }
+        Update: {
+          age?: number | null
+          city?: string | null
+          consent_status?: string
+          created_at?: string
+          display_name?: string
+          id?: string
+          internal_notes?: string | null
+          is_active?: boolean
+          is_featured_homepage?: boolean
+          program_slug?: string | null
+          quote?: string
+          sort_order?: number
+          source_type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       transactions: {
         Row: {
           amount: number
@@ -749,6 +1082,121 @@ export type Database = {
           provider_signature?: string | null
           updated_at?: string
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      user_day_states: {
+        Row: {
+          card_details: Json
+          cards_completed: number
+          cards_total: number
+          created_at: string
+          day_number: number
+          day_state: string
+          finalized_at: string | null
+          id: string
+          program_slug: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          card_details?: Json
+          cards_completed?: number
+          cards_total?: number
+          created_at?: string
+          day_number: number
+          day_state: string
+          finalized_at?: string | null
+          id?: string
+          program_slug: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          card_details?: Json
+          cards_completed?: number
+          cards_total?: number
+          created_at?: string
+          day_number?: number
+          day_state?: string
+          finalized_at?: string | null
+          id?: string
+          program_slug?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_day_states_program_slug_fkey"
+            columns: ["program_slug"]
+            isOneToOne: false
+            referencedRelation: "programs"
+            referencedColumns: ["slug"]
+          },
+        ]
+      }
+      user_events: {
+        Row: {
+          card_id: string | null
+          created_at: string
+          day_number: number | null
+          event_data: Json
+          event_type: string
+          id: string
+          occurred_at: string
+          program_slug: string | null
+          user_id: string
+        }
+        Insert: {
+          card_id?: string | null
+          created_at?: string
+          day_number?: number | null
+          event_data?: Json
+          event_type: string
+          id?: string
+          occurred_at?: string
+          program_slug?: string | null
+          user_id: string
+        }
+        Update: {
+          card_id?: string | null
+          created_at?: string
+          day_number?: number | null
+          event_data?: Json
+          event_type?: string
+          id?: string
+          occurred_at?: string
+          program_slug?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_events_program_slug_fkey"
+            columns: ["program_slug"]
+            isOneToOne: false
+            referencedRelation: "programs"
+            referencedColumns: ["slug"]
+          },
+        ]
+      }
+      user_program_preferences: {
+        Row: {
+          active_program: string
+          created_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          active_program: string
+          created_at?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          active_program?: string
+          created_at?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -830,31 +1278,55 @@ export type Database = {
           reset_at: string
         }[]
       }
-      sync_program_progress: {
+      derive_program_state: {
         Args: {
-          p_archived_at?: string
-          p_completed_at?: string
-          p_completed_days?: number[]
-          p_current_day: number
-          p_partial_days?: number[]
-          p_program_id: string
+          p_completion_state: string
+          p_owned_program: string
+          p_paused_at: string
+          p_purchase_state: string
+          p_scheduled_start_date: string
         }
-        Returns: {
-          archived_at: string
-          completed_at: string
-          completed_days: number[]
-          current_day: number
-        }[]
+        Returns: string
       }
       select_active_program: {
-        Args: {
-          p_program_id: string
-        }
+        Args: { p_program_id: string }
         Returns: {
           active_program: string
           updated_at: string
         }[]
       }
+      sync_program_progress:
+        | {
+            Args: {
+              p_archived_at?: string
+              p_completed_at?: string
+              p_completed_days?: number[]
+              p_current_day: number
+              p_program_id: string
+            }
+            Returns: {
+              archived_at: string
+              completed_at: string
+              completed_days: number[]
+              current_day: number
+            }[]
+          }
+        | {
+            Args: {
+              p_archived_at?: string
+              p_completed_at?: string
+              p_completed_days?: number[]
+              p_current_day: number
+              p_partial_days?: number[]
+              p_program_id: string
+            }
+            Returns: {
+              archived_at: string
+              completed_at: string
+              completed_days: number[]
+              current_day: number
+            }[]
+          }
     }
     Enums: {
       [_ in never]: never
