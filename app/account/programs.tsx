@@ -9,7 +9,7 @@ import { useQuery } from '@tanstack/react-query';
 import { usePrograms } from '@/content';
 import { useOwnedPrograms } from '@/hooks/useOwnedPrograms';
 import { useProfile } from '@/providers/profile';
-import { ProgramIcon } from '@/components/dashboard/ExplorePrograms';
+import { ExplorePrograms, ProgramIcon } from '@/components/dashboard/ExplorePrograms';
 import { SkeletonCircle, SkeletonLine, SkeletonTitle } from '@/components/ui/Skeleton';
 import { AppTypography } from '@/constants/typography';
 import type { ProgramContent, ProgramSlug } from '@/types/content';
@@ -127,7 +127,7 @@ function ProgramsSkeleton() {
 
 export default function ProgramsLibraryScreen() {
   const router = useRouter();
-  const { programs } = usePrograms();
+  const { programs, isLoading: isProgramsLoading } = usePrograms();
   const { ownedPrograms, isLoading } = useOwnedPrograms();
   const { access, profile, selectActiveProgram } = useProfile();
   const [switchingProgram, setSwitchingProgram] = useState<ProgramSlug | null>(null);
@@ -240,23 +240,32 @@ export default function ProgramsLibraryScreen() {
     [hasProgramPersonalization, programs, switchToProgram]
   );
 
-  const { activeProgram, otherOwnedPrograms } = useMemo(() => {
+  const { activeProgram, otherOwnedPrograms, catalogPrograms } = useMemo(() => {
     const ownedSlugSet = new Set([
       ...(activeProgramSlug ? [activeProgramSlug] : []),
       ...ownedPrograms.map((entry) => entry.slug),
     ]);
+    const recommendedProgramSlug = profile?.recommended_program ?? null;
 
     const ownedCatalog = programs.filter((program) => ownedSlugSet.has(program.slug));
     const activeProgram = activeProgramSlug
       ? ownedCatalog.find((program) => program.slug === activeProgramSlug) ?? null
       : null;
     const otherOwnedPrograms = ownedCatalog.filter((program) => program.slug !== activeProgramSlug);
+    const catalogPrograms = programs
+      .filter((program) => !ownedSlugSet.has(program.slug))
+      .sort((left, right) => {
+        const leftRecommended = left.slug === recommendedProgramSlug ? 1 : 0;
+        const rightRecommended = right.slug === recommendedProgramSlug ? 1 : 0;
+        return rightRecommended - leftRecommended;
+      });
 
     return {
       activeProgram,
       otherOwnedPrograms,
+      catalogPrograms,
     };
-  }, [activeProgramSlug, ownedPrograms, programs]);
+  }, [activeProgramSlug, ownedPrograms, profile?.recommended_program, programs]);
 
   return (
     <SafeAreaView className="flex-1 bg-surface">
@@ -277,7 +286,9 @@ export default function ProgramsLibraryScreen() {
             My programs
           </Text>
           <Text className="text-forest/60 mt-3 pr-6" style={AppTypography.body}>
-            Your dashboard stays focused on the journey you are actively moving through. The rest of your unlocked library lives here.
+            {activeProgram
+              ? 'Your dashboard stays focused on the journey you are actively moving through. The rest of your unlocked library lives here.'
+              : 'Your onboarding recommendation is saved here. Unlock a program when you are ready to begin a guided timeline.'}
           </Text>
         </View>
 
@@ -332,6 +343,16 @@ export default function ProgramsLibraryScreen() {
                   ))}
                 </View>
               )}
+            </View>
+
+            <View className="pt-5">
+              <ExplorePrograms
+                title="Program Catalog"
+                programs={catalogPrograms}
+                isLoading={isProgramsLoading}
+                recommendedProgramSlug={profile?.recommended_program ?? null}
+                emptyMessage="You have unlocked every available program."
+              />
             </View>
           </View>
         )}

@@ -42,6 +42,7 @@ const PROGRAM_TAB_ROUTE = '/(tabs)/program' as const;
 const PROGRAM_LIBRARY_ROUTE = '/account/programs' as const;
 const REALIGNMENT_ROUTE = '/personalization?mode=realign' as const;
 const ENABLE_PURCHASE_QA_LOGS = process.env.EXPO_PUBLIC_ENABLE_PURCHASE_QA_LOGS === 'true';
+const ENABLE_FREE_TIER_ENTRY = process.env.EXPO_PUBLIC_ENABLE_FREE_TIER_ENTRY === 'true';
 
 function wait(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -150,7 +151,7 @@ export default function Paywall() {
   const navigation = useNavigation<any>();
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
-  const { access, profile, refreshAccess, setProgramAccess } = useProfile();
+  const { access, profile, refreshAccess, setProgramAccess, activateFreeTier } = useProfile();
 
   const [loading, setLoading] = useState(false);
   const [packages, setPackages] = useState<PurchasesPackage[]>([]);
@@ -291,6 +292,23 @@ export default function Paywall() {
     navigation.navigate('personalization', { resume: 'review' });
   };
 
+  const handleContinueFreeAccess = async () => {
+    setLoading(true);
+
+    try {
+      await activateFreeTier();
+      router.replace('/' as const);
+    } catch (error: any) {
+      void captureError(error, { source: 'paywall', metadata: { stage: 'continue_free_access' } });
+      Alert.alert(
+        'Could not continue',
+        error?.message ?? 'Please try again in a moment.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const visibleProgramSlugs = useMemo(() => {
     if (targetedProgram) {
       return [targetedProgram] as ProgramSlug[];
@@ -369,6 +387,8 @@ export default function Paywall() {
     hasVisiblePurchaseIntent &&
     !fetchingOfferings &&
     eligiblePackages.length === 0;
+  const canContinueFreeAccess =
+    ENABLE_FREE_TIER_ENTRY && !access.ownedProgram && Boolean(profile?.onboarding_complete);
 
   // Default select the primary package
   useEffect(() => {
@@ -594,8 +614,17 @@ export default function Paywall() {
           paddingBottom: 180 + insets.bottom,
         }}
       >
-        {/* ── Back button ── */}
-        <View style={{ paddingHorizontal: 20, paddingTop: 14 }}>
+        {/* ── Top actions ── */}
+        <View
+          style={{
+            paddingHorizontal: 20,
+            paddingTop: 14,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 12,
+          }}
+        >
           <Pressable
             onPress={handleBack}
             hitSlop={20}
@@ -612,6 +641,7 @@ export default function Paywall() {
           >
             <Ionicons name="chevron-back" size={14} color="rgba(6,41,12,0.55)" />
           </Pressable>
+          <View style={{ width: 32, height: 32 }} />
         </View>
 
         {/* ── Centered headline block (always rendered) ── */}
@@ -792,6 +822,40 @@ export default function Paywall() {
                 />
               );
             })}
+
+            {/* ── Free-access path (below recommended card) ── */}
+            {canContinueFreeAccess && (
+              <Pressable
+                onPress={handleContinueFreeAccess}
+                disabled={loading}
+                hitSlop={{ top: 14, bottom: 14, left: 20, right: 20 }}
+                style={{
+                  alignSelf: 'center',
+                  minHeight: 40,
+                  paddingTop: 16,
+                  paddingBottom: 4,
+                  paddingHorizontal: 8,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  opacity: loading ? 0.58 : 1,
+                }}
+                accessibilityRole="button"
+                accessibilityLabel="Continue with free access — includes CALM and program browsing"
+              >
+                <Text
+                  numberOfLines={1}
+                  style={{
+                    fontFamily: 'Satoshi-Medium',
+                    fontSize: 12,
+                    color: 'rgba(6,41,12,0.38)',
+                    textDecorationLine: 'underline',
+                    textDecorationColor: 'rgba(6,41,12,0.18)',
+                  }}
+                >
+                  Continue with free access
+                </Text>
+              </Pressable>
+            )}
 
             {secondaryPackageOptions.length > 0 && (
               <View style={{ marginTop: 22 }}>

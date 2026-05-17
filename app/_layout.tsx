@@ -107,6 +107,10 @@ function NavigationGate({
                     if (segments[1] !== 'personalization') {
                         target = '/personalization' as Href;
                     }
+                } else if (profile.free_tier_activated_at) {
+                    if (!inTabsGroup && !inAccountStack && !inPaywall && !inPersonalization) {
+                        target = '/' as Href;
+                    }
                 } else if (!inPaywall) {
                     target = '/paywall' as Href;
                 }

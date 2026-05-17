@@ -8,6 +8,9 @@ import { AppTypography } from '@/constants/typography';
 interface ExploreProgramsProps {
   programs: ProgramContent[];
   isLoading?: boolean;
+  recommendedProgramSlug?: ProgramContent['slug'] | null;
+  title?: string;
+  emptyMessage?: string;
 }
 
 const programStatusTextStyle = {
@@ -119,6 +122,9 @@ export function ProgramIcon({ category }: { category: ProgramContent['category']
 export function ExplorePrograms({
   programs,
   isLoading = false,
+  recommendedProgramSlug = null,
+  title = 'Explore Programs',
+  emptyMessage = 'You have already unlocked the programs currently available here.',
 }: ExploreProgramsProps) {
   const router = useRouter();
 
@@ -132,7 +138,7 @@ export function ExplorePrograms({
   return (
     <View className="mt-2">
       <View className="px-0.5 mb-3">
-        <Text className="text-forest tracking-[-0.01em]" style={AppTypography.displaySectionTitle}>Explore Programs</Text>
+        <Text className="text-forest tracking-[-0.01em]" style={AppTypography.displaySectionTitle}>{title}</Text>
       </View>
 
       {isLoading ? (
@@ -161,7 +167,7 @@ export function ExplorePrograms({
             className="text-forest/55"
             style={AppTypography.body}
           >
-            You have already unlocked the programs currently available here.
+            {emptyMessage}
           </Text>
         </View>
       ) : (
@@ -183,6 +189,13 @@ export function ExplorePrograms({
                 {program.description}
               </Text>
               <View className="flex-row items-center flex-wrap gap-2 mt-2">
+                {program.slug === recommendedProgramSlug ? (
+                  <View className="bg-forest px-2 py-0.5 rounded-full">
+                    <Text className="text-white" style={programStatusTextStyle}>
+                      Recommended from onboarding
+                    </Text>
+                  </View>
+                ) : null}
                 {program.hasAudio ? (
                   <View className="bg-[#E3F2E5] px-2 py-0.5 rounded-full">
                     <Text className="text-forest" style={programStatusTextStyle}>Audio</Text>

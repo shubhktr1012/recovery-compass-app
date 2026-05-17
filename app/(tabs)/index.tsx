@@ -1,5 +1,6 @@
-import { View, ScrollView, Text } from 'react-native';
+import { Pressable, View, ScrollView, Text } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
+import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useMemo } from 'react';
@@ -32,12 +33,112 @@ import { buildDayStateProgressSummary, buildRollingCompletionSummary } from '@/l
 import { resolveProfileIdentity } from '@/lib/profile-identity';
 import type { QuestionnaireAnswersSnapshot } from '@/lib/program-statistics';
 import { StepPermissionPrompt } from '@/components/steps/StepPermissionPrompt';
+import { AppTypography } from '@/constants/typography';
 
 function getGreetingLabel() {
   const hour = new Date().getHours();
   if (hour < 12) return 'Good morning';
   if (hour < 17) return 'Good afternoon';
   return 'Good evening';
+}
+
+function orderProgramsForRecommendation(programs: ReturnType<typeof usePrograms>['programs'], recommendedProgram: ProgramSlug | null) {
+  if (!recommendedProgram) {
+    return programs;
+  }
+
+  return [...programs].sort((left, right) => {
+    const leftRecommended = left.slug === recommendedProgram ? 1 : 0;
+    const rightRecommended = right.slug === recommendedProgram ? 1 : 0;
+    return rightRecommended - leftRecommended;
+  });
+}
+
+function FreeCalmCard() {
+  const router = useRouter();
+
+  return (
+    <Pressable
+      onPress={() => router.push('/(tabs)/journal')}
+      className="bg-forest rounded-3xl px-5 py-5 shadow-sm shadow-forest/10"
+    >
+      <Text className="uppercase text-sage/65" style={[AppTypography.metaMedium, { letterSpacing: 1.5 }]}>
+        Free Access
+      </Text>
+      <Text className="text-white mt-2" style={AppTypography.displayMetric}>
+        CALM access stays open.
+      </Text>
+      <Text className="text-white/58 mt-2" style={AppTypography.body}>
+        Use the journal and regulation space while you decide which guided program to unlock.
+      </Text>
+      <View className="self-start bg-white rounded-full px-4 py-2.5 mt-4">
+        <Text className="text-forest" style={AppTypography.buttonMd}>
+          Open Journal
+        </Text>
+      </View>
+    </Pressable>
+  );
+}
+
+function FreeTierHomeScreen() {
+  const { profile } = useProfile();
+  const onboardingQuery = useOnboardingResponse();
+  const onboardingResponse = onboardingQuery.data ?? null;
+  const { programs, isLoading: isProgramsLoading } = usePrograms();
+  const recommendedProgram = profile?.recommended_program ?? null;
+  const explorePrograms = useMemo(
+    () => orderProgramsForRecommendation(programs, recommendedProgram),
+    [programs, recommendedProgram]
+  );
+  const profileIdentity = resolveProfileIdentity({
+    displayName: profile?.display_name,
+    fullName: onboardingResponse?.full_name,
+    email: profile?.email ?? null,
+    fallbackLabel: 'Friend',
+  });
+
+  return (
+    <View className="flex-1 bg-surface">
+      <StatusBar style="light" />
+      <ScrollView contentContainerClassName="flex-grow pb-32" bounces={false} showsVerticalScrollIndicator={false}>
+        <DashboardHeader
+          greetingLabel={getGreetingLabel()}
+          firstName={profileIdentity.displayName}
+          avatarLetter={profileIdentity.initial}
+          avatarUrl={profile?.avatar_url ?? null}
+          activeProgramName="Free Access"
+          programEyebrow="Access:"
+        />
+
+        <View
+          className="bg-surface rounded-t-[32px] -mt-[24px] px-5 pt-6 pb-28 relative z-10 flex-col gap-5"
+          style={{ minHeight: 600 }}
+        >
+          <FreeCalmCard />
+
+          <View className="bg-white rounded-[24px] px-5 py-5 shadow-sm shadow-forest/5">
+            <Text className="uppercase text-forest/38" style={[AppTypography.eyebrow, { letterSpacing: 1.5 }]}>
+              Recommendation saved
+            </Text>
+            <Text className="text-forest mt-1" style={AppTypography.displayCardSm}>
+              Your onboarding answers are stored.
+            </Text>
+            <Text className="text-forest/55 mt-2" style={AppTypography.body}>
+              You will not need to repeat the questionnaire just to browse or buy a program.
+            </Text>
+          </View>
+
+          <ExplorePrograms
+            title="Choose a Program"
+            programs={explorePrograms}
+            isLoading={isProgramsLoading}
+            recommendedProgramSlug={recommendedProgram}
+            emptyMessage="Programs are still syncing. Please check again shortly."
+          />
+        </View>
+      </ScrollView>
+    </View>
+  );
 }
 
 function HomeScreenContent({ activeProgram }: { activeProgram: ProgramSlug }) {
@@ -242,10 +343,14 @@ function HomeScreenContent({ activeProgram }: { activeProgram: ProgramSlug }) {
 }
 
 export default function HomeScreen() {
-  const { access, isLoading } = useProfile();
+  const { access, isLoading, profile } = useProfile();
 
-  if (isLoading || !access.ownedProgram || access.purchaseState === 'not_owned') {
+  if (isLoading) {
     return null;
+  }
+
+  if (!access.ownedProgram || access.purchaseState === 'not_owned') {
+    return profile?.free_tier_activated_at ? <FreeTierHomeScreen /> : null;
   }
 
   return <HomeScreenContent activeProgram={access.ownedProgram as ProgramSlug} />;

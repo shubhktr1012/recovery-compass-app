@@ -9,7 +9,7 @@ import * as Haptics from 'expo-haptics';
 
 import Svg, { Path } from 'react-native-svg';
 
-import { useProgram } from '@/content';
+import { useProgram, usePrograms } from '@/content';
 import { useProfile } from '@/providers/profile';
 import { useMinuteClock } from '@/hooks/useMinuteClock';
 import { useFinalizedDayStates } from '@/hooks/useFinalizedDayStates';
@@ -23,6 +23,7 @@ import {
 } from '@/lib/programs/schedule';
 import { TimelineItem } from '@/components/program/TimelineItem';
 import { ProgramCard } from '@/components/program/ProgramCard';
+import { ExplorePrograms } from '@/components/dashboard/ExplorePrograms';
 import { PaperGrain } from '@/components/ui/PaperGrain';
 import { ProgramWatermark } from '@/components/ui/TabWatermarks';
 import { DayContent, ProgramSlug } from '@/types/content';
@@ -95,6 +96,72 @@ const ProgramTimelineNode = memo(({
   );
 });
 ProgramTimelineNode.displayName = 'ProgramTimelineNode';
+
+function FreeProgramDiscoveryScreen() {
+  const { profile } = useProfile();
+  const { programs, isLoading } = usePrograms();
+  const recommendedProgram = profile?.recommended_program ?? null;
+  const sortedPrograms = useMemo(() => {
+    if (!recommendedProgram) {
+      return programs;
+    }
+
+    return [...programs].sort((left, right) => {
+      const leftRecommended = left.slug === recommendedProgram ? 1 : 0;
+      const rightRecommended = right.slug === recommendedProgram ? 1 : 0;
+      return rightRecommended - leftRecommended;
+    });
+  }, [programs, recommendedProgram]);
+
+  return (
+    <View className="flex-1 bg-surface">
+      <StatusBar style="light" />
+      <ScrollView contentContainerClassName="flex-grow pb-32" bounces={false} showsVerticalScrollIndicator={false}>
+        <View className="bg-forest px-6 pt-16 pb-12 relative overflow-hidden">
+          <ProgramWatermark
+            width={280}
+            height={170}
+            opacity={0.08}
+            style={{ position: 'absolute', right: -20, top: 28 }}
+          />
+
+          <Text className="uppercase text-sage/55" style={[AppTypography.metaMedium, { letterSpacing: 2 }]}>
+            Program Library
+          </Text>
+          <Text className="text-white mt-2" style={AppTypography.displayHeroTight}>
+            Choose your <Text className="italic">journey.</Text>
+          </Text>
+          <Text className="text-sage/62 mt-3 max-w-[300px]" style={AppTypography.bodyCompact}>
+            Your onboarding recommendation is saved. Unlock the program that fits now, or keep using free access until you are ready.
+          </Text>
+        </View>
+
+        <View className="bg-surface rounded-t-[28px] -mt-7 px-5 pt-6 pb-[110px] relative z-20 flex-1">
+          <PaperGrain />
+          <View className="bg-white rounded-[24px] px-5 py-5 shadow-sm shadow-forest/5 mb-5">
+            <Text className="uppercase text-forest/38" style={[AppTypography.eyebrow, { letterSpacing: 1.5 }]}>
+              No active program yet
+            </Text>
+            <Text className="text-forest mt-1" style={AppTypography.displayCardSm}>
+              Browse before you commit.
+            </Text>
+            <Text className="text-forest/55 mt-2" style={AppTypography.body}>
+              Buying a program will unlock the daily timeline. Buying more later will add it to your program library.
+            </Text>
+          </View>
+
+          <ExplorePrograms
+            title="Available Programs"
+            programs={sortedPrograms}
+            isLoading={isLoading}
+            recommendedProgramSlug={recommendedProgram}
+            emptyMessage="Programs are still syncing. Please check again shortly."
+          />
+        </View>
+      </ScrollView>
+    </View>
+  );
+}
 
 function ProgramScreenContent({ activeProgram }: { activeProgram: ProgramSlug }) {
   const router = useRouter();
@@ -364,10 +431,14 @@ function ProgramScreenContent({ activeProgram }: { activeProgram: ProgramSlug })
 }
 
 export default function ProgramScreen() {
-  const { access, isLoading } = useProfile();
+  const { access, isLoading, profile } = useProfile();
 
-  if (isLoading || !access.ownedProgram || access.purchaseState === 'not_owned') {
+  if (isLoading) {
     return null;
+  }
+
+  if (!access.ownedProgram || access.purchaseState === 'not_owned') {
+    return profile?.free_tier_activated_at ? <FreeProgramDiscoveryScreen /> : null;
   }
 
   return <ProgramScreenContent activeProgram={access.ownedProgram as ProgramSlug} />;

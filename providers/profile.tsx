@@ -28,6 +28,7 @@ export interface UserProfile {
   recommended_program?: ProgramSlug | null;
   created_at: string;
   updated_at: string;
+  free_tier_activated_at?: string | null;
   expo_push_token?: string | null;
   push_opt_in?: boolean;
   display_name?: string | null;
@@ -48,11 +49,12 @@ interface ProfileContextType {
   savePartialProgramDay: (program: ProgramSlug, dayNumber: number) => Promise<void>;
   completeProgramDay: (program: ProgramSlug, dayNumber: number) => Promise<void>;
   updateProfile: (fields: { display_name?: string | null }) => Promise<void>;
+  activateFreeTier: () => Promise<void>;
   uploadAvatar: (imageUri: string) => Promise<string | null>;
 }
 
 const PROFILE_COLUMNS =
-  'id, email, onboarding_complete, questionnaire_answers, recommended_program, created_at, updated_at, expo_push_token, push_opt_in, display_name, avatar_url';
+  'id, email, onboarding_complete, questionnaire_answers, recommended_program, created_at, updated_at, free_tier_activated_at, expo_push_token, push_opt_in, display_name, avatar_url';
 export const PROFILE_QUERY_KEY = (userId: string | null) => ['profile', userId];
 const PROFILE_IMAGE_BUCKET = 'profile-images';
 const PROFILE_IMAGE_SIGNED_URL_TTL_SECONDS = 60 * 60 * 24 * 7;
@@ -120,6 +122,7 @@ const ProfileContext = createContext<ProfileContextType>({
   savePartialProgramDay: async () => { },
   completeProgramDay: async () => { },
   updateProfile: async () => { },
+  activateFreeTier: async () => { },
   uploadAvatar: async () => null,
 });
 
@@ -764,6 +767,36 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     [queryClient, userId]
   );
 
+  const activateFreeTier = useCallback(
+    async () => {
+      if (!userId) return;
+
+      const activatedAt = new Date().toISOString();
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          free_tier_activated_at: activatedAt,
+          updated_at: activatedAt,
+        })
+        .eq('id', userId);
+
+      if (error) throw error;
+
+      queryClient.setQueryData<UserProfile | null>(
+        PROFILE_QUERY_KEY(userId),
+        (current) =>
+          current
+            ? {
+                ...current,
+                free_tier_activated_at: activatedAt,
+                updated_at: activatedAt,
+              }
+            : current
+      );
+    },
+    [queryClient, userId]
+  );
+
   const uploadAvatar = useCallback(
     async (imageUri: string): Promise<string | null> => {
       if (!userId) return null;
@@ -824,9 +857,11 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
       savePartialProgramDay,
       completeProgramDay,
       updateProfile,
+      activateFreeTier,
       uploadAvatar,
     }),
     [
+      activateFreeTier,
       access,
       completeProgramDay,
       profileQuery.data,

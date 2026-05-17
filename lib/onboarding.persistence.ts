@@ -295,7 +295,7 @@ export async function saveOnboardingQuestionnaire(args: {
           { onConflict: 'id' }
         )
         .select(
-          'id, email, onboarding_complete, questionnaire_answers, recommended_program, created_at, updated_at, expo_push_token, push_opt_in'
+          'id, email, onboarding_complete, questionnaire_answers, recommended_program, created_at, updated_at, free_tier_activated_at, expo_push_token, push_opt_in'
         )
         .single(),
     ]);

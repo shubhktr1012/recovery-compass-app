@@ -402,6 +402,7 @@ export type Database = {
           display_name: string | null
           email: string | null
           expo_push_token: string | null
+          free_tier_activated_at: string | null
           id: string
           notifications_enabled: boolean
           onboarding_complete: boolean | null
@@ -423,6 +424,7 @@ export type Database = {
           display_name?: string | null
           email?: string | null
           expo_push_token?: string | null
+          free_tier_activated_at?: string | null
           id: string
           notifications_enabled?: boolean
           onboarding_complete?: boolean | null
@@ -444,6 +446,7 @@ export type Database = {
           display_name?: string | null
           email?: string | null
           expo_push_token?: string | null
+          free_tier_activated_at?: string | null
           id?: string
           notifications_enabled?: boolean
           onboarding_complete?: boolean | null
