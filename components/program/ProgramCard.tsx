@@ -9,6 +9,9 @@ const F = {
   forest: '#06290C',
   sage: '#E3F3E5',
   sageSoft: '#E3F2E5',
+  cream: '#FFF7E6',
+  amber: '#9A5B13',
+  amberSoft: '#F7E2B5',
   surface: '#F5F5F7',
   canvas: '#FFFFFF',
 };
@@ -28,6 +31,15 @@ function LockSvg({ size = 13, stroke = 'rgba(6,41,12,0.4)', strokeWidth = 1.8 })
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Rect x="3" y="11" width="18" height="11" rx="2" stroke={stroke} strokeWidth={strokeWidth} strokeLinecap="round" />
       <Path d="M7 11V7a5 5 0 0110 0v4" stroke={stroke} strokeWidth={strokeWidth} strokeLinecap="round" />
+    </Svg>
+  );
+}
+
+function PartialSvg({ size = 14, stroke = F.amber, strokeWidth = 2 }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Circle cx="12" cy="12" r="8" stroke={stroke} strokeWidth={strokeWidth} strokeLinecap="round" strokeDasharray="30 18" />
+      <Path d="M12 7v5l3 2" stroke={stroke} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" />
     </Svg>
   );
 }
@@ -92,6 +104,7 @@ interface ProgramCardProps {
   isNextLocked?: boolean;
   isCompleted: boolean;
   isPartial?: boolean;
+  isSkipped?: boolean;
   isCurrent: boolean;
   isReturningUser?: boolean;
   availabilityLabel?: string | null;
@@ -459,8 +472,84 @@ function PartialDayCard({ day, onPress }: { day: ProgramCardDay; onPress?: () =>
     <SquishPress onPress={onPress}>
       <View
         style={{
-          backgroundColor: F.sageSoft,
+          backgroundColor: F.cream,
           borderRadius: 18,
+          borderWidth: 1,
+          borderColor: 'rgba(154,91,19,0.22)',
+          paddingHorizontal: 16,
+          paddingVertical: 14,
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 12,
+          overflow: 'hidden',
+          shadowColor: F.amber,
+          shadowOffset: { width: 0, height: 1 },
+          shadowOpacity: 0.05,
+          shadowRadius: 6,
+          elevation: 1,
+        }}
+      >
+        <View
+          style={{
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            bottom: 0,
+            width: 4,
+            backgroundColor: F.amber,
+          }}
+        />
+        <View
+          style={{
+            width: 32,
+            height: 32,
+            borderRadius: 16,
+            backgroundColor: F.amberSoft,
+            borderWidth: 1,
+            borderColor: 'rgba(154,91,19,0.18)',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0,
+          }}
+        >
+          <PartialSvg />
+        </View>
+
+        <View style={{ flex: 1 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+            <Text
+              style={{
+                fontFamily: 'Satoshi-SemiBold',
+                fontSize: 9,
+                letterSpacing: 1.4,
+                textTransform: 'uppercase',
+                color: 'rgba(154,91,19,0.72)',
+              }}
+            >
+              Day {day.id} · Saved partial
+            </Text>
+          </View>
+          <Text style={{ fontFamily: 'Erode-Medium', fontSize: 15, lineHeight: 18, color: 'rgba(6,41,12,0.78)' }}>
+            {day.title}
+          </Text>
+          <Text style={{ ...AppTypography.meta, color: 'rgba(154,91,19,0.68)', marginTop: 2 }}>
+            Review or finish remaining steps
+          </Text>
+        </View>
+      </View>
+    </SquishPress>
+  );
+}
+
+function SkippedDayCard({ day, onPress }: { day: ProgramCardDay; onPress?: () => void }) {
+  return (
+    <SquishPress onPress={onPress}>
+      <View
+        style={{
+          backgroundColor: 'rgba(255,255,255,0.86)',
+          borderRadius: 18,
+          borderWidth: 1,
+          borderColor: 'rgba(6,41,12,0.06)',
           paddingHorizontal: 16,
           paddingVertical: 14,
           flexDirection: 'row',
@@ -473,34 +562,35 @@ function PartialDayCard({ day, onPress }: { day: ProgramCardDay; onPress?: () =>
             width: 32,
             height: 32,
             borderRadius: 16,
-            backgroundColor: 'rgba(6,41,12,0.08)',
+            backgroundColor: 'rgba(6,41,12,0.05)',
+            borderWidth: 1,
+            borderColor: 'rgba(6,41,12,0.08)',
             alignItems: 'center',
             justifyContent: 'center',
             flexShrink: 0,
           }}
         >
-          <LockSvg size={12} stroke="rgba(6,41,12,0.4)" strokeWidth={1.8} />
+          <ClockSvg />
         </View>
 
         <View style={{ flex: 1 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-            <Text
-              style={{
-                fontFamily: 'Satoshi-SemiBold',
-                fontSize: 9,
-                letterSpacing: 1.4,
-                textTransform: 'uppercase',
-                color: 'rgba(6,41,12,0.35)',
-              }}
-            >
-              Day {day.id} · Partial
-            </Text>
-          </View>
-          <Text style={{ fontFamily: 'Erode-Medium', fontSize: 15, lineHeight: 18, color: 'rgba(6,41,12,0.6)' }}>
+          <Text
+            style={{
+              fontFamily: 'Satoshi-SemiBold',
+              fontSize: 9,
+              letterSpacing: 1.4,
+              textTransform: 'uppercase',
+              color: 'rgba(6,41,12,0.32)',
+              marginBottom: 2,
+            }}
+          >
+            Day {day.id} · Missed
+          </Text>
+          <Text style={{ fontFamily: 'Erode-Regular', fontSize: 15, lineHeight: 18, color: 'rgba(6,41,12,0.58)' }}>
             {day.title}
           </Text>
-          <Text style={{ ...AppTypography.meta, color: 'rgba(6,41,12,0.4)', marginTop: 2 }}>
-            Tap to continue
+          <Text style={{ ...AppTypography.meta, color: 'rgba(6,41,12,0.34)', marginTop: 2 }}>
+            Read-only review
           </Text>
         </View>
       </View>
@@ -515,6 +605,7 @@ export function ProgramCard({
   isNextLocked,
   isCompleted,
   isPartial = false,
+  isSkipped = false,
   isCurrent,
   isReturningUser = false,
   availabilityLabel,
@@ -538,6 +629,10 @@ export function ProgramCard({
 
   if (isPartial) {
     return <PartialDayCard day={day} onPress={onPress} />;
+  }
+
+  if (isSkipped) {
+    return <SkippedDayCard day={day} onPress={onPress} />;
   }
 
   // Next-locked: the day immediately after current (sage-soft bg, more visible)

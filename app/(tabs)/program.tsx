@@ -11,7 +11,16 @@ import Svg, { Path } from 'react-native-svg';
 
 import { useProgram } from '@/content';
 import { useProfile } from '@/providers/profile';
-import { formatUnlockLabel, getProgramNextUnlockAt, getProgramScheduledDay } from '@/lib/programs/schedule';
+import { useMinuteClock } from '@/hooks/useMinuteClock';
+import { useFinalizedDayStates } from '@/hooks/useFinalizedDayStates';
+import { buildDayStateProgressSummary } from '@/lib/day-state-summary';
+import {
+  formatUnlockLabel,
+  getProgramActiveDay,
+  getProgramLastFinalizedDay,
+  getProgramNextUnlockAt,
+  getProgramScheduledDay,
+} from '@/lib/programs/schedule';
 import { TimelineItem } from '@/components/program/TimelineItem';
 import { ProgramCard } from '@/components/program/ProgramCard';
 import { PaperGrain } from '@/components/ui/PaperGrain';
@@ -43,6 +52,7 @@ const ProgramTimelineNode = memo(({
   isLocked, 
   isCompleted, 
   isPartial,
+  isSkipped,
   isCurrent, 
   isReturningUser, 
   activeProgram,
@@ -60,6 +70,7 @@ const ProgramTimelineNode = memo(({
       isNextLocked={isLocked && day.dayNumber === nextLockedDayNumber}
       isCompleted={isCompleted}
       isPartial={isPartial}
+      isSkipped={isSkipped}
       isCurrent={isCurrent}
       onLayout={onLayout}
     >
@@ -74,6 +85,7 @@ const ProgramTimelineNode = memo(({
         isNextLocked={isLocked && day.dayNumber === nextLockedDayNumber}
         isCompleted={isCompleted}
         isPartial={isPartial}
+        isSkipped={isSkipped}
         isCurrent={isCurrent}
         isReturningUser={isReturningUser}
         availabilityLabel={availabilityLabel}
@@ -86,10 +98,18 @@ ProgramTimelineNode.displayName = 'ProgramTimelineNode';
 
 function ProgramScreenContent({ activeProgram }: { activeProgram: ProgramSlug }) {
   const router = useRouter();
-  const { access, progress } = useProfile();
+  const { access, profile, progress } = useProfile();
   const queryClient = useQueryClient();
   const { program } = useProgram(activeProgram);
+  const now = useMinuteClock();
   const totalDays = program?.totalDays ?? 1;
+  const finalizedDayStatesQuery = useFinalizedDayStates(profile?.id ?? access.ownerUserId ?? null, activeProgram);
+  const finalizedDayStates = finalizedDayStatesQuery.data ?? [];
+  const dayStateSummary = useMemo(
+    () => buildDayStateProgressSummary(finalizedDayStates),
+    [finalizedDayStates]
+  );
+  const hasFinalizedDayStateTruth = finalizedDayStates.length > 0;
 
   useFocusEffect(
     useCallback(() => {
@@ -97,12 +117,22 @@ function ProgramScreenContent({ activeProgram }: { activeProgram: ProgramSlug })
     }, [activeProgram, queryClient])
   );
 
-  const { completedDays, partialDays, currentDay } = useMemo(() => {
-    const progressCompletedDays = progress?.completedDays ?? [];
-    const progressPartialDays = progress?.partialDays ?? [];
-    const derivedCurrentDay = access.startedAt
-      ? getProgramScheduledDay(access.startedAt, totalDays)
+  const { activeDayNumber, completedDays, lastFinalizedDay, partialDays, unlockedThroughDay } = useMemo(() => {
+    const progressCompletedDays = hasFinalizedDayStateTruth
+      ? dayStateSummary.completedDays
+      : progress?.completedDays ?? [];
+    const progressPartialDays = hasFinalizedDayStateTruth
+      ? dayStateSummary.partialDays
+      : progress?.partialDays ?? [];
+    const derivedUnlockedDay = access.startedAt
+      ? getProgramScheduledDay(access.startedAt, totalDays, now)
       : access.currentDay ?? 1;
+    const derivedActiveDay = access.startedAt
+      ? getProgramActiveDay(access.startedAt, totalDays, now)
+      : derivedUnlockedDay;
+    const derivedLastFinalizedDay = access.startedAt
+      ? getProgramLastFinalizedDay(access.startedAt, totalDays, now)
+      : Math.max(0, ...progressCompletedDays, ...progressPartialDays);
     const highestTouchedDay = Math.max(
       0,
       ...progressCompletedDays,
@@ -111,23 +141,27 @@ function ProgramScreenContent({ activeProgram }: { activeProgram: ProgramSlug })
     );
     const unlockedThroughDay = Math.min(
       totalDays,
-      Math.max(derivedCurrentDay, highestTouchedDay || 1)
+      Math.max(derivedUnlockedDay, highestTouchedDay || 1)
     );
 
     return {
-      currentDay: access.completionState === 'completed' ? totalDays : unlockedThroughDay,
+      activeDayNumber: access.completionState === 'completed' ? null : derivedActiveDay,
       completedDays: progressCompletedDays,
+      lastFinalizedDay: Math.min(totalDays, derivedLastFinalizedDay),
       partialDays: progressPartialDays,
+      unlockedThroughDay: access.completionState === 'completed' ? totalDays : unlockedThroughDay,
     };
-  }, [access.completionState, access.currentDay, access.startedAt, progress?.completedDays, progress?.partialDays, totalDays]);
+  }, [access.completionState, access.currentDay, access.startedAt, dayStateSummary.completedDays, dayStateSummary.partialDays, hasFinalizedDayStateTruth, now, progress?.completedDays, progress?.partialDays, totalDays]);
   const isArchivedReset = activeProgram === 'six_day_reset' && access.purchaseState === 'owned_archived';
   const completedCount = completedDays.length;
   const progressPercent = Math.max(0, Math.min(100, Math.round((completedCount / totalDays) * 100)));
   const nextUnlockLabel = useMemo(() => {
     if (access.completionState === 'completed') return null;
-    return formatUnlockLabel(getProgramNextUnlockAt(access.startedAt, totalDays));
-  }, [access.completionState, access.startedAt, totalDays]);
-  const nextLockedDayNumber = access.completionState === 'completed' ? null : Math.min(currentDay + 1, totalDays);
+    return formatUnlockLabel(getProgramNextUnlockAt(access.startedAt, totalDays, now), now);
+  }, [access.completionState, access.startedAt, now, totalDays]);
+  const nextLockedDayNumber = access.completionState === 'completed'
+    ? null
+    : Math.min(unlockedThroughDay + 1, totalDays);
 
   // Determine if user has been away for 3+ days (72 hours)
   const isReturningUser = useMemo(() => {
@@ -212,7 +246,7 @@ function ProgramScreenContent({ activeProgram }: { activeProgram: ProgramSlug })
           <View className="mt-4 relative z-10">
             <View className="flex-row justify-between items-baseline mb-2">
               <Text className="text-white tracking-[-0.4px]" style={AppTypography.displayMetric}>
-                {access.completionState === 'completed' ? totalDays : Math.min(currentDay, program.totalDays)} <Text className="text-sage/55 tracking-normal" style={AppTypography.label}>of {totalDays} days</Text>
+                {access.completionState === 'completed' ? totalDays : Math.min(unlockedThroughDay, program.totalDays)} <Text className="text-sage/55 tracking-normal" style={AppTypography.label}>of {totalDays} days</Text>
               </Text>
               <Text className="text-sage/60" style={[AppTypography.metaMedium, { letterSpacing: 0.3 }]}>
                 {progressPercent}% complete
@@ -277,8 +311,19 @@ function ProgramScreenContent({ activeProgram }: { activeProgram: ProgramSlug })
                 program.days.map((day, index) => {
                   const isCompleted = completedDays.includes(day.dayNumber);
                   const isPartial = partialDays.includes(day.dayNumber) && !isCompleted;
-                  const isLocked = isArchivedReset || (!isCompleted && !isPartial && day.dayNumber > currentDay);
-                  const isCurrent = day.dayNumber === currentDay && !isCompleted;
+                  const isSkipped =
+                    !isCompleted &&
+                    !isPartial &&
+                    day.dayNumber <= lastFinalizedDay;
+                  const isLocked =
+                    isArchivedReset ||
+                    (!isCompleted && !isPartial && !isSkipped && day.dayNumber > unlockedThroughDay);
+                  const isCurrent =
+                    day.dayNumber === activeDayNumber &&
+                    !isCompleted &&
+                    !isPartial &&
+                    !isSkipped &&
+                    day.dayNumber > lastFinalizedDay;
                   const availabilityLabel =
                     isLocked && day.dayNumber === nextLockedDayNumber
                       ? nextUnlockLabel
@@ -293,6 +338,7 @@ function ProgramScreenContent({ activeProgram }: { activeProgram: ProgramSlug })
                       isLocked={isLocked}
                       isCompleted={isCompleted}
                       isPartial={isPartial}
+                      isSkipped={isSkipped}
                       isCurrent={isCurrent}
                       isReturningUser={isReturningUser}
                       activeProgram={activeProgram}

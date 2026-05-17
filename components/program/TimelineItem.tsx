@@ -17,6 +17,7 @@ interface TimelineItemProps {
   isNextLocked?: boolean;
   isCompleted: boolean;
   isPartial?: boolean;
+  isSkipped?: boolean;
   isCurrent: boolean;
   onLayout?: (event: import('react-native').LayoutChangeEvent) => void;
 }
@@ -29,19 +30,28 @@ export function TimelineItem({
   isNextLocked,
   isCompleted,
   isPartial = false,
+  isSkipped = false,
   isCurrent,
   onLayout,
 }: TimelineItemProps) {
   // Connector Line
-  const connectorColor = isCompleted ? 'bg-forest/18' : 'bg-forest/[0.08]';
+  const connectorColor = isCompleted
+    ? 'bg-forest/18'
+    : isPartial
+      ? 'bg-[#D9A441]/35'
+      : isSkipped
+        ? 'bg-forest/[0.12]'
+        : 'bg-forest/[0.08]';
 
   const dotColorClass = isCurrent
     ? 'bg-forest'
     : isCompleted
       ? 'bg-forest'
       : isPartial
-        ? 'bg-[#D8E7D9] border-2 border-forest/50'
-        : 'bg-transparent border-2 border-forest/20';
+        ? 'bg-[#F7E2B5] border-2 border-[#9A5B13]/70'
+        : isSkipped
+          ? 'bg-forest/10 border border-forest/15'
+          : 'bg-transparent border-2 border-forest/20';
 
   // Pulse animation for Current Day
   const scale = useSharedValue(1);

@@ -1,4 +1,5 @@
 import type { OnboardingResponse } from '@/hooks/useOnboardingResponse';
+import type { RollingCompletionSummary } from '@/lib/day-state-summary';
 import { formatInr, getOnboardingProjection } from '@/lib/onboarding-metrics';
 import type { QuestionnaireAnswersSnapshot } from '@/lib/program-statistics';
 import type { ProgramSlug } from '@/lib/programs/types';
@@ -29,6 +30,8 @@ interface ResolveDashboardStatItemsArgs extends DashboardStatContext {
   totalDays: number;
   completedDays: number[];
   partialDays: number[];
+  currentStreak?: number;
+  rollingCompletion?: RollingCompletionSummary | null;
   hasAudio: boolean;
   isBaselineLoading: boolean;
 }
@@ -284,12 +287,17 @@ function getQuestionnaireMetricSpecs(programSlug: ProgramSlug): MetricSpec[] {
 function getFallbackStatItems(args: {
   completedDays: number[];
   partialDays: number[];
+  currentStreak?: number;
+  rollingCompletion?: RollingCompletionSummary | null;
   totalDays: number;
   hasAudio: boolean;
-}) {
-  const currentStreak = getCurrentStreak(args.completedDays);
+}): DashboardStatItem[] {
+  const currentStreak = args.currentStreak ?? getCurrentStreak(args.completedDays);
+  const rollingCompletion = args.rollingCompletion?.cardsTotal
+    ? args.rollingCompletion
+    : null;
 
-  return [
+  const items: DashboardStatItem[] = [
     {
       id: 'current-streak',
       label: 'Current streak',
@@ -300,6 +308,19 @@ function getFallbackStatItems(args: {
           : 'Build your first streak',
       state: 'fallback' as const,
     },
+  ];
+
+  if (rollingCompletion) {
+    items.push({
+      id: 'rolling-completion',
+      label: '7-day score',
+      value: `${rollingCompletion.completionPercentage}%`,
+      sublabel: `${rollingCompletion.cardsCompleted}/${rollingCompletion.cardsTotal} cards completed`,
+      state: 'fallback' as const,
+    });
+  }
+
+  items.push(
     {
       id: 'days-completed',
       label: 'Days completed',
@@ -317,7 +338,9 @@ function getFallbackStatItems(args: {
       sublabel: args.hasAudio ? 'Guided audio included' : 'Structured daily plan',
       state: 'fallback' as const,
     },
-  ];
+  );
+
+  return items;
 }
 
 function createPendingCard(metric: MetricSpec): DashboardStatItem {
@@ -373,6 +396,8 @@ export function resolveDashboardStatItems(
   const fallbackItems = getFallbackStatItems({
     completedDays: args.completedDays,
     partialDays: args.partialDays,
+    currentStreak: args.currentStreak,
+    rollingCompletion: args.rollingCompletion,
     totalDays: args.totalDays,
     hasAudio: args.hasAudio,
   });

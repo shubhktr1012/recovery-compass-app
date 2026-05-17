@@ -20,6 +20,8 @@ struct WidgetData: Codable {
     let streak: Int
     let steps: Int
     let isDayCompleted: Bool
+    let isSessionLocked: Bool?
+    let availabilityLabel: String?
     let updatedAt: String    // ISO8601 timestamp
 
     static let appGroupID = "group.com.recoverycompass.shared"
@@ -55,6 +57,10 @@ struct WidgetData: Codable {
         programName.isEmpty || programName == "Recovery Compass"
     }
 
+    var sessionLocked: Bool {
+        isSessionLocked ?? false
+    }
+
     static let placeholder = WidgetData(
         programSlug: "",
         programName: "",
@@ -65,6 +71,8 @@ struct WidgetData: Codable {
         streak: 0,
         steps: 0,
         isDayCompleted: false,
+        isSessionLocked: false,
+        availabilityLabel: nil,
         updatedAt: ""
     )
 }

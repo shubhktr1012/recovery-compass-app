@@ -18,9 +18,13 @@ import { useQuery } from '@tanstack/react-query';
 
 import { PROGRAM_METADATA } from '@/content/programs/metadata';
 import { useAuth } from '@/providers/auth';
+import { clearDevClockOverride, readDevClockOverride, setDevClockOverride, useMinuteClock } from '@/hooks/useMinuteClock';
 import { useOnboardingResponse } from '@/hooks/useOnboardingResponse';
 import { useDailySteps } from '@/hooks/useDailySteps';
+import { useFinalizedDayStates } from '@/hooks/useFinalizedDayStates';
 import { getProgramStatisticsSummary } from '@/lib/program-statistics';
+import { buildDayStateProgressSummary, buildRollingCompletionSummary } from '@/lib/day-state-summary';
+import { getProgramScheduledDay } from '@/lib/programs/schedule';
 import { useProfile } from '@/providers/profile';
 import { supabase } from '@/lib/supabase';
 import { EditProfileSheet } from '@/components/account/EditProfileSheet';
@@ -29,6 +33,7 @@ import type { ProgramSlug } from '@/types/content';
 import { AppColors } from '@/constants/theme';
 import { AppTypography } from '@/constants/typography';
 import { resolveProfileIdentity } from '@/lib/profile-identity';
+import { buildWidgetPayload, syncWidgetData } from '@/lib/widget-bridge';
 
 const STAT_CARD_WIDTH = 164;
 const STAT_CARD_GAP = 10;
@@ -143,7 +148,50 @@ export default function AccountScreen() {
   const dailySteps = useDailySteps();
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [activeStatIndex, setActiveStatIndex] = useState(0);
+  const [devClockOverride, setDevClockOverrideState] = useState<Date | null>(null);
   const userId = user?.id ?? null;
+  const currentTime = useMinuteClock();
+  const activeProgramSlug = access.ownedProgram as ProgramSlug | null;
+  const activeProgram = activeProgramSlug ? PROGRAM_METADATA[activeProgramSlug] : null;
+  const finalizedDayStatesQuery = useFinalizedDayStates(userId, activeProgramSlug);
+  const finalizedDayStates = finalizedDayStatesQuery.data ?? [];
+  const dayStateSummary = useMemo(
+    () => buildDayStateProgressSummary(finalizedDayStates),
+    [finalizedDayStates]
+  );
+  const rollingCompletionSummary = useMemo(
+    () => buildRollingCompletionSummary(finalizedDayStates),
+    [finalizedDayStates]
+  );
+  const hasFinalizedDayStateTruth = finalizedDayStates.length > 0;
+  const completedDaysForStats = hasFinalizedDayStateTruth
+    ? dayStateSummary.completedDays
+    : progress?.completedDays ?? [];
+
+  React.useEffect(() => {
+    if (!__DEV__) {
+      return;
+    }
+
+    let isCancelled = false;
+
+    const loadOverride = async () => {
+      try {
+        const value = await readDevClockOverride();
+        if (!isCancelled) {
+          setDevClockOverrideState(value);
+        }
+      } catch (error) {
+        console.error('Failed to load dev clock override', error);
+      }
+    };
+
+    void loadOverride();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, []);
 
   const journalCountQuery = useQuery({
     queryKey: ['journal-count', userId],
@@ -159,7 +207,7 @@ export default function AccountScreen() {
     enabled: Boolean(userId),
   });
 
-  const { currentStreak, bestStreak } = useMemo(() => {
+  const fallbackStreakSummary = useMemo(() => {
     const days = progress?.completedDays ?? [];
     if (days.length === 0) return { currentStreak: 0, bestStreak: 0 };
 
@@ -188,14 +236,20 @@ export default function AccountScreen() {
     return { currentStreak: current, bestStreak: best };
   }, [progress?.completedDays]);
 
-  const activeProgram = access.ownedProgram ? PROGRAM_METADATA[access.ownedProgram as ProgramSlug] : null;
+  const currentStreak = hasFinalizedDayStateTruth
+    ? dayStateSummary.currentStreak
+    : fallbackStreakSummary.currentStreak;
+  const bestStreak = hasFinalizedDayStateTruth
+    ? dayStateSummary.bestStreak
+    : fallbackStreakSummary.bestStreak;
+
   const startReason = useMemo(
     () =>
       getStoredStartReason({
-        programSlug: access.ownedProgram as ProgramSlug | null,
+        programSlug: activeProgramSlug,
         questionnaireAnswers: profile?.questionnaire_answers ?? null,
       }),
-    [access.ownedProgram, profile?.questionnaire_answers]
+    [activeProgramSlug, profile?.questionnaire_answers]
   );
 
   const profileIdentity = resolveProfileIdentity({
@@ -209,23 +263,30 @@ export default function AccountScreen() {
   const displayName = profileIdentity.displayName;
   const displayInitial = profileIdentity.initial;
   const startedDate = formatStartedDate(profile?.created_at);
+  const scheduledProgramDayNumber = activeProgram
+    ? access.completionState === 'completed'
+      ? activeProgram.totalDays
+      : access.startedAt
+        ? getProgramScheduledDay(access.startedAt, activeProgram.totalDays, currentTime)
+        : access.currentDay ?? null
+    : null;
 
   const progressSummary = activeProgram
     ? getProgressSummary({
-        currentDay: access.currentDay,
+        currentDay: scheduledProgramDayNumber,
         totalDays: activeProgram.totalDays,
-        completedDays: progress?.completedDays ?? [],
+        completedDays: completedDaysForStats,
         completionState: access.completionState,
       })
     : null;
 
   const activeProgramStatistics = useMemo(() => {
     return getProgramStatisticsSummary(
-      access.ownedProgram as ProgramSlug | null,
+      activeProgramSlug,
       onboardingQuery.data ?? null,
       profile?.questionnaire_answers ?? null
     );
-  }, [access.ownedProgram, onboardingQuery.data, profile?.questionnaire_answers]);
+  }, [activeProgramSlug, onboardingQuery.data, profile?.questionnaire_answers]);
 
   const statCards: StatCard[] = useMemo(() => {
     const baseCards: Omit<StatCard, 'variant'>[] = [
@@ -255,9 +316,18 @@ export default function AccountScreen() {
       },
     ];
 
+    if (hasFinalizedDayStateTruth && rollingCompletionSummary.cardsTotal > 0) {
+      baseCards.push({
+        label: '7-day score',
+        value: `${rollingCompletionSummary.completionPercentage}%`,
+        subtitle: 'Cards completed',
+        context: `${rollingCompletionSummary.cardsCompleted}/${rollingCompletionSummary.cardsTotal} cards · ${rollingCompletionSummary.daysCount} day${rollingCompletionSummary.daysCount === 1 ? '' : 's'}`,
+      });
+    }
+
     if (activeProgram && progressSummary) {
       const phaseNum = Math.min(4, Math.ceil((progressSummary.dayNumber / activeProgram.totalDays) * 4));
-      const completedCount = progress?.completedDays.length ?? 0;
+      const completedCount = completedDaysForStats.length;
 
       baseCards.unshift({
         label: 'Journey progress',
@@ -292,7 +362,7 @@ export default function AccountScreen() {
       ...card,
       variant: index % 2 === 0 ? 'forest' : 'sage',
     }));
-  }, [access.completionState, activeProgram, activeProgramStatistics?.cards, bestStreak, currentStreak, dailySteps.formattedSteps, dailySteps.summary?.permissionState, dailySteps.summary?.providerLabel, journalCountQuery.data, progress?.completedDays.length, progressSummary]);
+  }, [access.completionState, activeProgram, activeProgramStatistics?.cards, bestStreak, completedDaysForStats.length, currentStreak, dailySteps.formattedSteps, dailySteps.summary?.permissionState, dailySteps.summary?.providerLabel, hasFinalizedDayStateTruth, journalCountQuery.data, progressSummary, rollingCompletionSummary.cardsCompleted, rollingCompletionSummary.cardsTotal, rollingCompletionSummary.completionPercentage, rollingCompletionSummary.daysCount]);
 
   const handleStatScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const offsetX = event.nativeEvent.contentOffset.x;
@@ -322,6 +392,61 @@ export default function AccountScreen() {
       Alert.alert('Profile photo unavailable', 'We could not open your photo library right now.');
     }
   };
+
+  const syncWidgetForDevClock = async (now: Date) => {
+    const widgetPayload = buildWidgetPayload({
+      access,
+      progress,
+      steps: dailySteps.summary?.steps ?? 0,
+      now,
+    });
+
+    if (widgetPayload) {
+      await syncWidgetData(widgetPayload);
+    }
+  };
+
+  const getDevClockPresetDate = (hours: number, minutes: number) => {
+    const startedAt = access.startedAt ? new Date(access.startedAt) : null;
+    const hasValidStartedAt = startedAt && !Number.isNaN(startedAt.getTime());
+
+    if (hasValidStartedAt && access.completionState !== 'completed') {
+      const currentJourneyDay = Math.max(1, access.currentDay ?? progress?.currentDay ?? 1);
+      const boundaryDate = new Date(
+        startedAt.getFullYear(),
+        startedAt.getMonth(),
+        startedAt.getDate() + currentJourneyDay
+      );
+      boundaryDate.setHours(hours, minutes, 0, 0);
+      return boundaryDate;
+    }
+
+    const fallbackDate = new Date(devClockOverride ?? new Date());
+    fallbackDate.setHours(hours, minutes, 0, 0);
+    return fallbackDate;
+  };
+
+  const applyDevClockPreset = async (hours: number, minutes: number) => {
+    const nextValue = getDevClockPresetDate(hours, minutes);
+    await setDevClockOverride(nextValue);
+    setDevClockOverrideState(nextValue);
+    await syncWidgetForDevClock(nextValue);
+  };
+
+  const handleClearDevClockOverride = async () => {
+    await clearDevClockOverride();
+    setDevClockOverrideState(null);
+    await syncWidgetForDevClock(new Date());
+  };
+
+  const devClockLabel = devClockOverride
+    ? new Intl.DateTimeFormat('en-IN', {
+        day: 'numeric',
+        month: 'short',
+        hour: 'numeric',
+        minute: '2-digit',
+      }).format(devClockOverride)
+    : 'Using device time';
 
   return (
     <View style={styles.screen}>
@@ -543,6 +668,65 @@ export default function AccountScreen() {
               {startedDate ? `Started ${startedDate}` : ''}
             </Text>
           </View>
+
+          {__DEV__ ? (
+            <>
+              <Text style={[styles.sectionEyebrow, { marginTop: 6 }]}>Dev Clock</Text>
+              <View style={styles.devCard}>
+                <Text style={styles.devCardTitle}>Boundary QA</Text>
+                <Text style={styles.devCardText}>
+                  Override the app clock for the current journey's evening and overnight transition checks.
+                </Text>
+                <Text style={styles.devClockState}>{devClockLabel}</Text>
+
+                <View style={styles.devButtonGrid}>
+                  <TouchableOpacity
+                    onPress={() => void applyDevClockPreset(0, 59)}
+                    activeOpacity={0.8}
+                    style={styles.devButton}
+                  >
+                    <Text style={styles.devButtonText}>12:59 AM</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => void applyDevClockPreset(1, 1)}
+                    activeOpacity={0.8}
+                    style={styles.devButton}
+                  >
+                    <Text style={styles.devButtonText}>1:01 AM</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => void applyDevClockPreset(4, 59)}
+                    activeOpacity={0.8}
+                    style={styles.devButton}
+                  >
+                    <Text style={styles.devButtonText}>4:59 AM</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => void applyDevClockPreset(5, 0)}
+                    activeOpacity={0.8}
+                    style={styles.devButton}
+                  >
+                    <Text style={styles.devButtonText}>5:00 AM</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => void applyDevClockPreset(19, 0)}
+                    activeOpacity={0.8}
+                    style={styles.devButton}
+                  >
+                    <Text style={styles.devButtonText}>7:00 PM</Text>
+                  </TouchableOpacity>
+                </View>
+
+                <TouchableOpacity
+                  onPress={() => void handleClearDevClockOverride()}
+                  activeOpacity={0.8}
+                  style={styles.devClearButton}
+                >
+                  <Text style={styles.devClearButtonText}>Clear override</Text>
+                </TouchableOpacity>
+              </View>
+            </>
+          ) : null}
         </View>
       </ScrollView>
 
@@ -1015,5 +1199,63 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     color: 'rgba(6,41,12,0.28)',
     marginTop: 12,
+  },
+  devCard: {
+    borderRadius: 20,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: 'rgba(6,41,12,0.06)',
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    gap: 12,
+    shadowColor: '#06290C',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 16,
+    elevation: 2,
+  },
+  devCardTitle: {
+    fontFamily: 'Satoshi-Bold',
+    fontSize: 14,
+    color: AppColors.forest,
+  },
+  devCardText: {
+    ...AppTypography.bodyCompact,
+    color: 'rgba(6,41,12,0.56)',
+  },
+  devClockState: {
+    fontFamily: 'Satoshi-Bold',
+    fontSize: 10,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    color: 'rgba(6,41,12,0.44)',
+  },
+  devButtonGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  devButton: {
+    borderRadius: 999,
+    backgroundColor: 'rgba(6,41,12,0.08)',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+  },
+  devButtonText: {
+    fontFamily: 'Satoshi-Medium',
+    fontSize: 12,
+    color: AppColors.forest,
+  },
+  devClearButton: {
+    alignSelf: 'flex-start',
+    borderRadius: 999,
+    backgroundColor: AppColors.forest,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+  },
+  devClearButtonText: {
+    fontFamily: 'Satoshi-Bold',
+    fontSize: 12,
+    color: '#FFFFFF',
   },
 });

@@ -16,6 +16,12 @@
 
 import { NativeModules, Platform } from 'react-native';
 import { PROGRAM_METADATA } from '@/content/programs/metadata';
+import {
+  getProgramActiveDay,
+  getProgramLastFinalizedDay,
+  getProgramNextUnlockAt,
+  getProgramScheduledDay,
+} from '@/lib/programs/schedule';
 import type { ProgramAccessSnapshot, ProgramProgressRecord, ProgramSlug } from '@/lib/programs/types';
 
 const APP_GROUP_ID = 'group.com.recoverycompass.shared';
@@ -42,7 +48,29 @@ export interface WidgetPayload {
   streak: number;
   steps: number;
   isDayCompleted: boolean;
+  isSessionLocked: boolean;
+  availabilityLabel: string | null;
   updatedAt: string;
+}
+
+function formatWidgetAvailabilityLabel(nextUnlockAt: string | null | undefined, now: Date) {
+  if (!nextUnlockAt) return null;
+
+  const unlockDate = new Date(nextUnlockAt);
+  if (Number.isNaN(unlockDate.getTime())) return null;
+
+  const timeLabel = unlockDate.toLocaleTimeString([], {
+    hour: 'numeric',
+    minute: '2-digit',
+  });
+  const tomorrow = new Date(now);
+  tomorrow.setDate(now.getDate() + 1);
+  const isTomorrow =
+    unlockDate.getFullYear() === tomorrow.getFullYear() &&
+    unlockDate.getMonth() === tomorrow.getMonth() &&
+    unlockDate.getDate() === tomorrow.getDate();
+
+  return isTomorrow ? `Opens tomorrow ${timeLabel}` : `Opens at ${timeLabel}`;
 }
 
 /**
@@ -113,16 +141,47 @@ export function buildWidgetPayload(args: {
   cardIndex?: number;
   totalCards?: number;
   steps?: number;
+  now?: Date;
 }): WidgetPayload | null {
-  const { access, progress, cardIndex = 0, totalCards = 1, steps = 0 } = args;
+  const { access, progress, cardIndex = 0, totalCards = 1, steps = 0, now = new Date() } = args;
 
   if (!access.ownedProgram) return null;
 
   const meta = PROGRAM_METADATA[access.ownedProgram];
-  const currentDay = access.currentDay ?? progress?.currentDay ?? 1;
+  const totalDays = meta.totalDays;
+  const completedDays = progress?.completedDays ?? [];
+  const partialDays = progress?.partialDays ?? [];
+  const isProgramComplete = access.completionState === 'completed';
+  const scheduledDay = access.startedAt
+    ? getProgramScheduledDay(access.startedAt, totalDays, now)
+    : access.currentDay ?? progress?.currentDay ?? 1;
+  const activeDay = !isProgramComplete && access.startedAt
+    ? getProgramActiveDay(access.startedAt, totalDays, now)
+    : isProgramComplete
+      ? null
+      : scheduledDay;
+  const lastFinalizedDay = access.startedAt
+    ? getProgramLastFinalizedDay(access.startedAt, totalDays, now)
+    : Math.max(0, ...completedDays, ...partialDays);
+  const highestTouchedDay = Math.max(
+    0,
+    access.currentDay ?? 0,
+    progress?.currentDay ?? 0,
+    ...completedDays,
+    ...partialDays
+  );
+  const unlockedThroughDay = isProgramComplete
+    ? totalDays
+    : Math.min(totalDays, Math.max(scheduledDay, highestTouchedDay || 1));
+  const currentDay = isProgramComplete
+    ? totalDays
+    : activeDay ?? Math.min(totalDays, Math.max(unlockedThroughDay, lastFinalizedDay + 1, 1));
+  const isSessionLocked = !isProgramComplete && activeDay == null;
+  const availabilityLabel = isSessionLocked
+    ? formatWidgetAvailabilityLabel(getProgramNextUnlockAt(access.startedAt, totalDays, now), now)
+    : null;
 
   // Streak = number of consecutive completed days ending at currentDay - 1
-  const completedDays = progress?.completedDays ?? [];
   let streak = 0;
   for (let d = currentDay - 1; d >= 1; d--) {
     if (completedDays.includes(d)) {
@@ -144,6 +203,8 @@ export function buildWidgetPayload(args: {
     streak,
     steps,
     isDayCompleted,
+    isSessionLocked,
+    availabilityLabel,
     updatedAt: new Date().toISOString(),
   };
 }

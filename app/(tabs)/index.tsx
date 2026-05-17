@@ -5,7 +5,14 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useMemo } from 'react';
 
 import { useDay, useProgram, usePrograms } from '@/content';
-import { getProgramScheduledDay } from '@/lib/programs/schedule';
+import { useMinuteClock } from '@/hooks/useMinuteClock';
+import {
+  formatUnlockLabel,
+  getProgramActiveDay,
+  getProgramLastFinalizedDay,
+  getProgramNextUnlockAt,
+  getProgramScheduledDay,
+} from '@/lib/programs/schedule';
 import { useProfile } from '@/providers/profile';
 
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
@@ -19,7 +26,9 @@ import { programDayQueryKey, programQueryKey } from '@/hooks/contentQueryUtils';
 import { useOnboardingResponse } from '@/hooks/useOnboardingResponse';
 import { useOwnedPrograms } from '@/hooks/useOwnedPrograms';
 import { useDailySteps } from '@/hooks/useDailySteps';
+import { useFinalizedDayStates } from '@/hooks/useFinalizedDayStates';
 import { resolveDashboardStatItems } from '@/lib/dashboard-statistics';
+import { buildDayStateProgressSummary, buildRollingCompletionSummary } from '@/lib/day-state-summary';
 import { resolveProfileIdentity } from '@/lib/profile-identity';
 import type { QuestionnaireAnswersSnapshot } from '@/lib/program-statistics';
 import { StepPermissionPrompt } from '@/components/steps/StepPermissionPrompt';
@@ -40,24 +49,56 @@ function HomeScreenContent({ activeProgram }: { activeProgram: ProgramSlug }) {
   const { ownedPrograms, isLoading: isOwnedProgramsLoading } = useOwnedPrograms();
   const dailySteps = useDailySteps();
   const queryClient = useQueryClient();
+  const now = useMinuteClock();
+  const userId = profile?.id ?? access.ownerUserId ?? null;
+  const finalizedDayStatesQuery = useFinalizedDayStates(userId, activeProgram);
+  const finalizedDayStates = finalizedDayStatesQuery.data ?? [];
+  const dayStateSummary = useMemo(
+    () => buildDayStateProgressSummary(finalizedDayStates),
+    [finalizedDayStates]
+  );
+  const rollingCompletionSummary = useMemo(
+    () => buildRollingCompletionSummary(finalizedDayStates),
+    [finalizedDayStates]
+  );
+  const hasFinalizedDayStateTruth = finalizedDayStates.length > 0;
+  const completedDaysForStats = hasFinalizedDayStateTruth
+    ? dayStateSummary.completedDays
+    : progress?.completedDays ?? [];
+  const partialDaysForStats = hasFinalizedDayStateTruth
+    ? dayStateSummary.partialDays
+    : progress?.partialDays ?? [];
 
   const programTotalDays = program?.totalDays ?? 1;
-  const currentDayNumber = access.completionState === 'completed'
+  const unlockedDayNumber = access.completionState === 'completed'
     ? programTotalDays
     : access.startedAt
-      ? getProgramScheduledDay(access.startedAt, programTotalDays)
+      ? getProgramScheduledDay(access.startedAt, programTotalDays, now)
       : access.currentDay ?? 1;
+  const activeDayNumber = access.completionState === 'completed'
+    ? null
+    : access.startedAt
+      ? getProgramActiveDay(access.startedAt, programTotalDays, now)
+      : unlockedDayNumber;
+  const lastFinalizedDayNumber = access.startedAt
+    ? getProgramLastFinalizedDay(access.startedAt, programTotalDays, now)
+    : Math.max(0, ...(progress?.completedDays ?? []), ...(progress?.partialDays ?? []));
+  const previewDayNumber = activeDayNumber ?? Math.min(lastFinalizedDayNumber + 1, programTotalDays);
+  const nextUnlockLabel = access.completionState === 'completed'
+    ? null
+    : formatUnlockLabel(getProgramNextUnlockAt(access.startedAt, programTotalDays, now), now);
+  const isCurrentSessionLocked = activeDayNumber == null && access.completionState !== 'completed';
 
-  const { day: currentDay } = useDay(activeProgram, currentDayNumber);
-  const resolvedDayNumber = currentDay?.dayNumber ?? currentDayNumber;
+  const { day: currentDay } = useDay(activeProgram, previewDayNumber);
+  const resolvedDayNumber = currentDay?.dayNumber ?? previewDayNumber;
 
   useFocusEffect(
     useCallback(() => {
       void queryClient.invalidateQueries({ queryKey: programQueryKey(activeProgram) });
       void queryClient.invalidateQueries({
-        queryKey: programDayQueryKey(activeProgram, currentDayNumber),
+        queryKey: programDayQueryKey(activeProgram, previewDayNumber),
       });
-    }, [activeProgram, currentDayNumber, queryClient])
+    }, [activeProgram, previewDayNumber, queryClient])
   );
 
   const dayPreview = (() => {
@@ -82,15 +123,17 @@ function HomeScreenContent({ activeProgram }: { activeProgram: ProgramSlug }) {
     () =>
       resolveDashboardStatItems({
         programSlug: activeProgram,
-        currentDayNumber,
+        currentDayNumber: unlockedDayNumber,
         dailySteps: {
           isLoading: dailySteps.isLoading,
           permissionState: dailySteps.summary?.permissionState,
           steps: dailySteps.summary?.steps,
         },
         totalDays: programTotalDays,
-        completedDays: progress?.completedDays ?? [],
-        partialDays: progress?.partialDays ?? [],
+        completedDays: completedDaysForStats,
+        partialDays: partialDaysForStats,
+        currentStreak: hasFinalizedDayStateTruth ? dayStateSummary.currentStreak : undefined,
+        rollingCompletion: hasFinalizedDayStateTruth ? rollingCompletionSummary : null,
         hasAudio: program?.hasAudio ?? false,
         onboardingResponse,
         questionnaireAnswers:
@@ -102,7 +145,7 @@ function HomeScreenContent({ activeProgram }: { activeProgram: ProgramSlug }) {
       }),
     [
       activeProgram,
-      currentDayNumber,
+      unlockedDayNumber,
       dailySteps.isLoading,
       dailySteps.summary?.permissionState,
       dailySteps.summary?.steps,
@@ -111,8 +154,11 @@ function HomeScreenContent({ activeProgram }: { activeProgram: ProgramSlug }) {
       profile?.questionnaire_answers,
       program?.hasAudio,
       programTotalDays,
-      progress?.completedDays,
-      progress?.partialDays,
+      completedDaysForStats,
+      partialDaysForStats,
+      dayStateSummary.currentStreak,
+      rollingCompletionSummary,
+      hasFinalizedDayStateTruth,
     ]
   );
 
@@ -157,6 +203,8 @@ function HomeScreenContent({ activeProgram }: { activeProgram: ProgramSlug }) {
             estimatedMinutes={currentDay?.estimatedMinutes ?? 5}
             activeProgram={activeProgram}
             resolvedDayNumber={resolvedDayNumber}
+            isLocked={isCurrentSessionLocked}
+            availabilityLabel={isCurrentSessionLocked ? nextUnlockLabel : null}
           />
 
           <StatsRow

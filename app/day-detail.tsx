@@ -23,13 +23,24 @@ import { Button } from '@/components/ui/Button';
 import { TransportBar } from '@/components/ui/TransportBar';
 import { useDay, useProgram } from '@/content';
 import { programDayQueryKey, programQueryKey } from '@/hooks/contentQueryUtils';
+import { finalizedDayStatesQueryKey, useFinalizedDayStates } from '@/hooks/useFinalizedDayStates';
+import { useMinuteClock } from '@/hooks/useMinuteClock';
 import { getCardState, toLocalHHMM } from '@/lib/card-state';
-import { formatUnlockLabel, getProgramNextUnlockAt, getProgramScheduledDay } from '@/lib/programs/schedule';
+import { buildUserDayStateRecord, upsertUserDayState } from '@/lib/day-states';
+import { formatFinalizedDaySummary } from '@/lib/day-state-summary';
+import {
+  formatUnlockLabel,
+  getProgramActiveDay,
+  getProgramLastFinalizedDay,
+  getProgramNextUnlockAt,
+  getProgramScheduledDay,
+} from '@/lib/programs/schedule';
+import { parseRoutineProgress } from '@/lib/routine-progress';
 import { buildWidgetPayload, syncWidgetData } from '@/lib/widget-bridge';
 import { useAuth } from '@/providers/auth';
 import { useProfile } from '@/providers/profile';
 import type { DayContent, ProgramSlug } from '@/types/content';
-import { TIME_SLOT_WINDOWS, type CardState, type TimeSlot } from '@/types/resolver';
+import { TIME_SLOT_WINDOWS, type CardState, type DayState, type TimeSlot } from '@/types/resolver';
 
 const PROGRAM_SLUGS: ProgramSlug[] = [
   'six_day_reset',
@@ -129,6 +140,29 @@ function getCardStateNotice(state: CardState, slot: TimeSlot) {
   }
 }
 
+function getHistoricalDayNotice(state: DayState) {
+  switch (state) {
+    case 'completed':
+      return {
+        eyebrow: 'Review mode',
+        message: 'This day is complete and now read-only.',
+        tone: 'muted' as const,
+      };
+    case 'partial':
+      return {
+        eyebrow: 'Partial day',
+        message: 'This day closed as partial and is now read-only.',
+        tone: 'warm' as const,
+      };
+    case 'skipped':
+      return {
+        eyebrow: 'Day closed',
+        message: `This day closed at ${formatWindowTime(TIME_SLOT_WINDOWS.evening.closes)} with no completed cards and is now read-only.`,
+        tone: 'critical' as const,
+      };
+  }
+}
+
 /**
  * Returns the default center button config for a card based purely on its type.
  * Cards can override this by calling registerConfig via TransportContext.
@@ -195,28 +229,44 @@ async function getDayRoutineCompletionSummary(day: DayContent) {
   );
 
   const allRequiredRoutinesComplete = routineCards.every(({ card }, index) => {
-    const parsedValue = rawValues[index];
-    const completedItems = (() => {
-      try {
-        const parsed = parsedValue ? JSON.parse(parsedValue) : [];
-        return new Set(Array.isArray(parsed) ? parsed.filter((value): value is string => typeof value === 'string') : []);
-      } catch {
-        return new Set<string>();
-      }
-    })();
+    const progressRecord = parseRoutineProgress(rawValues[index] ?? null);
+    const completedItems = new Set(progressRecord.completedItems);
 
     // Age Reversal format uses a single exercise at the card level (card.name)
     // Legacy format uses card.exercises[] — both need completion tracking
     const requiredItems = card.name && Array.isArray(card.steps)
       ? [card.name]  // Single-exercise: item id is the card name
       : (card.exercises ?? []).map((item, itemIndex) => getRoutineItemKey(item.name, itemIndex));
-    return requiredItems.every((itemKey) => completedItems.has(itemKey));
+    const effortCheckSatisfied =
+      !(getCardTimeMeta(card).hasEffortCheck && Boolean(card.name && Array.isArray(card.steps)))
+        || progressRecord.effortLevel !== null;
+
+    return requiredItems.every((itemKey) => completedItems.has(itemKey)) && effortCheckSatisfied;
   });
 
   return {
     hasRequiredRoutines: true,
     allRequiredRoutinesComplete,
   };
+}
+
+async function getDayRoutineProgressByIndex(day: DayContent) {
+  const routineEntries = day.cards
+    .map((card, index) => ({ card, index }))
+    .filter((entry) => entry.card.type === 'exercise_routine');
+
+  const rawValues = await Promise.all(
+    routineEntries.map(({ index }) =>
+      AsyncStorage.getItem(getRoutineStorageKey(day.programSlug, day.dayNumber, index))
+    )
+  );
+
+  return Object.fromEntries(
+    routineEntries.map(({ index }, entryIndex) => [
+      index,
+      parseRoutineProgress(rawValues[entryIndex] ?? null),
+    ])
+  );
 }
 
 function normalizeRouteParam(value: string | string[] | undefined) {
@@ -341,6 +391,8 @@ const SwipeDeckCard = memo(function SwipeDeckCard({
   onContinue,
   reflectionStorageKey,
   routineStorageKey,
+  hasEffortCheck,
+  isReadOnly,
   programReflectionContext,
   onRoutineProgressChange,
   closeCardState,
@@ -356,6 +408,8 @@ const SwipeDeckCard = memo(function SwipeDeckCard({
   onPrevious?: () => void;
   reflectionStorageKey?: string;
   routineStorageKey?: string;
+  hasEffortCheck?: boolean;
+  isReadOnly?: boolean;
   programReflectionContext?: {
     userId?: string;
     programSlug: ProgramSlug;
@@ -366,6 +420,8 @@ const SwipeDeckCard = memo(function SwipeDeckCard({
   closeCardState?: {
     isCompleted?: boolean;
     isPartial?: boolean;
+    isReadOnly?: boolean;
+    readOnlyState?: DayState;
     isFinalProgramDay?: boolean;
     completionDescription?: string | null;
     isCompleting?: boolean;
@@ -410,6 +466,8 @@ const SwipeDeckCard = memo(function SwipeDeckCard({
                 onContinue={onContinue}
                 reflectionStorageKey={reflectionStorageKey}
                 routineStorageKey={routineStorageKey}
+                hasEffortCheck={hasEffortCheck}
+                isReadOnly={isReadOnly}
                 onRoutineProgressChange={onRoutineProgressChange}
                 closeCardState={closeCardState}
                 programReflectionContext={
@@ -436,13 +494,13 @@ export default function DayDetailScreen() {
   const [isRestored, setIsRestored] = useState(false);
   const [showResumeToast, setShowResumeToast] = useState(false);
   const [isCompletingDay, setIsCompletingDay] = useState(false);
-  const [clockTick, setClockTick] = useState(() => Date.now());
   const [transportConfigs, setTransportConfigs] = useState<Record<number, TransportConfig>>({});
   const transportConfigsRef = useRef<Record<number, TransportConfig>>({});
   const [routineSummary, setRoutineSummary] = useState({
     hasRequiredRoutines: false,
     allRequiredRoutinesComplete: true,
   });
+  const currentTime = useMinuteClock();
 
   const registerTransportConfig = useCallback((index: number, config: TransportConfig) => {
     transportConfigsRef.current[index] = config;
@@ -484,6 +542,11 @@ export default function DayDetailScreen() {
   const dayNumber = rawDayNumber ? Number(rawDayNumber) : Number.NaN;
   const programSlug = isProgramSlug(rawProgramSlug) ? rawProgramSlug : null;
   const normalizedDayNumber = Number.isInteger(dayNumber) && dayNumber >= 1 ? dayNumber : null;
+  const finalizedDayStatesQuery = useFinalizedDayStates(user?.id ?? access.ownerUserId ?? null, programSlug);
+  const finalizedDayState = useMemo(
+    () => finalizedDayStatesQuery.data?.find((row) => row.dayNumber === normalizedDayNumber) ?? null,
+    [finalizedDayStatesQuery.data, normalizedDayNumber]
+  );
   const { day: dayContent, isLoading: isDayLoading } = useDay(programSlug, normalizedDayNumber);
   const { program, isLoading: isProgramLoading } = useProgram(programSlug);
 
@@ -502,7 +565,10 @@ export default function DayDetailScreen() {
       void queryClient.invalidateQueries({
         queryKey: programDayQueryKey(programSlug, normalizedDayNumber),
       });
-    }, [normalizedDayNumber, programSlug, queryClient])
+      void queryClient.invalidateQueries({
+        queryKey: finalizedDayStatesQueryKey(user?.id ?? access.ownerUserId ?? null, programSlug),
+      });
+    }, [access.ownerUserId, normalizedDayNumber, programSlug, queryClient, user?.id])
   );
 
   useEffect(() => {
@@ -560,14 +626,6 @@ export default function DayDetailScreen() {
     return () => clearTimeout(timer);
   }, [showResumeToast]);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setClockTick(Date.now());
-    }, 60 * 1000);
-
-    return () => clearInterval(interval);
-  }, []);
-
   const handlePageSelected = async (nextIndex: number) => {
     setCurrentIndex(nextIndex);
 
@@ -601,10 +659,13 @@ export default function DayDetailScreen() {
 
   const completedDays = useMemo(() => progress?.completedDays ?? [], [progress?.completedDays]);
   const partialDays = useMemo(() => progress?.partialDays ?? [], [progress?.partialDays]);
-  const isDayCompleted = normalizedDayNumber ? completedDays.includes(normalizedDayNumber) : false;
-  const isDayPartial = normalizedDayNumber ? partialDays.includes(normalizedDayNumber) : false;
-  const currentTime = useMemo(() => new Date(clockTick), [clockTick]);
-  const scheduledDay = useMemo(() => {
+  const isDayCompleted = normalizedDayNumber
+    ? finalizedDayState?.dayState === 'completed' || completedDays.includes(normalizedDayNumber)
+    : false;
+  const isDayPartial = normalizedDayNumber
+    ? finalizedDayState?.dayState === 'partial' || (!isDayCompleted && partialDays.includes(normalizedDayNumber))
+    : false;
+  const unlockedThroughDay = useMemo(() => {
     if (!program) {
       return access.currentDay ?? 1;
     }
@@ -614,7 +675,7 @@ export default function DayDetailScreen() {
     }
 
     const derivedScheduledDay = access.startedAt
-      ? getProgramScheduledDay(access.startedAt, program.totalDays)
+      ? getProgramScheduledDay(access.startedAt, program.totalDays, currentTime)
       : access.currentDay ?? 1;
     const highestTouchedDay = Math.max(
       0,
@@ -627,11 +688,49 @@ export default function DayDetailScreen() {
       program.totalDays,
       Math.max(derivedScheduledDay, highestTouchedDay || 1)
     );
-  }, [access.completionState, access.currentDay, access.startedAt, completedDays, partialDays, program]);
+  }, [access.completionState, access.currentDay, access.startedAt, completedDays, currentTime, partialDays, program]);
+  const activeDayNumber = useMemo(() => {
+    if (!program || access.completionState === 'completed') {
+      return null;
+    }
+
+    return access.startedAt
+      ? getProgramActiveDay(access.startedAt, program.totalDays, currentTime)
+      : unlockedThroughDay;
+  }, [access.completionState, access.startedAt, currentTime, program, unlockedThroughDay]);
+  const lastFinalizedDay = useMemo(() => {
+    if (!program) {
+      return Math.max(0, ...completedDays, ...partialDays);
+    }
+
+    return access.startedAt
+      ? getProgramLastFinalizedDay(access.startedAt, program.totalDays, currentTime)
+      : Math.max(0, ...completedDays, ...partialDays);
+  }, [access.startedAt, completedDays, currentTime, partialDays, program]);
+  const historicalDayState = useMemo<DayState | null>(() => {
+    if (!normalizedDayNumber || normalizedDayNumber > lastFinalizedDay) {
+      return null;
+    }
+
+    if (finalizedDayState) {
+      return finalizedDayState.dayState;
+    }
+
+    if (isDayCompleted) {
+      return 'completed';
+    }
+
+    if (isDayPartial) {
+      return 'partial';
+    }
+
+    return 'skipped';
+  }, [finalizedDayState, isDayCompleted, isDayPartial, lastFinalizedDay, normalizedDayNumber]);
+  const isHistoricalReadOnlyDay = Boolean(historicalDayState);
 
   const isFutureLocked = Boolean(
     normalizedDayNumber &&
-    normalizedDayNumber > scheduledDay &&
+    normalizedDayNumber > unlockedThroughDay &&
     !isDayCompleted &&
     !isDayPartial
   );
@@ -641,8 +740,8 @@ export default function DayDetailScreen() {
   const shouldShowCompletionBar = !hasCloseCard && (isDayCompleted || isDayPartial || isLastCard);
   const nextUnlockLabel = useMemo(() => {
     if (!program || access.completionState === 'completed') return null;
-    return formatUnlockLabel(getProgramNextUnlockAt(access.startedAt, program.totalDays));
-  }, [access.completionState, access.startedAt, program]);
+    return formatUnlockLabel(getProgramNextUnlockAt(access.startedAt, program.totalDays, currentTime), currentTime);
+  }, [access.completionState, access.startedAt, currentTime, program]);
   const runtimeCards = useMemo(
     () => dayContent?.cards.map((card) => ({ card, meta: getCardTimeMeta(card) })) ?? [],
     [dayContent?.cards]
@@ -650,21 +749,37 @@ export default function DayDetailScreen() {
   const cardStates = useMemo(
     () =>
       runtimeCards.map(({ meta }) =>
-        getCardState(meta, toLocalHHMM(currentTime), isDayCompleted ? { state: 'completed' } : undefined)
+        getCardState(
+          meta,
+          toLocalHHMM(currentTime),
+          isDayCompleted
+            ? { state: 'completed' }
+            : isHistoricalReadOnlyDay
+              ? { state: 'skipped' }
+              : undefined
+        )
       ),
-    [currentTime, isDayCompleted, runtimeCards]
+    [currentTime, isDayCompleted, isHistoricalReadOnlyDay, runtimeCards]
   );
   const currentCard = dayContent?.cards[currentIndex];
   const currentCardMeta = runtimeCards[currentIndex]?.meta ?? DEFAULT_CARD_TIME_META;
   const currentCardState = cardStates[currentIndex] ?? 'available';
   const currentCardStateNotice = useMemo(
-    () =>
-      isDayCompleted || currentCardState === 'locked' || currentCardState === 'blocked'
-        ? null
-        : getCardStateNotice(currentCardState, currentCardMeta.timeSlot),
-    [currentCardMeta.timeSlot, currentCardState, isDayCompleted]
+    () => {
+      if (historicalDayState) {
+        return getHistoricalDayNotice(historicalDayState);
+      }
+
+      if (isDayCompleted || currentCardState === 'locked' || currentCardState === 'blocked') {
+        return null;
+      }
+
+      return getCardStateNotice(currentCardState, currentCardMeta.timeSlot);
+    },
+    [currentCardMeta.timeSlot, currentCardState, historicalDayState, isDayCompleted]
   );
-  const isCurrentCardActionLocked = currentCardState === 'locked' || currentCardState === 'blocked';
+  const isCurrentCardActionLocked =
+    isHistoricalReadOnlyDay || currentCardState === 'locked' || currentCardState === 'blocked';
   const canCompleteFromCurrentCard = Boolean(
     dayContent &&
       currentIndex === dayContent.cards.length - 1 &&
@@ -721,14 +836,43 @@ export default function DayDetailScreen() {
     void refreshRoutineSummary();
   }, [refreshRoutineSummary]);
 
+  const persistFinalizedDayState = useCallback(
+    async (requestedDayState: Extract<DayState, 'completed' | 'partial' | 'skipped'>) => {
+      if (!user?.id || !dayContent) {
+        return;
+      }
+
+      const routineProgressByIndex = await getDayRoutineProgressByIndex(dayContent);
+      const record = buildUserDayStateRecord({
+        userId: user.id,
+        day: dayContent,
+        requestedDayState,
+        currentIndex,
+        cardStates,
+        routineProgressByIndex,
+      });
+
+      await upsertUserDayState(record);
+      await queryClient.invalidateQueries({
+        queryKey: finalizedDayStatesQueryKey(user.id, dayContent.programSlug),
+      });
+    },
+    [cardStates, currentIndex, dayContent, queryClient, user?.id]
+  );
+
   const handleCompleteCurrentDay = async () => {
-    if (!programSlug || !dayContent || isDayCompleted || isCompletingDay) {
+    if (!programSlug || !dayContent || isDayCompleted || isCompletingDay || isHistoricalReadOnlyDay) {
       return;
     }
 
     try {
       setIsCompletingDay(true);
       await completeProgramDay(programSlug, dayContent.dayNumber);
+      try {
+        await persistFinalizedDayState('completed');
+      } catch (dayStateError) {
+        console.warn('Failed to persist completed day state', dayStateError);
+      }
     } catch (error) {
       console.error('Failed to complete day', error);
     } finally {
@@ -737,13 +881,18 @@ export default function DayDetailScreen() {
   };
 
   const handleSaveCurrentDayAsPartial = async () => {
-    if (!programSlug || !dayContent || isDayCompleted || isCompletingDay) {
+    if (!programSlug || !dayContent || isDayCompleted || isCompletingDay || isHistoricalReadOnlyDay) {
       return;
     }
 
     try {
       setIsCompletingDay(true);
       await savePartialProgramDay(programSlug, dayContent.dayNumber);
+      try {
+        await persistFinalizedDayState('partial');
+      } catch (dayStateError) {
+        console.warn('Failed to persist partial day state', dayStateError);
+      }
     } catch (error) {
       console.error('Failed to save partial day', error);
     } finally {
@@ -752,17 +901,14 @@ export default function DayDetailScreen() {
   };
 
   const handlePrimaryDayAction = async () => {
-    if (isDayCompleted || isCompletingDay) {
-      return;
-    }
-
-    if (isDayPartial) {
-      await handleCompleteCurrentDay();
+    if (isDayCompleted || isCompletingDay || isHistoricalReadOnlyDay) {
       return;
     }
 
     if (routineSummary.hasRequiredRoutines && !routineSummary.allRequiredRoutinesComplete) {
-      await handleSaveCurrentDayAsPartial();
+      if (!isDayPartial) {
+        await handleSaveCurrentDayAsPartial();
+      }
       return;
     }
 
@@ -795,8 +941,11 @@ export default function DayDetailScreen() {
     );
   }
 
-  const isCurrentScheduledDay = dayContent.dayNumber === scheduledDay && !isDayCompleted;
+  const isCurrentScheduledDay = dayContent.dayNumber === activeDayNumber && !isDayCompleted;
   const isFinalProgramDay = dayContent.dayNumber >= program.totalDays;
+  const hasIncompleteRequiredRoutines =
+    routineSummary.hasRequiredRoutines && !routineSummary.allRequiredRoutinesComplete;
+  const finalizedSummaryText = finalizedDayState ? formatFinalizedDaySummary(finalizedDayState) : null;
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const completionTitle = isDayCompleted
     ? isFinalProgramDay
@@ -813,12 +962,18 @@ export default function DayDetailScreen() {
       : nextUnlockLabel
         ? `${nextUnlockLabel}. You can revisit this day anytime.`
         : 'You can revisit this day anytime.'
+    : historicalDayState === 'partial'
+      ? `${finalizedSummaryText ?? 'This day closed as partial after the session window ended.'} It now stays available in review mode only.`
+    : historicalDayState === 'skipped'
+      ? `${finalizedSummaryText ?? `This day closed at ${formatWindowTime(TIME_SLOT_WINDOWS.evening.closes)} with no completed cards.`} It now stays available in review mode only.`
     : isDayPartial
-      ? 'This day unlocked your onward schedule, but it does not count as fully completed yet. Revisit it anytime and mark it fully complete when you are ready.'
+      ? hasIncompleteRequiredRoutines
+        ? `${finalizedSummaryText ?? 'This day is saved as partial.'} Finish the required routine steps before marking it fully complete.`
+        : `${finalizedSummaryText ?? 'This day is saved as partial.'} You can mark it fully complete when you are ready.`
     : isCurrentScheduledDay
       ? nextUnlockLabel
         ? `${nextUnlockLabel}. Earlier practices will stay available if you want to revisit them.`
-        : routineSummary.hasRequiredRoutines && !routineSummary.allRequiredRoutinesComplete
+        : hasIncompleteRequiredRoutines
           ? 'Required routine steps are still unfinished. You can save this day as partial and come back later.'
           : 'When you are ready, mark today complete.'
       : 'This earlier practice will stay available even after you complete it.';
@@ -826,9 +981,13 @@ export default function DayDetailScreen() {
       ? 'Locked'
       : currentCard?.type === 'close' && currentCardState === 'blocked'
         ? 'Missed'
+        : isHistoricalReadOnlyDay
+          ? 'Back to Program'
         : isDayPartial
-          ? 'Mark fully complete'
-          : routineSummary.hasRequiredRoutines && !routineSummary.allRequiredRoutinesComplete
+          ? hasIncompleteRequiredRoutines
+            ? 'Finish routines first'
+            : 'Mark fully complete'
+          : hasIncompleteRequiredRoutines
             ? 'Save as partial'
             : isFinalProgramDay
               ? 'Complete program day'
@@ -942,16 +1101,27 @@ export default function DayDetailScreen() {
                 }}
                 reflectionStorageKey={`day-reflection:${dayContent.programSlug}:${dayContent.dayNumber}:${index}`}
                 routineStorageKey={getRoutineStorageKey(dayContent.programSlug, dayContent.dayNumber, index)}
+                hasEffortCheck={runtimeCards[index]?.meta.hasEffortCheck}
+                isReadOnly={isHistoricalReadOnlyDay}
                 onRoutineProgressChange={handleRoutineProgressChange}
                 closeCardState={{
                   isCompleted: isDayCompleted,
                   isPartial: isDayPartial,
+                  isReadOnly: isHistoricalReadOnlyDay,
+                  readOnlyState: historicalDayState ?? undefined,
                   isFinalProgramDay,
                   completionDescription,
                   isCompleting: isCompletingDay,
                   primaryActionLabel: primaryCompletionLabel,
-                  primaryActionDisabled: currentCard?.type === 'close' && isCurrentCardActionLocked,
+                  primaryActionDisabled:
+                    currentCard?.type === 'close' &&
+                    !isHistoricalReadOnlyDay &&
+                    (isCurrentCardActionLocked || (isDayPartial && hasIncompleteRequiredRoutines)),
                   onCompleteDay: () => {
+                    if (isHistoricalReadOnlyDay) {
+                      router.navigate('/program' as Href);
+                      return;
+                    }
                     void handlePrimaryDayAction();
                   },
                   onBackToProgram: () => router.navigate('/program' as Href),
@@ -982,6 +1152,9 @@ export default function DayDetailScreen() {
         hasPrev={currentIndex > 0}
         hasNext={hasNextAction}
         centerLabel={(() => {
+          if (isHistoricalReadOnlyDay) {
+            return 'REVIEW';
+          }
           if (currentCardState === 'locked') {
             return 'LOCKED';
           }
@@ -996,6 +1169,9 @@ export default function DayDetailScreen() {
           return getDefaultCenterConfig(currentCard?.type ?? '', isLastCard).label;
         })()}
         centerIcon={(() => {
+          if (isHistoricalReadOnlyDay) {
+            return <Ionicons name="eye-outline" size={28} color="#06290C" />;
+          }
           if (currentCardState === 'locked') {
             return <Ionicons name="lock-closed-outline" size={28} color="#06290C" />;
           }
