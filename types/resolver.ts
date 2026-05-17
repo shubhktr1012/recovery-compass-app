@@ -5,10 +5,10 @@ export type TimeSlot = 'morning' | 'afternoon' | 'evening' | 'anytime';
 export type ContentMode = 'template' | 'unique';
 
 export const TIME_SLOT_WINDOWS = {
-  morning: { opens: '06:30', closes: '14:00' },
+  morning: { opens: '05:00', closes: '14:00' },
   afternoon: { opens: '12:00', closes: '18:00' },
   evening: { opens: '19:00', closes: '01:00' },
-  anytime: { opens: '06:30', closes: '01:00' },
+  anytime: { opens: '05:00', closes: '01:00' },
 } as const satisfies Record<TimeSlot, { opens: string; closes: string }>;
 
 export interface TimeSlotMeta {

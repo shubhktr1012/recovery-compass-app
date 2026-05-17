@@ -469,9 +469,9 @@ describe('time slot helpers', () => {
 });
 
 describe('audio threshold helpers', () => {
-  it('returns 30 percent and 75 percent thresholds', () => {
+  it('returns 50 percent and 75 percent thresholds', () => {
     expect(getAudioThresholds(600)).toEqual({
-      markAsDone: 180,
+      markAsDone: 300,
       autoComplete: 450,
     });
   });
@@ -479,7 +479,7 @@ describe('audio threshold helpers', () => {
   it('handles short audio durations', () => {
     const thresholds = getAudioThresholds(60);
 
-    expect(thresholds.markAsDone).toBeCloseTo(18);
+    expect(thresholds.markAsDone).toBeCloseTo(30);
     expect(thresholds.autoComplete).toBeCloseTo(45);
   });
 });

@@ -30,7 +30,7 @@ const anytimeCard: CardStateInput = {
 
 describe('getWindowPhase', () => {
   it('treats normal windows as before_open, open, or after_close', () => {
-    expect(getWindowPhase('morning', '05:45')).toBe('before_open');
+    expect(getWindowPhase('morning', '04:45')).toBe('before_open');
     expect(getWindowPhase('morning', '09:00')).toBe('open');
     expect(getWindowPhase('morning', '15:00')).toBe('after_close');
   });
@@ -48,9 +48,9 @@ describe('getWindowPhase', () => {
 
 describe('getCardState', () => {
   it('returns locked before a card window opens', () => {
-    expect(getCardState(morningCatchUpCard, '06:00')).toBe('locked');
+    expect(getCardState(morningCatchUpCard, '04:30')).toBe('locked');
     expect(getCardState(eveningCard, '11:00')).toBe('locked');
-    expect(getCardState(anytimeCard, '05:30')).toBe('locked');
+    expect(getCardState(anytimeCard, '04:30')).toBe('locked');
   });
 
   it('returns available while the window is open', () => {
@@ -70,7 +70,7 @@ describe('getCardState', () => {
 
   it('prefers completed and skipped records over clock-based state', () => {
     expect(
-      getCardState(morningStrictCard, '06:00', {
+      getCardState(morningStrictCard, '04:30', {
         completedAt: '2026-05-15T08:00:00.000Z',
       })
     ).toBe('completed');

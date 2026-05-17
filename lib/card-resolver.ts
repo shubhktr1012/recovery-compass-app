@@ -261,7 +261,7 @@ export function getAudioThresholds(durationSeconds: number): {
   autoComplete: number;
 } {
   return {
-    markAsDone: durationSeconds * 0.3,
+    markAsDone: durationSeconds * 0.5,
     autoComplete: durationSeconds * 0.75,
   };
 }
