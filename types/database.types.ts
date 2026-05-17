@@ -1089,7 +1089,9 @@ export type Database = {
         Row: {
           card_details: Json
           cards_completed: number
+          cards_opened: number
           cards_total: number
+          completion_percentage: number
           created_at: string
           day_number: number
           day_state: string
@@ -1102,7 +1104,9 @@ export type Database = {
         Insert: {
           card_details?: Json
           cards_completed?: number
+          cards_opened?: number
           cards_total?: number
+          completion_percentage?: number
           created_at?: string
           day_number: number
           day_state: string
@@ -1115,7 +1119,9 @@ export type Database = {
         Update: {
           card_details?: Json
           cards_completed?: number
+          cards_opened?: number
           cards_total?: number
+          completion_percentage?: number
           created_at?: string
           day_number?: number
           day_state?: string
@@ -1327,6 +1333,22 @@ export type Database = {
               current_day: number
             }[]
           }
+      sync_program_progress_v2: {
+        Args: {
+          p_archived_at?: string
+          p_completed_at?: string
+          p_completed_days?: number[]
+          p_current_day: number
+          p_partial_days?: number[]
+          p_program_id: string
+        }
+        Returns: {
+          archived_at: string
+          completed_at: string
+          completed_days: number[]
+          current_day: number
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

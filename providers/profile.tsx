@@ -6,12 +6,14 @@ import { supabase } from '@/lib/supabase';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { useAuth } from '@/providers/auth';
 import Purchases, { CustomerInfo } from 'react-native-purchases';
+import { finalizedDayStatesQueryKey } from '@/hooks/useFinalizedDayStates';
 import {
   ProgramAccessSnapshot,
   ProgramProgressRecord,
   ProgramSlug,
 } from '@/lib/programs/types';
 import { AccessService } from '@/lib/access/service';
+import { repairSkippedDayStatesOnForeground } from '@/lib/day-state-repair';
 import { OWNED_PROGRAMS_QUERY_ROOT } from '@/hooks/useOwnedPrograms';
 import { decode } from 'base64-arraybuffer';
 import * as FileSystem from 'expo-file-system/legacy';
@@ -280,6 +282,27 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     try {
       const snapshot = await AccessService.refreshFromDeviceStore(userId);
       const nextProgress = await AccessService.getProgressRecord(userId, snapshot.ownedProgram);
+      try {
+        const repairedDays = await repairSkippedDayStatesOnForeground({
+          userId,
+          access: snapshot,
+          progress: nextProgress,
+        });
+        if (__DEV__ && repairedDays.length > 0) {
+          console.log('[ProfileProvider] repaired skipped day states', {
+            userId,
+            programSlug: snapshot.ownedProgram,
+            repairedDays,
+          });
+        }
+        if (repairedDays.length > 0) {
+          await queryClient.invalidateQueries({
+            queryKey: finalizedDayStatesQueryKey(userId, snapshot.ownedProgram),
+          });
+        }
+      } catch (repairError) {
+        console.warn('Failed to repair skipped day states during access refresh', repairError);
+      }
       console.log('[ProfileProvider] refreshAccess:resolved', {
         userId,
         snapshotOwnerUserId: snapshot.ownerUserId ?? null,
@@ -492,6 +515,27 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
       const liveSnapshot = await AccessService.refreshFromDeviceStore(userId);
       const liveProgress = await AccessService.getProgressRecord(userId, liveSnapshot.ownedProgram);
+      try {
+        const repairedDays = await repairSkippedDayStatesOnForeground({
+          userId,
+          access: liveSnapshot,
+          progress: liveProgress,
+        });
+        if (__DEV__ && repairedDays.length > 0) {
+          console.log('[ProfileProvider] repaired skipped day states', {
+            userId,
+            programSlug: liveSnapshot.ownedProgram,
+            repairedDays,
+          });
+        }
+        if (repairedDays.length > 0) {
+          await queryClient.invalidateQueries({
+            queryKey: finalizedDayStatesQueryKey(userId, liveSnapshot.ownedProgram),
+          });
+        }
+      } catch (repairError) {
+        console.warn('Failed to repair skipped day states during access bootstrap', repairError);
+      }
       console.log('[ProfileProvider] bootstrapAccessState:live', {
         userId,
         liveSnapshotOwnerUserId: liveSnapshot.ownerUserId ?? null,
@@ -531,6 +575,27 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
       void AccessService.syncFromRevenueCat(customerInfo, userId)
         .then(async (snapshot) => {
           const nextProgress = await AccessService.getProgressRecord(userId, snapshot.ownedProgram);
+          try {
+            const repairedDays = await repairSkippedDayStatesOnForeground({
+              userId,
+              access: snapshot,
+              progress: nextProgress,
+            });
+            if (__DEV__ && repairedDays.length > 0) {
+              console.log('[ProfileProvider] repaired skipped day states', {
+                userId,
+                programSlug: snapshot.ownedProgram,
+                repairedDays,
+              });
+            }
+            if (repairedDays.length > 0) {
+              await queryClient.invalidateQueries({
+                queryKey: finalizedDayStatesQueryKey(userId, snapshot.ownedProgram),
+              });
+            }
+          } catch (repairError) {
+            console.warn('Failed to repair skipped day states during customer info update', repairError);
+          }
           console.log('[ProfileProvider] customerInfoUpdate', {
             userId,
             snapshotOwnerUserId: snapshot.ownerUserId ?? null,

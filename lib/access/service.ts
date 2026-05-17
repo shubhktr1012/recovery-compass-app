@@ -541,7 +541,7 @@ export class AccessService {
       const nextPartialDays = progress.partialDays.filter(
         (dayNumber) => !progress.completedDays.includes(dayNumber)
       );
-      const { error } = await supabase.rpc('sync_program_progress', {
+      const { error } = await supabase.rpc('sync_program_progress_v2', {
         p_program_id: progress.programSlug,
         p_current_day: progress.currentDay,
         p_completed_days: progress.completedDays,
@@ -552,7 +552,7 @@ export class AccessService {
 
       if (error) throw error;
     } catch (error) {
-      console.warn('Failed to sync extended program progress to Supabase, falling back to completed-only sync', error);
+      console.warn('Failed to sync extended program progress to Supabase, falling back to legacy sync', error);
 
       try {
         const { error: fallbackError } = await supabase.rpc('sync_program_progress', {
