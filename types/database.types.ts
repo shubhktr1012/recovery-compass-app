@@ -473,6 +473,7 @@ export type Database = {
           id: string
           owned_program: string | null
           paused_at: string | null
+          priority_rank: number | null
           program_state: string
           purchase_state: string
           revenuecat_product_id: string | null
@@ -490,6 +491,7 @@ export type Database = {
           id?: string
           owned_program?: string | null
           paused_at?: string | null
+          priority_rank?: number | null
           program_state?: string
           purchase_state?: string
           revenuecat_product_id?: string | null
@@ -507,6 +509,7 @@ export type Database = {
           id?: string
           owned_program?: string | null
           paused_at?: string | null
+          priority_rank?: number | null
           program_state?: string
           purchase_state?: string
           revenuecat_product_id?: string | null
@@ -1296,6 +1299,86 @@ export type Database = {
           p_scheduled_start_date: string
         }
         Returns: string
+      }
+      configure_program_start: {
+        Args: {
+          p_program_id: string
+          p_scheduled_start_date: string
+        }
+        Returns: {
+          owned_program: string
+          program_state: string
+          scheduled_start_date: string
+          started_at: string
+          updated_at: string
+        }[]
+      }
+      reorder_owned_program_queue: {
+        Args: { p_program_ids: string[] }
+        Returns: {
+          owned_program: string
+          priority_rank: number
+          program_state: string
+          updated_at: string
+        }[]
+      }
+      normalize_owned_program_priority_queue: {
+        Args: { p_user_id: string }
+        Returns: undefined
+      }
+      record_owned_program_purchase: {
+        Args: { p_program_id: string }
+        Returns: {
+          completion_state: string
+          owned_program: string
+          priority_rank: number | null
+          program_state: string
+          purchase_state: string
+          updated_at: string
+        }[]
+      }
+      complete_program_lifecycle: {
+        Args: {
+          p_completed_at?: string
+          p_program_id: string
+        }
+        Returns: {
+          completed_at: string
+          completion_state: string
+          current_day: number
+          owned_program: string
+          program_state: string
+          purchase_state: string
+          updated_at: string
+        }[]
+      }
+      pause_program_for_absence: {
+        Args: {
+          p_current_day: number
+          p_paused_at?: string
+          p_program_id: string
+        }
+        Returns: {
+          current_day: number
+          owned_program: string
+          paused_at: string
+          program_state: string
+          updated_at: string
+        }[]
+      }
+      resume_program_from_pause: {
+        Args: {
+          p_program_id: string
+          p_started_at: string
+        }
+        Returns: {
+          current_day: number
+          owned_program: string
+          paused_at: string
+          program_state: string
+          started_at: string
+          updated_at: string
+        }[]
       }
       select_active_program: {
         Args: { p_program_id: string }

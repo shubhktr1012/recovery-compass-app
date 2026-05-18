@@ -10,6 +10,7 @@ import {
   resolveTemplateDayRow,
 } from '@/hooks/contentQueryUtils';
 import { buildUserDayStateRecord, upsertUserDayState } from '@/lib/day-states';
+import { isProgramStartPending } from '@/lib/programs/lifecycle';
 import { getProgramLastFinalizedDay } from '@/lib/programs/schedule';
 import type { ProgramAccessSnapshot, ProgramProgressRecord } from '@/lib/programs/types';
 import { supabase } from '@/lib/supabase';
@@ -112,6 +113,10 @@ export async function repairSkippedDayStatesOnForeground(args: {
 }) {
   const programSlug = args.access.ownedProgram;
   if (!programSlug || !args.access.startedAt || args.access.purchaseState === 'not_owned') {
+    return [];
+  }
+
+  if (args.access.programState === 'paused' || isProgramStartPending(args.access, args.now ?? new Date())) {
     return [];
   }
 

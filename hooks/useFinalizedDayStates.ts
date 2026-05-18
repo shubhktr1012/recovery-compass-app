@@ -16,6 +16,7 @@ type UserDayStateRow = {
 
 export const finalizedDayStatesQueryKey = (userId: string | null | undefined, programSlug: ProgramSlug | null | undefined) =>
   ['user-day-states', userId ?? null, programSlug ?? null] as const;
+export const EMPTY_FINALIZED_DAY_STATES: FinalizedDayState[] = [];
 
 function isFinalizedDayState(value: string): value is FinalizedDayState['dayState'] {
   return value === 'completed' || value === 'partial' || value === 'skipped';
