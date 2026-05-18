@@ -2,7 +2,7 @@ import React, { useCallback, useMemo, useRef, memo } from 'react';
 import { NativeSyntheticEvent, NativeScrollEvent, ScrollView, Text, View } from 'react-native';
 
 import { StatusBar } from 'expo-status-bar';
-import { Href, useRouter } from 'expo-router';
+import { Href, useLocalSearchParams, useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { useQueryClient } from '@tanstack/react-query';
 import * as Haptics from 'expo-haptics';
@@ -12,7 +12,8 @@ import Svg, { Path } from 'react-native-svg';
 import { useProgram, usePrograms } from '@/content';
 import { useProfile } from '@/providers/profile';
 import { useMinuteClock } from '@/hooks/useMinuteClock';
-import { useFinalizedDayStates } from '@/hooks/useFinalizedDayStates';
+import { EMPTY_FINALIZED_DAY_STATES, useFinalizedDayStates } from '@/hooks/useFinalizedDayStates';
+import { useOwnedPrograms } from '@/hooks/useOwnedPrograms';
 import { buildDayStateProgressSummary } from '@/lib/day-state-summary';
 import {
   formatUnlockLabel,
@@ -21,6 +22,11 @@ import {
   getProgramNextUnlockAt,
   getProgramScheduledDay,
 } from '@/lib/programs/schedule';
+import {
+  formatScheduledProgramStartLabel,
+  getProgramScheduleStartSource,
+  isProgramStartPending,
+} from '@/lib/programs/lifecycle';
 import { TimelineItem } from '@/components/program/TimelineItem';
 import { ProgramCard } from '@/components/program/ProgramCard';
 import { ExplorePrograms } from '@/components/dashboard/ExplorePrograms';
@@ -163,15 +169,23 @@ function FreeProgramDiscoveryScreen() {
   );
 }
 
-function ProgramScreenContent({ activeProgram }: { activeProgram: ProgramSlug }) {
+function ProgramScreenContent({
+  activeProgram,
+  isCompletedReview = false,
+}: {
+  activeProgram: ProgramSlug;
+  isCompletedReview?: boolean;
+}) {
   const router = useRouter();
   const { access, profile, progress } = useProfile();
   const queryClient = useQueryClient();
   const { program } = useProgram(activeProgram);
   const now = useMinuteClock();
   const totalDays = program?.totalDays ?? 1;
+  const isCompletedTimeline = isCompletedReview || access.completionState === 'completed';
+  const scheduledStartPending = !isCompletedReview && isProgramStartPending(access, now);
   const finalizedDayStatesQuery = useFinalizedDayStates(profile?.id ?? access.ownerUserId ?? null, activeProgram);
-  const finalizedDayStates = finalizedDayStatesQuery.data ?? [];
+  const finalizedDayStates = finalizedDayStatesQuery.data ?? EMPTY_FINALIZED_DAY_STATES;
   const dayStateSummary = useMemo(
     () => buildDayStateProgressSummary(finalizedDayStates),
     [finalizedDayStates]
@@ -185,20 +199,39 @@ function ProgramScreenContent({ activeProgram }: { activeProgram: ProgramSlug })
   );
 
   const { activeDayNumber, completedDays, lastFinalizedDay, partialDays, unlockedThroughDay } = useMemo(() => {
+    if (isCompletedReview) {
+      const lastReviewDay = Math.max(0, ...finalizedDayStates.map((row) => row.dayNumber));
+
+      return {
+        activeDayNumber: null,
+        completedDays: hasFinalizedDayStateTruth ? dayStateSummary.completedDays : [],
+        lastFinalizedDay: Math.min(totalDays, lastReviewDay),
+        partialDays: hasFinalizedDayStateTruth ? dayStateSummary.partialDays : [],
+        unlockedThroughDay: totalDays,
+      };
+    }
+
+    const scheduleStartSource = getProgramScheduleStartSource(access);
     const progressCompletedDays = hasFinalizedDayStateTruth
       ? dayStateSummary.completedDays
       : progress?.completedDays ?? [];
     const progressPartialDays = hasFinalizedDayStateTruth
       ? dayStateSummary.partialDays
       : progress?.partialDays ?? [];
-    const derivedUnlockedDay = access.startedAt
-      ? getProgramScheduledDay(access.startedAt, totalDays, now)
+    const derivedUnlockedDay = scheduledStartPending
+      ? 1
+      : access.programState === 'paused'
+      ? access.currentDay ?? 1
+      : scheduleStartSource
+      ? getProgramScheduledDay(scheduleStartSource, totalDays, now)
       : access.currentDay ?? 1;
-    const derivedActiveDay = access.startedAt
-      ? getProgramActiveDay(access.startedAt, totalDays, now)
+    const derivedActiveDay = scheduledStartPending || access.programState === 'paused'
+      ? null
+      : scheduleStartSource
+      ? getProgramActiveDay(scheduleStartSource, totalDays, now)
       : derivedUnlockedDay;
-    const derivedLastFinalizedDay = access.startedAt
-      ? getProgramLastFinalizedDay(access.startedAt, totalDays, now)
+    const derivedLastFinalizedDay = scheduleStartSource && !scheduledStartPending
+      ? getProgramLastFinalizedDay(scheduleStartSource, totalDays, now)
       : Math.max(0, ...progressCompletedDays, ...progressPartialDays);
     const highestTouchedDay = Math.max(
       0,
@@ -212,23 +245,30 @@ function ProgramScreenContent({ activeProgram }: { activeProgram: ProgramSlug })
     );
 
     return {
-      activeDayNumber: access.completionState === 'completed' ? null : derivedActiveDay,
+      activeDayNumber: isCompletedTimeline ? null : derivedActiveDay,
       completedDays: progressCompletedDays,
       lastFinalizedDay: Math.min(totalDays, derivedLastFinalizedDay),
       partialDays: progressPartialDays,
-      unlockedThroughDay: access.completionState === 'completed' ? totalDays : unlockedThroughDay,
+      unlockedThroughDay: isCompletedTimeline ? totalDays : unlockedThroughDay,
     };
-  }, [access.completionState, access.currentDay, access.startedAt, dayStateSummary.completedDays, dayStateSummary.partialDays, hasFinalizedDayStateTruth, now, progress?.completedDays, progress?.partialDays, totalDays]);
-  const isArchivedReset = activeProgram === 'six_day_reset' && access.purchaseState === 'owned_archived';
+  }, [access, dayStateSummary.completedDays, dayStateSummary.partialDays, finalizedDayStates, hasFinalizedDayStateTruth, isCompletedReview, isCompletedTimeline, now, progress?.completedDays, progress?.partialDays, scheduledStartPending, totalDays]);
+  const isArchivedReset = !isCompletedReview && activeProgram === 'six_day_reset' && access.purchaseState === 'owned_archived';
   const completedCount = completedDays.length;
-  const progressPercent = Math.max(0, Math.min(100, Math.round((completedCount / totalDays) * 100)));
+  const progressPercent = isCompletedTimeline
+    ? 100
+    : Math.max(0, Math.min(100, Math.round((completedCount / totalDays) * 100)));
   const nextUnlockLabel = useMemo(() => {
-    if (access.completionState === 'completed') return null;
-    return formatUnlockLabel(getProgramNextUnlockAt(access.startedAt, totalDays, now), now);
-  }, [access.completionState, access.startedAt, now, totalDays]);
-  const nextLockedDayNumber = access.completionState === 'completed'
+    if (isCompletedTimeline) return null;
+    if (isProgramStartPending(access, now)) {
+      return formatScheduledProgramStartLabel(access.scheduledStartDate, now);
+    }
+    return formatUnlockLabel(getProgramNextUnlockAt(getProgramScheduleStartSource(access), totalDays, now), now);
+  }, [access, isCompletedTimeline, now, totalDays]);
+  const nextLockedDayNumber = isCompletedTimeline
     ? null
-    : Math.min(unlockedThroughDay + 1, totalDays);
+    : scheduledStartPending
+      ? 1
+      : Math.min(unlockedThroughDay + 1, totalDays);
 
   // Determine if user has been away for 3+ days (72 hours)
   const isReturningUser = useMemo(() => {
@@ -293,7 +333,7 @@ function ProgramScreenContent({ activeProgram }: { activeProgram: ProgramSlug })
 
           <View className="mb-[18px] relative z-10 mt-8">
             <Text className="uppercase text-sage/55" style={[AppTypography.metaMedium, { letterSpacing: 2 }]}>
-              {access.completionState === 'completed' ? 'Completed Journey' : 'Current Journey'}
+              {isCompletedTimeline ? 'Completed Journey' : 'Current Journey'}
             </Text>
           </View>
           
@@ -305,7 +345,7 @@ function ProgramScreenContent({ activeProgram }: { activeProgram: ProgramSlug })
             className="text-sage/60 pr-8 mt-2 relative z-10 max-w-[280px]"
             style={AppTypography.bodyCompact}
           >
-            {access.completionState === 'completed' 
+            {isCompletedTimeline
               ? `You completed this reset. All ${totalDays} days are now available to revisit.` 
               : program.description}
           </Text>
@@ -313,7 +353,7 @@ function ProgramScreenContent({ activeProgram }: { activeProgram: ProgramSlug })
           <View className="mt-4 relative z-10">
             <View className="flex-row justify-between items-baseline mb-2">
               <Text className="text-white tracking-[-0.4px]" style={AppTypography.displayMetric}>
-                {access.completionState === 'completed' ? totalDays : Math.min(unlockedThroughDay, program.totalDays)} <Text className="text-sage/55 tracking-normal" style={AppTypography.label}>of {totalDays} days</Text>
+                {isCompletedTimeline ? totalDays : Math.min(unlockedThroughDay, program.totalDays)} <Text className="text-sage/55 tracking-normal" style={AppTypography.label}>of {totalDays} days</Text>
               </Text>
               <Text className="text-sage/60" style={[AppTypography.metaMedium, { letterSpacing: 0.3 }]}>
                 {progressPercent}% complete
@@ -323,11 +363,11 @@ function ProgramScreenContent({ activeProgram }: { activeProgram: ProgramSlug })
             <View className="h-[3px] w-full bg-sage/[0.18] rounded-full overflow-hidden">
               <View
                 className="h-full bg-sage rounded-full"
-                style={{ width: `${progressPercent}%`, backgroundColor: access.completionState === 'completed' ? 'rgba(93,207,122,0.7)' : '#E3F3E5' }}
+                style={{ width: `${progressPercent}%`, backgroundColor: isCompletedTimeline ? 'rgba(93,207,122,0.7)' : '#E3F3E5' }}
               />
             </View>
             
-            {nextUnlockLabel && access.completionState !== 'completed' ? (
+            {nextUnlockLabel && !isCompletedTimeline ? (
               <Text className="text-sage/40 mt-[6px]" style={[AppTypography.meta, { letterSpacing: 0.2 }]}>
                 {nextUnlockLabel}
               </Text>
@@ -340,7 +380,7 @@ function ProgramScreenContent({ activeProgram }: { activeProgram: ProgramSlug })
           <PaperGrain />
           <View onLayout={(e) => { daysContainerY.current = e.nativeEvent.layout.y; }}>
             
-            {isArchivedReset && access.completionState === 'completed' ? (
+            {isArchivedReset && isCompletedTimeline ? (
               <View className="mx-5 mb-4 bg-white rounded-[20px] px-[18px] py-4 shadow-sm shadow-forest/5" style={{ shadowColor: '#06290C', shadowOpacity: 0.06, shadowRadius: 24, shadowOffset: { width: 0, height: 8 }, borderLeftWidth: 3, borderLeftColor: '#06290C' }}>
                 <Text className="uppercase text-forest/40" style={[AppTypography.eyebrow, { letterSpacing: 1.4 }]}>
                   {`What's Next`}
@@ -364,7 +404,7 @@ function ProgramScreenContent({ activeProgram }: { activeProgram: ProgramSlug })
             ) : null}
 
             <Text className="uppercase text-forest/35 px-6 mb-4" style={[AppTypography.eyebrow, { letterSpacing: 1.6 }]}>
-              {access.completionState === 'completed' ? `All ${totalDays} Days · Revisit Anytime` : 'Day Timeline'}
+              {isCompletedTimeline ? `All ${totalDays} Days · Revisit Anytime` : 'Day Timeline'}
             </Text>
 
             <View className="px-5">
@@ -383,8 +423,10 @@ function ProgramScreenContent({ activeProgram }: { activeProgram: ProgramSlug })
                     !isPartial &&
                     day.dayNumber <= lastFinalizedDay;
                   const isLocked =
-                    isArchivedReset ||
-                    (!isCompleted && !isPartial && !isSkipped && day.dayNumber > unlockedThroughDay);
+                    !isCompletedTimeline &&
+                    (isArchivedReset ||
+                      scheduledStartPending ||
+                      (!isCompleted && !isPartial && !isSkipped && day.dayNumber > unlockedThroughDay));
                   const isCurrent =
                     day.dayNumber === activeDayNumber &&
                     !isCompleted &&
@@ -412,7 +454,11 @@ function ProgramScreenContent({ activeProgram }: { activeProgram: ProgramSlug })
                       nextLockedDayNumber={nextLockedDayNumber}
                       availabilityLabel={availabilityLabel}
                       onPress={() =>
-                        router.push(`/day-detail?programSlug=${activeProgram}&dayNumber=${day.dayNumber}` as Href)
+                        router.push(
+                          isCompletedReview
+                            ? (`/day-detail?programSlug=${activeProgram}&dayNumber=${day.dayNumber}&mode=review` as Href)
+                            : (`/day-detail?programSlug=${activeProgram}&dayNumber=${day.dayNumber}` as Href)
+                        )
                       }
                       onLayout={isCurrent ? (e: any) => {
                         currentDayRelativeY.current = e.nativeEvent.layout.y;
@@ -431,10 +477,31 @@ function ProgramScreenContent({ activeProgram }: { activeProgram: ProgramSlug })
 }
 
 export default function ProgramScreen() {
+  const params = useLocalSearchParams<{ reviewProgram?: string | string[] }>();
   const { access, isLoading, profile } = useProfile();
+  const { ownedPrograms, isLoading: isOwnedProgramsLoading } = useOwnedPrograms();
+  const requestedReviewProgram = Array.isArray(params.reviewProgram)
+    ? params.reviewProgram[0]
+    : params.reviewProgram;
+  const completedReviewProgram = ownedPrograms.find(
+    (program) =>
+      program.slug === requestedReviewProgram &&
+      (program.purchaseState === 'owned_completed' ||
+        program.completionState === 'completed' ||
+        program.programState === 'completed')
+  );
 
-  if (isLoading) {
+  if (isLoading || (requestedReviewProgram && isOwnedProgramsLoading)) {
     return null;
+  }
+
+  if (completedReviewProgram) {
+    return (
+      <ProgramScreenContent
+        activeProgram={completedReviewProgram.slug}
+        isCompletedReview
+      />
+    );
   }
 
   if (!access.ownedProgram || access.purchaseState === 'not_owned') {

@@ -16,7 +16,6 @@ import { AppPreloader } from '@/components/ui/AppPreloader';
 import { getPublicEnvState } from '@/lib/env';
 import { installGlobalErrorHandler } from '@/lib/monitoring';
 import { hasOnboardingContextMismatch } from '@/lib/onboarding.realignment';
-import { NotificationService } from '@/lib/notifications';
 import { Session } from '@supabase/supabase-js';
 import ErodeRegular from '@/assets/fonts/Erode-Regular.otf';
 import ErodeItalic from '@/assets/fonts/Erode-Italic.otf';
@@ -49,6 +48,7 @@ const enablePurchaseQaLogs = process.env.EXPO_PUBLIC_ENABLE_PURCHASE_QA_LOGS ===
 
 function NavigationGate({
     needsOnboardingRealignment,
+    needsProgramSetup,
     isNavigationReady,
     isRecoveringPassword,
     isSubscribed,
@@ -56,6 +56,7 @@ function NavigationGate({
     session,
 }: {
     needsOnboardingRealignment: boolean;
+    needsProgramSetup: boolean;
     isNavigationReady: boolean;
     isRecoveringPassword: boolean;
     isSubscribed: boolean;
@@ -76,6 +77,8 @@ function NavigationGate({
         const inTabsGroup = segments[0] === '(tabs)';
         const inPaywall = inAuthGroup && segments[1] === 'paywall';
         const inDayDetail = segments[0] === 'day-detail';
+        const inProgramStartSetup = segments[0] === 'program-start';
+        const inProgramComplete = segments[0] === 'program-complete';
         const inResetPassword = inAuthGroup && segments[1] === 'reset-password';
         const inPersonalization = inAuthGroup && segments[1] === 'personalization';
         const inManualRealignment = inPersonalization && modeParam === 'realign';
@@ -96,11 +99,15 @@ function NavigationGate({
                         target = '/welcome' as Href;
                     }
                 } else if (isSubscribed) {
-                    if (needsOnboardingRealignment) {
+                    if (needsProgramSetup) {
+                        if (!inProgramStartSetup) {
+                            target = '/program-start' as Href;
+                        }
+                    } else if (needsOnboardingRealignment) {
                         if (!inPersonalization) {
                             target = '/personalization?mode=realign' as Href;
                         }
-                    } else if (!inTabsGroup && !inDayDetail && !inAccountStack && !inPaywall && !inManualRealignment) {
+                    } else if (!inTabsGroup && !inDayDetail && !inProgramStartSetup && !inProgramComplete && !inAccountStack && !inPaywall && !inManualRealignment) {
                         target = '/' as Href;
                     }
                 } else if (!profile || !profile.onboarding_complete) {
@@ -130,7 +137,7 @@ function NavigationGate({
     };
 
     void checkRouting();
-    }, [isNavigationReady, modeParam, needsOnboardingRealignment, rootNavigationState?.key, session, profile, isSubscribed, isRecoveringPassword, router, segments]);
+    }, [isNavigationReady, modeParam, needsOnboardingRealignment, needsProgramSetup, rootNavigationState?.key, session, profile, isSubscribed, isRecoveringPassword, router, segments]);
 
   return null;
 }
@@ -166,6 +173,9 @@ function RootLayoutContent() {
     questionnaireAnswers: profile?.questionnaire_answers ?? null,
     recommendedProgram: profile?.recommended_program ?? null,
   });
+  const needsProgramSetup = Boolean(
+    access.ownedProgram && access.programState === 'purchased'
+  );
   const isNavigationReady = fontsLoaded && !isLoading;
   const hasConfiguredPurchasesRef = useRef(false);
   const revenueCatLoginInFlightRef = useRef<string | null>(null);
@@ -232,13 +242,6 @@ function RootLayoutContent() {
     void loginToRevenueCat();
   }, [session?.user?.id]);
 
-  // Initialize Notifications
-  useEffect(() => {
-    if (session?.user?.id) {
-      void NotificationService.initialize();
-    }
-  }, [session?.user?.id]);
-
   return (
     <>
       <Stack screenOptions={{ headerShown: false }}>
@@ -246,12 +249,15 @@ function RootLayoutContent() {
         <Stack.Screen name="(auth)" />
         <Stack.Screen name="account" />
         <Stack.Screen name="day-detail" />
+        <Stack.Screen name="program-start" />
+        <Stack.Screen name="program-complete" />
       </Stack>
       <NavigationGate
         isNavigationReady={isNavigationReady}
         isRecoveringPassword={isRecoveringPassword}
         isSubscribed={isSubscribed}
         needsOnboardingRealignment={needsOnboardingRealignment}
+        needsProgramSetup={needsProgramSetup}
         profile={profile}
         session={session}
       />

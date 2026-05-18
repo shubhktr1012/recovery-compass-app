@@ -1434,13 +1434,6 @@ function formatAudioTime(seconds: number): string {
   return `${mins}:${secs.toString().padStart(2, '0')}`;
 }
 
-function formatTimerClock(seconds: number): string {
-  const safeSeconds = Math.max(0, Math.ceil(seconds));
-  const mins = Math.floor(safeSeconds / 60);
-  const secs = safeSeconds % 60;
-  return `${mins}:${secs.toString().padStart(2, '0')}`;
-}
-
 function getBreathingPhaseLabel(phase: BreathingPhase): string {
   switch (phase) {
     case 'inhale':

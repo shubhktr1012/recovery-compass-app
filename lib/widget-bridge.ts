@@ -17,6 +17,10 @@
 import { NativeModules, Platform } from 'react-native';
 import { PROGRAM_METADATA } from '@/content/programs/metadata';
 import {
+  getScheduledProgramUnlockAt,
+  isProgramStartPending,
+} from '@/lib/programs/lifecycle';
+import {
   getProgramActiveDay,
   getProgramLastFinalizedDay,
   getProgramNextUnlockAt,
@@ -152,6 +156,28 @@ export function buildWidgetPayload(args: {
   const completedDays = progress?.completedDays ?? [];
   const partialDays = progress?.partialDays ?? [];
   const isProgramComplete = access.completionState === 'completed';
+  const scheduledStartPending = isProgramStartPending(access, now);
+
+  if (scheduledStartPending) {
+    return {
+      programSlug: access.ownedProgram,
+      programName: meta.name,
+      currentDay: 1,
+      totalDays: meta.totalDays,
+      cardIndex,
+      totalCards,
+      streak: 0,
+      steps,
+      isDayCompleted: false,
+      isSessionLocked: true,
+      availabilityLabel: formatWidgetAvailabilityLabel(
+        getScheduledProgramUnlockAt(access.scheduledStartDate)?.toISOString(),
+        now
+      ),
+      updatedAt: new Date().toISOString(),
+    };
+  }
+
   const scheduledDay = access.startedAt
     ? getProgramScheduledDay(access.startedAt, totalDays, now)
     : access.currentDay ?? progress?.currentDay ?? 1;

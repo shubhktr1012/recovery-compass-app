@@ -79,4 +79,21 @@ describe('buildWidgetPayload', () => {
     expect(payload?.isSessionLocked).toBe(false);
     expect(payload?.isDayCompleted).toBe(false);
   });
+
+  it('keeps scheduled programs locked until their selected start date opens', () => {
+    const payload = buildWidgetPayload({
+      access: {
+        ...access,
+        programState: 'scheduled',
+        scheduledStartDate: '2026-05-20',
+        startedAt: '2026-05-20T05:00:00.000Z',
+      },
+      progress,
+      now: new Date(2026, 4, 20, 4, 59),
+    });
+
+    expect(payload?.currentDay).toBe(1);
+    expect(payload?.isSessionLocked).toBe(true);
+    expect(payload?.availabilityLabel).toContain('5:00 AM');
+  });
 });

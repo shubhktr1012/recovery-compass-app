@@ -14,6 +14,11 @@ import {
   getProgramNextUnlockAt,
   getProgramScheduledDay,
 } from '@/lib/programs/schedule';
+import {
+  formatScheduledProgramStartLabel,
+  getProgramScheduleStartSource,
+  isProgramStartPending,
+} from '@/lib/programs/lifecycle';
 import { useProfile } from '@/providers/profile';
 
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
@@ -27,13 +32,15 @@ import { programDayQueryKey, programQueryKey } from '@/hooks/contentQueryUtils';
 import { useOnboardingResponse } from '@/hooks/useOnboardingResponse';
 import { useOwnedPrograms } from '@/hooks/useOwnedPrograms';
 import { useDailySteps } from '@/hooks/useDailySteps';
-import { useFinalizedDayStates } from '@/hooks/useFinalizedDayStates';
+import { EMPTY_FINALIZED_DAY_STATES, useFinalizedDayStates } from '@/hooks/useFinalizedDayStates';
 import { resolveDashboardStatItems } from '@/lib/dashboard-statistics';
 import { buildDayStateProgressSummary, buildRollingCompletionSummary } from '@/lib/day-state-summary';
 import { resolveProfileIdentity } from '@/lib/profile-identity';
 import type { QuestionnaireAnswersSnapshot } from '@/lib/program-statistics';
 import { StepPermissionPrompt } from '@/components/steps/StepPermissionPrompt';
 import { AppTypography } from '@/constants/typography';
+
+const EMPTY_DAY_NUMBERS: number[] = [];
 
 function getGreetingLabel() {
   const hour = new Date().getHours();
@@ -142,7 +149,8 @@ function FreeTierHomeScreen() {
 }
 
 function HomeScreenContent({ activeProgram }: { activeProgram: ProgramSlug }) {
-  const { access, profile, progress } = useProfile();
+  const { access, profile, progress, resumeProgramFromPause } = useProfile();
+  const router = useRouter();
   const onboardingQuery = useOnboardingResponse();
   const onboardingResponse = onboardingQuery.data ?? null;
   const { program } = useProgram(activeProgram);
@@ -153,7 +161,7 @@ function HomeScreenContent({ activeProgram }: { activeProgram: ProgramSlug }) {
   const now = useMinuteClock();
   const userId = profile?.id ?? access.ownerUserId ?? null;
   const finalizedDayStatesQuery = useFinalizedDayStates(userId, activeProgram);
-  const finalizedDayStates = finalizedDayStatesQuery.data ?? [];
+  const finalizedDayStates = finalizedDayStatesQuery.data ?? EMPTY_FINALIZED_DAY_STATES;
   const dayStateSummary = useMemo(
     () => buildDayStateProgressSummary(finalizedDayStates),
     [finalizedDayStates]
@@ -165,30 +173,43 @@ function HomeScreenContent({ activeProgram }: { activeProgram: ProgramSlug }) {
   const hasFinalizedDayStateTruth = finalizedDayStates.length > 0;
   const completedDaysForStats = hasFinalizedDayStateTruth
     ? dayStateSummary.completedDays
-    : progress?.completedDays ?? [];
+    : progress?.completedDays ?? EMPTY_DAY_NUMBERS;
   const partialDaysForStats = hasFinalizedDayStateTruth
     ? dayStateSummary.partialDays
-    : progress?.partialDays ?? [];
+    : progress?.partialDays ?? EMPTY_DAY_NUMBERS;
 
   const programTotalDays = program?.totalDays ?? 1;
+  const scheduleStartSource = getProgramScheduleStartSource(access);
+  const isScheduledStartPending = isProgramStartPending(access, now);
+  const isProgramPaused = access.programState === 'paused';
   const unlockedDayNumber = access.completionState === 'completed'
     ? programTotalDays
-    : access.startedAt
-      ? getProgramScheduledDay(access.startedAt, programTotalDays, now)
+    : isProgramPaused
+      ? access.currentDay ?? 1
+    : isScheduledStartPending
+      ? 1
+    : scheduleStartSource
+      ? getProgramScheduledDay(scheduleStartSource, programTotalDays, now)
       : access.currentDay ?? 1;
   const activeDayNumber = access.completionState === 'completed'
     ? null
-    : access.startedAt
-      ? getProgramActiveDay(access.startedAt, programTotalDays, now)
+    : isScheduledStartPending || access.programState === 'paused'
+      ? null
+    : scheduleStartSource
+      ? getProgramActiveDay(scheduleStartSource, programTotalDays, now)
       : unlockedDayNumber;
-  const lastFinalizedDayNumber = access.startedAt
-    ? getProgramLastFinalizedDay(access.startedAt, programTotalDays, now)
+  const lastFinalizedDayNumber = scheduleStartSource && !isScheduledStartPending
+    ? getProgramLastFinalizedDay(scheduleStartSource, programTotalDays, now)
     : Math.max(0, ...(progress?.completedDays ?? []), ...(progress?.partialDays ?? []));
-  const previewDayNumber = activeDayNumber ?? Math.min(lastFinalizedDayNumber + 1, programTotalDays);
+  const previewDayNumber = isProgramPaused
+    ? unlockedDayNumber
+    : activeDayNumber ?? Math.min(lastFinalizedDayNumber + 1, programTotalDays);
   const nextUnlockLabel = access.completionState === 'completed'
     ? null
-    : formatUnlockLabel(getProgramNextUnlockAt(access.startedAt, programTotalDays, now), now);
-  const isCurrentSessionLocked = activeDayNumber == null && access.completionState !== 'completed';
+    : isScheduledStartPending
+      ? formatScheduledProgramStartLabel(access.scheduledStartDate, now)
+      : formatUnlockLabel(getProgramNextUnlockAt(scheduleStartSource, programTotalDays, now), now);
+  const isCurrentSessionLocked = activeDayNumber == null && access.completionState !== 'completed' && !isProgramPaused;
 
   const { day: currentDay } = useDay(activeProgram, previewDayNumber);
   const resolvedDayNumber = currentDay?.dayNumber ?? previewDayNumber;
@@ -212,6 +233,10 @@ function HomeScreenContent({ activeProgram }: { activeProgram: ProgramSlug }) {
   })();
 
   const journalCard = currentDay?.cards.find((card) => card.type === 'journal');
+  const handleResumeProgram = useCallback(async () => {
+    await resumeProgramFromPause(activeProgram);
+    router.push(`/day-detail?programSlug=${activeProgram}&dayNumber=${unlockedDayNumber}` as const);
+  }, [activeProgram, resumeProgramFromPause, router, unlockedDayNumber]);
   const profileIdentity = resolveProfileIdentity({
     displayName: profile?.display_name,
     fullName: onboardingResponse?.full_name,
@@ -296,16 +321,26 @@ function HomeScreenContent({ activeProgram }: { activeProgram: ProgramSlug }) {
           
           <ActionCard
             dayTitle={
-              currentDay?.dayTitle ? currentDay.dayTitle.split(' ').map((word, i, arr) => 
+              isProgramPaused ? (
+                <>
+                  <Text>Ready to</Text> <Text className="font-erode-medium-italic">continue?</Text>
+                </>
+              ) : currentDay?.dayTitle ? currentDay.dayTitle.split(' ').map((word, i, arr) =>
                 i === arr.length - 1 ? <Text key={i} className="font-erode-medium-italic">{word}</Text> : `${word} `
               ) : <><Text>Your next</Text> <Text className="font-erode-medium-italic">recovery step.</Text></>
             }
-            dayPreview={dayPreview}
+            dayPreview={
+              isProgramPaused
+                ? `You left off on Day ${unlockedDayNumber}. Resume when you are ready.`
+                : dayPreview
+            }
             estimatedMinutes={currentDay?.estimatedMinutes ?? 5}
             activeProgram={activeProgram}
             resolvedDayNumber={resolvedDayNumber}
             isLocked={isCurrentSessionLocked}
             availabilityLabel={isCurrentSessionLocked ? nextUnlockLabel : null}
+            ctaLabel={isProgramPaused ? 'Resume' : 'Open Today'}
+            onPress={isProgramPaused ? handleResumeProgram : undefined}
           />
 
           <StatsRow

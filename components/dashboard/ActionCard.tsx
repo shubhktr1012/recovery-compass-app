@@ -10,7 +10,9 @@ interface ActionCardProps {
   activeProgram: string;
   resolvedDayNumber: number;
   availabilityLabel?: string | null;
+  ctaLabel?: string;
   isLocked?: boolean;
+  onPress?: () => void;
 }
 
 function formatCardAvailabilityLabel(availabilityLabel: string | null) {
@@ -25,18 +27,19 @@ export function ActionCard({
   activeProgram,
   resolvedDayNumber,
   availabilityLabel = null,
+  ctaLabel = 'Open Today',
   isLocked = false,
+  onPress,
 }: ActionCardProps) {
   const router = useRouter();
   const compactAvailabilityLabel = formatCardAvailabilityLabel(availabilityLabel);
+  const handlePress =
+    onPress ??
+    (() => router.push(`/day-detail?programSlug=${activeProgram}&dayNumber=${resolvedDayNumber}` as Href));
 
   return (
     <Pressable
-      onPress={
-        isLocked
-          ? undefined
-          : () => router.push(`/day-detail?programSlug=${activeProgram}&dayNumber=${resolvedDayNumber}` as Href)
-      }
+      onPress={isLocked ? undefined : handlePress}
       disabled={isLocked}
       className="bg-white rounded-3xl overflow-hidden shadow-sm shadow-forest/5"
       style={isLocked ? { opacity: 0.88 } : undefined}
@@ -94,7 +97,7 @@ export function ActionCard({
                 className="text-white"
                 style={[AppTypography.buttonMd, { letterSpacing: -0.075 }]}
               >
-                Open Today
+                {ctaLabel}
               </Text>
             </View>
           </View>

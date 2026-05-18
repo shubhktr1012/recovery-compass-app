@@ -8,7 +8,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Href, useLocalSearchParams, useRouter } from 'expo-router';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -18,6 +18,7 @@ import { useQueryClient } from '@tanstack/react-query';
 
 import { PROGRAM_METADATA } from '@/content/programs/metadata';
 import { captureError } from '@/lib/monitoring';
+import { AccessService } from '@/lib/access/service';
 import { ProgramSlug } from '@/lib/programs/types';
 import {
   getDisplayNameForProgram,
@@ -40,6 +41,7 @@ const ACCESS_CONFIRMATION_RETRY_DELAY_MS = 1500;
 const ACCESS_CONFIRMATION_RETRY_COUNT = 4;
 const PROGRAM_TAB_ROUTE = '/(tabs)/program' as const;
 const PROGRAM_LIBRARY_ROUTE = '/account/programs' as const;
+const PROGRAM_START_SETUP_ROUTE = '/program-start' as Href;
 const REALIGNMENT_ROUTE = '/personalization?mode=realign' as const;
 const ENABLE_PURCHASE_QA_LOGS = process.env.EXPO_PUBLIC_ENABLE_PURCHASE_QA_LOGS === 'true';
 const ENABLE_FREE_TIER_ENTRY = process.env.EXPO_PUBLIC_ENABLE_FREE_TIER_ENTRY === 'true';
@@ -417,20 +419,30 @@ export default function Paywall() {
 
   const finalizeUnlockedProgram = async (confirmedProgram: ProgramSlug) => {
     const activeProgram = access.ownedProgram as ProgramSlug | null;
+    const userId = profile?.id ?? access.ownerUserId;
 
     if (!activeProgram || activeProgram === confirmedProgram) {
       await setProgramAccess(confirmedProgram);
       await refreshAccess();
       await queryClient.invalidateQueries({ queryKey: OWNED_PROGRAMS_QUERY_ROOT });
-      router.replace(PROGRAM_TAB_ROUTE);
+      router.replace(PROGRAM_START_SETUP_ROUTE);
       return;
     }
 
+    if (!userId) {
+      Alert.alert(
+        'Purchase Confirmed',
+        'Your purchase was confirmed, but we could not sync it to your library yet. Please reopen the app and restore purchases.'
+      );
+      return;
+    }
+
+    await AccessService.recordOwnedProgramPurchase(userId, confirmedProgram);
     await refreshAccess();
     await queryClient.invalidateQueries({ queryKey: OWNED_PROGRAMS_QUERY_ROOT });
     Alert.alert(
       'Program Unlocked',
-      `${getDisplayNameForProgram(confirmedProgram)} was added to your library. Set it as current from My Programs when you are ready to personalize it.`
+      `${getDisplayNameForProgram(confirmedProgram)} was added to your library. You can adjust its priority from My Programs.`
     );
     router.replace(PROGRAM_LIBRARY_ROUTE);
   };

@@ -3,8 +3,9 @@ import { View, Text } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withRepeat, withTiming, Easing } from 'react-native-reanimated';
 import { useProfile } from '@/providers/profile';
 import { useMinuteClock } from '@/hooks/useMinuteClock';
-import { useFinalizedDayStates } from '@/hooks/useFinalizedDayStates';
+import { EMPTY_FINALIZED_DAY_STATES, useFinalizedDayStates } from '@/hooks/useFinalizedDayStates';
 import { buildDayStateProgressSummary } from '@/lib/day-state-summary';
+import { getProgramScheduleStartSource, isProgramStartPending } from '@/lib/programs/lifecycle';
 import { getProgramActiveDay, getProgramScheduledDay } from '@/lib/programs/schedule';
 import { PROGRAM_METADATA } from '@/content/programs/metadata';
 import type { ProgramSlug } from '@/types/content';
@@ -17,7 +18,7 @@ export function StreakRibbon() {
     const now = useMinuteClock();
     const userId = profile?.id ?? access.ownerUserId ?? null;
     const finalizedDayStatesQuery = useFinalizedDayStates(userId, activeProgram);
-    const finalizedDayStates = finalizedDayStatesQuery.data ?? [];
+    const finalizedDayStates = finalizedDayStatesQuery.data ?? EMPTY_FINALIZED_DAY_STATES;
     const dayStateSummary = useMemo(
         () => buildDayStateProgressSummary(finalizedDayStates),
         [finalizedDayStates]
@@ -49,11 +50,17 @@ export function StreakRibbon() {
         const partialDays = hasFinalizedDayStateTruth
             ? dayStateSummary.partialDays
             : progress?.partialDays ?? [];
-        const currentScheduledDay = access.startedAt
-            ? getProgramScheduledDay(access.startedAt, totalDays, now)
+        const scheduleStartSource = getProgramScheduleStartSource(access);
+        const scheduledStartPending = isProgramStartPending(access, now);
+        const currentScheduledDay = scheduledStartPending
+            ? 1
+            : scheduleStartSource
+            ? getProgramScheduledDay(scheduleStartSource, totalDays, now)
             : access.currentDay ?? 1;
-        const activeDayNumber = access.startedAt
-            ? getProgramActiveDay(access.startedAt, totalDays, now)
+        const activeDayNumber = scheduledStartPending || access.programState === 'paused'
+            ? null
+            : scheduleStartSource
+            ? getProgramActiveDay(scheduleStartSource, totalDays, now)
             : currentScheduledDay;
 
         // Show days 1 through min(7, currentScheduledDay), left-to-right
@@ -104,8 +111,7 @@ export function StreakRibbon() {
 
         return { dots: result, completedCount: completed };
     }, [
-        access.currentDay,
-        access.startedAt,
+        access,
         dayStateSummary.completedDays,
         dayStateSummary.partialDays,
         finalizedStateByDay,
@@ -116,7 +122,7 @@ export function StreakRibbon() {
         totalDays,
     ]);
 
-    if (!activeProgram || access.purchaseState === 'not_owned') {
+    if (!activeProgram || access.purchaseState === 'not_owned' || isProgramStartPending(access, now)) {
         return null;
     }
 

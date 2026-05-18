@@ -24,10 +24,11 @@ import { TransportBar } from '@/components/ui/TransportBar';
 import { useDay, useProgram } from '@/content';
 import { programDayQueryKey, programQueryKey } from '@/hooks/contentQueryUtils';
 import { finalizedDayStatesQueryKey, useFinalizedDayStates } from '@/hooks/useFinalizedDayStates';
+import { useOwnedPrograms } from '@/hooks/useOwnedPrograms';
 import { useMinuteClock } from '@/hooks/useMinuteClock';
 import { getCardState, toLocalHHMM } from '@/lib/card-state';
 import { buildUserDayStateRecord, upsertUserDayState } from '@/lib/day-states';
-import { formatFinalizedDaySummary } from '@/lib/day-state-summary';
+import { buildDayStateProgressSummary, formatFinalizedDaySummary } from '@/lib/day-state-summary';
 import {
   formatUnlockLabel,
   getProgramActiveDay,
@@ -35,6 +36,11 @@ import {
   getProgramNextUnlockAt,
   getProgramScheduledDay,
 } from '@/lib/programs/schedule';
+import {
+  formatScheduledProgramStartLabel,
+  getProgramScheduleStartSource,
+  isProgramStartPending,
+} from '@/lib/programs/lifecycle';
 import { parseRoutineProgress } from '@/lib/routine-progress';
 import { buildWidgetPayload, syncWidgetData } from '@/lib/widget-bridge';
 import { useAuth } from '@/providers/auth';
@@ -488,7 +494,7 @@ export default function DayDetailScreen() {
   const pagerRef = useRef<PagerView>(null);
   const { user } = useAuth();
   const { access, progress, completeProgramDay, savePartialProgramDay } = useProfile();
-  const params = useLocalSearchParams<{ dayNumber?: string | string[]; programSlug?: string | string[] }>();
+  const params = useLocalSearchParams<{ dayNumber?: string | string[]; programSlug?: string | string[]; mode?: string | string[] }>();
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isRestored, setIsRestored] = useState(false);
@@ -539,13 +545,34 @@ export default function DayDetailScreen() {
 
   const rawProgramSlug = normalizeRouteParam(params.programSlug);
   const rawDayNumber = normalizeRouteParam(params.dayNumber);
+  const rawMode = normalizeRouteParam(params.mode);
   const dayNumber = rawDayNumber ? Number(rawDayNumber) : Number.NaN;
   const programSlug = isProgramSlug(rawProgramSlug) ? rawProgramSlug : null;
   const normalizedDayNumber = Number.isInteger(dayNumber) && dayNumber >= 1 ? dayNumber : null;
+  const { ownedPrograms, isLoading: isOwnedProgramsLoading } = useOwnedPrograms();
+  const isCompletedProgramReview = Boolean(
+    rawMode === 'review' &&
+      programSlug &&
+      ownedPrograms.some(
+        (program) =>
+          program.slug === programSlug &&
+          (program.purchaseState === 'owned_completed' ||
+            program.completionState === 'completed' ||
+            program.programState === 'completed')
+      )
+  );
   const finalizedDayStatesQuery = useFinalizedDayStates(user?.id ?? access.ownerUserId ?? null, programSlug);
+  const finalizedDayStates = useMemo(
+    () => finalizedDayStatesQuery.data ?? [],
+    [finalizedDayStatesQuery.data]
+  );
+  const finalizedProgressSummary = useMemo(
+    () => buildDayStateProgressSummary(finalizedDayStates),
+    [finalizedDayStates]
+  );
   const finalizedDayState = useMemo(
-    () => finalizedDayStatesQuery.data?.find((row) => row.dayNumber === normalizedDayNumber) ?? null,
-    [finalizedDayStatesQuery.data, normalizedDayNumber]
+    () => finalizedDayStates.find((row) => row.dayNumber === normalizedDayNumber) ?? null,
+    [finalizedDayStates, normalizedDayNumber]
   );
   const { day: dayContent, isLoading: isDayLoading } = useDay(programSlug, normalizedDayNumber);
   const { program, isLoading: isProgramLoading } = useProgram(programSlug);
@@ -572,7 +599,7 @@ export default function DayDetailScreen() {
   );
 
   useEffect(() => {
-    if (!dayContent || !storageKey) {
+    if (!dayContent || !storageKey || isCompletedProgramReview) {
       setCurrentIndex(0);
       setIsRestored(true);
       return;
@@ -614,7 +641,7 @@ export default function DayDetailScreen() {
     return () => {
       isCancelled = true;
     };
-  }, [dayContent, storageKey]);
+  }, [dayContent, isCompletedProgramReview, storageKey]);
 
   useEffect(() => {
     if (!showResumeToast) return;
@@ -629,7 +656,7 @@ export default function DayDetailScreen() {
   const handlePageSelected = async (nextIndex: number) => {
     setCurrentIndex(nextIndex);
 
-    if (!storageKey) return;
+    if (!storageKey || isCompletedProgramReview) return;
 
     try {
       await AsyncStorage.setItem(storageKey, JSON.stringify({ cardIndex: nextIndex }));
@@ -657,25 +684,45 @@ export default function DayDetailScreen() {
     pagerRef.current?.setPage(nextIndex);
   };
 
-  const completedDays = useMemo(() => progress?.completedDays ?? [], [progress?.completedDays]);
-  const partialDays = useMemo(() => progress?.partialDays ?? [], [progress?.partialDays]);
+  const completedDays = useMemo(
+    () =>
+      isCompletedProgramReview && finalizedDayStates.length > 0
+        ? finalizedProgressSummary.completedDays
+        : progress?.completedDays ?? [],
+    [finalizedDayStates.length, finalizedProgressSummary.completedDays, isCompletedProgramReview, progress?.completedDays]
+  );
+  const partialDays = useMemo(
+    () =>
+      isCompletedProgramReview && finalizedDayStates.length > 0
+        ? finalizedProgressSummary.partialDays
+        : progress?.partialDays ?? [],
+    [finalizedDayStates.length, finalizedProgressSummary.partialDays, isCompletedProgramReview, progress?.partialDays]
+  );
   const isDayCompleted = normalizedDayNumber
     ? finalizedDayState?.dayState === 'completed' || completedDays.includes(normalizedDayNumber)
     : false;
   const isDayPartial = normalizedDayNumber
     ? finalizedDayState?.dayState === 'partial' || (!isDayCompleted && partialDays.includes(normalizedDayNumber))
     : false;
+  const scheduleStartSource = getProgramScheduleStartSource(access);
+  const isScheduledStartPending = isProgramStartPending(access, currentTime);
   const unlockedThroughDay = useMemo(() => {
     if (!program) {
       return access.currentDay ?? 1;
+    }
+
+    if (isCompletedProgramReview) {
+      return program.totalDays;
     }
 
     if (access.completionState === 'completed') {
       return program.totalDays;
     }
 
-    const derivedScheduledDay = access.startedAt
-      ? getProgramScheduledDay(access.startedAt, program.totalDays, currentTime)
+    const derivedScheduledDay = isScheduledStartPending
+      ? 1
+      : scheduleStartSource
+      ? getProgramScheduledDay(scheduleStartSource, program.totalDays, currentTime)
       : access.currentDay ?? 1;
     const highestTouchedDay = Math.max(
       0,
@@ -688,28 +735,41 @@ export default function DayDetailScreen() {
       program.totalDays,
       Math.max(derivedScheduledDay, highestTouchedDay || 1)
     );
-  }, [access.completionState, access.currentDay, access.startedAt, completedDays, currentTime, partialDays, program]);
+  }, [access.completionState, access.currentDay, completedDays, currentTime, isCompletedProgramReview, isScheduledStartPending, partialDays, program, scheduleStartSource]);
   const activeDayNumber = useMemo(() => {
-    if (!program || access.completionState === 'completed') {
+    if (!program || isCompletedProgramReview || access.completionState === 'completed') {
       return null;
     }
 
-    return access.startedAt
-      ? getProgramActiveDay(access.startedAt, program.totalDays, currentTime)
+    if (isScheduledStartPending || access.programState === 'paused') {
+      return null;
+    }
+
+    return scheduleStartSource
+      ? getProgramActiveDay(scheduleStartSource, program.totalDays, currentTime)
       : unlockedThroughDay;
-  }, [access.completionState, access.startedAt, currentTime, program, unlockedThroughDay]);
+  }, [access.completionState, access.programState, currentTime, isCompletedProgramReview, isScheduledStartPending, program, scheduleStartSource, unlockedThroughDay]);
   const lastFinalizedDay = useMemo(() => {
     if (!program) {
       return Math.max(0, ...completedDays, ...partialDays);
     }
 
-    return access.startedAt
-      ? getProgramLastFinalizedDay(access.startedAt, program.totalDays, currentTime)
+    if (isCompletedProgramReview) {
+      const lastReviewDay = Math.max(0, ...finalizedDayStates.map((row) => row.dayNumber));
+      return lastReviewDay > 0 ? Math.min(program.totalDays, lastReviewDay) : program.totalDays;
+    }
+
+    return scheduleStartSource && !isScheduledStartPending
+      ? getProgramLastFinalizedDay(scheduleStartSource, program.totalDays, currentTime)
       : Math.max(0, ...completedDays, ...partialDays);
-  }, [access.startedAt, completedDays, currentTime, partialDays, program]);
+  }, [completedDays, currentTime, finalizedDayStates, isCompletedProgramReview, isScheduledStartPending, partialDays, program, scheduleStartSource]);
   const historicalDayState = useMemo<DayState | null>(() => {
     if (!normalizedDayNumber || normalizedDayNumber > lastFinalizedDay) {
       return null;
+    }
+
+    if (isCompletedProgramReview) {
+      return finalizedDayState?.dayState ?? 'completed';
     }
 
     if (finalizedDayState) {
@@ -725,12 +785,13 @@ export default function DayDetailScreen() {
     }
 
     return 'skipped';
-  }, [finalizedDayState, isDayCompleted, isDayPartial, lastFinalizedDay, normalizedDayNumber]);
+  }, [finalizedDayState, isCompletedProgramReview, isDayCompleted, isDayPartial, lastFinalizedDay, normalizedDayNumber]);
   const isHistoricalReadOnlyDay = Boolean(historicalDayState);
 
   const isFutureLocked = Boolean(
     normalizedDayNumber &&
-    normalizedDayNumber > unlockedThroughDay &&
+    !isCompletedProgramReview &&
+    (isScheduledStartPending || normalizedDayNumber > unlockedThroughDay) &&
     !isDayCompleted &&
     !isDayPartial
   );
@@ -739,9 +800,12 @@ export default function DayDetailScreen() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const shouldShowCompletionBar = !hasCloseCard && (isDayCompleted || isDayPartial || isLastCard);
   const nextUnlockLabel = useMemo(() => {
-    if (!program || access.completionState === 'completed') return null;
-    return formatUnlockLabel(getProgramNextUnlockAt(access.startedAt, program.totalDays, currentTime), currentTime);
-  }, [access.completionState, access.startedAt, currentTime, program]);
+    if (!program || isCompletedProgramReview || access.completionState === 'completed') return null;
+    if (isScheduledStartPending) {
+      return formatScheduledProgramStartLabel(access.scheduledStartDate, currentTime);
+    }
+    return formatUnlockLabel(getProgramNextUnlockAt(scheduleStartSource, program.totalDays, currentTime), currentTime);
+  }, [access.completionState, access.scheduledStartDate, currentTime, isCompletedProgramReview, isScheduledStartPending, program, scheduleStartSource]);
   const runtimeCards = useMemo(
     () => dayContent?.cards.map((card) => ({ card, meta: getCardTimeMeta(card) })) ?? [],
     [dayContent?.cards]
@@ -749,17 +813,19 @@ export default function DayDetailScreen() {
   const cardStates = useMemo(
     () =>
       runtimeCards.map(({ meta }) =>
-        getCardState(
-          meta,
-          toLocalHHMM(currentTime),
-          isDayCompleted
-            ? { state: 'completed' }
-            : isHistoricalReadOnlyDay
-              ? { state: 'skipped' }
-              : undefined
-        )
+        isFutureLocked
+          ? 'locked'
+          : getCardState(
+              meta,
+              toLocalHHMM(currentTime),
+              isDayCompleted
+                ? { state: 'completed' }
+                : isHistoricalReadOnlyDay
+                  ? { state: 'skipped' }
+                  : undefined
+            )
       ),
-    [currentTime, isDayCompleted, isHistoricalReadOnlyDay, runtimeCards]
+    [currentTime, isDayCompleted, isFutureLocked, isHistoricalReadOnlyDay, runtimeCards]
   );
   const currentCard = dayContent?.cards[currentIndex];
   const currentCardMeta = runtimeCards[currentIndex]?.meta ?? DEFAULT_CARD_TIME_META;
@@ -779,7 +845,7 @@ export default function DayDetailScreen() {
     [currentCardMeta.timeSlot, currentCardState, historicalDayState, isDayCompleted]
   );
   const isCurrentCardActionLocked =
-    isHistoricalReadOnlyDay || currentCardState === 'locked' || currentCardState === 'blocked';
+    isFutureLocked || isHistoricalReadOnlyDay || currentCardState === 'locked' || currentCardState === 'blocked';
   const canCompleteFromCurrentCard = Boolean(
     dayContent &&
       currentIndex === dayContent.cards.length - 1 &&
@@ -873,6 +939,10 @@ export default function DayDetailScreen() {
       } catch (dayStateError) {
         console.warn('Failed to persist completed day state', dayStateError);
       }
+
+      if (program && dayContent.dayNumber >= program.totalDays) {
+        router.replace(`/program-complete?programSlug=${programSlug}` as Href);
+      }
     } catch (error) {
       console.error('Failed to complete day', error);
     } finally {
@@ -917,6 +987,14 @@ export default function DayDetailScreen() {
 
   if (!programSlug || !Number.isInteger(dayNumber) || dayNumber < 1) {
     return <ErrorState message="The requested day detail route is missing a valid program slug or day number." />;
+  }
+
+  if (rawMode === 'review' && isOwnedProgramsLoading) {
+    return <LoadingState />;
+  }
+
+  if (rawMode === 'review' && !isCompletedProgramReview) {
+    return <ErrorState message="This completed journey is not available for review." />;
   }
 
   if ((isDayLoading && !dayContent) || (isProgramLoading && !program)) {
@@ -1004,7 +1082,13 @@ export default function DayDetailScreen() {
           <Pressable
             accessibilityLabel="Back to program"
             style={styles.backButton}
-            onPress={() => router.navigate('/program' as Href)}
+            onPress={() =>
+              router.navigate(
+                isCompletedProgramReview && programSlug
+                  ? (`/(tabs)/program?reviewProgram=${programSlug}` as Href)
+                  : ('/program' as Href)
+              )
+            }
           >
             <Ionicons name="chevron-back" size={20} color="rgba(227,243,229,0.9)" />
           </Pressable>

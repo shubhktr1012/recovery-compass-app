@@ -21,9 +21,10 @@ import { useAuth } from '@/providers/auth';
 import { clearDevClockOverride, readDevClockOverride, setDevClockOverride, useMinuteClock } from '@/hooks/useMinuteClock';
 import { useOnboardingResponse } from '@/hooks/useOnboardingResponse';
 import { useDailySteps } from '@/hooks/useDailySteps';
-import { useFinalizedDayStates } from '@/hooks/useFinalizedDayStates';
+import { EMPTY_FINALIZED_DAY_STATES, useFinalizedDayStates } from '@/hooks/useFinalizedDayStates';
 import { getProgramStatisticsSummary } from '@/lib/program-statistics';
 import { buildDayStateProgressSummary, buildRollingCompletionSummary } from '@/lib/day-state-summary';
+import { getProgramScheduleStartSource, isProgramStartPending } from '@/lib/programs/lifecycle';
 import { getProgramScheduledDay } from '@/lib/programs/schedule';
 import { useProfile } from '@/providers/profile';
 import { supabase } from '@/lib/supabase';
@@ -154,7 +155,7 @@ export default function AccountScreen() {
   const activeProgramSlug = access.ownedProgram as ProgramSlug | null;
   const activeProgram = activeProgramSlug ? PROGRAM_METADATA[activeProgramSlug] : null;
   const finalizedDayStatesQuery = useFinalizedDayStates(userId, activeProgramSlug);
-  const finalizedDayStates = finalizedDayStatesQuery.data ?? [];
+  const finalizedDayStates = finalizedDayStatesQuery.data ?? EMPTY_FINALIZED_DAY_STATES;
   const dayStateSummary = useMemo(
     () => buildDayStateProgressSummary(finalizedDayStates),
     [finalizedDayStates]
@@ -263,11 +264,15 @@ export default function AccountScreen() {
   const displayName = profileIdentity.displayName;
   const displayInitial = profileIdentity.initial;
   const startedDate = formatStartedDate(profile?.created_at);
+  const scheduleStartSource = getProgramScheduleStartSource(access);
+  const scheduledStartPending = isProgramStartPending(access, currentTime);
   const scheduledProgramDayNumber = activeProgram
     ? access.completionState === 'completed'
       ? activeProgram.totalDays
-      : access.startedAt
-        ? getProgramScheduledDay(access.startedAt, activeProgram.totalDays, currentTime)
+      : scheduledStartPending
+        ? 1
+      : scheduleStartSource
+        ? getProgramScheduledDay(scheduleStartSource, activeProgram.totalDays, currentTime)
         : access.currentDay ?? null
     : null;
 
@@ -327,7 +332,9 @@ export default function AccountScreen() {
 
     if (activeProgram && progressSummary) {
       const phaseNum = Math.min(4, Math.ceil((progressSummary.dayNumber / activeProgram.totalDays) * 4));
-      const completedCount = completedDaysForStats.length;
+      const completedCount = access.completionState === 'completed'
+        ? activeProgram.totalDays
+        : completedDaysForStats.length;
 
       baseCards.unshift({
         label: 'Journey progress',
@@ -407,7 +414,8 @@ export default function AccountScreen() {
   };
 
   const getDevClockPresetDate = (hours: number, minutes: number) => {
-    const startedAt = access.startedAt ? new Date(access.startedAt) : null;
+    const startSource = getProgramScheduleStartSource(access);
+    const startedAt = startSource ? new Date(startSource) : null;
     const hasValidStartedAt = startedAt && !Number.isNaN(startedAt.getTime());
 
     if (hasValidStartedAt && access.completionState !== 'completed') {
@@ -415,7 +423,7 @@ export default function AccountScreen() {
       const boundaryDate = new Date(
         startedAt.getFullYear(),
         startedAt.getMonth(),
-        startedAt.getDate() + currentJourneyDay
+        startedAt.getDate() + currentJourneyDay - 1
       );
       boundaryDate.setHours(hours, minutes, 0, 0);
       return boundaryDate;
@@ -675,7 +683,7 @@ export default function AccountScreen() {
               <View style={styles.devCard}>
                 <Text style={styles.devCardTitle}>Boundary QA</Text>
                 <Text style={styles.devCardText}>
-                  Override the app clock for the current journey's evening and overnight transition checks.
+                  Override the app clock for the current journey&apos;s evening and overnight transition checks.
                 </Text>
                 <Text style={styles.devClockState}>{devClockLabel}</Text>
 
