@@ -19,6 +19,7 @@ import { decode } from 'base64-arraybuffer';
 import * as FileSystem from 'expo-file-system/legacy';
 import { buildWidgetPayload, syncWidgetData } from '@/lib/widget-bridge';
 import { validateDisplayNameInput } from '@/lib/profile-identity';
+import { rescheduleProgramNotificationsForAccess } from '@/lib/notification-runtime';
 
 export interface UserProfile {
   id: string;
@@ -50,7 +51,7 @@ interface ProfileContextType {
   configureProgramStart: (program: ProgramSlug, scheduledStartDate: string) => Promise<void>;
   resumeProgramFromPause: (program: ProgramSlug) => Promise<void>;
   prepareOwnedProgramSetup: (program: ProgramSlug) => Promise<void>;
-  reorderOwnedProgramQueue: (programs: ProgramSlug[]) => Promise<void>;
+  reorderOwnedProgramQueue: (programs: ProgramSlug[]) => Promise<ProgramSlug[]>;
   savePartialProgramDay: (program: ProgramSlug, dayNumber: number) => Promise<void>;
   completeProgramDay: (program: ProgramSlug, dayNumber: number) => Promise<void>;
   updateProfile: (fields: { display_name?: string | null }) => Promise<void>;
@@ -133,7 +134,7 @@ const ProfileContext = createContext<ProfileContextType>({
   configureProgramStart: async () => { },
   resumeProgramFromPause: async () => { },
   prepareOwnedProgramSetup: async () => { },
-  reorderOwnedProgramQueue: async () => { },
+  reorderOwnedProgramQueue: async () => [],
   savePartialProgramDay: async () => { },
   completeProgramDay: async () => { },
   updateProfile: async () => { },
@@ -187,6 +188,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     source: 'local',
   });
   const [progress, setProgress] = useState<ProgramProgressRecord | null>(null);
+  const [notificationRefreshNonce, setNotificationRefreshNonce] = useState(0);
   const userId = user?.id ?? null;
   const previousUserIdRef = useRef<string | null>(null);
   const profileQuery = useQuery({
@@ -540,11 +542,12 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const reorderOwnedProgramQueue = useCallback(
     async (programs: ProgramSlug[]) => {
       if (!userId) {
-        return;
+        return [];
       }
 
-      await AccessService.reorderOwnedProgramQueue(userId, programs);
+      const reorderedPrograms = await AccessService.reorderOwnedProgramQueue(userId, programs);
       await queryClient.invalidateQueries({ queryKey: OWNED_PROGRAMS_QUERY_ROOT });
+      return reorderedPrograms.map((program) => program.programSlug);
     },
     [queryClient, userId]
   );
@@ -584,12 +587,14 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         const completionProgress = await AccessService.getProgressRecord(userId, program);
         setProgress(completionProgress ?? nextProgress);
         setAccess(completionSnapshot.ownedProgram === program ? completionSnapshot : nextSnapshot);
+        setNotificationRefreshNonce((value) => value + 1);
         await queryClient.invalidateQueries({ queryKey: OWNED_PROGRAMS_QUERY_ROOT });
         return;
       }
 
       setProgress(nextProgress);
       setAccess(nextSnapshot);
+      setNotificationRefreshNonce((value) => value + 1);
     },
     [queryClient, userId]
   );
@@ -624,6 +629,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
       setProgress(nextProgress);
       setAccess(nextSnapshot);
+      setNotificationRefreshNonce((value) => value + 1);
       await Promise.all([
         AccessService.syncStateToSupabase(nextProgress),
       ]);
@@ -730,6 +736,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     // Re-sync widget data when app returns to foreground
     const appStateSubscription = AppState.addEventListener('change', (nextState: string) => {
       if (nextState === 'active') {
+        setNotificationRefreshNonce((value) => value + 1);
         void bootstrapAccessState();
       }
     });
@@ -877,6 +884,54 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
       console.error('Push registration error:', pushError);
     }
   }, [pushError]);
+
+  useEffect(() => {
+    if (!userId || profileQuery.isPending) {
+      return;
+    }
+
+    let isCancelled = false;
+
+    void rescheduleProgramNotificationsForAccess({
+      access: {
+        ownedProgram: access.ownedProgram,
+        purchaseState: access.purchaseState,
+        completionState: access.completionState,
+        programState: access.programState,
+        currentDay: access.currentDay,
+        scheduledStartDate: access.scheduledStartDate,
+        pausedAt: access.pausedAt,
+        completedAt: access.completedAt,
+      },
+      openedToday: true,
+      profile: {
+        notifications_enabled: profileQuery.data?.notifications_enabled,
+        push_opt_in: profileQuery.data?.push_opt_in,
+      },
+      userId,
+    }).catch((error) => {
+      if (isCancelled) return;
+      console.warn('Failed to refresh program notification schedule', error);
+    });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [
+    access.completedAt,
+    access.completionState,
+    access.currentDay,
+    access.ownedProgram,
+    access.pausedAt,
+    access.programState,
+    access.purchaseState,
+    access.scheduledStartDate,
+    notificationRefreshNonce,
+    profileQuery.data?.notifications_enabled,
+    profileQuery.data?.push_opt_in,
+    profileQuery.isPending,
+    userId,
+  ]);
 
   const updateProfile = useCallback(
     async (fields: { display_name?: string | null }) => {

@@ -38,7 +38,6 @@ export const usePushNotifications = (
 
   const notificationsModuleRef = useRef<NotificationsModule | null>(null);
   const notificationListener = useRef<NotificationSubscription | null>(null);
-  const responseListener = useRef<NotificationSubscription | null>(null);
 
   useEffect(() => {
     if (!enabled) {
@@ -84,11 +83,6 @@ export const usePushNotifications = (
             notificationsModule.addNotificationReceivedListener((receivedNotification) => {
               setNotification(receivedNotification);
             });
-
-          responseListener.current =
-            notificationsModule.addNotificationResponseReceivedListener((response) => {
-              console.log('Notification response received:', response);
-            });
         });
       })
       .catch((err: unknown) => {
@@ -113,9 +107,6 @@ export const usePushNotifications = (
       notificationsModuleRef.current = null;
       if (notificationListener.current) {
         notificationListener.current.remove();
-      }
-      if (responseListener.current) {
-        responseListener.current.remove();
       }
       appStateSub.remove();
     };

@@ -28,6 +28,8 @@ import { getProgramScheduleStartSource, isProgramStartPending } from '@/lib/prog
 import { getProgramScheduledDay } from '@/lib/programs/schedule';
 import { useProfile } from '@/providers/profile';
 import { supabase } from '@/lib/supabase';
+import { NotificationService } from '@/lib/notifications';
+import type { NotificationPlan, NotificationPlanType } from '@/lib/notification-scheduler';
 import { EditProfileSheet } from '@/components/account/EditProfileSheet';
 import { AccountWatermark } from '@/components/ui/TabWatermarks';
 import type { ProgramSlug } from '@/types/content';
@@ -39,6 +41,22 @@ import { buildWidgetPayload, syncWidgetData } from '@/lib/widget-bridge';
 const STAT_CARD_WIDTH = 164;
 const STAT_CARD_GAP = 10;
 const STAT_CARD_SNAP = STAT_CARD_WIDTH + STAT_CARD_GAP;
+const DEV_NOTIFICATION_TYPES: {
+  delaySeconds: number;
+  label: string;
+  timeSlot?: NotificationPlan['data']['timeSlot'];
+  type: NotificationPlanType;
+}[] = [
+  { delaySeconds: 15, label: 'Morning ready', timeSlot: 'morning', type: 'morning_session_ready' },
+  { delaySeconds: 30, label: 'Afternoon check-in', timeSlot: 'afternoon', type: 'afternoon_check_in' },
+  { delaySeconds: 45, label: 'Evening routine', timeSlot: 'evening', type: 'evening_routine' },
+  { delaySeconds: 60, label: 'Missed morning catch-up', type: 'missed_morning_catch_up' },
+  { delaySeconds: 75, label: 'Day completed', type: 'day_completed' },
+  { delaySeconds: 90, label: 'Partial day', type: 'partial_day' },
+  { delaySeconds: 105, label: 'Absence waiting', type: 'absence_waiting' },
+  { delaySeconds: 120, label: 'Absence saved', type: 'absence_last_active' },
+  { delaySeconds: 135, label: 'Paused re-entry', type: 'paused_reentry' },
+];
 
 interface StatCard {
   label: string;
@@ -150,6 +168,7 @@ export default function AccountScreen() {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [activeStatIndex, setActiveStatIndex] = useState(0);
   const [devClockOverride, setDevClockOverrideState] = useState<Date | null>(null);
+  const [isSchedulingDevNotification, setIsSchedulingDevNotification] = useState(false);
   const userId = user?.id ?? null;
   const currentTime = useMinuteClock();
   const activeProgramSlug = access.ownedProgram as ProgramSlug | null;
@@ -308,7 +327,7 @@ export default function AccountScreen() {
             : 'Set up in statistics',
       },
       {
-        label: 'All-time reflections',
+        label: 'Reflections',
         value: journalCountQuery.data ?? 0,
         subtitle: 'Written',
         context: 'Across journal entries',
@@ -337,16 +356,16 @@ export default function AccountScreen() {
         : completedDaysForStats.length;
 
       baseCards.unshift({
-        label: 'Journey progress',
+        label: 'Days',
         value: `${completedCount}/${activeProgram.totalDays}`,
-        subtitle: 'Days completed',
+        subtitle: 'Completed',
         context: `Day ${progressSummary.dayNumber} · ${activeProgram.name}`,
       });
 
       baseCards.splice(2, 0, {
-        label: 'Program progress',
+        label: 'Progress',
         value: `${progressSummary.percentage}%`,
-        subtitle: 'Completed',
+        subtitle: 'Journey',
         context: access.completionState === 'completed' ? `All 4 phases` : `Phase ${phaseNum} of 4`,
       });
     }
@@ -445,6 +464,97 @@ export default function AccountScreen() {
     await clearDevClockOverride();
     setDevClockOverrideState(null);
     await syncWidgetForDevClock(new Date());
+  };
+
+  const handleScheduleDevNotification = async () => {
+    if (!activeProgram || !access.ownedProgram) {
+      Alert.alert('No active program', 'Open an active program before scheduling a notification test.');
+      return;
+    }
+
+    setIsSchedulingDevNotification(true);
+
+    try {
+      const now = new Date();
+      const dayNumber = Math.max(access.currentDay ?? progress?.currentDay ?? 1, 1);
+      const programSlug = access.ownedProgram as ProgramSlug;
+      const plan: NotificationPlan = {
+        id: `program:${programSlug}:day:${dayNumber}:morning_session_ready`,
+        tier: 'card_reminder',
+        type: 'morning_session_ready',
+        title: 'Recovery Compass test',
+        body: `${activeProgram.name} notification test. Tap to open Day ${dayNumber}.`,
+        triggerAt: new Date(now.getTime() + 15_000),
+        data: {
+          notificationTier: 'card_reminder',
+          notificationType: 'morning_session_ready',
+          programSlug,
+          dayNumber,
+          timeSlot: 'morning',
+        },
+      };
+
+      await NotificationService.scheduleProgramNotificationPlans([plan], { now });
+      Alert.alert('Test scheduled', 'Lock or background the app. A test notification should arrive in about 15 seconds.');
+    } catch (error: any) {
+      Alert.alert('Notification test failed', error?.message ?? 'Could not schedule the test notification.');
+    } finally {
+      setIsSchedulingDevNotification(false);
+    }
+  };
+
+  const handleScheduleDevNotificationLab = async () => {
+    if (!activeProgram || !access.ownedProgram) {
+      Alert.alert('No active program', 'Open an active program before scheduling notification lab tests.');
+      return;
+    }
+
+    setIsSchedulingDevNotification(true);
+
+    try {
+      const now = new Date();
+      const dayNumber = Math.max(access.currentDay ?? progress?.currentDay ?? 1, 1);
+      const programSlug = access.ownedProgram as ProgramSlug;
+      const plans: NotificationPlan[] = DEV_NOTIFICATION_TYPES.map((item) => ({
+        id: `program:${programSlug}:day:${dayNumber}:dev_lab:${item.type}`,
+        tier:
+          item.type === 'missed_morning_catch_up'
+            ? 'missed_card_nudge'
+            : item.type === 'day_completed' || item.type === 'partial_day'
+              ? 'completion_motivation'
+              : item.type.startsWith('absence_') || item.type === 'paused_reentry'
+                ? 'absence_reengagement'
+                : 'card_reminder',
+        type: item.type,
+        title: `Lab: ${item.label}`,
+        body: `${activeProgram.name} notification lab. Tap to open Day ${dayNumber}.`,
+        triggerAt: new Date(now.getTime() + item.delaySeconds * 1000),
+        data: {
+          notificationTier:
+            item.type === 'missed_morning_catch_up'
+              ? 'missed_card_nudge'
+              : item.type === 'day_completed' || item.type === 'partial_day'
+                ? 'completion_motivation'
+                : item.type.startsWith('absence_') || item.type === 'paused_reentry'
+                  ? 'absence_reengagement'
+                  : 'card_reminder',
+          notificationType: item.type,
+          programSlug,
+          dayNumber,
+          ...(item.timeSlot ? { timeSlot: item.timeSlot } : {}),
+        },
+      }));
+
+      await NotificationService.scheduleProgramNotificationPlans(plans, { now });
+      Alert.alert(
+        'Notification Lab scheduled',
+        'Lock or background the app. All notification types will arrive every 15 seconds for the next 2 minutes.'
+      );
+    } catch (error: any) {
+      Alert.alert('Notification Lab failed', error?.message ?? 'Could not schedule notification lab tests.');
+    } finally {
+      setIsSchedulingDevNotification(false);
+    }
   };
 
   const devClockLabel = devClockOverride
@@ -683,7 +793,7 @@ export default function AccountScreen() {
               <View style={styles.devCard}>
                 <Text style={styles.devCardTitle}>Boundary QA</Text>
                 <Text style={styles.devCardText}>
-                  Override the app clock for the current journey&apos;s evening and overnight transition checks.
+                  Override app-only time checks. Native notification QA uses the real Android scheduler.
                 </Text>
                 <Text style={styles.devClockState}>{devClockLabel}</Text>
 
@@ -731,6 +841,28 @@ export default function AccountScreen() {
                   style={styles.devClearButton}
                 >
                   <Text style={styles.devClearButtonText}>Clear override</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={() => void handleScheduleDevNotification()}
+                  activeOpacity={0.8}
+                  disabled={isSchedulingDevNotification}
+                  style={[styles.devClearButton, { marginTop: 10, backgroundColor: AppColors.forest }]}
+                >
+                  <Text style={[styles.devClearButtonText, { color: AppColors.white }]}>
+                    {isSchedulingDevNotification ? 'Scheduling...' : 'Test notification in 15s'}
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={() => void handleScheduleDevNotificationLab()}
+                  activeOpacity={0.8}
+                  disabled={isSchedulingDevNotification}
+                  style={[styles.devClearButton, { marginTop: 10, backgroundColor: 'rgba(6,41,12,0.1)' }]}
+                >
+                  <Text style={[styles.devClearButtonText, { color: AppColors.forest }]}>
+                    Test all notification types
+                  </Text>
                 </TouchableOpacity>
               </View>
             </>

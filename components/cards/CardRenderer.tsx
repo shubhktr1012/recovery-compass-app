@@ -655,7 +655,7 @@ function MindfulExerciseCardView({
 }) {
   const [isMindfulBegun, setIsMindfulBegun] = useState(false);
   const [breathingState, setBreathingState] = useState<'idle' | 'running' | 'completed'>('idle');
-  const [breathingCompletionMode, setBreathingCompletionMode] = useState<'manual' | 'timer' | null>(null);
+  const [, setBreathingCompletionMode] = useState<'manual' | 'timer' | null>(null);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const scale = useSharedValue(1);
   const opacity = useSharedValue(0.15);
@@ -922,27 +922,20 @@ function MindfulExerciseCardView({
               </>
             ) : (
               <View style={styles.breathingCompleteBlock}>
-                <Text style={styles.breathingStatusText}>Breathing complete</Text>
-                <Text style={styles.breathingSubtext}>
-                  {breathingCompletionMode === 'manual'
-                    ? 'Marked complete. Start again if you want another round, or continue when you are ready.'
-                    : 'Round complete. Start again if you want another round, or continue when you are ready.'}
-                </Text>
+                <Text style={styles.breathingStatusText}>Round complete</Text>
+                <Text style={styles.breathingSubtext}>Repeat it or continue.</Text>
                 <View style={styles.breathingMetaRow}>
                   {cycles != null ? (
                     <View style={styles.breathingMetaPill}>
                       <Text style={styles.breathingMetaPillText}>{cycles} cycles</Text>
                     </View>
                   ) : null}
-                  <View style={styles.breathingMetaPill}>
-                    <Text style={styles.breathingMetaPillText}>Ready to repeat</Text>
-                  </View>
                 </View>
                 {isReadOnly ? (
                   <Text style={styles.breathingInstructions}>This past day is now in review mode.</Text>
                 ) : (
                   <View style={styles.breathingActionRow}>
-                    <GhostVisualButton label="Start again" onPress={resetBreathing} />
+                    <GhostVisualButton label="Repeat" onPress={resetBreathing} />
                     <PrimaryVisualButton label="Continue" onPress={onContinue} />
                   </View>
                 )}
@@ -1463,10 +1456,19 @@ function AudioCardView({
   card,
   cardIndex,
   isReadOnly = false,
+  onAudioCompleted,
 }: {
   card: AudioCard;
   cardIndex?: number;
   isReadOnly?: boolean;
+  onAudioCompleted?: (payload: {
+    audioStoragePath: string;
+    cardIndex: number | null;
+    completionMode: 'manual' | 'auto';
+    listenSeconds: number;
+    percentage: number;
+    totalSeconds: number;
+  }) => void;
 }) {
   const { registerConfig } = useContext(TransportContext);
   const playback = useProgramAudioPlayback(card.audioStoragePath, card.durationSeconds, card.title);
@@ -1549,6 +1551,25 @@ function AudioCardView({
     setCompletionMode(null);
   }, [card.audioStoragePath]);
 
+  const completeAudio = useCallback(
+    (mode: 'manual' | 'auto') => {
+      setCompletionMode(mode);
+      const totalSeconds = playback.duration > 0 ? playback.duration : card.durationSeconds;
+      const listenSeconds = Math.max(0, playback.currentTime);
+      const percentage = totalSeconds > 0 ? Math.min(1, listenSeconds / totalSeconds) : 0;
+
+      onAudioCompleted?.({
+        audioStoragePath: card.audioStoragePath,
+        cardIndex: cardIndex ?? null,
+        completionMode: mode,
+        listenSeconds,
+        percentage,
+        totalSeconds,
+      });
+    },
+    [card.audioStoragePath, card.durationSeconds, cardIndex, onAudioCompleted, playback.currentTime, playback.duration]
+  );
+
   useEffect(() => {
     if (cardIndex == null) return;
 
@@ -1580,9 +1601,9 @@ function AudioCardView({
     }
 
     if (playback.currentTime >= thresholds.autoComplete) {
-      setCompletionMode('auto');
+      completeAudio('auto');
     }
-  }, [isCompleted, playback.currentTime, thresholds]);
+  }, [completeAudio, isCompleted, playback.currentTime, thresholds]);
 
   return (
     <View style={[styles.darkCardShell, styles.cardShellContinuous, styles.cardShadow, audioStyles.container]}>
@@ -1695,7 +1716,7 @@ function AudioCardView({
               <PrimaryVisualButton
                 label="Mark as done"
                 inverted
-                onPress={() => setCompletionMode('manual')}
+                onPress={() => completeAudio('manual')}
               />
             </View>
           </>
@@ -2041,7 +2062,7 @@ function CloseCardViewWithState({
     : primaryActionLabel
       ? primaryActionLabel
     : isPartial
-      ? 'Mark Fully Complete'
+      ? 'Mark Complete'
     : isCompleting
       ? 'Completing...'
       : isFinalProgramDay
@@ -2104,6 +2125,7 @@ export function CardRenderer({
   isReadOnly = false,
   programReflectionContext,
   onRoutineProgressChange,
+  onAudioCompleted,
   closeCardState,
 }: {
   card: ContentCard;
@@ -2122,6 +2144,14 @@ export function CardRenderer({
     cardIndex: number;
   };
   onRoutineProgressChange?: () => void;
+  onAudioCompleted?: (payload: {
+    audioStoragePath: string;
+    cardIndex: number | null;
+    completionMode: 'manual' | 'auto';
+    listenSeconds: number;
+    percentage: number;
+    totalSeconds: number;
+  }) => void;
   closeCardState?: {
     isCompleted?: boolean;
     isPartial?: boolean;
@@ -2166,7 +2196,14 @@ export function CardRenderer({
         />
       );
     case 'audio':
-      return <AudioCardView card={card} cardIndex={cardIndex} isReadOnly={isReadOnly} />;
+      return (
+        <AudioCardView
+          card={card}
+          cardIndex={cardIndex}
+          isReadOnly={isReadOnly}
+          onAudioCompleted={onAudioCompleted}
+        />
+      );
     case 'calm_trigger':
       return <CalmTriggerCardView card={card} />;
     case 'journal':

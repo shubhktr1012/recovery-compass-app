@@ -2,6 +2,8 @@ import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 import * as Device from 'expo-device';
 
+import { PROGRAM_NOTIFICATION_CHANNEL_ID } from '@/lib/notifications';
+
 type NotificationsModule = typeof import('expo-notifications');
 type NotificationPermissionStatus = 'granted' | 'denied' | 'undetermined' | 'unavailable';
 
@@ -23,11 +25,11 @@ async function getNotificationsModule(): Promise<NotificationsModule | null> {
 async function configureAndroidChannel(notificationsModule: NotificationsModule) {
   if (Platform.OS !== 'android') return;
 
-  await notificationsModule.setNotificationChannelAsync('default', {
-    name: 'default',
-    importance: notificationsModule.AndroidImportance.MAX,
-    vibrationPattern: [0, 250, 250, 250],
-    lightColor: '#FF231F7C',
+  await notificationsModule.setNotificationChannelAsync(PROGRAM_NOTIFICATION_CHANNEL_ID, {
+    name: 'Program reminders',
+    importance: notificationsModule.AndroidImportance.HIGH,
+    vibrationPattern: [0, 180, 120, 180],
+    lightColor: '#0A3B17',
   });
 }
 

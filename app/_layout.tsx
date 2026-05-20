@@ -16,6 +16,8 @@ import { AppPreloader } from '@/components/ui/AppPreloader';
 import { getPublicEnvState } from '@/lib/env';
 import { installGlobalErrorHandler } from '@/lib/monitoring';
 import { hasOnboardingContextMismatch } from '@/lib/onboarding.realignment';
+import { logEvent } from '@/lib/analytics';
+import { NotificationService, type ProgramNotificationTarget } from '@/lib/notifications';
 import { Session } from '@supabase/supabase-js';
 import ErodeRegular from '@/assets/fonts/Erode-Regular.otf';
 import ErodeItalic from '@/assets/fonts/Erode-Italic.otf';
@@ -45,6 +47,88 @@ const publicEnvState = getPublicEnvState();
 const publicEnv = publicEnvState.env;
 const uninstallGlobalErrorHandler = installGlobalErrorHandler();
 const enablePurchaseQaLogs = process.env.EXPO_PUBLIC_ENABLE_PURCHASE_QA_LOGS === 'true';
+
+function buildNotificationTargetHref(target: ProgramNotificationTarget): Href {
+  const programSlug = encodeURIComponent(target.programSlug);
+  const dayNumber = encodeURIComponent(String(target.dayNumber));
+  return `/day-detail?programSlug=${programSlug}&dayNumber=${dayNumber}` as Href;
+}
+
+function ProgramNotificationTapRouter({
+  enabled,
+  userId,
+}: {
+  enabled: boolean;
+  userId?: string | null;
+}) {
+  const router = useRouter();
+  const rootNavigationState = useRootNavigationState();
+  const lastHandledTargetRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!enabled || !rootNavigationState?.key) {
+      return;
+    }
+
+    let isMounted = true;
+    let subscription: { remove: () => void } | null = null;
+
+    const handleTarget = (target: ProgramNotificationTarget) => {
+      const targetKey = target.planId ?? `${target.programSlug}:${target.dayNumber}:${target.notificationType ?? 'unknown'}`;
+      if (lastHandledTargetRef.current === targetKey) {
+        return;
+      }
+
+      lastHandledTargetRef.current = targetKey;
+      void logEvent({
+        dayNumber: target.dayNumber,
+        eventData: {
+          cardIndex: target.cardIndex,
+          notificationTier: target.notificationTier,
+          notificationType: target.notificationType,
+          planId: target.planId,
+          platform: Platform.OS,
+          targetKey,
+          timeSlot: target.timeSlot,
+        },
+        eventType: 'notification_tap',
+        programSlug: target.programSlug,
+        userId,
+      });
+      router.navigate(buildNotificationTargetHref(target));
+    };
+
+    void NotificationService.addProgramNotificationResponseListener(handleTarget)
+      .then((nextSubscription) => {
+        if (!isMounted) {
+          nextSubscription?.remove();
+          return;
+        }
+
+        subscription = nextSubscription;
+      })
+      .catch((error) => {
+        console.warn('Failed to attach program notification tap listener', error);
+      });
+
+    void NotificationService.getLastProgramNotificationResponseTarget()
+      .then((target) => {
+        if (isMounted && target) {
+          handleTarget(target);
+        }
+      })
+      .catch((error) => {
+        console.warn('Failed to read latest program notification response', error);
+      });
+
+    return () => {
+      isMounted = false;
+      subscription?.remove();
+    };
+  }, [enabled, rootNavigationState?.key, router, userId]);
+
+  return null;
+}
 
 function NavigationGate({
     needsOnboardingRealignment,
@@ -260,6 +344,10 @@ function RootLayoutContent() {
         needsProgramSetup={needsProgramSetup}
         profile={profile}
         session={session}
+      />
+      <ProgramNotificationTapRouter
+        enabled={isNavigationReady && Boolean(session)}
+        userId={session?.user?.id ?? null}
       />
       <AppPreloader isNavigationReady={isNavigationReady} isAuthenticated={!!session} />
     </>
