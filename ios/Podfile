@@ -59,5 +59,13 @@ target 'recoverycompassapp' do
       :mac_catalyst_enabled => false,
       :ccache_enabled => ccache_enabled?(podfile_properties),
     )
+
+    # Xcode 26 no longer supports simulator deployment targets below iOS 12.
+    # Keep generated Pods aligned with the app target instead of patching Pods directly.
+    installer.pods_project.targets.each do |target|
+      target.build_configurations.each do |config|
+        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = podfile_properties['ios.deploymentTarget'] || '15.1'
+      end
+    end
   end
 end
