@@ -183,7 +183,11 @@ function NavigationGate({
                         target = '/welcome' as Href;
                     }
                 } else if (isSubscribed) {
-                    if (needsProgramSetup) {
+                    if (!profile || !profile.onboarding_complete) {
+                        if (!inPersonalization) {
+                            target = '/personalization' as Href;
+                        }
+                    } else if (needsProgramSetup) {
                         if (!inProgramStartSetup) {
                             target = '/program-start' as Href;
                         }
