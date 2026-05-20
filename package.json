@@ -103,8 +103,16 @@
     "vitest": "^4.1.6"
   },
   "overrides": {
-    "brace-expansion": "5.0.6",
+    "@expo/fingerprint": {
+      "brace-expansion": "5.0.6"
+    },
     "fast-uri": "3.1.2",
+    "glob": {
+      "brace-expansion": "5.0.6"
+    },
+    "minimatch@3.1.5": {
+      "brace-expansion": "1.1.13"
+    },
     "postcss": "8.5.15",
     "ws": "8.20.1"
   },
