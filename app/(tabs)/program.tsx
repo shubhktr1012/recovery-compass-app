@@ -142,7 +142,7 @@ function FreeProgramDiscoveryScreen() {
           </Text>
         </View>
 
-        <View className="bg-surface rounded-t-[28px] -mt-7 px-5 pt-6 pb-[110px] relative z-20 flex-1">
+        <View className="bg-surface rounded-t-[28px] -mt-7 px-5 pt-6 pb-[170px] relative z-20 flex-1">
           <PaperGrain />
           <View className="bg-white rounded-[24px] px-5 py-5 shadow-sm shadow-forest/5 mb-5">
             <Text className="uppercase text-forest/38" style={[AppTypography.eyebrow, { letterSpacing: 1.5 }]}>
@@ -376,7 +376,7 @@ function ProgramScreenContent({
         </View>
 
         {/* CONTENT AREA OVERLAP */}
-        <View className="bg-surface rounded-t-[28px] -mt-7 pt-6 pb-[110px] relative z-20 flex-1">
+        <View className="bg-surface rounded-t-[28px] -mt-7 pt-6 pb-[170px] relative z-20 flex-1">
           <PaperGrain />
           <View onLayout={(e) => { daysContainerY.current = e.nativeEvent.layout.y; }}>
             

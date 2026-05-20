@@ -128,11 +128,13 @@ function CurrentDayCard({ day, isPartial, isReturningUser, onPress }: {
           backgroundColor: F.canvas,
           borderRadius: 20,
           overflow: 'hidden',
-          // soft-shadow from spec
+          // premium soft tactile shadow and border
+          borderWidth: 1,
+          borderColor: 'rgba(6, 41, 12, 0.04)',
           shadowColor: '#06290C',
-          shadowOffset: { width: 0, height: 1 },
-          shadowOpacity: 0.06,
-          shadowRadius: 12,
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.07,
+          shadowRadius: 16,
           elevation: 4,
           marginBottom: 0,
         }}
@@ -167,7 +169,7 @@ function CurrentDayCard({ day, isPartial, isReturningUser, onPress }: {
               style={{
                 fontFamily: 'Satoshi-SemiBold',
                 fontSize: 9,
-                letterSpacing: 1.0,
+                letterSpacing: 1.5,
                 color: 'rgba(227,243,229,0.75)',
                 textTransform: 'uppercase',
               }}
@@ -218,8 +220,8 @@ function CurrentDayCard({ day, isPartial, isReturningUser, onPress }: {
               style={{
                 backgroundColor: F.forest,
                 borderRadius: 999,
-                paddingHorizontal: 16,
-                paddingVertical: 9,
+                paddingHorizontal: 14,
+                paddingVertical: 8,
                 flexDirection: 'row',
                 alignItems: 'center',
                 gap: 6,
@@ -238,39 +240,36 @@ function CurrentDayCard({ day, isPartial, isReturningUser, onPress }: {
 }
 
 // ─── COMPLETED DAY ────────────────────────────────────────────────────────────
-// White card, sage-soft check-circle, "Day X · Completed" label, "Tap to revisit"
+// Receded card with a quiet completion marker.
 function CompletedDayCard({ day, onPress }: { day: ProgramCardDay; onPress?: () => void }) {
   return (
     <SquishPress onPress={onPress}>
       <View
         style={{
-          backgroundColor: F.canvas,
+          backgroundColor: 'rgba(255, 255, 255, 0.7)',
           borderRadius: 18,
+          borderWidth: 1,
+          borderColor: 'rgba(6, 41, 12, 0.04)',
           paddingHorizontal: 16,
-          paddingVertical: 14,
+          paddingVertical: 12,
           flexDirection: 'row',
           alignItems: 'center',
           gap: 12,
-          shadowColor: '#06290C',
-          shadowOffset: { width: 0, height: 1 },
-          shadowOpacity: 0.03,
-          shadowRadius: 5,
-          elevation: 1,
         }}
       >
         {/* Sage-soft check circle */}
         <View
           style={{
-            width: 32,
-            height: 32,
-            borderRadius: 16,
-            backgroundColor: F.sageSoft,   // #E3F2E5 per spec
+            width: 24,
+            height: 24,
+            borderRadius: 12,
+            backgroundColor: 'rgba(227, 243, 229, 0.4)',
             alignItems: 'center',
             justifyContent: 'center',
             flexShrink: 0,
           }}
         >
-          <CheckmarkSvg size={14} stroke={F.forest} strokeWidth={2.2} />
+          <CheckmarkSvg size={10} stroke="rgba(6,41,12,0.5)" strokeWidth={2.5} />
         </View>
 
         <View style={{ flex: 1 }}>
@@ -278,19 +277,16 @@ function CompletedDayCard({ day, onPress }: { day: ProgramCardDay; onPress?: () 
             style={{
               fontFamily: 'Satoshi-SemiBold',
               fontSize: 9,
-              letterSpacing: 1.4,
+              letterSpacing: 1.5,
               textTransform: 'uppercase',
-              color: 'rgba(6,41,12,0.35)',
+              color: 'rgba(6,41,12,0.3)',
               marginBottom: 2,
             }}
           >
             Day {day.id} · Completed
           </Text>
-          <Text style={{ fontFamily: 'Erode-Medium', fontSize: 15, lineHeight: 18, color: 'rgba(6,41,12,0.7)' }}>
+          <Text style={{ fontFamily: 'Erode-Regular', fontSize: 15, lineHeight: 18, color: 'rgba(6,41,12,0.5)' }}>
             {day.title}
-          </Text>
-          <Text style={{ ...AppTypography.meta, color: 'rgba(6,41,12,0.35)', marginTop: 2 }}>
-            Tap to revisit
           </Text>
         </View>
       </View>
@@ -303,10 +299,12 @@ function NextLockedDayCard({ day, availabilityLabel }: { day: ProgramCardDay; av
   return (
     <View
       style={{
-        backgroundColor: F.sageSoft,   // #E3F2E5 per spec
+        backgroundColor: 'rgba(227, 243, 229, 0.65)',
         borderRadius: 18,
+        borderWidth: 1,
+        borderColor: 'rgba(6, 41, 12, 0.03)',
         paddingHorizontal: 16,
-        paddingVertical: 14,
+        paddingVertical: 12,
         flexDirection: 'row',
         alignItems: 'center',
         gap: 12,
@@ -315,16 +313,16 @@ function NextLockedDayCard({ day, availabilityLabel }: { day: ProgramCardDay; av
       {/* Next circle — slightly more opacity lock */}
       <View
         style={{
-          width: 32,
-          height: 32,
-          borderRadius: 16,
-          backgroundColor: 'rgba(6,41,12,0.08)',
+          width: 24,
+          height: 24,
+          borderRadius: 12,
+          backgroundColor: 'rgba(6,41,12,0.04)',
           alignItems: 'center',
           justifyContent: 'center',
           flexShrink: 0,
         }}
       >
-        <LockSvg size={13} stroke="rgba(6,41,12,0.4)" strokeWidth={1.8} />
+        <LockSvg size={11} stroke="rgba(6,41,12,0.3)" strokeWidth={1.8} />
       </View>
 
       <View style={{ flex: 1 }}>
@@ -332,20 +330,19 @@ function NextLockedDayCard({ day, availabilityLabel }: { day: ProgramCardDay; av
           style={{
             fontFamily: 'Satoshi-SemiBold',
             fontSize: 9,
-            letterSpacing: 1.4,
+            letterSpacing: 1.5,
             textTransform: 'uppercase',
-            color: 'rgba(6,41,12,0.25)',
+            color: 'rgba(6,41,12,0.3)',
             marginBottom: 2,
           }}
         >
           Day {day.id}
         </Text>
-        {/* Slightly more visible title — color: rgba(6,41,12,0.55) per spec */}
         <Text style={{ fontFamily: 'Erode-Regular', fontSize: 15, lineHeight: 18, color: 'rgba(6,41,12,0.55)' }}>
           {day.title}
         </Text>
         {availabilityLabel && (
-          <Text style={{ ...AppTypography.meta, color: 'rgba(6,41,12,0.28)', marginTop: 2 }}>
+          <Text style={{ ...AppTypography.meta, color: 'rgba(6,41,12,0.4)', marginTop: 2 }}>
             {availabilityLabel}
           </Text>
         )}
@@ -355,51 +352,36 @@ function NextLockedDayCard({ day, availabilityLabel }: { day: ProgramCardDay; av
 }
 
 // ─── LOCKED DAY (further in future) ──────────────────────────────────────────
-// rgba(255,255,255,0.6) bg with 1px hairline border
+// Clean borderless, lock-icon-free list representation
 function LockedDayCard({ day }: { day: ProgramCardDay }) {
   return (
     <View
       style={{
-        backgroundColor: 'rgba(255,255,255,0.6)',
+        backgroundColor: 'transparent',
         borderRadius: 18,
-        borderWidth: 1,
-        borderColor: 'rgba(6,41,12,0.04)',
         paddingHorizontal: 16,
-        paddingVertical: 14,
+        paddingVertical: 10,
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 12,
       }}
     >
-      {/* Lock circle */}
-      <View
-        style={{
-          width: 32,
-          height: 32,
-          borderRadius: 16,
-          backgroundColor: 'rgba(6,41,12,0.05)',
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexShrink: 0,
-        }}
-      >
-        <LockSvg size={12} stroke="rgba(6,41,12,0.28)" strokeWidth={1.8} />
-      </View>
+      {/* Spacer to align text with the 24px icon + 12px gap in other cards */}
+      <View style={{ width: 36, flexShrink: 0 }} />
 
       <View style={{ flex: 1 }}>
         <Text
           style={{
             fontFamily: 'Satoshi-SemiBold',
             fontSize: 9,
-            letterSpacing: 1.4,
+            letterSpacing: 1.5,
             textTransform: 'uppercase',
-            color: 'rgba(6,41,12,0.25)',
-            marginBottom: 2,
+            color: 'rgba(6,41,12,0.22)',
+            marginBottom: 1,
           }}
         >
           Day {day.id}
         </Text>
-        <Text style={{ fontFamily: 'Erode-Regular', fontSize: 15, lineHeight: 18, color: 'rgba(6,41,12,0.35)' }}>
+        <Text style={{ fontFamily: 'Erode-Regular', fontSize: 15, lineHeight: 18, color: 'rgba(6,41,12,0.33)' }}>
           {day.title}
         </Text>
       </View>
@@ -415,24 +397,26 @@ function AvailableDayCard({ day, onPress }: { day: ProgramCardDay; onPress?: () 
         style={{
           backgroundColor: F.canvas,
           borderRadius: 18,
+          borderWidth: 1,
+          borderColor: 'rgba(6, 41, 12, 0.05)',
           paddingHorizontal: 16,
-          paddingVertical: 14,
+          paddingVertical: 12,
           flexDirection: 'row',
           alignItems: 'center',
           gap: 12,
           shadowColor: '#06290C',
-          shadowOffset: { width: 0, height: 1 },
+          shadowOffset: { width: 0, height: 2 },
           shadowOpacity: 0.03,
-          shadowRadius: 5,
+          shadowRadius: 8,
           elevation: 1,
         }}
       >
         <View
           style={{
-            width: 32,
-            height: 32,
-            borderRadius: 16,
-            backgroundColor: F.sageSoft,
+            width: 24,
+            height: 24,
+            borderRadius: 12,
+            backgroundColor: 'rgba(227, 243, 229, 0.5)',
             alignItems: 'center',
             justifyContent: 'center',
             flexShrink: 0,
@@ -446,19 +430,16 @@ function AvailableDayCard({ day, onPress }: { day: ProgramCardDay; onPress?: () 
             style={{
               fontFamily: 'Satoshi-SemiBold',
               fontSize: 9,
-              letterSpacing: 1.4,
+              letterSpacing: 1.5,
               textTransform: 'uppercase',
-              color: 'rgba(6,41,12,0.35)',
+              color: 'rgba(6,41,12,0.45)',
               marginBottom: 2,
             }}
           >
-            Day {day.id} · Available
+            Day {day.id}
           </Text>
-          <Text style={{ fontFamily: 'Erode-Medium', fontSize: 15, lineHeight: 18, color: 'rgba(6,41,12,0.7)' }}>
+          <Text style={{ fontFamily: 'Erode-Medium', fontSize: 15, lineHeight: 18, color: 'rgba(6,41,12,0.75)' }}>
             {day.title}
-          </Text>
-          <Text style={{ ...AppTypography.meta, color: 'rgba(6,41,12,0.35)', marginTop: 2 }}>
-            Tap to open
           </Text>
         </View>
       </View>
@@ -472,47 +453,34 @@ function PartialDayCard({ day, onPress }: { day: ProgramCardDay; onPress?: () =>
     <SquishPress onPress={onPress}>
       <View
         style={{
-          backgroundColor: F.cream,
+          backgroundColor: 'rgba(255, 247, 230, 0.65)',
           borderRadius: 18,
           borderWidth: 1,
-          borderColor: 'rgba(154,91,19,0.22)',
+          borderColor: 'rgba(154,91,19,0.12)',
           paddingHorizontal: 16,
-          paddingVertical: 14,
+          paddingVertical: 12,
           flexDirection: 'row',
           alignItems: 'center',
           gap: 12,
-          overflow: 'hidden',
           shadowColor: F.amber,
           shadowOffset: { width: 0, height: 1 },
-          shadowOpacity: 0.05,
-          shadowRadius: 6,
+          shadowOpacity: 0.02,
+          shadowRadius: 4,
           elevation: 1,
         }}
       >
         <View
           style={{
-            position: 'absolute',
-            left: 0,
-            top: 0,
-            bottom: 0,
-            width: 4,
-            backgroundColor: F.amber,
-          }}
-        />
-        <View
-          style={{
-            width: 32,
-            height: 32,
-            borderRadius: 16,
-            backgroundColor: F.amberSoft,
-            borderWidth: 1,
-            borderColor: 'rgba(154,91,19,0.18)',
+            width: 24,
+            height: 24,
+            borderRadius: 12,
+            backgroundColor: 'rgba(247, 226, 181, 0.4)',
             alignItems: 'center',
             justifyContent: 'center',
             flexShrink: 0,
           }}
         >
-          <PartialSvg />
+          <PartialSvg size={12} stroke="rgba(154, 91, 19, 0.6)" strokeWidth={2} />
         </View>
 
         <View style={{ flex: 1 }}>
@@ -521,19 +489,19 @@ function PartialDayCard({ day, onPress }: { day: ProgramCardDay; onPress?: () =>
               style={{
                 fontFamily: 'Satoshi-SemiBold',
                 fontSize: 9,
-                letterSpacing: 1.4,
+                letterSpacing: 1.5,
                 textTransform: 'uppercase',
-                color: 'rgba(154,91,19,0.72)',
+                color: 'rgba(154, 91, 19, 0.7)',
               }}
             >
-              Day {day.id} · Saved partial
+              Day {day.id} · In Progress
             </Text>
           </View>
-          <Text style={{ fontFamily: 'Erode-Medium', fontSize: 15, lineHeight: 18, color: 'rgba(6,41,12,0.78)' }}>
+          <Text style={{ fontFamily: 'Erode-Medium', fontSize: 15, lineHeight: 18, color: 'rgba(6,41,12,0.75)' }}>
             {day.title}
           </Text>
-          <Text style={{ ...AppTypography.meta, color: 'rgba(154,91,19,0.68)', marginTop: 2 }}>
-            Review or finish remaining steps
+          <Text style={{ ...AppTypography.meta, color: 'rgba(154, 91, 19, 0.6)', marginTop: 2 }}>
+            Resume session
           </Text>
         </View>
       </View>
@@ -546,12 +514,12 @@ function SkippedDayCard({ day, onPress }: { day: ProgramCardDay; onPress?: () =>
     <SquishPress onPress={onPress}>
       <View
         style={{
-          backgroundColor: 'rgba(255,255,255,0.86)',
+          backgroundColor: 'rgba(255, 255, 255, 0.45)',
           borderRadius: 18,
           borderWidth: 1,
-          borderColor: 'rgba(6,41,12,0.06)',
+          borderColor: 'rgba(6, 41, 12, 0.04)',
           paddingHorizontal: 16,
-          paddingVertical: 14,
+          paddingVertical: 12,
           flexDirection: 'row',
           alignItems: 'center',
           gap: 12,
@@ -559,12 +527,10 @@ function SkippedDayCard({ day, onPress }: { day: ProgramCardDay; onPress?: () =>
       >
         <View
           style={{
-            width: 32,
-            height: 32,
-            borderRadius: 16,
-            backgroundColor: 'rgba(6,41,12,0.05)',
-            borderWidth: 1,
-            borderColor: 'rgba(6,41,12,0.08)',
+            width: 24,
+            height: 24,
+            borderRadius: 12,
+            backgroundColor: 'rgba(6, 41, 12, 0.03)',
             alignItems: 'center',
             justifyContent: 'center',
             flexShrink: 0,
@@ -578,19 +544,16 @@ function SkippedDayCard({ day, onPress }: { day: ProgramCardDay; onPress?: () =>
             style={{
               fontFamily: 'Satoshi-SemiBold',
               fontSize: 9,
-              letterSpacing: 1.4,
+              letterSpacing: 1.5,
               textTransform: 'uppercase',
-              color: 'rgba(6,41,12,0.32)',
+              color: 'rgba(6,41,12,0.28)',
               marginBottom: 2,
             }}
           >
-            Day {day.id} · Missed
+            Day {day.id} · Review
           </Text>
-          <Text style={{ fontFamily: 'Erode-Regular', fontSize: 15, lineHeight: 18, color: 'rgba(6,41,12,0.58)' }}>
+          <Text style={{ fontFamily: 'Erode-Regular', fontSize: 15, lineHeight: 18, color: 'rgba(6,41,12,0.45)' }}>
             {day.title}
-          </Text>
-          <Text style={{ ...AppTypography.meta, color: 'rgba(6,41,12,0.34)', marginTop: 2 }}>
-            Read-only review
           </Text>
         </View>
       </View>

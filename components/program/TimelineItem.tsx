@@ -36,22 +36,10 @@ export function TimelineItem({
 }: TimelineItemProps) {
   // Connector Line
   const connectorColor = isCompleted
-    ? 'bg-forest/18'
-    : isPartial
-      ? 'bg-[#D9A441]/35'
-      : isSkipped
-        ? 'bg-forest/[0.12]'
-        : 'bg-forest/[0.08]';
-
-  const dotColorClass = isCurrent
-    ? 'bg-forest'
-    : isCompleted
-      ? 'bg-forest'
-      : isPartial
-        ? 'bg-[#F7E2B5] border-2 border-[#9A5B13]/70'
-        : isSkipped
-          ? 'bg-forest/10 border border-forest/15'
-          : 'bg-transparent border-2 border-forest/20';
+    ? 'bg-forest/20'
+    : isLocked
+      ? 'bg-forest/5'
+      : 'bg-forest/10';
 
   // Pulse animation for Current Day
   const scale = useSharedValue(1);
@@ -80,6 +68,45 @@ export function TimelineItem({
     transform: [{ scale: scale.value * 1.3 }],
     opacity: opacity.value * 0.4,
   }));
+
+  // Render the dot based on status
+  const renderDot = () => {
+    if (isCurrent) {
+      return (
+        <View className="w-5 h-5 rounded-full bg-forest items-center justify-center" />
+      );
+    }
+    if (isCompleted) {
+      return (
+        <View className="w-5 h-5 rounded-full bg-[#E3F3E5] border border-forest/15 items-center justify-center">
+          <Svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#06290C" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+            <Polyline points="20,6 9,17 4,12" />
+          </Svg>
+        </View>
+      );
+    }
+    if (isPartial) {
+      return (
+        <View className="w-5 h-5 rounded-full border border-forest/30 bg-transparent items-center justify-center">
+          <View className="w-1.5 h-1.5 rounded-full bg-forest/60" />
+        </View>
+      );
+    }
+    if (isSkipped) {
+      return (
+        <View className="w-1.5 h-1.5 rounded-full bg-forest/20" />
+      );
+    }
+    if (isLocked) {
+      return (
+        <View className="w-2 h-2 rounded-full border border-forest/10 bg-transparent" />
+      );
+    }
+    // Available Day
+    return (
+      <View className="w-5 h-5 rounded-full border border-forest/25 bg-transparent" />
+    );
+  };
 
   return (
     <View 
@@ -130,13 +157,7 @@ export function TimelineItem({
         )}
         
         {/* Actual Node */}
-        <View className={`w-5 h-5 rounded-full items-center justify-center ${dotColorClass}`}>
-          {isCompleted && (
-            <Svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#E3F3E5" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <Polyline points="20,6 9,17 4,12" />
-            </Svg>
-          )}
-        </View>
+        {renderDot()}
       </View>
 
       {/* Card column */}
