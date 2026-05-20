@@ -23,6 +23,7 @@ export const SECONDARY_SYMPTOMS_QUESTION_ID = 'secondary_symptoms';
 export function createInitialOnboardingAnswers(): OnboardingAnswers {
   return {
     name: '',
+    phoneNumber: '',
     age: '',
     gender: '',
     path: null,

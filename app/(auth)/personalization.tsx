@@ -319,7 +319,7 @@ export default function Personalization() {
   }, [didRestoreDraft]);
 
   // ─── State updaters (unchanged) ────────────────────────────────────────
-  const updateQuickProfile = <K extends 'name' | 'age'>(key: K, value: string) => {
+  const updateQuickProfile = <K extends 'name' | 'phoneNumber' | 'age'>(key: K, value: string) => {
     setAnswers((current) => ({ ...current, [key]: value }));
   };
 
@@ -741,6 +741,16 @@ export default function Personalization() {
                 maxLength={80}
               />
             ) : null}
+
+            <InputText
+              label="PHONE (OPTIONAL)"
+              value={answers.phoneNumber}
+              onChangeText={(value) => updateQuickProfile('phoneNumber', value)}
+              placeholder="Optional"
+              keyboardType="phone-pad"
+              inputMode="tel"
+              maxLength={24}
+            />
 
             <LargeNumberInput
               variant="age"

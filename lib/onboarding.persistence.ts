@@ -92,9 +92,15 @@ function toNumericValue(value: string | string[] | undefined) {
   return Number.isFinite(numericValue) ? numericValue : null;
 }
 
+function normalizeOptionalPhoneNumber(value: string) {
+  const trimmedValue = value.trim();
+  return trimmedValue.length > 0 ? trimmedValue : null;
+}
+
 export function hasMeaningfulOnboardingDraft(answers: OnboardingAnswers) {
   return Boolean(
     answers.name.trim() ||
+      answers.phoneNumber.trim() ||
       answers.age.trim() ||
       answers.gender ||
       answers.path ||
@@ -221,6 +227,7 @@ export async function saveOnboardingQuestionnaire(args: {
     path: answers.path,
     quickProfile: {
       name: answers.name.trim(),
+      phoneNumber: normalizeOptionalPhoneNumber(answers.phoneNumber),
       age: Number(answers.age),
       gender: answers.gender,
     },
@@ -286,6 +293,8 @@ export async function saveOnboardingQuestionnaire(args: {
           {
             id: userId,
             email: email ?? null,
+            phone_number: normalizeOptionalPhoneNumber(answers.phoneNumber),
+            phone_verified_at: null,
             onboarding_complete: true,
             recommended_program: resolution.recommendedProgram,
             questionnaire_answers: questionnaireAnswers,
@@ -295,7 +304,7 @@ export async function saveOnboardingQuestionnaire(args: {
           { onConflict: 'id' }
         )
         .select(
-          'id, email, onboarding_complete, questionnaire_answers, recommended_program, created_at, updated_at, free_tier_activated_at, expo_push_token, notifications_enabled, push_opt_in'
+          'id, email, phone_number, phone_verified_at, onboarding_complete, questionnaire_answers, recommended_program, created_at, updated_at, free_tier_activated_at, expo_push_token, notifications_enabled, push_opt_in'
         )
         .single(),
     ]);

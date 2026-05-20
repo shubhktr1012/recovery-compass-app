@@ -7,6 +7,7 @@ type QuestionnaireQuickProfile = {
   age?: unknown;
   gender?: unknown;
   name?: unknown;
+  phoneNumber?: unknown;
 };
 
 type QuestionnaireSnapshot = {
@@ -97,6 +98,7 @@ export function buildRealignmentAnswers(args: {
   }
 
   const name = typeof quickProfile?.name === 'string' ? quickProfile.name.trim() : '';
+  const phoneNumber = typeof quickProfile?.phoneNumber === 'string' ? quickProfile.phoneNumber.trim() : '';
   const age =
     typeof quickProfile?.age === 'number'
       ? String(quickProfile.age)
@@ -108,6 +110,7 @@ export function buildRealignmentAnswers(args: {
   return {
     ...createInitialOnboardingAnswers(),
     name,
+    phoneNumber,
     age,
     gender,
     path: 'self_select',

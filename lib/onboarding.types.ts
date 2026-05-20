@@ -81,6 +81,7 @@ export interface JourneyConfig {
 
 export interface OnboardingAnswers {
   name: string;
+  phoneNumber: string;
   age: string;
   gender: GenderOption | '';
   path: OnboardingPath | null;

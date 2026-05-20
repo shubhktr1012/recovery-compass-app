@@ -24,6 +24,8 @@ import { rescheduleProgramNotificationsForAccess } from '@/lib/notification-runt
 export interface UserProfile {
   id: string;
   email: string | null;
+  phone_number?: string | null;
+  phone_verified_at?: string | null;
   onboarding_complete: boolean;
   questionnaire_answers?: Record<string, unknown> | null;
   recommended_program?: ProgramSlug | null;
@@ -60,7 +62,7 @@ interface ProfileContextType {
 }
 
 const PROFILE_COLUMNS =
-  'id, email, onboarding_complete, questionnaire_answers, recommended_program, created_at, updated_at, free_tier_activated_at, expo_push_token, notifications_enabled, push_opt_in, display_name, avatar_url';
+  'id, email, phone_number, phone_verified_at, onboarding_complete, questionnaire_answers, recommended_program, created_at, updated_at, free_tier_activated_at, expo_push_token, notifications_enabled, push_opt_in, display_name, avatar_url';
 export const PROFILE_QUERY_KEY = (userId: string | null) => ['profile', userId];
 const PROFILE_IMAGE_BUCKET = 'profile-images';
 const PROFILE_IMAGE_SIGNED_URL_TTL_SECONDS = 60 * 60 * 24 * 7;
