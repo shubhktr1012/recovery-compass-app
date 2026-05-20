@@ -82,9 +82,6 @@ docs/claude-files-temporary/
 
 app-example
 
-# generated native folders
-/android
-
 # Graphify local metadata
 graphify-out/manifest.json
 graphify-out/cost.json

@@ -1,10 +1,12 @@
 import Expo
 import React
 import ReactAppDependencyProvider
+import UIKit
 
 @UIApplicationMain
 public class AppDelegate: ExpoAppDelegate {
   var window: UIWindow?
+  private var privacyOverlayView: UIView?
 
   var reactNativeDelegate: ExpoReactNativeFactoryDelegate?
   var reactNativeFactory: RCTReactNativeFactory?
@@ -28,6 +30,26 @@ public class AppDelegate: ExpoAppDelegate {
       in: window,
       launchOptions: launchOptions)
 #endif
+    NotificationCenter.default.addObserver(
+      self,
+      selector: #selector(handleScreenCaptureStateChanged),
+      name: UIScreen.capturedDidChangeNotification,
+      object: nil
+    )
+    NotificationCenter.default.addObserver(
+      self,
+      selector: #selector(handleApplicationWillResignActive),
+      name: UIApplication.willResignActiveNotification,
+      object: nil
+    )
+    NotificationCenter.default.addObserver(
+      self,
+      selector: #selector(handleApplicationDidBecomeActive),
+      name: UIApplication.didBecomeActiveNotification,
+      object: nil
+    )
+
+    updateScreenCapturePrivacyOverlay()
 
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
@@ -49,6 +71,59 @@ public class AppDelegate: ExpoAppDelegate {
   ) -> Bool {
     let result = RCTLinkingManager.application(application, continue: userActivity, restorationHandler: restorationHandler)
     return super.application(application, continue: userActivity, restorationHandler: restorationHandler) || result
+  }
+
+  @objc private func handleScreenCaptureStateChanged() {
+    updateScreenCapturePrivacyOverlay()
+  }
+
+  @objc private func handleApplicationWillResignActive() {
+    showPrivacyOverlay(reason: "App Inactive")
+  }
+
+  @objc private func handleApplicationDidBecomeActive() {
+    updateScreenCapturePrivacyOverlay()
+  }
+
+  private func updateScreenCapturePrivacyOverlay() {
+    if UIScreen.main.isCaptured {
+      showPrivacyOverlay(reason: "Privacy Protected")
+    } else {
+      hidePrivacyOverlay()
+    }
+  }
+
+  private func showPrivacyOverlay(reason: String) {
+    guard let window else { return }
+
+    if privacyOverlayView?.superview === window {
+      return
+    }
+
+    let overlay = UIView(frame: window.bounds)
+    overlay.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+    overlay.backgroundColor = UIColor(red: 0.02, green: 0.16, blue: 0.05, alpha: 1.0)
+
+    let label = UILabel()
+    label.translatesAutoresizingMaskIntoConstraints = false
+    label.text = reason
+    label.textColor = UIColor.white.withAlphaComponent(0.82)
+    label.font = UIFont.systemFont(ofSize: 15, weight: .semibold)
+    label.textAlignment = .center
+
+    overlay.addSubview(label)
+    NSLayoutConstraint.activate([
+      label.centerXAnchor.constraint(equalTo: overlay.centerXAnchor),
+      label.centerYAnchor.constraint(equalTo: overlay.centerYAnchor)
+    ])
+
+    window.addSubview(overlay)
+    privacyOverlayView = overlay
+  }
+
+  private func hidePrivacyOverlay() {
+    privacyOverlayView?.removeFromSuperview()
+    privacyOverlayView = nil
   }
 }
 
