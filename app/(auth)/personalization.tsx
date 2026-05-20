@@ -110,7 +110,6 @@ export default function Personalization() {
   const { user } = useAuth();
   const { access, profile } = useProfile();
   const params = useLocalSearchParams<{ mode?: string | string[]; program?: string | string[]; resume?: string | string[] }>();
-  const [didRestoreDraft, setDidRestoreDraft] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
   const [isDraftReady, setIsDraftReady] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -238,7 +237,6 @@ export default function Personalization() {
                   ? restoredIndex
                   : Math.max(0, Math.min(returnState.currentStepIndex ?? restoredSteps.length - 1, restoredSteps.length - 1))
               );
-              setDidRestoreDraft(true);
               return;
             }
           }
@@ -263,7 +261,6 @@ export default function Personalization() {
               ? restoredIndex
               : Math.max(0, Math.min(draft.currentStepIndex ?? 0, restoredSteps.length - 1))
           );
-          setDidRestoreDraft(true);
         }
       } catch (error) {
         console.warn('Failed to restore onboarding draft', error);
@@ -307,16 +304,6 @@ export default function Personalization() {
       clearTimeout(timer);
     };
   }, [answers, currentStep.id, isDraftReady, isRealignmentMode, isSaving, stepIndex, user]);
-
-  // ─── Draft restored alert ──────────────────────────────────────────────
-  useEffect(() => {
-    if (!didRestoreDraft) {
-      return;
-    }
-
-    Alert.alert('Progress restored', 'We restored your progress so you can keep going.');
-    setDidRestoreDraft(false);
-  }, [didRestoreDraft]);
 
   // ─── State updaters (unchanged) ────────────────────────────────────────
   const updateQuickProfile = <K extends 'name' | 'phoneNumber' | 'age'>(key: K, value: string) => {
