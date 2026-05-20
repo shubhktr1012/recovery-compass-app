@@ -192,7 +192,7 @@ export function ExplorePrograms({
                 {program.slug === recommendedProgramSlug ? (
                   <View className="bg-forest px-2 py-0.5 rounded-full">
                     <Text className="text-white" style={programStatusTextStyle}>
-                      Recommended from onboarding
+                      Recommended for you
                     </Text>
                   </View>
                 ) : null}

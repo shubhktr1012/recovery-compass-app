@@ -281,7 +281,7 @@ export default function SettingsScreen() {
       setShowDeleteSheet(false);
       Alert.alert(
         'Account deleted',
-        'Your Recovery Compass account, progress, and app data have been permanently deleted. Previously purchased programs may still be restorable from your App Store or Google Play account.'
+        'Your account data has been deleted. Store purchases may still be restorable.'
       );
     } catch (error: any) {
       Alert.alert('Delete account failed', error?.message ?? 'Please try again.');
@@ -472,7 +472,7 @@ export default function SettingsScreen() {
 
           {/* Delete account — isolated danger card */}
           <DangerCard
-            warningText="This permanently removes your account, progress, and recovery data. Store purchases may still be restorable later."
+            warningText="Permanently removes your account data. Store purchases may still be restorable."
             label="Permanently Delete Account"
             sub="Cannot be undone"
             onPress={() => setShowDeleteSheet(true)}
@@ -564,7 +564,7 @@ function DeleteAccountSheet({ visible, onClose, onConfirm, isDeleting }: { visib
               color: AppColors.mutedInk, 
               marginBottom: 24
             }}>
-              This action is permanent and cannot be undone. Your recovery progress, journal entries, and personal data will be erased. Previously purchased programs may still be restorable later from the same App Store or Google Play account.
+              This permanently erases your account data from Recovery Compass.
             </Text>
 
             {/* Consequences List */}
@@ -576,12 +576,11 @@ function DeleteAccountSheet({ visible, onClose, onConfirm, isDeleting }: { visib
               marginBottom: 24 
             }}>
               {[
-                'All program progress and completed days removed',
-                'Journal entries and reflections permanently deleted',
-                'Purchased programs are not erased from your store account',
-                'Active subscriptions must be cancelled separately in the App Store or Google Play'
+                'Progress and journal entries are deleted',
+                'Store purchases may still be restorable',
+                'Subscriptions must be cancelled in the App Store or Google Play'
               ].map((item, i) => (
-                <View key={i} style={{ flexDirection: 'row', alignItems: 'flex-start', marginBottom: i === 3 ? 0 : 10 }}>
+                <View key={i} style={{ flexDirection: 'row', alignItems: 'flex-start', marginBottom: i === 2 ? 0 : 10 }}>
                   <View style={{ width: 5, height: 5, borderRadius: 2.5, backgroundColor: 'rgba(185,58,43,0.45)', marginTop: 6, marginRight: 10 }} />
                   <Text style={{ flex: 1, ...AppTypography.bodyCompact, color: AppColors.mutedInk }}>{item}</Text>
                 </View>

@@ -213,7 +213,7 @@ function CurrentDayCard({ day, isPartial, isReturningUser, onPress }: {
               </Text>
             </View>
 
-            {/* "Open Today" button */}
+            {/* Open day button */}
             <View
               style={{
                 backgroundColor: F.forest,
@@ -227,7 +227,7 @@ function CurrentDayCard({ day, isPartial, isReturningUser, onPress }: {
             >
               <PlaySvg />
               <Text style={{ fontFamily: 'Satoshi-Medium', fontSize: 12, color: '#fff' }}>
-                Open Today
+                Open Day
               </Text>
             </View>
           </View>

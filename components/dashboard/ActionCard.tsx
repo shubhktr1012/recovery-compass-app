@@ -27,7 +27,7 @@ export function ActionCard({
   activeProgram,
   resolvedDayNumber,
   availabilityLabel = null,
-  ctaLabel = 'Open Today',
+  ctaLabel = 'Continue',
   isLocked = false,
   onPress,
 }: ActionCardProps) {

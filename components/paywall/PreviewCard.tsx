@@ -79,7 +79,7 @@ export function PreviewCard({ totalDays, dailyMinutes, phaseCount }: PreviewCard
           <View style={styles.phasePill}>
             <Text style={styles.phaseText}>Phase 1 · Foundation</Text>
           </View>
-          <Text style={styles.readyText}>Ready to begin</Text>
+          <Text style={styles.readyText}>Day 1 ready</Text>
         </View>
 
         {/* Stats row */}
@@ -94,7 +94,7 @@ export function PreviewCard({ totalDays, dailyMinutes, phaseCount }: PreviewCard
           <View style={[styles.fill, { width: '0%' }]} />
         </View>
         <View style={styles.trackLabelRow}>
-          <Text style={styles.trackLabel}>Not yet started</Text>
+          <Text style={styles.trackLabel}>0% complete</Text>
           <Text style={styles.trackLabel}>{totalDays} days</Text>
         </View>
       </View>

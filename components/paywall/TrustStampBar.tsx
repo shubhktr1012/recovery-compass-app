@@ -67,7 +67,7 @@ export function TrustStampBar() {
       <Separator />
       <TrustItem icon={<LeafIcon />} label="Evidence-based" />
       <Separator />
-      <TrustItem icon={<CheckIcon />} label="One-time" />
+      <TrustItem icon={<CheckIcon />} label="Secure" />
     </View>
   );
 }

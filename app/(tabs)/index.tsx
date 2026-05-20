@@ -339,7 +339,7 @@ function HomeScreenContent({ activeProgram }: { activeProgram: ProgramSlug }) {
             resolvedDayNumber={resolvedDayNumber}
             isLocked={isCurrentSessionLocked}
             availabilityLabel={isCurrentSessionLocked ? nextUnlockLabel : null}
-            ctaLabel={isProgramPaused ? 'Resume' : 'Open Today'}
+            ctaLabel={isProgramPaused ? 'Resume' : 'Continue'}
             onPress={isProgramPaused ? handleResumeProgram : undefined}
           />
 

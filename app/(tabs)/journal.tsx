@@ -305,7 +305,7 @@ export default function JournalScreen() {
               {/* Prompt Strip */}
               <View style={{ backgroundColor: '#E3F2E5', paddingHorizontal: 20, paddingTop: 18, paddingBottom: 16 }}>
                 <Text style={{ fontFamily: 'Satoshi-Medium', fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(6,41,12,0.45)', marginBottom: 8 }}>
-                  {`Today's entry`}
+                  Today
                 </Text>
                 <Text className="text-forest tracking-tight" style={AppTypography.displayPrompt}>
                   How are you <Text className="font-erode-medium-italic" style={{ color: 'rgba(6,41,12,0.65)' }}>feeling?</Text>
@@ -327,7 +327,7 @@ export default function JournalScreen() {
                 {/* Reflection */}
                 <View style={{ marginBottom: 16 }}>
                   <Text style={{ fontFamily: 'Satoshi-SemiBold', fontSize: 10, letterSpacing: 1.2, textTransform: 'uppercase', color: 'rgba(6,41,12,0.45)', marginBottom: 8 }}>
-                    Reflection
+                    Note
                   </Text>
                   <TextInput
                     style={{
@@ -412,7 +412,7 @@ export default function JournalScreen() {
                   </View>
                   <Text className="text-forest tracking-tight" style={AppTypography.displayMetricItalic}>No entries yet.</Text>
                   <Text className="text-forest/45 mt-2 text-center" style={[AppTypography.label, { maxWidth: 220 }]}>
-                    Your first reflection starts above. Even a few words are enough.
+                    Even a few words are enough.
                   </Text>
                 </View>
               ) : (
