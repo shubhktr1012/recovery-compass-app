@@ -16,6 +16,13 @@ import { SkeletonCircle, SkeletonLine, SkeletonTitle } from '@/components/ui/Ske
 import { AppTypography } from '@/constants/typography';
 import type { ProgramContent, ProgramSlug } from '@/types/content';
 import { getJourneyForProgramSlug, getStoredOnboardingJourney } from '@/lib/onboarding.realignment';
+import {
+  getQueueDropIndexFromAbsoluteY,
+  getQueueDropIndexFromDragDelta,
+  getQueueTouchOffset,
+  reorderProgramQueue,
+  type QueueItemLayout,
+} from '@/lib/program-queue';
 import { supabase } from '@/lib/supabase';
 
 function ProgramLibraryCard({
@@ -156,8 +163,6 @@ function SectionHeader({
   );
 }
 
-const DEFAULT_QUEUE_ITEM_HEIGHT = 176;
-
 function isNotAuthenticatedError(error: unknown) {
   if (!error || typeof error !== 'object') {
     return false;
@@ -167,46 +172,6 @@ function isNotAuthenticatedError(error: unknown) {
   const message = typeof maybeError.message === 'string' ? maybeError.message.toLowerCase() : '';
 
   return maybeError.code === 'P0001' && message.includes('not authenticated');
-}
-
-function getQueueDropIndex({
-  fromIndex,
-  dragDeltaY,
-  itemHeights,
-  orderedSlugs,
-}: {
-  fromIndex: number;
-  dragDeltaY: number;
-  itemHeights: Record<string, number>;
-  orderedSlugs: ProgramSlug[];
-}) {
-  let targetIndex = fromIndex;
-
-  if (dragDeltaY > 0) {
-    let threshold = 0;
-    for (let nextIndex = fromIndex + 1; nextIndex < orderedSlugs.length; nextIndex += 1) {
-      const previousHeight = itemHeights[orderedSlugs[nextIndex - 1]] ?? DEFAULT_QUEUE_ITEM_HEIGHT;
-      const nextHeight = itemHeights[orderedSlugs[nextIndex]] ?? DEFAULT_QUEUE_ITEM_HEIGHT;
-      threshold += (previousHeight + nextHeight) / 2;
-
-      if (dragDeltaY >= threshold) {
-        targetIndex = nextIndex;
-      }
-    }
-  } else if (dragDeltaY < 0) {
-    let threshold = 0;
-    for (let previousIndex = fromIndex - 1; previousIndex >= 0; previousIndex -= 1) {
-      const currentHeight = itemHeights[orderedSlugs[previousIndex + 1]] ?? DEFAULT_QUEUE_ITEM_HEIGHT;
-      const previousHeight = itemHeights[orderedSlugs[previousIndex]] ?? DEFAULT_QUEUE_ITEM_HEIGHT;
-      threshold += (currentHeight + previousHeight) / 2;
-
-      if (Math.abs(dragDeltaY) >= threshold) {
-        targetIndex = previousIndex;
-      }
-    }
-  }
-
-  return targetIndex;
 }
 
 function DraggableQueueCard({
@@ -225,32 +190,32 @@ function DraggableQueueCard({
   activeProgramName?: string;
   isDraggingDisabled: boolean;
   isFirstWaitingProgram: boolean;
-  onDragStart: () => void;
-  onDragEnd: (dragDeltaY: number) => void;
-  onMeasure: (height: number) => void;
+  onDragStart: (absoluteY: number) => void;
+  onDragEnd: (drag: { absoluteY: number; translationY: number }) => void;
+  onMeasure: (layout: QueueItemLayout) => void;
   notice?: string;
 }) {
   const dragY = useRef(new Animated.Value(0)).current;
   const [isDragging, setIsDragging] = useState(false);
   const panResponder = useMemo(
     () => PanResponder.create({
-      onStartShouldSetPanResponder: () => false,
+      onStartShouldSetPanResponder: () => !isDraggingDisabled,
       onMoveShouldSetPanResponder: (_event, gesture) =>
         !isDraggingDisabled &&
         Math.abs(gesture.dy) > 4 &&
         Math.abs(gesture.dy) > Math.abs(gesture.dx),
-      onPanResponderGrant: () => {
+      onPanResponderGrant: (event) => {
         setIsDragging(true);
         dragY.setOffset(0);
         dragY.setValue(0);
-        onDragStart();
+        onDragStart(event.nativeEvent.pageY);
         void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => undefined);
       },
       onPanResponderMove: (_event, gesture) => {
         dragY.setValue(gesture.dy);
       },
       onPanResponderRelease: (_event, gesture) => {
-        onDragEnd(gesture.dy);
+        onDragEnd({ absoluteY: gesture.moveY, translationY: gesture.dy });
         Animated.spring(dragY, {
           toValue: 0,
           useNativeDriver: true,
@@ -260,7 +225,7 @@ function DraggableQueueCard({
         }).start(() => setIsDragging(false));
       },
       onPanResponderTerminate: () => {
-        onDragEnd(0);
+        onDragEnd({ absoluteY: 0, translationY: 0 });
         Animated.spring(dragY, {
           toValue: 0,
           useNativeDriver: true,
@@ -275,7 +240,8 @@ function DraggableQueueCard({
 
   const handleLayout = useCallback(
     (event: LayoutChangeEvent) => {
-      onMeasure(event.nativeEvent.layout.height + 12);
+      const { height, y } = event.nativeEvent.layout;
+      onMeasure({ height: height + 12, y });
     },
     [onMeasure]
   );
@@ -365,7 +331,10 @@ export default function ProgramsLibraryScreen() {
   const [switchingProgram, setSwitchingProgram] = useState<ProgramSlug | null>(null);
   const [isDraggingQueue, setIsDraggingQueue] = useState(false);
   const [queueOrderOverride, setQueueOrderOverride] = useState<ProgramSlug[] | null>(null);
-  const [queueItemHeights, setQueueItemHeights] = useState<Record<string, number>>({});
+  const queueListRef = useRef<React.ElementRef<typeof View> | null>(null);
+  const queueListPageYRef = useRef<number | null>(null);
+  const dragTouchOffsetRef = useRef<number | null>(null);
+  const [queueItemLayouts, setQueueItemLayouts] = useState<Record<string, QueueItemLayout>>({});
 
   const accessProgramSlug = access.ownedProgram ?? null;
   const activeProgramSlug =
@@ -559,26 +528,67 @@ export default function ProgramsLibraryScreen() {
       .filter((program): program is ProgramContent => Boolean(program));
   }, [otherOwnedPrograms, queueOrderOverride]);
 
+  const measureQueueList = useCallback(() => {
+    queueListRef.current?.measureInWindow((_x, pageY) => {
+      queueListPageYRef.current = pageY;
+    });
+  }, []);
+
+  const handleStartQueuedProgramDrag = useCallback(
+    (programSlug: ProgramSlug, absoluteY: number) => {
+      setIsDraggingQueue(true);
+      measureQueueList();
+
+      const layout = queueItemLayouts[programSlug];
+      const containerPageY = queueListPageYRef.current;
+
+      dragTouchOffsetRef.current =
+        layout && typeof containerPageY === 'number' && Number.isFinite(absoluteY)
+          ? getQueueTouchOffset({
+              absoluteY,
+              containerPageY,
+              itemLayout: layout,
+            })
+          : null;
+    },
+    [measureQueueList, queueItemLayouts]
+  );
+
   const handleDropQueuedProgram = useCallback(
-    async (programSlug: ProgramSlug, dragDeltaY: number) => {
+    async (programSlug: ProgramSlug, drag: { absoluteY: number; translationY: number }) => {
       const orderedSlugs = displayedQueuedPrograms.map((program) => program.slug);
       const currentIndex = orderedSlugs.indexOf(programSlug);
-      const targetIndex = getQueueDropIndex({
-        fromIndex: currentIndex,
-        dragDeltaY,
-        itemHeights: queueItemHeights,
-        orderedSlugs,
-      });
+      const containerPageY = queueListPageYRef.current;
+      const canUseAbsoluteDrop =
+        typeof containerPageY === 'number' &&
+        Number.isFinite(containerPageY) &&
+        Number.isFinite(drag.absoluteY) &&
+        drag.absoluteY > 0 &&
+        Boolean(queueItemLayouts[programSlug]);
+      const targetIndex = canUseAbsoluteDrop
+        ? getQueueDropIndexFromAbsoluteY({
+            absoluteY: drag.absoluteY,
+            containerPageY,
+            fromIndex: currentIndex,
+            itemLayouts: queueItemLayouts,
+            orderedSlugs,
+            touchOffsetWithinItem: dragTouchOffsetRef.current,
+          })
+        : getQueueDropIndexFromDragDelta({
+            fromIndex: currentIndex,
+            dragDeltaY: drag.translationY,
+            itemLayouts: queueItemLayouts,
+            orderedSlugs,
+          });
 
       setIsDraggingQueue(false);
+      dragTouchOffsetRef.current = null;
 
-      if (currentIndex < 0 || targetIndex < 0 || targetIndex >= orderedSlugs.length || currentIndex === targetIndex) {
+      const nextQueue = reorderProgramQueue(orderedSlugs, currentIndex, targetIndex);
+
+      if (nextQueue === orderedSlugs) {
         return;
       }
-
-      const nextQueue = [...orderedSlugs];
-      const [movedProgram] = nextQueue.splice(currentIndex, 1);
-      nextQueue.splice(targetIndex, 0, movedProgram);
 
       if (!canPersistQueuePriority) {
         Alert.alert(
@@ -591,7 +601,8 @@ export default function ProgramsLibraryScreen() {
       setQueueOrderOverride(nextQueue);
       try {
         void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => undefined);
-        await reorderOwnedProgramQueue(nextQueue);
+        const persistedQueue = await reorderOwnedProgramQueue(nextQueue);
+        setQueueOrderOverride(persistedQueue.length > 0 ? persistedQueue : nextQueue);
       } catch (error) {
         setQueueOrderOverride(orderedSlugs);
         if (__DEV__) {
@@ -605,7 +616,7 @@ export default function ProgramsLibraryScreen() {
         );
       }
     },
-    [canPersistQueuePriority, displayedQueuedPrograms, queueItemHeights, reorderOwnedProgramQueue]
+    [canPersistQueuePriority, displayedQueuedPrograms, queueItemLayouts, reorderOwnedProgramQueue]
   );
 
   return (
@@ -678,7 +689,11 @@ export default function ProgramsLibraryScreen() {
                   </Text>
                 </View>
               ) : (
-                <View className="gap-3">
+                <View
+                  ref={queueListRef}
+                  className="gap-3"
+                  onLayout={() => measureQueueList()}
+                >
                   {displayedQueuedPrograms.map((program, index) => {
                     const isFirstWaitingProgram = index === 0;
                     const canDrag =
@@ -701,13 +716,14 @@ export default function ProgramsLibraryScreen() {
                               ? undefined
                               : 'Personalization not completed'
                           }
-                          onDragStart={() => setIsDraggingQueue(true)}
-                          onDragEnd={(dragDeltaY) => void handleDropQueuedProgram(program.slug, dragDeltaY)}
-                          onMeasure={(height) =>
-                            setQueueItemHeights((current) =>
-                              current[program.slug] === height
+                          onDragStart={(absoluteY) => handleStartQueuedProgramDrag(program.slug, absoluteY)}
+                          onDragEnd={(drag) => void handleDropQueuedProgram(program.slug, drag)}
+                          onMeasure={(layout) =>
+                            setQueueItemLayouts((current) =>
+                              current[program.slug]?.height === layout.height &&
+                                current[program.slug]?.y === layout.y
                                 ? current
-                                : { ...current, [program.slug]: height }
+                                : { ...current, [program.slug]: layout }
                             )
                           }
                         />
