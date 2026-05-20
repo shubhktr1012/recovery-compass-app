@@ -102,5 +102,11 @@
     "typescript": "~5.9.2",
     "vitest": "^4.1.6"
   },
+  "overrides": {
+    "brace-expansion": "5.0.6",
+    "fast-uri": "3.1.2",
+    "postcss": "8.5.15",
+    "ws": "8.20.1"
+  },
   "private": true
 }
