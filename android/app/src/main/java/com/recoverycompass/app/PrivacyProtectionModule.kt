@@ -12,8 +12,9 @@ class PrivacyProtectionModule(
 
   @ReactMethod
   fun setEnabled(enabled: Boolean) {
-    currentActivity?.runOnUiThread {
-      val window = currentActivity?.window ?: return@runOnUiThread
+    val activity = reactApplicationContext.currentActivity ?: return
+    activity.runOnUiThread {
+      val window = activity.window ?: return@runOnUiThread
       if (enabled) {
         window.setFlags(
           WindowManager.LayoutParams.FLAG_SECURE,
