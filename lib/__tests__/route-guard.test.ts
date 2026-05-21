@@ -32,8 +32,16 @@ describe('navigation guard target', () => {
     expect(guardTarget({ hasSession: false, segments: ['(tabs)', 'index'] })).toBe(WELCOME_ROUTE);
   });
 
-  it('keeps logged-out users inside auth screens', () => {
+  it('keeps logged-out users inside true pre-auth screens', () => {
     expect(guardTarget({ hasSession: false, segments: ['(auth)', 'sign-in'] })).toBeNull();
+    expect(guardTarget({ hasSession: false, segments: ['(auth)', 'sign-up'] })).toBeNull();
+    expect(guardTarget({ hasSession: false, segments: ['(auth)', 'welcome'] })).toBeNull();
+    expect(guardTarget({ hasSession: false, segments: ['(auth)', 'onboarding'] })).toBeNull();
+  });
+
+  it('blocks logged-out users from paywall and personalization even though they live in auth group', () => {
+    expect(guardTarget({ hasSession: false, segments: ['(auth)', 'paywall'] })).toBe(WELCOME_ROUTE);
+    expect(guardTarget({ hasSession: false, segments: ['(auth)', 'personalization'] })).toBe(WELCOME_ROUTE);
   });
 
   it('sends password recovery sessions to reset password', () => {

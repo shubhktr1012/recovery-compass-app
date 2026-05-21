@@ -32,6 +32,20 @@ function isAuthScreen(segments: RouteSegments, screen: string) {
   return isInAuthGroup(segments) && segments[1] === screen;
 }
 
+function isAllowedLoggedOutRoute(segments: RouteSegments) {
+  if (!isInAuthGroup(segments)) {
+    return false;
+  }
+
+  return (
+    segments[1] === 'welcome' ||
+    segments[1] === 'onboarding' ||
+    segments[1] === 'sign-in' ||
+    segments[1] === 'sign-up' ||
+    segments[1] === 'reset-password'
+  );
+}
+
 function isAllowedSubscribedRoute(segments: RouteSegments, modeParam?: string | null) {
   const inTabsGroup = segments[0] === '(tabs)';
   const inAccountStack = segments[0] === 'account';
@@ -74,7 +88,6 @@ export function getNavigationGuardTarget(state: NavigationGuardState): Href | nu
     segments,
   } = state;
 
-  const inAuthGroup = isInAuthGroup(segments);
   const inResetPassword = isAuthScreen(segments, 'reset-password');
   const inPersonalization = isAuthScreen(segments, 'personalization');
 
@@ -83,7 +96,7 @@ export function getNavigationGuardTarget(state: NavigationGuardState): Href | nu
   }
 
   if (!hasSession) {
-    return inAuthGroup ? null : WELCOME_ROUTE;
+    return isAllowedLoggedOutRoute(segments) ? null : WELCOME_ROUTE;
   }
 
   if (isSubscribed) {
