@@ -114,7 +114,15 @@ function SafetySheet({
   );
 }
 
-function FadingScrollView({ children, contentContainerStyle }: { children: React.ReactNode; contentContainerStyle?: any }) {
+function FadingScrollView({
+  children,
+  contentContainerStyle,
+  fadeColors = ['rgba(255,255,255,0)', 'rgba(255,255,255,1)'],
+}: {
+  children: React.ReactNode;
+  contentContainerStyle?: any;
+  fadeColors?: [string, string];
+}) {
   const [scrollViewHeight, setScrollViewHeight] = useState(0);
   const [contentHeight, setContentHeight] = useState(0);
   const [isAtBottom, setIsAtBottom] = useState(false);
@@ -143,6 +151,10 @@ function FadingScrollView({ children, contentContainerStyle }: { children: React
     <View style={styles.scrollWrapper}>
       <ScrollView
         ref={scrollViewRef}
+        style={styles.scrollView}
+        nestedScrollEnabled
+        keyboardShouldPersistTaps="handled"
+        contentInsetAdjustmentBehavior="never"
         showsVerticalScrollIndicator={true}
         persistentScrollbar={true}
         onScroll={(e) => {
@@ -157,14 +169,14 @@ function FadingScrollView({ children, contentContainerStyle }: { children: React
         scrollEventThrottle={16}
         onLayout={(e) => setScrollViewHeight(e.nativeEvent.layout.height)}
         onContentSizeChange={(_, h) => setContentHeight(h)}
-        contentContainerStyle={[contentContainerStyle, styles.scrollContent]}
+        contentContainerStyle={[styles.scrollContent, contentContainerStyle]}
       >
         {children}
       </ScrollView>
 
       {isScrollable && (
         <LinearGradient
-          colors={['rgba(255,255,255,0)', 'rgba(255,255,255,1)']}
+          colors={fadeColors}
           pointerEvents="none"
           style={styles.fadeMask}
         />
@@ -255,15 +267,17 @@ function AccentCardShell({
   children,
   eyebrow,
   title,
+  scrollable = false,
   showGrain = false,
 }: {
   children: React.ReactNode;
   eyebrow?: string;
   title?: string;
+  scrollable?: boolean;
   showGrain?: boolean;
 }) {
-  return (
-    <View style={[styles.accentCardShell, styles.cardShellContinuous, styles.cardShadow]}>
+  const content = (
+    <>
       {eyebrow ? (
         <Text style={styles.eyebrowLight}>
           {eyebrow}
@@ -275,6 +289,21 @@ function AccentCardShell({
         </Text>
       ) : null}
       {children}
+    </>
+  );
+
+  return (
+    <View style={[styles.accentCardShell, styles.cardShellContinuous, styles.cardShadow]}>
+      {scrollable ? (
+        <FadingScrollView
+          contentContainerStyle={{ flexGrow: 1 }}
+          fadeColors={['rgba(227,242,229,0)', '#E3F2E5']}
+        >
+          {content}
+        </FadingScrollView>
+      ) : (
+        content
+      )}
     </View>
   );
 }
@@ -309,7 +338,10 @@ function DarkCardShell({
   return (
     <View style={[styles.darkCardShell, styles.cardShellContinuous, styles.cardShadow]}>
       {scrollable ? (
-        <FadingScrollView contentContainerStyle={{ flexGrow: 1 }}>
+        <FadingScrollView
+          contentContainerStyle={{ flexGrow: 1 }}
+          fadeColors={['rgba(6,41,12,0)', '#06290C']}
+        >
           {content}
         </FadingScrollView>
       ) : (
@@ -441,42 +473,44 @@ function IntroCardView({ card, programName, totalCards }: { card: IntroCard; pro
         style={styles.introAccentBar}
       />
 
-      {/* ── Top row: phase pill + duration ── */}
-      <View style={styles.introTopRow}>
-        <View style={styles.introPhasePill}>
-          <View style={styles.introPhaseDot} />
-          <Text style={styles.introPhasePillText}>
-            {card.phase ?? programName ?? 'Today'}
-          </Text>
-        </View>
-        {card.estimatedMinutes ? (
-          <Text style={styles.introDurationText}>~{card.estimatedMinutes} min</Text>
-        ) : null}
-      </View>
-
-      {/* ── Hero zone ── */}
-      <View style={styles.introHero}>
-        {/* Ghost day number — huge, nearly invisible watermark */}
-        <Text style={styles.introGhostDay}>{dayFormatted}</Text>
-
-        {/* Serif title — overlaps the ghost number */}
-        <Text style={styles.introTitle}>{card.dayTitle}</Text>
-
-        {/* Goal text — muted, flexible */}
-        <Text style={styles.introGoal}>{card.goal}</Text>
-
-        {/* ── Parameter boxes ── */}
-        {params.length > 0 ? (
-          <View style={styles.introParamsRow}>
-            {params.map((p, i) => (
-              <View key={`${p.label}-${i}`} style={styles.introParamBox}>
-                <Text style={styles.introParamValue}>{p.value}</Text>
-                <Text style={styles.introParamLabel}>{p.label}</Text>
-              </View>
-            ))}
+      <FadingScrollView contentContainerStyle={styles.introScrollContent}>
+        {/* ── Top row: phase pill + duration ── */}
+        <View style={styles.introTopRow}>
+          <View style={styles.introPhasePill}>
+            <View style={styles.introPhaseDot} />
+            <Text style={styles.introPhasePillText}>
+              {card.phase ?? programName ?? 'Today'}
+            </Text>
           </View>
-        ) : null}
-      </View>
+          {card.estimatedMinutes ? (
+            <Text style={styles.introDurationText}>~{card.estimatedMinutes} min</Text>
+          ) : null}
+        </View>
+
+        {/* ── Hero zone ── */}
+        <View style={styles.introHero}>
+          {/* Ghost day number — huge, nearly invisible watermark */}
+          <Text style={styles.introGhostDay}>{dayFormatted}</Text>
+
+          {/* Serif title — overlaps the ghost number */}
+          <Text style={styles.introTitle}>{card.dayTitle}</Text>
+
+          {/* Goal text — muted, flexible */}
+          <Text style={styles.introGoal}>{card.goal}</Text>
+
+          {/* ── Parameter boxes ── */}
+          {params.length > 0 ? (
+            <View style={styles.introParamsRow}>
+              {params.map((p, i) => (
+                <View key={`${p.label}-${i}`} style={styles.introParamBox}>
+                  <Text style={styles.introParamValue}>{p.value}</Text>
+                  <Text style={styles.introParamLabel}>{p.label}</Text>
+                </View>
+              ))}
+            </View>
+          ) : null}
+        </View>
+      </FadingScrollView>
     </View>
   );
 }
@@ -843,6 +877,7 @@ function MindfulExerciseCardView({
     <AccentCardShell
       eyebrow={isBreathing ? 'Breathwork' : duration ? `Mindful · ${duration}` : 'Grounding'}
       title={card.title}
+      scrollable
     >
       {/* Age Reversal subtitle */}
       {subtitle ? (
@@ -1625,6 +1660,11 @@ function AudioCardView({
         </Svg>
       </View>
 
+      <FadingScrollView
+        contentContainerStyle={audioStyles.scrollContent}
+        fadeColors={['rgba(6,41,12,0)', '#06290C']}
+      >
+
       {/* Eyebrow */}
       <Text style={audioStyles.eyebrow}>{eyebrowLabel}</Text>
 
@@ -1739,13 +1779,14 @@ function AudioCardView({
           <Text style={audioStyles.errorText}>{playback.error}</Text>
         </View>
       ) : null}
+      </FadingScrollView>
     </View>
   );
 }
 
 function CalmTriggerCardView({ card }: { card: CalmTriggerCard; }) {
   return (
-    <AccentCardShell eyebrow="CALM" title="Expanded calm tools are coming soon">
+    <AccentCardShell eyebrow="CALM" title="Expanded calm tools are coming soon" scrollable>
       <Text style={styles.calmContext}>
         We are still finishing this dedicated calm reset. For now, continue with today&apos;s guided sessions and return here in a future update.
       </Text>
@@ -1950,7 +1991,7 @@ function JournalCardView({
 
   if (hasSavedReflection) {
     return (
-      <CardShell eyebrow="Reflection · Saved" title={card.prompt}>
+      <CardShell eyebrow="Reflection · Saved" title={card.prompt} scrollable>
         <View style={styles.journalSavedBox}>
           <Text style={styles.journalSavedLabel}>Your reflection</Text>
           <Text style={styles.journalSavedText}>{savedValue}</Text>
@@ -1976,6 +2017,7 @@ function JournalCardView({
     <CardShell
       eyebrow={isEditingSavedReflection ? 'Reflection · Editing' : 'Reflection · Optional'}
       title={card.prompt}
+      scrollable
     >
       {card.helperText ? (
         <Text style={styles.genericDesc}>{card.helperText}</Text>
@@ -2082,7 +2124,7 @@ function CloseCardViewWithState({
         : "Today's close";
 
   return (
-    <DarkCardShell eyebrow={eyebrow} title={card.message}>
+    <DarkCardShell eyebrow={eyebrow} title={card.message} scrollable>
       {card.secondaryMessage ? (
         <Text style={styles.closeSub}>{card.secondaryMessage}</Text>
       ) : null}
@@ -2243,8 +2285,18 @@ export function CardRenderer({
 
 const styles = StyleSheet.create({
   // FadingScrollView
-  scrollWrapper: { flexShrink: 1 },
-  scrollContent: { paddingBottom: 32 },
+  scrollWrapper: {
+    flex: 1,
+    minHeight: 0,
+    width: '100%',
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: 32,
+  },
   fadeMask: {
     position: 'absolute',
     bottom: -10,
@@ -2288,7 +2340,8 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   cardShell: {
-    flexShrink: 1,
+    flex: 1,
+    minHeight: 0,
     width: '100%',
     borderRadius: 28,
     borderWidth: 1,
@@ -2302,7 +2355,8 @@ const styles = StyleSheet.create({
     borderCurve: 'continuous',
   },
   accentCardShell: {
-    flexShrink: 1,
+    flex: 1,
+    minHeight: 0,
     width: '100%',
     borderRadius: 28,
     borderWidth: 1,
@@ -2313,7 +2367,8 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   darkCardShell: {
-    flexShrink: 1,
+    flex: 1,
+    minHeight: 0,
     width: '100%',
     borderRadius: 28,
     backgroundColor: '#06290C', // forest
@@ -2432,6 +2487,7 @@ const styles = StyleSheet.create({
   // White canvas, editorial layout — matches rc_day_view_v2_refined.html
   introCard: {
     flex: 1,
+    minHeight: 0,
     width: '100%',
     borderRadius: 24,
     backgroundColor: '#FFFFFF',
@@ -2448,6 +2504,9 @@ const styles = StyleSheet.create({
   introAccentBar: {
     height: 4,
     width: '100%',
+  },
+  introScrollContent: {
+    flexGrow: 1,
   },
   // Top row: phase pill (left) + duration (right)
   introTopRow: {
@@ -2489,7 +2548,7 @@ const styles = StyleSheet.create({
   },
   // Hero section — flexible, fills remaining space
   introHero: {
-    flex: 1,
+    flexGrow: 1,
     paddingHorizontal: 22,
     paddingTop: 20,
     paddingBottom: 16,
@@ -2519,7 +2578,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 21,
     color: 'rgba(6, 41, 12, 0.55)',
-    flex: 1,
   },
   // Params row — horizontal flex of param boxes
   introParamsRow: {
@@ -2555,7 +2613,8 @@ const styles = StyleSheet.create({
 
   // Lesson Card
   lessonCardShell: {
-    flexShrink: 1,
+    flex: 1,
+    minHeight: 0,
     width: '100%',
     borderRadius: 28,
     backgroundColor: '#FFFFFF',
@@ -3461,6 +3520,9 @@ const audioStyles = StyleSheet.create({
   container: {
     position: 'relative',
     overflow: 'visible',
+  },
+  scrollContent: {
+    flexGrow: 1,
   },
   watermark: {
     position: 'absolute',
