@@ -1,10 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
-import { Href, useLocalSearchParams, useRouter } from 'expo-router';
+import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
-import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { PROGRAM_METADATA } from '@/content/programs/metadata';
 import { AppColors } from '@/constants/theme';
@@ -13,9 +13,14 @@ import { EMPTY_FINALIZED_DAY_STATES, useFinalizedDayStates } from '@/hooks/useFi
 import { useOwnedPrograms } from '@/hooks/useOwnedPrograms';
 import { useProfile } from '@/providers/profile';
 import type { ProgramSlug } from '@/types/content';
+import { canAccessOwnedProgramRecord, canAccessProgramContent, hasAnyProgramEntitlement } from '@/lib/access/entitlements';
 import { buildDayStateProgressSummary, buildRollingCompletionSummary } from '@/lib/day-state-summary';
+import { MY_PROGRAMS_ROUTE, PAYWALL_ROUTE, PROGRAM_START_ROUTE, PROGRAM_TAB_ROUTE } from '@/lib/navigation/routes';
 import { PaperGrain } from '@/components/ui/PaperGrain';
 import { ProgramWatermark } from '@/components/ui/TabWatermarks';
+import { PressableScale } from '@/components/motion/PressableScale';
+import { ScreenEntrance } from '@/components/motion/ScreenEntrance';
+import { MotionScale } from '@/lib/motion/tokens';
 
 function isProgramSlug(value: unknown): value is ProgramSlug {
   return typeof value === 'string' && value in PROGRAM_METADATA;
@@ -28,8 +33,8 @@ function formatProgramName(name: string) {
 export default function ProgramCompleteScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ programSlug?: string | string[] }>();
-  const { ownedPrograms } = useOwnedPrograms();
-  const { access, profile, prepareOwnedProgramSetup } = useProfile();
+  const { ownedPrograms, isLoading: isOwnedProgramsLoading } = useOwnedPrograms();
+  const { access, isLoading: isProfileLoading, profile, prepareOwnedProgramSetup } = useProfile();
   const [isPreparingNext, setIsPreparingNext] = useState(false);
 
   const programSlugParam = Array.isArray(params.programSlug)
@@ -39,6 +44,9 @@ export default function ProgramCompleteScreen() {
     ? PROGRAM_METADATA[programSlugParam]
     : null;
   const completedProgramSlug = completedProgram?.slug ?? null;
+  const activeProgramAccessDecision = canAccessProgramContent(access, completedProgramSlug);
+  const ownedProgramAccessDecision = canAccessOwnedProgramRecord(ownedPrograms, completedProgramSlug);
+  const canAccessCompletionScreen = activeProgramAccessDecision.allowed || ownedProgramAccessDecision.allowed;
   const finalizedDayStatesQuery = useFinalizedDayStates(
     profile?.id ?? access.ownerUserId ?? null,
     completedProgramSlug
@@ -84,14 +92,32 @@ export default function ProgramCompleteScreen() {
     ? `${journeyCompletionSummary.cardsCompleted}/${journeyCompletionSummary.cardsTotal}`
     : 'Saved';
 
+  useEffect(() => {
+    if (!canAccessCompletionScreen || isProfileLoading || isOwnedProgramsLoading) {
+      return;
+    }
+
+    void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => undefined);
+  }, [canAccessCompletionScreen, isOwnedProgramsLoading, isProfileLoading]);
+
+  if (isProfileLoading || isOwnedProgramsLoading) {
+    return (
+      <View style={[styles.root, styles.centered]}>
+        <ActivityIndicator color={AppColors.white} />
+      </View>
+    );
+  }
+
+  if (!canAccessCompletionScreen) {
+    return <Redirect href={hasAnyProgramEntitlement(access) ? MY_PROGRAMS_ROUTE : PAYWALL_ROUTE} />;
+  }
+
   const handleViewJourney = async () => {
-    await Haptics.selectionAsync();
-    router.replace('/(tabs)/program' as Href);
+    router.replace(PROGRAM_TAB_ROUTE);
   };
 
   const handleExplorePrograms = async () => {
-    await Haptics.selectionAsync();
-    router.push('/account/programs' as Href);
+    router.push(MY_PROGRAMS_ROUTE);
   };
 
   const handleSetUpNext = async () => {
@@ -102,9 +128,8 @@ export default function ProgramCompleteScreen() {
     setIsPreparingNext(true);
 
     try {
-      await Haptics.selectionAsync();
       await prepareOwnedProgramSetup(nextOwnedProgram.slug);
-      router.replace('/program-start' as Href);
+      router.replace(PROGRAM_START_ROUTE);
     } catch (error) {
       if (__DEV__) {
         console.log('Failed to prepare next owned program', error);
@@ -132,7 +157,7 @@ export default function ProgramCompleteScreen() {
           contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}
         >
-          <View style={styles.hero}>
+          <ScreenEntrance style={styles.hero}>
             <View style={styles.badge}>
               <Ionicons name="checkmark" size={28} color={AppColors.forest} />
             </View>
@@ -147,9 +172,9 @@ export default function ProgramCompleteScreen() {
                 ? `All ${completedProgram.totalDays} days are saved. You can revisit the full timeline anytime.`
                 : 'Your journey is saved and available to revisit.'}
             </Text>
-          </View>
+          </ScreenEntrance>
 
-          <View style={styles.sheet}>
+          <ScreenEntrance delay={120} distance={10} style={styles.sheet}>
             <PaperGrain />
             <View style={styles.summaryHeader}>
               <Text style={styles.summaryEyebrow}>Journey summary</Text>
@@ -222,14 +247,14 @@ export default function ProgramCompleteScreen() {
               </View>
             )}
 
-            <Pressable
+            <PressableScale
               accessibilityRole="button"
               accessibilityState={{ busy: isPreparingNext }}
               disabled={isPreparingNext}
+              pressScale={MotionScale.pressLarge}
               onPress={nextProgramMetadata ? handleSetUpNext : handleViewJourney}
-              style={({ pressed }) => [
+              style={[
                 styles.primaryButton,
-                pressed && !isPreparingNext ? styles.pressed : null,
                 isPreparingNext ? styles.disabledButton : null,
               ]}
             >
@@ -243,18 +268,18 @@ export default function ProgramCompleteScreen() {
                   <Ionicons name="arrow-forward" size={18} color={AppColors.white} />
                 </>
               )}
-            </Pressable>
+            </PressableScale>
 
-            <Pressable
+            <PressableScale
               accessibilityRole="button"
               onPress={nextProgramMetadata ? handleViewJourney : handleExplorePrograms}
-              style={({ pressed }) => [styles.secondaryButton, pressed ? styles.pressed : null]}
+              style={styles.secondaryButton}
             >
               <Text style={styles.secondaryButtonText}>
                 {nextProgramMetadata ? 'View completed journey' : 'Explore programs'}
               </Text>
-            </Pressable>
-          </View>
+            </PressableScale>
+          </ScreenEntrance>
         </ScrollView>
       </SafeAreaView>
     </View>
@@ -265,6 +290,10 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
     backgroundColor: AppColors.forest,
+  },
+  centered: {
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   safeArea: {
     flex: 1,

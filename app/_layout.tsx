@@ -17,7 +17,11 @@ import { getPublicEnvState } from '@/lib/env';
 import { installGlobalErrorHandler } from '@/lib/monitoring';
 import { hasOnboardingContextMismatch } from '@/lib/onboarding.realignment';
 import { logEvent } from '@/lib/analytics';
+import { canAccessProgramContent } from '@/lib/access/entitlements';
+import { getNavigationGuardTarget } from '@/lib/navigation/route-guard';
+import { PAYWALL_ROUTE, buildDayDetailRoute } from '@/lib/navigation/routes';
 import { NotificationService, type ProgramNotificationTarget } from '@/lib/notifications';
+import type { ProgramAccessSnapshot } from '@/lib/programs/types';
 import { Session } from '@supabase/supabase-js';
 import ErodeRegular from '@/assets/fonts/Erode-Regular.otf';
 import ErodeItalic from '@/assets/fonts/Erode-Italic.otf';
@@ -48,16 +52,12 @@ const publicEnv = publicEnvState.env;
 const uninstallGlobalErrorHandler = installGlobalErrorHandler();
 const enablePurchaseQaLogs = process.env.EXPO_PUBLIC_ENABLE_PURCHASE_QA_LOGS === 'true';
 
-function buildNotificationTargetHref(target: ProgramNotificationTarget): Href {
-  const programSlug = encodeURIComponent(target.programSlug);
-  const dayNumber = encodeURIComponent(String(target.dayNumber));
-  return `/day-detail?programSlug=${programSlug}&dayNumber=${dayNumber}` as Href;
-}
-
 function ProgramNotificationTapRouter({
+  access,
   enabled,
   userId,
 }: {
+  access: ProgramAccessSnapshot;
   enabled: boolean;
   userId?: string | null;
 }) {
@@ -80,6 +80,28 @@ function ProgramNotificationTapRouter({
       }
 
       lastHandledTargetRef.current = targetKey;
+      const accessDecision = canAccessProgramContent(access, target.programSlug);
+
+      if (!accessDecision.allowed) {
+        void logEvent({
+          dayNumber: target.dayNumber,
+          eventData: {
+            notificationTier: target.notificationTier,
+            notificationType: target.notificationType,
+            ownedProgram: access.ownedProgram,
+            planId: target.planId,
+            platform: Platform.OS,
+            requestedProgram: target.programSlug,
+            targetKey,
+          },
+          eventType: 'premium_route_blocked',
+          programSlug: target.programSlug,
+          userId,
+        });
+        router.replace(PAYWALL_ROUTE);
+        return;
+      }
+
       void logEvent({
         dayNumber: target.dayNumber,
         eventData: {
@@ -95,7 +117,10 @@ function ProgramNotificationTapRouter({
         programSlug: target.programSlug,
         userId,
       });
-      router.navigate(buildNotificationTargetHref(target));
+      router.push(buildDayDetailRoute({
+        programSlug: target.programSlug,
+        dayNumber: target.dayNumber,
+      }));
     };
 
     void NotificationService.addProgramNotificationResponseListener(handleTarget)
@@ -125,7 +150,7 @@ function ProgramNotificationTapRouter({
       isMounted = false;
       subscription?.remove();
     };
-  }, [enabled, rootNavigationState?.key, router, userId]);
+  }, [access, enabled, rootNavigationState?.key, router, userId]);
 
   return null;
 }
@@ -157,58 +182,21 @@ function NavigationGate({
   useEffect(() => {
     if (!isNavigationReady || !rootNavigationState?.key) return;
 
-        const inAuthGroup = segments[0] === '(auth)';
-        const inTabsGroup = segments[0] === '(tabs)';
-        const inPaywall = inAuthGroup && segments[1] === 'paywall';
-        const inDayDetail = segments[0] === 'day-detail';
-        const inProgramStartSetup = segments[0] === 'program-start';
-        const inProgramComplete = segments[0] === 'program-complete';
-        const inResetPassword = inAuthGroup && segments[1] === 'reset-password';
-        const inPersonalization = inAuthGroup && segments[1] === 'personalization';
-        const inManualRealignment = inPersonalization && modeParam === 'realign';
-        const inAccountStack = segments[0] === 'account';
+    const checkRouting = () => {
+      try {
+        if (!isNavigationReady || !rootNavigationState?.key) return;
 
-        const checkRouting = async () => {
-            try {
-                if (!isNavigationReady || !rootNavigationState?.key) return;
-
-                let target: Href | null = null;
-
-                if (isRecoveringPassword) {
-                    if (!inResetPassword) {
-                        target = '/reset-password' as Href;
-                    }
-                } else if (!session) {
-                    if (!inAuthGroup) {
-                        target = '/welcome' as Href;
-                    }
-                } else if (isSubscribed) {
-                    if (!profile || !profile.onboarding_complete) {
-                        if (!inPersonalization) {
-                            target = '/personalization' as Href;
-                        }
-                    } else if (needsProgramSetup) {
-                        if (!inProgramStartSetup) {
-                            target = '/program-start' as Href;
-                        }
-                    } else if (needsOnboardingRealignment) {
-                        if (!inPersonalization) {
-                            target = '/personalization?mode=realign' as Href;
-                        }
-                    } else if (!inTabsGroup && !inDayDetail && !inProgramStartSetup && !inProgramComplete && !inAccountStack && !inPaywall && !inManualRealignment) {
-                        target = '/' as Href;
-                    }
-                } else if (!profile || !profile.onboarding_complete) {
-                    if (segments[1] !== 'personalization') {
-                        target = '/personalization' as Href;
-                    }
-                } else if (profile.free_tier_activated_at) {
-                    if (!inTabsGroup && !inAccountStack && !inPaywall && !inPersonalization) {
-                        target = '/' as Href;
-                    }
-                } else if (!inPaywall) {
-                    target = '/paywall' as Href;
-                }
+        const target = getNavigationGuardTarget({
+          freeTierActivatedAt: profile?.free_tier_activated_at ?? null,
+          hasSession: Boolean(session),
+          isRecoveringPassword,
+          isSubscribed,
+          modeParam,
+          needsOnboardingRealignment,
+          needsProgramSetup,
+          onboardingComplete: profile?.onboarding_complete ?? null,
+          segments,
+        });
 
         if (!target) {
           pendingRedirectRef.current = null;
@@ -217,15 +205,27 @@ function NavigationGate({
 
         if (pendingRedirectRef.current === target) return;
         pendingRedirectRef.current = target;
-        router.navigate(target);
+        router.replace(target);
       } catch (routingError) {
         pendingRedirectRef.current = null;
         console.warn('Route guard skipped due to navigation not being ready yet.', routingError);
       }
     };
 
-    void checkRouting();
-    }, [isNavigationReady, modeParam, needsOnboardingRealignment, needsProgramSetup, rootNavigationState?.key, session, profile, isSubscribed, isRecoveringPassword, router, segments]);
+    checkRouting();
+  }, [
+    isNavigationReady,
+    modeParam,
+    needsOnboardingRealignment,
+    needsProgramSetup,
+    rootNavigationState?.key,
+    session,
+    profile,
+    isSubscribed,
+    isRecoveringPassword,
+    router,
+    segments,
+  ]);
 
   return null;
 }
@@ -332,13 +332,13 @@ function RootLayoutContent() {
 
   return (
     <>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="(auth)" />
-        <Stack.Screen name="account" />
-        <Stack.Screen name="day-detail" />
-        <Stack.Screen name="program-start" />
-        <Stack.Screen name="program-complete" />
+      <Stack screenOptions={{ headerShown: false, animation: 'fade' }}>
+        <Stack.Screen name="(tabs)" options={{ animation: 'fade' }} />
+        <Stack.Screen name="(auth)" options={{ animation: 'fade' }} />
+        <Stack.Screen name="account" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="day-detail" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="program-start" options={{ animation: 'fade_from_bottom', gestureEnabled: false }} />
+        <Stack.Screen name="program-complete" options={{ animation: 'fade_from_bottom', gestureEnabled: false }} />
       </Stack>
       <NavigationGate
         isNavigationReady={isNavigationReady}
@@ -350,6 +350,7 @@ function RootLayoutContent() {
         session={session}
       />
       <ProgramNotificationTapRouter
+        access={access}
         enabled={isNavigationReady && Boolean(session)}
         userId={session?.user?.id ?? null}
       />

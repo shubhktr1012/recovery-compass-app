@@ -13,6 +13,7 @@ import {
   ProgramSlug,
 } from '@/lib/programs/types';
 import { AccessService } from '@/lib/access/service';
+import { hasAnyProgramEntitlement } from '@/lib/access/entitlements';
 import { repairSkippedDayStatesOnForeground } from '@/lib/day-state-repair';
 import { OWNED_PROGRAMS_QUERY_ROOT } from '@/hooks/useOwnedPrograms';
 import { decode } from 'base64-arraybuffer';
@@ -46,7 +47,7 @@ interface ProfileContextType {
   access: ProgramAccessSnapshot;
   progress: ProgramProgressRecord | null;
   hasProgramAccess: boolean;
-  refreshAccess: () => Promise<ProgramAccessSnapshot>;
+  refreshAccess: (options?: { source?: 'device_store' | 'supabase' }) => Promise<ProgramAccessSnapshot>;
   refreshProfile: () => Promise<void>;
   setProgramAccess: (program: ProgramSlug | null) => Promise<void>;
   selectActiveProgram: (program: ProgramSlug) => Promise<void>;
@@ -359,7 +360,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     [queryClient, userId]
   );
 
-  const refreshAccess = useCallback(async () => {
+  const refreshAccess = useCallback(async (options?: { source?: 'device_store' | 'supabase' }) => {
     if (!userId) {
       return {
         ownerUserId: null,
@@ -381,12 +382,15 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setIsAccessLoading(true);
 
     try {
-      const snapshot = await AccessService.refreshFromDeviceStore(userId);
+      const snapshot =
+        options?.source === 'supabase'
+          ? (await AccessService.hydrateFromSupabase(userId)).snapshot
+          : await AccessService.refreshFromDeviceStore(userId);
       const nextProgress = await AccessService.getProgressRecord(userId, snapshot.ownedProgram);
       const resolvedLifecycle = await resolveAccessLifecycle({
         progress: nextProgress,
         snapshot,
-        source: 'access refresh',
+        source: options?.source === 'supabase' ? 'supabase access refresh' : 'access refresh',
       });
       console.log('[ProfileProvider] refreshAccess:resolved', {
         userId,
@@ -1048,12 +1052,10 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     () => ({
       profile: profileQuery.data ?? null,
       isLoading: Boolean(userId) && (profileQuery.isPending || isAccessLoading),
-      isSubscribed:
-        Boolean(access.ownedProgram) && access.purchaseState !== 'not_owned',
+      isSubscribed: hasAnyProgramEntitlement(access),
       access,
       progress,
-      hasProgramAccess:
-        Boolean(access.ownedProgram) && access.purchaseState !== 'not_owned',
+      hasProgramAccess: hasAnyProgramEntitlement(access),
       refreshAccess,
       refreshProfile,
       setProgramAccess,

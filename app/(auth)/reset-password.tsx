@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, Alert, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useRouter } from 'expo-router';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -15,6 +15,7 @@ import { AppColors } from '@/constants/theme';
 import { AppTypography } from '@/constants/typography';
 import { isStrongPassword, PASSWORD_REQUIREMENTS_HINT } from '@/lib/password';
 import { PasswordStrength } from '@/components/ui/PasswordStrength';
+import { SIGN_IN_ROUTE } from '@/lib/navigation/routes';
 
 const resetPasswordSchema = z.object({
     password: z.string().refine(isStrongPassword, {
@@ -29,7 +30,7 @@ const resetPasswordSchema = z.object({
 type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
 
 export default function ResetPassword() {
-    const navigation = useNavigation<any>();
+    const router = useRouter();
     const { clearPasswordRecoveryState, isRecoveringPassword, session } = useAuth();
     const [loading, setLoading] = useState(false);
 
@@ -61,7 +62,7 @@ export default function ResetPassword() {
 
     const handleBackToSignIn = () => {
         clearPasswordRecoveryState();
-        navigation.navigate('sign-in');
+        router.replace(SIGN_IN_ROUTE);
     };
 
     const canResetPassword = isRecoveringPassword || !!session;

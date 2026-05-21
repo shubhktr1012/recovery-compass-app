@@ -1,10 +1,9 @@
 import React, { useRef, useState } from 'react';
 import { View, FlatList, ViewToken, Text, StyleSheet } from 'react-native';
-import { Stack } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import Animated, { useAnimatedScrollHandler, useSharedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
 
 import { ONBOARDING_DATA, OnboardingItem } from '@/components/onboarding/onboardingData';
 import { OnboardingSlide } from '@/components/onboarding/OnboardingSlide';
@@ -12,12 +11,13 @@ import { Paginator } from '@/components/onboarding/Paginator';
 import { NextButton } from '@/components/onboarding/NextButton';
 import { AppStorage } from '@/lib/storage';
 import { AppColors } from '@/constants/theme';
+import { SIGN_IN_ROUTE } from '@/lib/navigation/routes';
 
 export default function OnboardingScreen() {
     const [currentIndex, setCurrentIndex] = useState(0);
     const scrollX = useSharedValue(0);
     const slidesRef = useRef<FlatList<OnboardingItem>>(null);
-    const navigation = useNavigation<any>();
+    const router = useRouter();
     const insets = useSafeAreaInsets();
 
     const onScroll = useAnimatedScrollHandler((event) => {
@@ -38,7 +38,7 @@ export default function OnboardingScreen() {
         } else {
             try {
                 await AppStorage.setItem('hasSeenOnboarding', 'true');
-                navigation.navigate('sign-in');
+                router.replace(SIGN_IN_ROUTE);
             } catch (err) {
                 console.error('Error @setItem: ', err);
             }

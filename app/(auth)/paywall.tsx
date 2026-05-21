@@ -8,7 +8,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import { Href, useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -18,6 +18,7 @@ import { useQueryClient } from '@tanstack/react-query';
 
 import { PROGRAM_METADATA } from '@/content/programs/metadata';
 import { captureError } from '@/lib/monitoring';
+import { hasAnyProgramEntitlement } from '@/lib/access/entitlements';
 import { AccessService } from '@/lib/access/service';
 import { ProgramSlug } from '@/lib/programs/types';
 import {
@@ -27,6 +28,15 @@ import {
 } from '@/lib/revenuecat/config';
 import { REVENUECAT_CANONICAL_OFFERING_ID } from '@/lib/revenuecat/identifiers';
 import { hasOnboardingContextMismatch } from '@/lib/onboarding.realignment';
+import {
+  HOME_ROUTE,
+  MY_PROGRAMS_ROUTE,
+  PROGRAM_START_ROUTE,
+  PROGRAM_TAB_ROUTE,
+  buildPersonalizationRoute,
+} from '@/lib/navigation/routes';
+import { assertRevenueCatReady, waitForRevenueCatReady } from '@/lib/revenuecat/runtime';
+import { useAuth } from '@/providers/auth';
 import { useProfile } from '@/providers/profile';
 import { AppTypography } from '@/constants/typography';
 
@@ -39,10 +49,6 @@ import { OWNED_PROGRAMS_QUERY_ROOT } from '@/hooks/useOwnedPrograms';
 
 const ACCESS_CONFIRMATION_RETRY_DELAY_MS = 1500;
 const ACCESS_CONFIRMATION_RETRY_COUNT = 4;
-const PROGRAM_TAB_ROUTE = '/(tabs)/program' as const;
-const PROGRAM_LIBRARY_ROUTE = '/account/programs' as const;
-const PROGRAM_START_SETUP_ROUTE = '/program-start' as Href;
-const REALIGNMENT_ROUTE = '/personalization?mode=realign' as const;
 const ENABLE_PURCHASE_QA_LOGS = process.env.EXPO_PUBLIC_ENABLE_PURCHASE_QA_LOGS === 'true';
 const ENABLE_FREE_TIER_ENTRY = process.env.EXPO_PUBLIC_ENABLE_FREE_TIER_ENTRY === 'true';
 
@@ -153,7 +159,15 @@ export default function Paywall() {
   const navigation = useNavigation<any>();
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
-  const { access, profile, refreshAccess, setProgramAccess, activateFreeTier } = useProfile();
+  const { user } = useAuth();
+  const {
+    access,
+    profile,
+    refreshAccess,
+    setProgramAccess,
+    activateFreeTier,
+    isLoading: isProfileLoading,
+  } = useProfile();
 
   const [loading, setLoading] = useState(false);
   const [packages, setPackages] = useState<PurchasesPackage[]>([]);
@@ -166,6 +180,8 @@ export default function Paywall() {
     ? params.program.some((value) => Boolean(value))
     : Boolean(params.program);
   const targetedProgram = getProgramSlugFromRouteParam(params.program);
+  const revenueCatAppUserId = user?.id ?? profile?.id ?? null;
+  const hasTrustedEntitlement = hasAnyProgramEntitlement(access);
 
   const confirmUnlockedProgram = async (expectedProgram: ProgramSlug | null) => {
     for (let attempt = 0; attempt < ACCESS_CONFIRMATION_RETRY_COUNT; attempt += 1) {
@@ -198,6 +214,10 @@ export default function Paywall() {
   const restoreOwnedPurchase = async (expectedProgram: ProgramSlug | null) => {
     try {
       if (__DEV__) console.log('[Paywall] restoreOwnedPurchase:start', { expectedProgram });
+      await assertRevenueCatReady({
+        expectedAppUserId: revenueCatAppUserId,
+        errorMessage: 'The purchase service is still starting. Please wait a moment and try restoring again.',
+      });
       await Purchases.restorePurchases();
     } catch (error) {
       console.warn('Restore attempt after purchase issue failed', error);
@@ -207,13 +227,32 @@ export default function Paywall() {
   };
 
   useEffect(() => {
+    let isMounted = true;
+
     const getOfferings = async () => {
       setFetchingOfferings(true);
       setOfferingsLoadFailed(false);
+
       try {
         await refreshAccess();
+        const isRevenueCatReady = await waitForRevenueCatReady({
+          expectedAppUserId: revenueCatAppUserId,
+        });
+
+        if (!isMounted) {
+          return;
+        }
+
+        if (!isRevenueCatReady) {
+          throw new Error('The purchase service is still starting. Please wait a moment and try again.');
+        }
+
         const offerings = await Purchases.getOfferings();
         const currentOffering = getPreferredOffering(offerings);
+
+        if (!isMounted) {
+          return;
+        }
 
         if (__DEV__) console.log('[Paywall] getOfferings:resolved', {
           platform: Platform.OS,
@@ -241,16 +280,25 @@ export default function Paywall() {
         }
       } catch (e) {
         console.error('Error fetching offerings', e);
+        if (!isMounted) {
+          return;
+        }
         setPackages([]);
         setOfferingsLoadFailed(true);
         void captureError(e, { source: 'paywall', metadata: { stage: 'get_offerings' } });
       } finally {
-        setFetchingOfferings(false);
+        if (isMounted) {
+          setFetchingOfferings(false);
+        }
       }
     };
 
     void getOfferings();
-  }, [offeringsRetryKey, refreshAccess]);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [offeringsRetryKey, refreshAccess, revenueCatAppUserId]);
 
   const recommendedProgram = profile?.recommended_program ?? null;
   const needsOnboardingRealignment = hasOnboardingContextMismatch({
@@ -269,29 +317,29 @@ export default function Paywall() {
   }, []);
 
   useEffect(() => {
-    if (!canAutoRedirectOwnedUser || !access.ownedProgram || hasProgramRouteParam) {
+    if (isProfileLoading || !canAutoRedirectOwnedUser || !hasTrustedEntitlement || hasProgramRouteParam) {
       return;
     }
 
-    router.replace(needsOnboardingRealignment ? REALIGNMENT_ROUTE : PROGRAM_TAB_ROUTE);
-  }, [access.ownedProgram, canAutoRedirectOwnedUser, hasProgramRouteParam, needsOnboardingRealignment, router]);
+    router.replace(needsOnboardingRealignment ? buildPersonalizationRoute({ mode: 'realign' }) : PROGRAM_TAB_ROUTE);
+  }, [canAutoRedirectOwnedUser, hasProgramRouteParam, hasTrustedEntitlement, isProfileLoading, needsOnboardingRealignment, router]);
 
   const handleBack = () => {
     if (hasProgramRouteParam) {
       if (navigation.canGoBack?.()) {
         router.back();
       } else {
-        router.replace('/' as const);
+        router.replace(HOME_ROUTE);
       }
       return;
     }
 
-    if (access.ownedProgram) {
-      router.replace(needsOnboardingRealignment ? REALIGNMENT_ROUTE : PROGRAM_TAB_ROUTE);
+    if (hasTrustedEntitlement) {
+      router.replace(needsOnboardingRealignment ? buildPersonalizationRoute({ mode: 'realign' }) : PROGRAM_TAB_ROUTE);
       return;
     }
 
-    navigation.navigate('personalization', { resume: 'review' });
+    router.replace(buildPersonalizationRoute({ resume: 'review' }));
   };
 
   const handleContinueFreeAccess = async () => {
@@ -299,7 +347,7 @@ export default function Paywall() {
 
     try {
       await activateFreeTier();
-      router.replace('/' as const);
+      router.replace(HOME_ROUTE);
     } catch (error: any) {
       void captureError(error, { source: 'paywall', metadata: { stage: 'continue_free_access' } });
       Alert.alert(
@@ -316,11 +364,11 @@ export default function Paywall() {
       return [targetedProgram] as ProgramSlug[];
     }
 
-    if (access.ownedProgram) {
+    if (hasTrustedEntitlement) {
       return [] as ProgramSlug[];
     }
     return getRecommendedPrograms(recommendedProgram);
-  }, [access.ownedProgram, recommendedProgram, targetedProgram]);
+  }, [hasTrustedEntitlement, recommendedProgram, targetedProgram]);
 
   const eligiblePackages = useMemo<EligiblePackageOption[]>(() => {
     const matchingPackages = packages
@@ -385,12 +433,12 @@ export default function Paywall() {
   const hasVisiblePurchaseIntent = visibleProgramSlugs.length > 0;
   const hasStorePackages = packages.length > 0;
   const purchaseOptionsUnavailable =
-    !access.ownedProgram &&
+    !hasTrustedEntitlement &&
     hasVisiblePurchaseIntent &&
     !fetchingOfferings &&
     eligiblePackages.length === 0;
   const canContinueFreeAccess =
-    ENABLE_FREE_TIER_ENTRY && !access.ownedProgram && Boolean(profile?.onboarding_complete);
+    ENABLE_FREE_TIER_ENTRY && !hasTrustedEntitlement && Boolean(profile?.onboarding_complete);
 
   // Default select the primary package
   useEffect(() => {
@@ -425,7 +473,7 @@ export default function Paywall() {
       await setProgramAccess(confirmedProgram);
       await refreshAccess();
       await queryClient.invalidateQueries({ queryKey: OWNED_PROGRAMS_QUERY_ROOT });
-      router.replace(PROGRAM_START_SETUP_ROUTE);
+      router.replace(PROGRAM_START_ROUTE);
       return;
     }
 
@@ -444,7 +492,7 @@ export default function Paywall() {
       'Program Unlocked',
       `${getDisplayNameForProgram(confirmedProgram)} was added to your library. You can adjust its priority from My Programs.`
     );
-    router.replace(PROGRAM_LIBRARY_ROUTE);
+    router.replace(MY_PROGRAMS_ROUTE);
   };
 
   const handlePurchase = async () => {
@@ -458,6 +506,10 @@ export default function Paywall() {
       expectedProgramSlug: activePackageOption?.slug ?? null,
     });
     try {
+      await assertRevenueCatReady({
+        expectedAppUserId: revenueCatAppUserId,
+        errorMessage: 'The purchase service is still starting. Please wait a moment and try again.',
+      });
       const result = await Purchases.purchasePackage(pack);
       const ownedPrograms = getOwnedProgramsFromCustomerInfo(result.customerInfo);
       logPurchaseQaEvent('purchase_result', pack, programSlug, {
@@ -557,6 +609,10 @@ export default function Paywall() {
         recommendedProgram,
         accessOwnedProgram: access.ownedProgram,
       });
+      await assertRevenueCatReady({
+        expectedAppUserId: revenueCatAppUserId,
+        errorMessage: 'The purchase service is still starting. Please wait a moment and try again.',
+      });
       await Purchases.restorePurchases();
       const snapshot = await refreshAccess();
       if (__DEV__) console.log('[Paywall] handleRestore:resolved', {
@@ -569,6 +625,14 @@ export default function Paywall() {
         Alert.alert('Restore Failed', 'No eligible Recovery Compass purchase was found for this account.');
         return;
       }
+      const restoreUserId = profile?.id ?? snapshot.ownerUserId ?? user?.id ?? null;
+      if (!restoreUserId) {
+        Alert.alert('Restore Failed', 'Please sign in again and retry restore.');
+        return;
+      }
+
+      await AccessService.recordOwnedProgramPurchase(restoreUserId, snapshot.ownedProgram);
+      await refreshAccess({ source: 'supabase' });
       Alert.alert('Success', 'Purchases restored successfully!');
       router.replace(PROGRAM_TAB_ROUTE);
     } catch (e: any) {
@@ -771,7 +835,7 @@ export default function Paywall() {
                     : hasStorePackages
                     ? 'Purchase options are temporarily unavailable for this program. Please try again shortly.'
                     : 'Purchase options are temporarily unavailable. Please try again shortly.'
-                  : access.ownedProgram
+                  : hasTrustedEntitlement
                 ? targetedProgram
                   ? `Purchase options for ${getDisplayNameForProgram(targetedProgram)} are not available right now.`
                   : 'Your account has full access to Recovery Compass. Head to the Program tab to continue your journey.'

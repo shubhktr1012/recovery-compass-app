@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, ScrollView, Text, View, TextInput, Pressable, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
-import { Href, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/providers/auth';
@@ -13,6 +13,7 @@ import { PaperGrain } from '@/components/ui/PaperGrain';
 import { listProgramReflections } from '@/lib/api/program-reflections';
 import { AppColors } from '@/constants/theme';
 import { AppTypography } from '@/constants/typography';
+import { buildDayDetailRoute } from '@/lib/navigation/routes';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing } from 'react-native-reanimated';
 import { JournalWatermark } from '@/components/ui/TabWatermarks';
 
@@ -227,7 +228,7 @@ export default function JournalScreen() {
   };
 
   const handleOpenReflection = (programSlug: string, dayNumber: number) => {
-    router.push(`/day-detail?programSlug=${programSlug}&dayNumber=${dayNumber}` as Href);
+    router.push(buildDayDetailRoute({ programSlug, dayNumber }));
   };
 
   // Save button physics

@@ -1,6 +1,6 @@
-import { Pressable, View, ScrollView, Text } from 'react-native';
+import { View, ScrollView, Text } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { useRouter } from 'expo-router';
+import { Redirect, useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useMemo } from 'react';
@@ -27,18 +27,23 @@ import { StatsRow } from '@/components/dashboard/StatsRow';
 import { JournalCheckIn } from '@/components/dashboard/JournalCheckIn';
 import { MyPrograms } from '@/components/dashboard/MyPrograms';
 import { ExplorePrograms } from '@/components/dashboard/ExplorePrograms';
+import { PressableScale } from '@/components/motion/PressableScale';
+import { StaggeredItem } from '@/components/motion/StaggeredItem';
 import type { ProgramSlug } from '@/types/content';
 import { programDayQueryKey, programQueryKey } from '@/hooks/contentQueryUtils';
 import { useOnboardingResponse } from '@/hooks/useOnboardingResponse';
 import { useOwnedPrograms } from '@/hooks/useOwnedPrograms';
 import { useDailySteps } from '@/hooks/useDailySteps';
 import { EMPTY_FINALIZED_DAY_STATES, useFinalizedDayStates } from '@/hooks/useFinalizedDayStates';
+import { hasAnyProgramEntitlement } from '@/lib/access/entitlements';
 import { resolveDashboardStatItems } from '@/lib/dashboard-statistics';
 import { buildDayStateProgressSummary, buildRollingCompletionSummary } from '@/lib/day-state-summary';
+import { JOURNAL_TAB_ROUTE, PAYWALL_ROUTE, buildDayDetailRoute } from '@/lib/navigation/routes';
 import { resolveProfileIdentity } from '@/lib/profile-identity';
 import type { QuestionnaireAnswersSnapshot } from '@/lib/program-statistics';
 import { StepPermissionPrompt } from '@/components/steps/StepPermissionPrompt';
 import { AppTypography } from '@/constants/typography';
+import { MotionScale } from '@/lib/motion/tokens';
 
 const EMPTY_DAY_NUMBERS: number[] = [];
 
@@ -65,8 +70,9 @@ function FreeCalmCard() {
   const router = useRouter();
 
   return (
-    <Pressable
-      onPress={() => router.push('/(tabs)/journal')}
+    <PressableScale
+      onPress={() => router.push(JOURNAL_TAB_ROUTE)}
+      pressScale={MotionScale.pressLarge}
       className="bg-forest rounded-3xl px-5 py-5 shadow-sm shadow-forest/10"
     >
       <Text className="uppercase text-sage/65" style={[AppTypography.metaMedium, { letterSpacing: 1.5 }]}>
@@ -83,7 +89,7 @@ function FreeCalmCard() {
           Open Journal
         </Text>
       </View>
-    </Pressable>
+    </PressableScale>
   );
 }
 
@@ -121,27 +127,33 @@ function FreeTierHomeScreen() {
           className="bg-surface rounded-t-[32px] -mt-[24px] px-5 pt-6 pb-28 relative z-10 flex-col gap-5"
           style={{ minHeight: 600 }}
         >
-          <FreeCalmCard />
+          <StaggeredItem index={0}>
+            <FreeCalmCard />
+          </StaggeredItem>
 
-          <View className="bg-white rounded-[24px] px-5 py-5 shadow-sm shadow-forest/5">
-            <Text className="uppercase text-forest/38" style={[AppTypography.eyebrow, { letterSpacing: 1.5 }]}>
-              Recommendation saved
-            </Text>
-            <Text className="text-forest mt-1" style={AppTypography.displayCardSm}>
-              Your onboarding answers are stored.
-            </Text>
-            <Text className="text-forest/55 mt-2" style={AppTypography.body}>
-              You will not need to repeat the questionnaire just to browse or buy a program.
-            </Text>
-          </View>
+          <StaggeredItem index={1}>
+            <View className="bg-white rounded-[24px] px-5 py-5 shadow-sm shadow-forest/5">
+              <Text className="uppercase text-forest/38" style={[AppTypography.eyebrow, { letterSpacing: 1.5 }]}>
+                Recommendation saved
+              </Text>
+              <Text className="text-forest mt-1" style={AppTypography.displayCardSm}>
+                Your onboarding answers are stored.
+              </Text>
+              <Text className="text-forest/55 mt-2" style={AppTypography.body}>
+                You will not need to repeat the questionnaire just to browse or buy a program.
+              </Text>
+            </View>
+          </StaggeredItem>
 
-          <ExplorePrograms
-            title="Choose a Program"
-            programs={explorePrograms}
-            isLoading={isProgramsLoading}
-            recommendedProgramSlug={recommendedProgram}
-            emptyMessage="Programs are still syncing. Please check again shortly."
-          />
+          <StaggeredItem index={2}>
+            <ExplorePrograms
+              title="Choose a Program"
+              programs={explorePrograms}
+              isLoading={isProgramsLoading}
+              recommendedProgramSlug={recommendedProgram}
+              emptyMessage="Programs are still syncing. Please check again shortly."
+            />
+          </StaggeredItem>
         </View>
       </ScrollView>
     </View>
@@ -235,7 +247,7 @@ function HomeScreenContent({ activeProgram }: { activeProgram: ProgramSlug }) {
   const journalCard = currentDay?.cards.find((card) => card.type === 'journal');
   const handleResumeProgram = useCallback(async () => {
     await resumeProgramFromPause(activeProgram);
-    router.push(`/day-detail?programSlug=${activeProgram}&dayNumber=${unlockedDayNumber}` as const);
+    router.push(buildDayDetailRoute({ programSlug: activeProgram, dayNumber: unlockedDayNumber }));
   }, [activeProgram, resumeProgramFromPause, router, unlockedDayNumber]);
   const profileIdentity = resolveProfileIdentity({
     displayName: profile?.display_name,
@@ -319,50 +331,60 @@ function HomeScreenContent({ activeProgram }: { activeProgram: ProgramSlug }) {
           style={{ minHeight: 600 }}
         >
           
-          <ActionCard
-            dayTitle={
-              isProgramPaused ? (
-                <>
-                  <Text>Ready to</Text> <Text className="font-erode-medium-italic">continue?</Text>
-                </>
-              ) : currentDay?.dayTitle ? currentDay.dayTitle.split(' ').map((word, i, arr) =>
-                i === arr.length - 1 ? <Text key={i} className="font-erode-medium-italic">{word}</Text> : `${word} `
-              ) : <><Text>Your next</Text> <Text className="font-erode-medium-italic">recovery step.</Text></>
-            }
-            dayPreview={
-              isProgramPaused
-                ? `You left off on Day ${unlockedDayNumber}. Resume when you are ready.`
-                : dayPreview
-            }
-            estimatedMinutes={currentDay?.estimatedMinutes ?? 5}
-            activeProgram={activeProgram}
-            resolvedDayNumber={resolvedDayNumber}
-            isLocked={isCurrentSessionLocked}
-            availabilityLabel={isCurrentSessionLocked ? nextUnlockLabel : null}
-            ctaLabel={isProgramPaused ? 'Resume' : 'Continue'}
-            onPress={isProgramPaused ? handleResumeProgram : undefined}
-          />
+          <StaggeredItem index={0}>
+            <ActionCard
+              dayTitle={
+                isProgramPaused ? (
+                  <>
+                    <Text>Ready to</Text> <Text className="font-erode-medium-italic">continue?</Text>
+                  </>
+                ) : currentDay?.dayTitle ? currentDay.dayTitle.split(' ').map((word, i, arr) =>
+                  i === arr.length - 1 ? <Text key={i} className="font-erode-medium-italic">{word}</Text> : `${word} `
+                ) : <><Text>Your next</Text> <Text className="font-erode-medium-italic">recovery step.</Text></>
+              }
+              dayPreview={
+                isProgramPaused
+                  ? `You left off on Day ${unlockedDayNumber}. Resume when you are ready.`
+                  : dayPreview
+              }
+              estimatedMinutes={currentDay?.estimatedMinutes ?? 5}
+              activeProgram={activeProgram}
+              resolvedDayNumber={resolvedDayNumber}
+              isLocked={isCurrentSessionLocked}
+              availabilityLabel={isCurrentSessionLocked ? nextUnlockLabel : null}
+              ctaLabel={isProgramPaused ? 'Resume' : 'Continue'}
+              onPress={isProgramPaused ? handleResumeProgram : undefined}
+            />
+          </StaggeredItem>
 
-          <StatsRow
-            items={statsItems}
-          />
+          <StaggeredItem index={1}>
+            <StatsRow
+              items={statsItems}
+            />
+          </StaggeredItem>
 
-          <JournalCheckIn
-            prompt={
-              journalCard?.type === 'journal'
-                ? journalCard.prompt
-                : 'Take a minute to note what stood out today.'
-            }
-          />
+          <StaggeredItem index={2}>
+            <JournalCheckIn
+              prompt={
+                journalCard?.type === 'journal'
+                  ? journalCard.prompt
+                  : 'Take a minute to note what stood out today.'
+              }
+            />
+          </StaggeredItem>
           
-          <MyPrograms
-            activeCount={ownedProgramSlugSet.size}
-          />
+          <StaggeredItem index={3}>
+            <MyPrograms
+              activeCount={ownedProgramSlugSet.size}
+            />
+          </StaggeredItem>
 
-          <ExplorePrograms
-            programs={explorePrograms}
-            isLoading={isOwnedProgramsLoading}
-          />
+          <StaggeredItem index={4}>
+            <ExplorePrograms
+              programs={explorePrograms}
+              isLoading={isOwnedProgramsLoading}
+            />
+          </StaggeredItem>
 
         </View>
       </ScrollView>
@@ -384,8 +406,8 @@ export default function HomeScreen() {
     return null;
   }
 
-  if (!access.ownedProgram || access.purchaseState === 'not_owned') {
-    return profile?.free_tier_activated_at ? <FreeTierHomeScreen /> : null;
+  if (!hasAnyProgramEntitlement(access)) {
+    return profile?.free_tier_activated_at ? <FreeTierHomeScreen /> : <Redirect href={PAYWALL_ROUTE} />;
   }
 
   return <HomeScreenContent activeProgram={access.ownedProgram as ProgramSlug} />;

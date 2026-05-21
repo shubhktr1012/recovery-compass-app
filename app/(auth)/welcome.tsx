@@ -14,10 +14,11 @@ import { Button } from '@/components/ui/Button';
 import { AppColors } from '@/constants/theme';
 import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useRouter } from 'expo-router';
 import { useAuth } from '@/providers/auth';
 import { getPublicEnv } from '@/lib/env';
 import { AppTypography } from '@/constants/typography';
+import { SIGN_IN_ROUTE, SIGN_UP_ROUTE } from '@/lib/navigation/routes';
 import * as Google from 'expo-auth-session/providers/google';
 import * as AuthSession from 'expo-auth-session';
 import * as WebBrowser from 'expo-web-browser';
@@ -73,7 +74,7 @@ function getAppleFullName(fullName: AppleAuthentication.AppleAuthenticationFullN
 WebBrowser.maybeCompleteAuthSession();
 
 export default function WelcomeScreen() {
-    const navigation = useNavigation<any>();
+    const router = useRouter();
     const insets = useSafeAreaInsets();
     const [authProviderLoading, setAuthProviderLoading] = useState<'google' | 'apple' | null>(null);
     const [lastSignInProvider, setLastSignInProvider] = useState<LastSignInProvider | null>(null);
@@ -275,7 +276,7 @@ export default function WelcomeScreen() {
     }, [googleAuthResponse, signInWithGoogleIdToken]);
 
     const handleCreateAccountPress = () => {
-        navigation.navigate('sign-up');
+        router.push(SIGN_UP_ROUTE);
     };
 
     const openLink = (url: string) => {
@@ -486,7 +487,7 @@ export default function WelcomeScreen() {
                                     variant="primary"
                                     size="lg"
                                     label="Sign in with Email Address"
-                                    onPress={() => navigation.navigate('sign-in')}
+                                    onPress={() => router.push(SIGN_IN_ROUTE)}
                                     style={flatButtonStyle}
                                 />
                             </View>

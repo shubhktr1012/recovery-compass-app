@@ -29,6 +29,8 @@ import {
 } from '@/lib/onboarding.flow';
 import { hasMeaningfulOnboardingDraft, loadOnboardingDraft, saveOnboardingDraft, saveOnboardingQuestionnaire } from '@/lib/onboarding.persistence';
 import { buildRealignmentAnswers } from '@/lib/onboarding.realignment';
+import { getPostOnboardingRoute } from '@/lib/navigation/post-onboarding';
+import { PROGRAM_TAB_ROUTE } from '@/lib/navigation/routes';
 import { AppStorage } from '@/lib/storage';
 import { GENDER_OPTIONS } from '@/lib/onboarding.types';
 import type { GenderOption, GuidedIssueId, JourneyKey, OnboardingPath, OnboardingStep, QuestionDefinition } from '@/lib/onboarding.types';
@@ -108,7 +110,7 @@ export default function Personalization() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { user } = useAuth();
-  const { access, profile } = useProfile();
+  const { access, profile, refreshAccess } = useProfile();
   const params = useLocalSearchParams<{ mode?: string | string[]; program?: string | string[]; resume?: string | string[] }>();
   const [stepIndex, setStepIndex] = useState(0);
   const [isDraftReady, setIsDraftReady] = useState(false);
@@ -508,12 +510,17 @@ export default function Personalization() {
       await queryClient.invalidateQueries({ queryKey: ['questionnaire-runs', user.id, 'journeys'] });
 
       if (isRealignmentMode && realignmentProgram) {
-        router.replace('/(tabs)/program');
+        router.replace(PROGRAM_TAB_ROUTE);
         return;
       }
 
-      // The root navigation gate will move authenticated users to the right
-      // next step once onboarding state is persisted.
+      const verifiedAccess = await refreshAccess({ source: 'supabase' });
+
+      router.replace(getPostOnboardingRoute({
+        access: verifiedAccess,
+        accessIsVerified: true,
+        freeTierActivatedAt: persistedProfile.free_tier_activated_at,
+      }));
       return;
     } catch (error: any) {
       Alert.alert('Could not save your onboarding', error?.message ?? 'Please try again.');

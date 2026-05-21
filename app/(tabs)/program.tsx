@@ -2,7 +2,7 @@ import React, { useCallback, useMemo, useRef, memo } from 'react';
 import { NativeSyntheticEvent, NativeScrollEvent, ScrollView, Text, View } from 'react-native';
 
 import { StatusBar } from 'expo-status-bar';
-import { Href, useLocalSearchParams, useRouter } from 'expo-router';
+import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { useQueryClient } from '@tanstack/react-query';
 import * as Haptics from 'expo-haptics';
@@ -14,6 +14,7 @@ import { useProfile } from '@/providers/profile';
 import { useMinuteClock } from '@/hooks/useMinuteClock';
 import { EMPTY_FINALIZED_DAY_STATES, useFinalizedDayStates } from '@/hooks/useFinalizedDayStates';
 import { useOwnedPrograms } from '@/hooks/useOwnedPrograms';
+import { hasAnyProgramEntitlement } from '@/lib/access/entitlements';
 import { buildDayStateProgressSummary } from '@/lib/day-state-summary';
 import {
   formatUnlockLabel,
@@ -27,9 +28,12 @@ import {
   getProgramScheduleStartSource,
   isProgramStartPending,
 } from '@/lib/programs/lifecycle';
+import { useScopedPrivacyProtection } from '@/lib/privacy-protection';
+import { PAYWALL_ROUTE, buildDayDetailRoute } from '@/lib/navigation/routes';
 import { TimelineItem } from '@/components/program/TimelineItem';
 import { ProgramCard } from '@/components/program/ProgramCard';
 import { ExplorePrograms } from '@/components/dashboard/ExplorePrograms';
+import { StaggeredItem } from '@/components/motion/StaggeredItem';
 import { PaperGrain } from '@/components/ui/PaperGrain';
 import { ProgramWatermark } from '@/components/ui/TabWatermarks';
 import { DayContent, ProgramSlug } from '@/types/content';
@@ -191,6 +195,8 @@ function ProgramScreenContent({
     [finalizedDayStates]
   );
   const hasFinalizedDayStateTruth = finalizedDayStates.length > 0;
+
+  useScopedPrivacyProtection(true, 'program-timeline');
 
   useFocusEffect(
     useCallback(() => {
@@ -438,7 +444,7 @@ function ProgramScreenContent({
                       ? nextUnlockLabel
                       : null;
 
-                  return (
+                  const timelineNode = (
                     <ProgramTimelineNode
                       key={`${activeProgram}-${day.dayNumber}`}
                       day={day}
@@ -456,8 +462,8 @@ function ProgramScreenContent({
                       onPress={() =>
                         router.push(
                           isCompletedReview
-                            ? (`/day-detail?programSlug=${activeProgram}&dayNumber=${day.dayNumber}&mode=review` as Href)
-                            : (`/day-detail?programSlug=${activeProgram}&dayNumber=${day.dayNumber}` as Href)
+                            ? buildDayDetailRoute({ programSlug: activeProgram, dayNumber: day.dayNumber, mode: 'review' })
+                            : buildDayDetailRoute({ programSlug: activeProgram, dayNumber: day.dayNumber })
                         )
                       }
                       onLayout={isCurrent ? (e: any) => {
@@ -466,6 +472,12 @@ function ProgramScreenContent({
                       } : undefined}
                     />
                   );
+
+                  return index < 8 ? (
+                    <StaggeredItem key={`${activeProgram}-${day.dayNumber}`} index={index}>
+                      {timelineNode}
+                    </StaggeredItem>
+                  ) : timelineNode;
                 })
               )}
             </View>
@@ -504,8 +516,8 @@ export default function ProgramScreen() {
     );
   }
 
-  if (!access.ownedProgram || access.purchaseState === 'not_owned') {
-    return profile?.free_tier_activated_at ? <FreeProgramDiscoveryScreen /> : null;
+  if (!hasAnyProgramEntitlement(access)) {
+    return profile?.free_tier_activated_at ? <FreeProgramDiscoveryScreen /> : <Redirect href={PAYWALL_ROUTE} />;
   }
 
   return <ProgramScreenContent activeProgram={access.ownedProgram as ProgramSlug} />;

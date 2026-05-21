@@ -1,10 +1,10 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
-import { Alert, Animated, LayoutChangeEvent, PanResponder, Pressable, ScrollView, Text, View } from 'react-native';
+import { Alert, Animated, Easing, LayoutChangeEvent, PanResponder, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import { Href, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 
 import { usePrograms } from '@/content';
@@ -23,6 +23,12 @@ import {
   reorderProgramQueue,
   type QueueItemLayout,
 } from '@/lib/program-queue';
+import {
+  PROGRAM_START_ROUTE,
+  PROGRAM_TAB_ROUTE,
+  buildPersonalizationRoute,
+  buildProgramReviewRoute,
+} from '@/lib/navigation/routes';
 import { supabase } from '@/lib/supabase';
 
 function ProgramLibraryCard({
@@ -216,22 +222,20 @@ function DraggableQueueCard({
       },
       onPanResponderRelease: (_event, gesture) => {
         onDragEnd({ absoluteY: gesture.moveY, translationY: gesture.dy });
-        Animated.spring(dragY, {
+        Animated.timing(dragY, {
           toValue: 0,
           useNativeDriver: true,
-          damping: 22,
-          stiffness: 260,
-          mass: 0.65,
+          duration: 180,
+          easing: Easing.out(Easing.cubic),
         }).start(() => setIsDragging(false));
       },
       onPanResponderTerminate: () => {
         onDragEnd({ absoluteY: 0, translationY: 0 });
-        Animated.spring(dragY, {
+        Animated.timing(dragY, {
           toValue: 0,
           useNativeDriver: true,
-          damping: 22,
-          stiffness: 260,
-          mass: 0.65,
+          duration: 180,
+          easing: Easing.out(Easing.cubic),
         }).start(() => setIsDragging(false));
       },
     }),
@@ -401,7 +405,7 @@ export default function ProgramsLibraryScreen() {
 
       try {
         await prepareOwnedProgramSetup(programSlug);
-        router.push('/program-start');
+        router.push(PROGRAM_START_ROUTE);
       } catch (error) {
         if (__DEV__) {
           console.log('Failed to prepare queued program setup', error);
@@ -436,13 +440,7 @@ export default function ProgramsLibraryScreen() {
             {
               text: 'Personalize now',
               onPress: () => {
-                router.push({
-                  pathname: '/personalization',
-                  params: {
-                    mode: 'realign',
-                    program: programSlug,
-                  },
-                });
+                router.push(buildPersonalizationRoute({ mode: 'realign', program: programSlug }));
               },
             },
           ]
@@ -663,7 +661,7 @@ export default function ProgramsLibraryScreen() {
                 }
                 dark
                 actionLabel="Open program"
-                onPress={() => router.push('/(tabs)/program')}
+                onPress={() => router.push(PROGRAM_TAB_ROUTE)}
               />
             ) : null}
 
@@ -774,7 +772,7 @@ export default function ProgramsLibraryScreen() {
                       tone="completed"
                       actionLabel="Review journey"
                       onPress={() =>
-                        router.push(`/(tabs)/program?reviewProgram=${program.slug}` as Href)
+                        router.push(buildProgramReviewRoute(program.slug))
                       }
                     />
                   ))}

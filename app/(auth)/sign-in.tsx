@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, Alert, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useRouter } from 'expo-router';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { AppColors } from '@/constants/theme';
 import { AppTypography } from '@/constants/typography';
+import { SIGN_UP_ROUTE } from '@/lib/navigation/routes';
 
 const LAST_SIGN_IN_PROVIDER_KEY = 'auth:last-sign-in-provider';
 
@@ -24,7 +25,7 @@ const signInSchema = z.object({
 type SignInFormData = z.infer<typeof signInSchema>;
 
 export default function SignIn() {
-    const navigation = useNavigation<any>();
+    const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [canResendVerification, setCanResendVerification] = useState(false);
 
@@ -191,7 +192,7 @@ export default function SignIn() {
                         <Text style={styles.footerText}>Don&apos;t have an account? </Text>
                         <Text
                             style={styles.footerLink}
-                            onPress={() => navigation.navigate('sign-up')}
+                            onPress={() => router.replace(SIGN_UP_ROUTE)}
                         >
                             Sign Up
                         </Text>

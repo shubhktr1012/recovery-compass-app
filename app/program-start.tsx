@@ -3,6 +3,7 @@ import {
   ActivityIndicator,
   Alert,
   Animated,
+  Easing,
   Linking,
   Pressable,
   ScrollView,
@@ -12,13 +13,15 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { Redirect, useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 
 import { AppTypography } from '@/constants/typography';
 import { AppColors } from '@/constants/theme';
 import { useDailySteps } from '@/hooks/useDailySteps';
+import { canAccessProgramStartSetup, hasAnyProgramEntitlement } from '@/lib/access/entitlements';
 import { requestNotificationPermissionAsync } from '@/lib/notification-permissions';
+import { HOME_ROUTE, PAYWALL_ROUTE, PROGRAM_TAB_ROUTE } from '@/lib/navigation/routes';
 import {
   getLocalProgramStartDate,
   getProgramStartRecommendation,
@@ -111,9 +114,9 @@ function PermissionRow({
 
   useEffect(() => {
     if (isGranted) {
-      Animated.spring(tickScale, {
-        damping: 12,
-        stiffness: 200,
+      Animated.timing(tickScale, {
+        duration: 180,
+        easing: Easing.out(Easing.cubic),
         toValue: 1,
         useNativeDriver: true,
       }).start();
@@ -193,7 +196,7 @@ function getRecommendedChoiceCopy(recommendation: ProgramStartRecommendation) {
 export default function ProgramStartSetupScreen() {
   const router = useRouter();
   const { user } = useAuth();
-  const { access, configureProgramStart, profile, refreshProfile } = useProfile();
+  const { access, configureProgramStart, isLoading: isProfileLoading, profile, refreshProfile } = useProfile();
   const dailySteps = useDailySteps();
   const userId = user?.id ?? null;
   const startRecommendation = useMemo(() => getProgramStartRecommendation(new Date()), []);
@@ -265,6 +268,22 @@ export default function ProgramStartSetupScreen() {
     if (hasConfiguredStart && allPermissionsGranted) return 'Continue to program';
     return 'Confirm & enable access';
   })();
+
+  if (isProfileLoading) {
+    return (
+      <View className="flex-1 items-center justify-center bg-surface">
+        <ActivityIndicator color={AppColors.forest} />
+      </View>
+    );
+  }
+
+  if (!hasAnyProgramEntitlement(access)) {
+    return <Redirect href={PAYWALL_ROUTE} />;
+  }
+
+  if (!canAccessProgramStartSetup(access)) {
+    return <Redirect href={PROGRAM_TAB_ROUTE} />;
+  }
 
   const handleChoose = (option: ProgramStartOption) => {
     void Haptics.selectionAsync();
@@ -367,7 +386,7 @@ export default function ProgramStartSetupScreen() {
 
   const handleContinue = async () => {
     if (!programSlug) {
-      router.replace('/' as const);
+      router.replace(HOME_ROUTE);
       return;
     }
 
@@ -388,7 +407,7 @@ export default function ProgramStartSetupScreen() {
         }
 
         await Haptics.selectionAsync();
-        router.replace('/(tabs)/program' as const);
+        router.replace(PROGRAM_TAB_ROUTE);
         return;
       }
 
@@ -411,7 +430,7 @@ export default function ProgramStartSetupScreen() {
         }
 
         await Haptics.selectionAsync();
-        router.replace('/(tabs)/program' as const);
+        router.replace(PROGRAM_TAB_ROUTE);
       }
     } catch (error: any) {
       Alert.alert(

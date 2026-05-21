@@ -14,7 +14,8 @@ export type AnalyticsEventType =
   | 'program_completed'
   | 'program_paused'
   | 'program_resumed'
-  | 'notification_tap';
+  | 'notification_tap'
+  | 'premium_route_blocked';
 
 export type AnalyticsEventData = Record<string, Json | undefined>;
 

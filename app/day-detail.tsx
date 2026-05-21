@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { BlurView } from 'expo-blur';
-import { Href, useLocalSearchParams, useRouter } from 'expo-router';
+import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
 import PagerView from 'react-native-pager-view';
 import { useFocusEffect } from '@react-navigation/native';
 import { useQueryClient } from '@tanstack/react-query';
@@ -21,12 +21,14 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { CardRenderer, TransportContext, TransportConfig } from '@/components/cards/CardRenderer';
 import { Button } from '@/components/ui/Button';
 import { TransportBar } from '@/components/ui/TransportBar';
+import { MotionDurations, MotionEasing } from '@/lib/motion/tokens';
 import { useDay, useProgram } from '@/content';
 import { programDayQueryKey, programQueryKey } from '@/hooks/contentQueryUtils';
 import { finalizedDayStatesQueryKey, useFinalizedDayStates } from '@/hooks/useFinalizedDayStates';
 import { useOwnedPrograms } from '@/hooks/useOwnedPrograms';
 import { useMinuteClock } from '@/hooks/useMinuteClock';
 import { logEvent } from '@/lib/analytics';
+import { canAccessProgramContent, canReviewCompletedProgram } from '@/lib/access/entitlements';
 import { getCardState, toLocalHHMM } from '@/lib/card-state';
 import { buildUserDayStateRecord, upsertUserDayState, type UserDayStateUpsert } from '@/lib/day-states';
 import { buildDayStateProgressSummary, formatFinalizedDaySummary } from '@/lib/day-state-summary';
@@ -43,6 +45,13 @@ import {
   isProgramStartPending,
 } from '@/lib/programs/lifecycle';
 import { parseRoutineProgress } from '@/lib/routine-progress';
+import {
+  PAYWALL_ROUTE,
+  PROGRAM_TAB_ROUTE,
+  buildProgramCompleteRoute,
+  buildProgramReviewRoute,
+} from '@/lib/navigation/routes';
+import { useScopedPrivacyProtection } from '@/lib/privacy-protection';
 import { buildWidgetPayload, syncWidgetData } from '@/lib/widget-bridge';
 import { useAuth } from '@/providers/auth';
 import { useProfile } from '@/providers/profile';
@@ -352,7 +361,7 @@ function ErrorState({ message }: { message: string }) {
         <Text style={styles.errorDescription}>{message}</Text>
         <Button
           label="Back to Program"
-          onPress={() => router.navigate('/program' as Href)}
+          onPress={() => router.replace(PROGRAM_TAB_ROUTE)}
         />
       </View>
     </SafeAreaView>
@@ -373,7 +382,7 @@ function LoadingState() {
 function ResumeToast() {
   return (
     <Animated.View
-      entering={FadeInDown.springify().damping(18).stiffness(150)}
+      entering={FadeInDown.duration(MotionDurations.screen).easing(MotionEasing.standard)}
       style={styles.toastWrapper}
       pointerEvents="none"
     >
@@ -520,7 +529,7 @@ const SwipeDeckCard = memo(function SwipeDeckCard({
     <SafeAreaView edges={['bottom']} style={styles.safeAreaCard}>
       <View style={styles.cardInner}>
         <Animated.View
-          entering={FadeInDown.springify().damping(18).stiffness(140)}
+          entering={FadeInDown.duration(MotionDurations.screen).easing(MotionEasing.standard)}
           style={styles.animatedCardContainer}
         >
           <Animated.View style={[styles.animatedCardContainer, animatedStyle]}>
@@ -561,7 +570,7 @@ export default function DayDetailScreen() {
   const queryClient = useQueryClient();
   const pagerRef = useRef<PagerView>(null);
   const { user } = useAuth();
-  const { access, progress, completeProgramDay, savePartialProgramDay } = useProfile();
+  const { access, progress, completeProgramDay, isLoading: isProfileLoading, savePartialProgramDay } = useProfile();
   const params = useLocalSearchParams<{ dayNumber?: string | string[]; programSlug?: string | string[]; mode?: string | string[] }>();
 
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -621,18 +630,13 @@ export default function DayDetailScreen() {
   const dayNumber = rawDayNumber ? Number(rawDayNumber) : Number.NaN;
   const programSlug = isProgramSlug(rawProgramSlug) ? rawProgramSlug : null;
   const normalizedDayNumber = Number.isInteger(dayNumber) && dayNumber >= 1 ? dayNumber : null;
+  useScopedPrivacyProtection(Boolean(programSlug && normalizedDayNumber), 'day-detail');
   const { ownedPrograms, isLoading: isOwnedProgramsLoading } = useOwnedPrograms();
-  const isCompletedProgramReview = Boolean(
-    rawMode === 'review' &&
-      programSlug &&
-      ownedPrograms.some(
-        (program) =>
-          program.slug === programSlug &&
-          (program.purchaseState === 'owned_completed' ||
-            program.completionState === 'completed' ||
-            program.programState === 'completed')
-      )
-  );
+  const activeAccessDecision = canAccessProgramContent(access, programSlug);
+  const completedReviewAccessDecision = canReviewCompletedProgram(ownedPrograms, programSlug);
+  const isCompletedProgramReview = rawMode === 'review' && completedReviewAccessDecision.allowed;
+  const canAccessRequestedProgramDay =
+    activeAccessDecision.allowed || completedReviewAccessDecision.allowed;
   const finalizedDayStatesQuery = useFinalizedDayStates(user?.id ?? access.ownerUserId ?? null, programSlug);
   const finalizedDayStates = useMemo(
     () => finalizedDayStatesQuery.data ?? [],
@@ -1243,7 +1247,7 @@ export default function DayDetailScreen() {
             userId: analyticsUserId,
           });
         }
-        router.replace(`/program-complete?programSlug=${programSlug}` as Href);
+        router.replace(buildProgramCompleteRoute(programSlug));
       }
     } catch (error) {
       console.error('Failed to complete day', error);
@@ -1295,8 +1299,16 @@ export default function DayDetailScreen() {
     return <ErrorState message="The requested day detail route is missing a valid program slug or day number." />;
   }
 
-  if (rawMode === 'review' && isOwnedProgramsLoading) {
+  if (isProfileLoading || (rawMode === 'review' && isOwnedProgramsLoading)) {
     return <LoadingState />;
+  }
+
+  if (!canAccessRequestedProgramDay) {
+    return <Redirect href={PAYWALL_ROUTE} />;
+  }
+
+  if (rawMode !== 'review' && completedReviewAccessDecision.allowed && !activeAccessDecision.allowed) {
+    return <Redirect href={buildProgramReviewRoute(programSlug)} />;
   }
 
   if (rawMode === 'review' && !isCompletedProgramReview) {
@@ -1389,10 +1401,10 @@ export default function DayDetailScreen() {
             accessibilityLabel="Back to program"
             style={styles.backButton}
             onPress={() =>
-              router.navigate(
+              router.replace(
                 isCompletedProgramReview && programSlug
-                  ? (`/(tabs)/program?reviewProgram=${programSlug}` as Href)
-                  : ('/program' as Href)
+                  ? buildProgramReviewRoute(programSlug)
+                  : PROGRAM_TAB_ROUTE
               )
             }
           >
@@ -1510,12 +1522,12 @@ export default function DayDetailScreen() {
                     (isCurrentCardActionLocked || (isDayPartial && hasIncompleteRequiredRoutines)),
                   onCompleteDay: () => {
                     if (isHistoricalReadOnlyDay) {
-                      router.navigate('/program' as Href);
+                      router.replace(PROGRAM_TAB_ROUTE);
                       return;
                     }
                     void handlePrimaryDayAction();
                   },
-                  onBackToProgram: () => router.navigate('/program' as Href),
+                  onBackToProgram: () => router.replace(PROGRAM_TAB_ROUTE),
                 }}
                 programReflectionContext={{
                   userId: user?.id,

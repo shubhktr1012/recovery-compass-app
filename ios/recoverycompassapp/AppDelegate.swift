@@ -6,7 +6,6 @@ import UIKit
 @UIApplicationMain
 public class AppDelegate: ExpoAppDelegate {
   var window: UIWindow?
-  private var privacyOverlayView: UIView?
 
   var reactNativeDelegate: ExpoReactNativeFactoryDelegate?
   var reactNativeFactory: RCTReactNativeFactory?
@@ -25,6 +24,7 @@ public class AppDelegate: ExpoAppDelegate {
 
 #if os(iOS) || os(tvOS)
     window = UIWindow(frame: UIScreen.main.bounds)
+    PrivacyProtectionController.shared.configure(window: window)
     factory.startReactNative(
       withModuleName: "main",
       in: window,
@@ -49,7 +49,7 @@ public class AppDelegate: ExpoAppDelegate {
       object: nil
     )
 
-    updateScreenCapturePrivacyOverlay()
+    PrivacyProtectionController.shared.handleScreenCaptureStateChanged()
 
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
@@ -74,18 +74,54 @@ public class AppDelegate: ExpoAppDelegate {
   }
 
   @objc private func handleScreenCaptureStateChanged() {
-    updateScreenCapturePrivacyOverlay()
+    PrivacyProtectionController.shared.handleScreenCaptureStateChanged()
   }
 
   @objc private func handleApplicationWillResignActive() {
-    showPrivacyOverlay(reason: "App Inactive")
+    PrivacyProtectionController.shared.handleApplicationWillResignActive()
   }
 
   @objc private func handleApplicationDidBecomeActive() {
+    PrivacyProtectionController.shared.handleApplicationDidBecomeActive()
+  }
+}
+
+private final class PrivacyProtectionController {
+  static let shared = PrivacyProtectionController()
+
+  private weak var window: UIWindow?
+  private var isEnabled = false
+  private var privacyOverlayView: UIView?
+
+  func configure(window: UIWindow?) {
+    self.window = window
+    updateScreenCapturePrivacyOverlay()
+  }
+
+  func setEnabled(_ enabled: Bool) {
+    isEnabled = enabled
+    updateScreenCapturePrivacyOverlay()
+  }
+
+  func handleScreenCaptureStateChanged() {
+    updateScreenCapturePrivacyOverlay()
+  }
+
+  func handleApplicationWillResignActive() {
+    guard isEnabled else { return }
+    showPrivacyOverlay(reason: "Recovery Compass is private")
+  }
+
+  func handleApplicationDidBecomeActive() {
     updateScreenCapturePrivacyOverlay()
   }
 
   private func updateScreenCapturePrivacyOverlay() {
+    guard isEnabled else {
+      hidePrivacyOverlay()
+      return
+    }
+
     if UIScreen.main.isCaptured {
       showPrivacyOverlay(reason: "Privacy Protected")
     } else {
@@ -97,6 +133,7 @@ public class AppDelegate: ExpoAppDelegate {
     guard let window else { return }
 
     if privacyOverlayView?.superview === window {
+      privacyOverlayView?.subviews.compactMap { $0 as? UILabel }.first?.text = reason
       return
     }
 
@@ -124,6 +161,21 @@ public class AppDelegate: ExpoAppDelegate {
   private func hidePrivacyOverlay() {
     privacyOverlayView?.removeFromSuperview()
     privacyOverlayView = nil
+  }
+}
+
+@objc(PrivacyProtection)
+class PrivacyProtection: NSObject {
+  @objc
+  static func requiresMainQueueSetup() -> Bool {
+    true
+  }
+
+  @objc(setEnabled:)
+  func setEnabled(_ enabled: Bool) {
+    DispatchQueue.main.async {
+      PrivacyProtectionController.shared.setEnabled(enabled)
+    }
   }
 }
 

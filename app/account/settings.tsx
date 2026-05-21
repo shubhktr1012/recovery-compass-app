@@ -9,10 +9,12 @@ import { AppColors } from '@/constants/theme';
 import { AppTypography } from '@/constants/typography';
 import { useAuth } from '@/providers/auth';
 import { useProfile } from '@/providers/profile';
+import { assertRevenueCatReady } from '@/lib/revenuecat/runtime';
 import Purchases from 'react-native-purchases';
 import { IconSymbol, IconSymbolName } from '@/components/ui/icon-symbol';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import Constants from 'expo-constants';
+import { ACCOUNT_CITATIONS_ROUTE } from '@/lib/navigation/routes';
 
 // ─── Shared Components for Settings ───
 
@@ -211,7 +213,7 @@ const DangerCard = ({
 
 export default function SettingsScreen() {
   const router = useRouter();
-  const { deleteAccount, signOut } = useAuth();
+  const { deleteAccount, signOut, user } = useAuth();
   const { refreshAccess, access } = useProfile();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isSigningOut, setIsSigningOut] = useState(false);
@@ -264,6 +266,10 @@ export default function SettingsScreen() {
   const handleRestorePurchases = async () => {
     try {
       setIsRestoring(true);
+      await assertRevenueCatReady({
+        expectedAppUserId: user?.id ?? null,
+        errorMessage: 'The purchase service is still starting. Please wait a moment and try restoring again.',
+      });
       await Purchases.restorePurchases();
       await refreshAccess();
       Alert.alert('Restore complete', 'Your purchases have been refreshed.');
@@ -443,7 +449,7 @@ export default function SettingsScreen() {
               icon="doc.text"
               label="Medical Disclaimer & Sources"
               sub="View the wellness disclaimer and supporting references"
-              onPress={() => router.push('/account/citations')}
+              onPress={() => router.push(ACCOUNT_CITATIONS_ROUTE)}
             />
             <SettingsRow 
               icon="doc.text"

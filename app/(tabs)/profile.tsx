@@ -24,6 +24,12 @@ import { useDailySteps } from '@/hooks/useDailySteps';
 import { EMPTY_FINALIZED_DAY_STATES, useFinalizedDayStates } from '@/hooks/useFinalizedDayStates';
 import { getProgramStatisticsSummary } from '@/lib/program-statistics';
 import { buildDayStateProgressSummary, buildRollingCompletionSummary } from '@/lib/day-state-summary';
+import {
+  ACCOUNT_SETTINGS_ROUTE,
+  ACCOUNT_STATISTICS_ROUTE,
+  MY_PROGRAMS_ROUTE,
+  PROGRAM_TAB_ROUTE,
+} from '@/lib/navigation/routes';
 import { getProgramScheduleStartSource, isProgramStartPending } from '@/lib/programs/lifecycle';
 import { getProgramScheduledDay } from '@/lib/programs/schedule';
 import { useProfile } from '@/providers/profile';
@@ -583,7 +589,7 @@ export default function AccountScreen() {
               <Text style={styles.headerEyebrow}>Your account</Text>
 
               <TouchableOpacity
-                onPress={() => router.push('/account/settings')}
+                onPress={() => router.push(ACCOUNT_SETTINGS_ROUTE)}
                 activeOpacity={0.8}
                 style={styles.settingsButton}
               >
@@ -628,7 +634,7 @@ export default function AccountScreen() {
             <>
               <Text style={styles.sectionEyebrow}>{access.completionState === 'completed' ? 'Program' : 'Active Program'}</Text>
               <TouchableOpacity
-                onPress={() => router.push('/(tabs)/program')}
+                onPress={() => router.push(PROGRAM_TAB_ROUTE)}
                 activeOpacity={0.9}
                 style={styles.programCard}
               >
@@ -682,7 +688,7 @@ export default function AccountScreen() {
 
           <Text style={styles.sectionEyebrow}>Programs</Text>
           <TouchableOpacity
-            onPress={() => router.push('/account/programs')}
+            onPress={() => router.push(MY_PROGRAMS_ROUTE)}
             activeOpacity={0.78}
             style={styles.programLibraryRow}
           >
@@ -753,7 +759,7 @@ export default function AccountScreen() {
           ) : null}
 
           <TouchableOpacity
-            onPress={() => router.push('/account/statistics')}
+            onPress={() => router.push(ACCOUNT_STATISTICS_ROUTE)}
             activeOpacity={0.78}
             style={styles.viewAllRow}
           >
