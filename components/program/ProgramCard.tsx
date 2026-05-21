@@ -1,8 +1,9 @@
 import React from 'react';
-import { Text, View, Pressable } from 'react-native';
+import { Text, View } from 'react-native';
 import Svg, { Path, Circle, Polyline, Polygon, Rect } from 'react-native-svg';
-import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing } from 'react-native-reanimated';
+import { PressableScale } from '@/components/motion/PressableScale';
 import { AppTypography } from '@/constants/typography';
+import { MotionScale } from '@/lib/motion/tokens';
 
 // ─── Brand tokens ───────────────────────────────────────────────────────────
 const F = {
@@ -76,17 +77,15 @@ function CardBotanical() {
 
 // ─── Squish pressable wrapper ─────────────────────────────────────────────────
 function SquishPress({ children, onPress, disabled }: { children: React.ReactNode; onPress?: () => void; disabled?: boolean }) {
-  const scale = useSharedValue(1);
-  const animatedStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
   return (
-    <Pressable
-      onPressIn={() => { if (!disabled) scale.value = withTiming(0.975, { duration: 120, easing: Easing.out(Easing.quad) }); }}
-      onPressOut={() => { scale.value = withTiming(1, { duration: 220, easing: Easing.out(Easing.quad) }); }}
+    <PressableScale
       onPress={onPress}
       disabled={disabled}
+      haptic={disabled ? 'none' : 'selection'}
+      pressScale={MotionScale.pressLarge}
     >
-      <Animated.View style={animatedStyle}>{children}</Animated.View>
-    </Pressable>
+      {children}
+    </PressableScale>
   );
 }
 

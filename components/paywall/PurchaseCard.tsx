@@ -1,6 +1,8 @@
 import React from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import Svg, { Polyline } from 'react-native-svg';
+import { PressableScale } from '@/components/motion/PressableScale';
+import { MotionScale } from '@/lib/motion/tokens';
 
 // ─── Brand tokens ────────────────────────────────────────────────────────────
 const F = {
@@ -56,10 +58,11 @@ export function PurchaseCard({
   onPress,
 }: PurchaseCardProps) {
   return (
-    <Pressable
+    <PressableScale
       onPress={onPress}
       accessibilityRole="button"
       accessibilityState={{ selected: isSelected }}
+      pressScale={MotionScale.pressLarge}
       style={[
         styles.card,
         isSelected && styles.cardSelected,
@@ -90,7 +93,7 @@ export function PurchaseCard({
           <Text style={styles.noSub}>No subscription</Text>
         </View>
       </View>
-    </Pressable>
+    </PressableScale>
   );
 }
 

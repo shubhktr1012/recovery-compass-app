@@ -34,6 +34,7 @@ import {
   getBreathingTotalDuration,
   type BreathingPhase,
 } from '@/lib/card-timers';
+import { MotionDurations, MotionEasing } from '@/lib/motion/tokens';
 import type { ProgramReflectionIdentity } from '@/lib/api/program-reflections';
 
 import type {
@@ -175,7 +176,7 @@ function FadingScrollView({ children, contentContainerStyle }: { children: React
           style={styles.fabContainer}
         >
           <Animated.View
-            entering={FadeInDown.delay(600).springify().damping(16).stiffness(150)}
+            entering={FadeInDown.delay(220).duration(MotionDurations.screen).easing(MotionEasing.standard)}
           >
             <Animated.View style={!isAtBottom ? bounceStyle : undefined}>
               <Pressable
@@ -601,7 +602,7 @@ function ActionStepCardView({ card, cardIndex, onContinue }: { card: ActionStepC
 
         {card.whyThisWorks ? (
           <Animated.View
-            layout={LinearTransition.springify().damping(18).stiffness(130)}
+            layout={LinearTransition.duration(MotionDurations.fast).easing(MotionEasing.standard)}
           >
             <View style={styles.whyWorksContainer}>
               <Pressable
@@ -618,7 +619,7 @@ function ActionStepCardView({ card, cardIndex, onContinue }: { card: ActionStepC
 
               {isExpanded ? (
                 <Animated.View
-                  entering={FadeInDown.springify().damping(18).stiffness(130)}
+                  entering={FadeInDown.duration(MotionDurations.base).easing(MotionEasing.standard)}
                   exiting={FadeOut.duration(140)}
                   style={styles.whyWorksBody}
                 >

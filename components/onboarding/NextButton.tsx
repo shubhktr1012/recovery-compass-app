@@ -1,13 +1,14 @@
 import React, { useEffect } from 'react';
-import { TouchableOpacity, Text, View, StyleSheet } from 'react-native';
+import { Text, View, StyleSheet } from 'react-native';
 import Animated, {
     useSharedValue,
     useAnimatedStyle,
-    withSpring,
     withTiming
 } from 'react-native-reanimated';
 import { Feather } from '@expo/vector-icons';
+import { PressableScale } from '@/components/motion/PressableScale';
 import { AppColors } from '@/constants/theme';
+import { MotionDurations, MotionEasing, MotionScale } from '@/lib/motion/tokens';
 
 interface NextButtonProps {
     scrollTo: () => void;
@@ -21,11 +22,10 @@ export const NextButton: React.FC<NextButtonProps> = ({ scrollTo, currentIndex, 
     const width = useSharedValue(174);
 
     useEffect(() => {
-        if (isLastSlide) {
-            width.value = withSpring(194, { damping: 14 });
-        } else {
-            width.value = withSpring(174, { damping: 14 });
-        }
+        width.value = withTiming(isLastSlide ? 194 : 174, {
+            duration: MotionDurations.base,
+            easing: MotionEasing.standard,
+        });
     }, [isLastSlide, width]);
 
     const animatedContainerStyle = useAnimatedStyle(() => {
@@ -50,9 +50,9 @@ export const NextButton: React.FC<NextButtonProps> = ({ scrollTo, currentIndex, 
 
     return (
         <View style={styles.container}>
-            <TouchableOpacity
-                activeOpacity={0.8}
+            <PressableScale
                 onPress={scrollTo}
+                pressScale={MotionScale.pressLarge}
             >
                 <Animated.View style={[styles.buttonContainer, animatedContainerStyle]}>
                     <Animated.View style={[styles.textContainer, animatedTextStyle]}>
@@ -67,7 +67,7 @@ export const NextButton: React.FC<NextButtonProps> = ({ scrollTo, currentIndex, 
                         </View>
                     </Animated.View>
                 </Animated.View>
-            </TouchableOpacity>
+            </PressableScale>
         </View>
     );
 };

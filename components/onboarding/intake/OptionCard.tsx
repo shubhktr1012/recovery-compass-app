@@ -1,6 +1,7 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
+import { PressableScale } from '@/components/motion/PressableScale';
 
 interface OptionCardProps {
   label: string;
@@ -11,7 +12,7 @@ interface OptionCardProps {
 
 export function OptionCard({ label, sublabel, selected, onPress }: OptionCardProps) {
   return (
-    <Pressable
+    <PressableScale
       onPress={onPress}
       style={[styles.card, selected && styles.cardSelected]}
       accessibilityRole="button"
@@ -31,7 +32,7 @@ export function OptionCard({ label, sublabel, selected, onPress }: OptionCardPro
         <Text style={[styles.label, selected && styles.labelSelected]}>{label}</Text>
         {sublabel ? <Text style={styles.sublabel}>{sublabel}</Text> : null}
       </View>
-    </Pressable>
+    </PressableScale>
   );
 }
 

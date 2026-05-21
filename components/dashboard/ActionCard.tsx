@@ -1,7 +1,10 @@
-import { View, Text, Pressable } from 'react-native';
-import { useRouter, Href } from 'expo-router';
+import { View, Text } from 'react-native';
+import { useRouter } from 'expo-router';
 import { Svg, Path, Circle, Polygon } from 'react-native-svg';
+import { PressableScale } from '@/components/motion/PressableScale';
 import { AppTypography } from '@/constants/typography';
+import { buildDayDetailRoute } from '@/lib/navigation/routes';
+import { MotionScale } from '@/lib/motion/tokens';
 
 interface ActionCardProps {
   dayTitle: React.ReactNode;
@@ -35,12 +38,13 @@ export function ActionCard({
   const compactAvailabilityLabel = formatCardAvailabilityLabel(availabilityLabel);
   const handlePress =
     onPress ??
-    (() => router.push(`/day-detail?programSlug=${activeProgram}&dayNumber=${resolvedDayNumber}` as Href));
+    (() => router.push(buildDayDetailRoute({ programSlug: activeProgram, dayNumber: resolvedDayNumber })));
 
   return (
-    <Pressable
+    <PressableScale
       onPress={isLocked ? undefined : handlePress}
       disabled={isLocked}
+      pressScale={MotionScale.pressLarge}
       className="bg-white rounded-3xl overflow-hidden shadow-sm shadow-forest/5"
       style={isLocked ? { opacity: 0.88 } : undefined}
     >
@@ -103,6 +107,6 @@ export function ActionCard({
           </View>
         )}
       </View>
-    </Pressable>
+    </PressableScale>
   );
 }

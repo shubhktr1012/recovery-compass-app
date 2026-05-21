@@ -1,17 +1,19 @@
 import React from 'react';
-import { TouchableOpacity, Text, ActivityIndicator, TouchableOpacityProps } from 'react-native';
+import { Text, ActivityIndicator, PressableProps, StyleProp, ViewStyle } from 'react-native';
 import { twMerge } from 'tailwind-merge';
-import * as Haptics from 'expo-haptics';
+import { PressableScale } from '@/components/motion/PressableScale';
 import { AppColors } from '@/constants/theme';
 import { AppTypography } from '@/constants/typography';
 
-interface ButtonProps extends TouchableOpacityProps {
+interface ButtonProps extends Omit<PressableProps, 'style'> {
+    className?: string;
     variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'destructive';
     size?: 'sm' | 'md' | 'lg';
     label: string;
     loading?: boolean;
     textClassName?: string;
     icon?: React.ReactNode;
+    style?: StyleProp<ViewStyle>;
 }
 
 export function Button({
@@ -24,9 +26,10 @@ export function Button({
     icon,
     onPress,
     disabled,
+    style,
     ...props
 }: ButtonProps) {
-    const baseStyles = 'flex-row items-center justify-center rounded-full active:opacity-90 transition-opacity';
+    const baseStyles = 'flex-row items-center justify-center rounded-full';
 
     const variants = {
         primary: 'bg-forest border border-transparent',
@@ -74,14 +77,9 @@ export function Button({
         destructive: 'text-white/80 font-medium',
     };
 
-    const handlePress = (e: any) => {
-        if (isInactive) return;
-        Haptics.selectionAsync();
-        onPress?.(e);
-    };
-
     return (
-        <TouchableOpacity
+        <PressableScale
+            {...props}
             className={twMerge(
                 baseStyles,
                 isInactive ? disabledVariantStyles[variant] : variants[variant],
@@ -89,11 +87,10 @@ export function Button({
                 isInactive && 'opacity-100',
                 className
             )}
-            onPress={handlePress}
+            onPress={onPress}
             disabled={isInactive}
-            activeOpacity={0.8}
-            style={[{ borderCurve: 'continuous' as const }, props.style]}
-            {...props}
+            haptic="selection"
+            style={[{ borderCurve: 'continuous' as const }, style]}
         >
             {loading ? (
                 <ActivityIndicator color={variant === 'primary' ? 'white' : AppColors.forest} />
@@ -111,6 +108,6 @@ export function Button({
                     </Text>
                 </>
             )}
-        </TouchableOpacity>
+        </PressableScale>
     );
 }

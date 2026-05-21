@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { View } from 'react-native';
 import Animated, {
+  cancelAnimation,
   useSharedValue,
   useAnimatedStyle,
   withRepeat,
@@ -8,6 +9,7 @@ import Animated, {
   Easing,
 } from 'react-native-reanimated';
 import Svg, { Polyline } from 'react-native-svg';
+import { useReducedMotionPreference } from '@/lib/motion/accessibility';
 
 interface TimelineItemProps {
   children: React.ReactNode;
@@ -42,11 +44,12 @@ export function TimelineItem({
       : 'bg-forest/10';
 
   // Pulse animation for Current Day
+  const prefersReducedMotion = useReducedMotionPreference();
   const scale = useSharedValue(1);
   const opacity = useSharedValue(0.4);
 
   useEffect(() => {
-    if (isCurrent) {
+    if (isCurrent && !prefersReducedMotion) {
       scale.value = withRepeat(
         withTiming(1.6, { duration: 1500, easing: Easing.out(Easing.quad) }),
         -1,
@@ -57,8 +60,14 @@ export function TimelineItem({
         -1,
         false
       );
+      return;
     }
-  }, [isCurrent, scale, opacity]);
+
+    cancelAnimation(scale);
+    cancelAnimation(opacity);
+    scale.value = 1;
+    opacity.value = 0;
+  }, [isCurrent, opacity, prefersReducedMotion, scale]);
 
   const animatedRingStyle1 = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
