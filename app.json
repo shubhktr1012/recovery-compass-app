@@ -23,6 +23,11 @@
     "android": {
       "package": "com.recoverycompass.app",
       "icon": "./assets/images/icon.png",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/android-icon-foreground.png",
+        "monochromeImage": "./assets/images/android-icon-monochrome.png",
+        "backgroundColor": "#06290C"
+      },
       "intentFilters": [
         {
           "action": "VIEW",

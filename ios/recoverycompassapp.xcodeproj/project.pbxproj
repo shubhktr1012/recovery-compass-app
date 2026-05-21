@@ -44,12 +44,12 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		13B07F961A680F5B00A75B9A /* RecoveryCompass.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RecoveryCompass.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		13B07F961A680F5B00A75B9A /* Recovery Compass.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Recovery Compass.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = recoverycompassapp/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = recoverycompassapp/Info.plist; sourceTree = "<group>"; };
 		2D1B9972D3554B029A6414B6 /* libPods-recoverycompassapp.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-recoverycompassapp.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		337A9DB4DF0B5BBCF53B4DE0 /* Pods-recoverycompassapp.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-recoverycompassapp.debug.xcconfig"; path = "Target Support Files/Pods-recoverycompassapp/Pods-recoverycompassapp.debug.xcconfig"; sourceTree = "<group>"; };
-		52484C3A2F82FEA900234EBC /* RecoveryCompass.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = RecoveryCompass.storekit; sourceTree = "<group>"; };
+		52484C3A2F82FEA900234EBC /* Recovery Compass.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Recovery Compass.storekit"; sourceTree = "<group>"; };
 		52792BB02FA7E5BC0066202C /* RecoveryCompassWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = RecoveryCompassWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		52792BB12FA7E5BC0066202C /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		52792BB32FA7E5BC0066202C /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
@@ -150,7 +150,7 @@
 			isa = PBXGroup;
 			children = (
 				52792BC92FA7E6DF0066202C /* RecoveryCompassWidgetExtension.entitlements */,
-				52484C3A2F82FEA900234EBC /* RecoveryCompass.storekit */,
+				52484C3A2F82FEA900234EBC /* Recovery Compass.storekit */,
 				13B07FAE1A68108700A75B9A /* recoverycompassapp */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				52792BB52FA7E5BC0066202C /* RecoveryCompassWidget */,
@@ -167,7 +167,7 @@
 		83CBBA001A601CBA00E9B192 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				13B07F961A680F5B00A75B9A /* RecoveryCompass.app */,
+				13B07F961A680F5B00A75B9A /* Recovery Compass.app */,
 				52792BB02FA7E5BC0066202C /* RecoveryCompassWidgetExtension.appex */,
 			);
 			name = Products;
@@ -223,7 +223,7 @@
 			);
 			name = recoverycompassapp;
 			productName = recoverycompassapp;
-			productReference = 13B07F961A680F5B00A75B9A /* RecoveryCompass.app */;
+			productReference = 13B07F961A680F5B00A75B9A /* Recovery Compass.app */;
 			productType = "com.apple.product-type.application";
 		};
 		52792BAF2FA7E5BC0066202C /* RecoveryCompassWidgetExtension */ = {
@@ -435,7 +435,7 @@
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_DEBUG";
 				PRODUCT_BUNDLE_IDENTIFIER = com.recoverycompass.app;
-				PRODUCT_NAME = RecoveryCompass;
+				PRODUCT_NAME = "Recovery Compass";
 				SWIFT_OBJC_BRIDGING_HEADER = "recoverycompassapp/recoverycompassapp-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -469,7 +469,7 @@
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_RELEASE";
 				PRODUCT_BUNDLE_IDENTIFIER = com.recoverycompass.app;
-				PRODUCT_NAME = RecoveryCompass;
+				PRODUCT_NAME = "Recovery Compass";
 				SWIFT_OBJC_BRIDGING_HEADER = "recoverycompassapp/recoverycompassapp-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
@@ -499,7 +499,7 @@
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = RecoveryCompassWidget/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = RecoveryCompassWidget;
+				INFOPLIST_KEY_CFBundleDisplayName = "Recovery Compass Widget";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -549,7 +549,7 @@
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = RecoveryCompassWidget/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = RecoveryCompassWidget;
+				INFOPLIST_KEY_CFBundleDisplayName = "Recovery Compass Widget";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
