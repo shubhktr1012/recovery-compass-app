@@ -14,7 +14,7 @@ import Animated, {
   useSharedValue,
 } from 'react-native-reanimated';
 import type { SharedValue } from 'react-native-reanimated';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { InteractionManager, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
@@ -479,7 +479,6 @@ const SwipeDeckCard = memo(function SwipeDeckCard({
   progress: SharedValue<number>;
   programName?: string;
   onContinue?: () => void;
-  onPrevious?: () => void;
   reflectionStorageKey?: string;
   routineStorageKey?: string;
   hasEffortCheck?: boolean;
@@ -528,37 +527,32 @@ const SwipeDeckCard = memo(function SwipeDeckCard({
   return (
     <SafeAreaView edges={['bottom']} style={styles.safeAreaCard}>
       <View style={styles.cardInner}>
-        <Animated.View
-          entering={FadeInDown.duration(MotionDurations.screen).easing(MotionEasing.standard)}
-          style={styles.animatedCardContainer}
-        >
-          <Animated.View style={[styles.animatedCardContainer, animatedStyle]}>
-            {cardState === 'locked' || cardState === 'blocked' ? (
-              <CardStatePlaceholder
-                card={card}
-                state={cardState}
-                slot={cardTimeSlot ?? DEFAULT_CARD_TIME_META.timeSlot}
-              />
-            ) : (
-              <CardRenderer
-                card={card}
-                cardIndex={index}
-                programName={programName}
-                totalCards={totalCards}
-                onContinue={onContinue}
-                reflectionStorageKey={reflectionStorageKey}
-                routineStorageKey={routineStorageKey}
-                hasEffortCheck={hasEffortCheck}
-                isReadOnly={isReadOnly}
-                onRoutineProgressChange={onRoutineProgressChange}
-                onAudioCompleted={onAudioCompleted}
-                closeCardState={closeCardState}
-                programReflectionContext={
-                  card.type === 'journal' ? programReflectionContext : undefined
-                }
-              />
-            )}
-          </Animated.View>
+        <Animated.View style={[styles.animatedCardContainer, animatedStyle]}>
+          {cardState === 'locked' || cardState === 'blocked' ? (
+            <CardStatePlaceholder
+              card={card}
+              state={cardState}
+              slot={cardTimeSlot ?? DEFAULT_CARD_TIME_META.timeSlot}
+            />
+          ) : (
+            <CardRenderer
+              card={card}
+              cardIndex={index}
+              programName={programName}
+              totalCards={totalCards}
+              onContinue={onContinue}
+              reflectionStorageKey={reflectionStorageKey}
+              routineStorageKey={routineStorageKey}
+              hasEffortCheck={hasEffortCheck}
+              isReadOnly={isReadOnly}
+              onRoutineProgressChange={onRoutineProgressChange}
+              onAudioCompleted={onAudioCompleted}
+              closeCardState={closeCardState}
+              programReflectionContext={
+                card.type === 'journal' ? programReflectionContext : undefined
+              }
+            />
+          )}
         </Animated.View>
       </View>
     </SafeAreaView>
@@ -729,27 +723,30 @@ export default function DayDetailScreen() {
     return () => clearTimeout(timer);
   }, [showResumeToast]);
 
-  const handlePageSelected = async (nextIndex: number) => {
+  const handlePageSelected = useCallback((nextIndex: number) => {
     setCurrentIndex(nextIndex);
 
     if (!storageKey || isCompletedProgramReview) return;
 
-    try {
-      await AsyncStorage.setItem(storageKey, JSON.stringify({ cardIndex: nextIndex }));
-    } catch (error) {
-      console.error('Failed to save day card progress', error);
-    }
+    InteractionManager.runAfterInteractions(() => {
+      void (async () => {
+        try {
+          await AsyncStorage.setItem(storageKey, JSON.stringify({ cardIndex: nextIndex }));
+        } catch (error) {
+          console.error('Failed to save day card progress', error);
+        }
 
-    // Sync card index to the widget so the home screen reflects current progress
-    const widgetPayload = buildWidgetPayload({
-      access,
-      progress,
-      cardIndex: nextIndex,
-      totalCards: dayContent?.cards.length ?? 1,
-      steps: 0,
+        const widgetPayload = buildWidgetPayload({
+          access,
+          progress,
+          cardIndex: nextIndex,
+          totalCards: dayContent?.cards.length ?? 1,
+          steps: 0,
+        });
+        if (widgetPayload) void syncWidgetData(widgetPayload);
+      })();
     });
-    if (widgetPayload) void syncWidgetData(widgetPayload);
-  };
+  }, [access, dayContent?.cards.length, isCompletedProgramReview, progress, storageKey]);
 
   const handleContinueFromCard = useCallback(() => {
     if (!dayContent) return;
@@ -1026,6 +1023,13 @@ export default function DayDetailScreen() {
       logCardCompleted,
     ]
   );
+  const handleCompleteCurrentCardAndContinueRef = useRef(handleCompleteCurrentCardAndContinue);
+  useEffect(() => {
+    handleCompleteCurrentCardAndContinueRef.current = handleCompleteCurrentCardAndContinue;
+  }, [handleCompleteCurrentCardAndContinue]);
+  const handleCardContinue = useCallback(() => {
+    handleCompleteCurrentCardAndContinueRef.current('card_continue');
+  }, []);
   const handleAudioCompleted = useCallback(
     (payload: {
       audioStoragePath: string;
@@ -1388,6 +1392,28 @@ export default function DayDetailScreen() {
             : isFinalProgramDay
               ? 'Complete program day'
               : 'Complete day';
+  const closeCardState = {
+    isCompleted: isDayCompleted,
+    isPartial: isDayPartial,
+    isReadOnly: isHistoricalReadOnlyDay,
+    readOnlyState: historicalDayState ?? undefined,
+    isFinalProgramDay,
+    completionDescription,
+    isCompleting: isCompletingDay,
+    primaryActionLabel: primaryCompletionLabel,
+    primaryActionDisabled:
+      currentCard?.type === 'close' &&
+      !isHistoricalReadOnlyDay &&
+      (isCurrentCardActionLocked || (isDayPartial && hasIncompleteRequiredRoutines)),
+    onCompleteDay: () => {
+      if (isHistoricalReadOnlyDay) {
+        router.replace(PROGRAM_TAB_ROUTE);
+        return;
+      }
+      void handlePrimaryDayAction();
+    },
+    onBackToProgram: () => router.replace(PROGRAM_TAB_ROUTE),
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -1471,7 +1497,7 @@ export default function DayDetailScreen() {
           ref={pagerRef}
           style={styles.pager}
           overdrag
-          offscreenPageLimit={2}
+          offscreenPageLimit={1}
           initialPage={currentIndex}
           onPageScroll={(event) => {
             const { position, offset } = event.nativeEvent;
@@ -1495,46 +1521,32 @@ export default function DayDetailScreen() {
                 totalCards={dayContent.cards.length}
                 progress={swipeProgress}
                 programName={program.name}
-                onContinue={() => handleCompleteCurrentCardAndContinue('card_continue')}
-                onPrevious={() => {
-                  if (index > 0) {
-                    pagerRef.current?.setPage(index - 1);
-                  }
-                }}
-                reflectionStorageKey={`day-reflection:${dayContent.programSlug}:${dayContent.dayNumber}:${index}`}
-                routineStorageKey={getRoutineStorageKey(dayContent.programSlug, dayContent.dayNumber, index)}
+                onContinue={handleCardContinue}
+                reflectionStorageKey={
+                  card.type === 'journal'
+                    ? `day-reflection:${dayContent.programSlug}:${dayContent.dayNumber}:${index}`
+                    : undefined
+                }
+                routineStorageKey={
+                  card.type === 'exercise_routine'
+                    ? getRoutineStorageKey(dayContent.programSlug, dayContent.dayNumber, index)
+                    : undefined
+                }
                 hasEffortCheck={runtimeCards[index]?.meta.hasEffortCheck}
                 isReadOnly={isHistoricalReadOnlyDay}
-                onRoutineProgressChange={handleRoutineProgressChange}
-                onAudioCompleted={handleAudioCompleted}
-                closeCardState={{
-                  isCompleted: isDayCompleted,
-                  isPartial: isDayPartial,
-                  isReadOnly: isHistoricalReadOnlyDay,
-                  readOnlyState: historicalDayState ?? undefined,
-                  isFinalProgramDay,
-                  completionDescription,
-                  isCompleting: isCompletingDay,
-                  primaryActionLabel: primaryCompletionLabel,
-                  primaryActionDisabled:
-                    currentCard?.type === 'close' &&
-                    !isHistoricalReadOnlyDay &&
-                    (isCurrentCardActionLocked || (isDayPartial && hasIncompleteRequiredRoutines)),
-                  onCompleteDay: () => {
-                    if (isHistoricalReadOnlyDay) {
-                      router.replace(PROGRAM_TAB_ROUTE);
-                      return;
-                    }
-                    void handlePrimaryDayAction();
-                  },
-                  onBackToProgram: () => router.replace(PROGRAM_TAB_ROUTE),
-                }}
-                programReflectionContext={{
-                  userId: user?.id,
-                  programSlug: dayContent.programSlug,
-                  dayNumber: dayContent.dayNumber,
-                  cardIndex: index,
-                }}
+                onRoutineProgressChange={card.type === 'exercise_routine' ? handleRoutineProgressChange : undefined}
+                onAudioCompleted={card.type === 'audio' ? handleAudioCompleted : undefined}
+                closeCardState={card.type === 'close' ? closeCardState : undefined}
+                programReflectionContext={
+                  card.type === 'journal'
+                    ? {
+                        userId: user?.id,
+                        programSlug: dayContent.programSlug,
+                        dayNumber: dayContent.dayNumber,
+                        cardIndex: index,
+                      }
+                    : undefined
+                }
               />
             </View>
           ))}
