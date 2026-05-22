@@ -1,7 +1,8 @@
-import { Alert, View, Text, Pressable } from 'react-native';
+import { Alert, View, Text, Pressable, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { openBrowserAsync, WebBrowserPresentationStyle } from 'expo-web-browser';
 import { Svg, Path } from 'react-native-svg';
+import { LinearGradient } from 'expo-linear-gradient';
 import type { ProgramContent } from '@/types/content';
 import { SkeletonCircle, SkeletonLine, SkeletonTitle } from '@/components/ui/Skeleton';
 import { AppTypography } from '@/constants/typography';
@@ -134,32 +135,121 @@ export function ProgramIcon({ category }: { category: ProgramContent['category']
 
 function DietPlanWebsiteCard() {
   return (
-    <Pressable
-      onPress={openDietPlanWebsite}
-      className="bg-forest rounded-[22px] p-4 mt-4 shadow-sm shadow-forest/10 flex-row gap-3.5 items-center"
-    >
-      <View className="w-[44px] h-[44px] rounded-2xl bg-white/10 border border-white/12 items-center justify-center shrink-0">
-        <Svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#E3F3E5" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-          <Path d="M4 19c4-1 7-4 8-8" />
-          <Path d="M12 11c2.5-1 4.5-3 6-6" />
-          <Path d="M18 5c.5 4-.2 8.5-3.4 11.6C11.4 19.8 7 20.5 3 20c-.5-4 .2-8.4 3.4-11.6C9.6 5.2 14 4.5 18 5Z" />
-        </Svg>
+    <View className="relative mt-5 rounded-[26px] overflow-hidden border border-white/10 shadow-lg shadow-forest/15">
+      <LinearGradient
+        colors={['#06290C', '#0C3D15']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={StyleSheet.absoluteFillObject}
+      />
+      
+      <View 
+        className="absolute -right-16 -top-16 w-36 h-36 rounded-full bg-sage/10 blur-2xl" 
+        pointerEvents="none" 
+      />
+
+      <View className="p-5 flex-col gap-4">
+        <View className="flex-row items-center gap-2 flex-wrap">
+          <View className="bg-white/12 px-2.5 py-0.5 rounded-full flex-row items-center gap-1.5 border border-white/10">
+            <Svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#E3F3E5" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <Path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275Z" />
+            </Svg>
+            <Text className="text-sage text-[9px] uppercase font-bold tracking-[1.3px]" style={AppTypography.eyebrow}>
+              Companion Plan
+            </Text>
+          </View>
+          
+          <View className="bg-white/5 px-2.5 py-0.5 rounded-full border border-white/5">
+            <Text className="text-sage/60 text-[9px] uppercase font-bold tracking-[0.5px]" style={AppTypography.eyebrow}>
+              Personalised PDF
+            </Text>
+          </View>
+        </View>
+
+        <View>
+          <Text className="text-white font-medium" style={AppTypography.displayCardMd}>
+            Want a diet plan for your routine?
+          </Text>
+          <Text className="text-sage/75 mt-1.5" style={AppTypography.bodyCompact}>
+            Get a personalised PDF built around your health context, regional food habits, dislikes, schedule, and home cooking setup.
+          </Text>
+        </View>
+
+        <View className="gap-y-2 border-t border-b border-white/8 py-3.5 my-0.5">
+          <View className="flex-row items-center gap-2.5">
+            <View className="w-[18px] h-[18px] rounded-full bg-white/12 items-center justify-center border border-white/5">
+              <Svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#E3F3E5" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                <Path d="M20 6L9 17l-5-5" />
+              </Svg>
+            </View>
+            <Text className="text-sage/90 text-[13px] font-semibold" style={AppTypography.bodyCompact}>
+              Health context, allergies, and preferences
+            </Text>
+          </View>
+          
+          <View className="flex-row items-center gap-2.5">
+            <View className="w-[18px] h-[18px] rounded-full bg-white/12 items-center justify-center border border-white/5">
+              <Svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#E3F3E5" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                <Path d="M20 6L9 17l-5-5" />
+              </Svg>
+            </View>
+            <Text className="text-sage/90 text-[13px] font-semibold" style={AppTypography.bodyCompact}>
+              Regional meals you can actually follow
+            </Text>
+          </View>
+          
+          <View className="flex-row items-center gap-2.5">
+            <View className="w-[18px] h-[18px] rounded-full bg-white/12 items-center justify-center border border-white/5">
+              <Svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#E3F3E5" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                <Path d="M20 6L9 17l-5-5" />
+              </Svg>
+            </View>
+            <Text className="text-sage/90 text-[13px] font-semibold" style={AppTypography.bodyCompact}>
+              Built for family or separate cooking
+            </Text>
+          </View>
+
+          <View className="flex-row items-center gap-2.5">
+            <View className="w-[18px] h-[18px] rounded-full bg-white/12 items-center justify-center border border-white/5">
+              <Svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#E3F3E5" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                <Path d="M20 6L9 17l-5-5" />
+              </Svg>
+            </View>
+            <Text className="text-sage/90 text-[13px] font-semibold" style={AppTypography.bodyCompact}>
+              Buy again later for yourself or someone else
+            </Text>
+          </View>
+        </View>
+
+        <View className="flex-row items-center justify-between gap-4 mt-1">
+          <View>
+            <Text className="text-[10px] uppercase font-bold text-sage/40 tracking-[0.5px]" style={AppTypography.eyebrow}>
+              Diet Plan
+            </Text>
+            <View className="flex-row items-baseline gap-1 mt-0.5">
+              <Text className="text-white font-bold text-[20px] font-serif" style={AppTypography.displayMetric}>
+                ₹1,299
+              </Text>
+              <Text className="text-[10px] text-sage/50 font-medium" style={AppTypography.meta}>
+                per plan
+              </Text>
+            </View>
+          </View>
+
+          <Pressable
+            onPress={openDietPlanWebsite}
+            className="flex-1 max-w-[190px] bg-white rounded-full py-3 px-4 flex-row items-center justify-center gap-2 shadow-sm active:opacity-90"
+          >
+            <Text className="text-forest text-[14px] font-bold" style={AppTypography.buttonSm}>
+              Get My Diet Plan
+            </Text>
+            <Svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#06290C" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <Path d="M5 12h14M12 5l7 7-7 7" />
+            </Svg>
+          </Pressable>
+        </View>
       </View>
-      <View className="flex-1">
-        <Text className="uppercase text-sage/58" style={[AppTypography.eyebrow, { letterSpacing: 1.3 }]}>
-          Custom Diet Plan
-        </Text>
-        <Text className="text-white mt-1" style={AppTypography.displayCardSm}>
-          Get a food plan built around your routine.
-        </Text>
-        <Text className="text-sage/62 mt-1" style={AppTypography.bodyCompact}>
-          Opens the Recovery Compass website.
-        </Text>
-      </View>
-      <Svg width={15} height={15} viewBox="0 0 24 24" fill="none" stroke="rgba(227,243,229,0.72)" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-        <Path d="M9 18l6-6-6-6" />
-      </Svg>
-    </Pressable>
+    </View>
   );
 }
 
