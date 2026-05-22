@@ -6,6 +6,7 @@ import {
   getOnboardingResolution,
   SECONDARY_SYMPTOMS_QUESTION_ID,
 } from '@/lib/onboarding.flow';
+import { isMissingAnyColumnError } from '@/lib/db-compat';
 import type {
   OnboardingAnswers,
   QuestionDefinition,
@@ -278,6 +279,49 @@ export async function saveOnboardingQuestionnaire(args: {
 
   const supabaseAny = supabase as any;
 
+  async function upsertProfile() {
+    const profilePayload = {
+      id: userId,
+      email: email ?? null,
+      phone_number: normalizeOptionalPhoneNumber(answers.phoneNumber),
+      phone_verified_at: null,
+      onboarding_complete: true,
+      recommended_program: resolution.recommendedProgram,
+      questionnaire_answers: questionnaireAnswers,
+      onboarding_completed_at: updatedAt,
+      updated_at: updatedAt,
+    };
+
+    const result = await supabaseAny
+      .from('profiles')
+      .upsert(profilePayload, { onConflict: 'id' })
+      .select(
+        'id, email, phone_number, phone_verified_at, onboarding_complete, questionnaire_answers, recommended_program, created_at, updated_at, free_tier_activated_at, expo_push_token, notifications_enabled, push_opt_in'
+      )
+      .single();
+
+    if (
+      result.error &&
+      isMissingAnyColumnError(result.error, ['phone_number', 'phone_verified_at', 'free_tier_activated_at'])
+    ) {
+      const {
+        phone_number: _phoneNumber,
+        phone_verified_at: _phoneVerifiedAt,
+        ...legacyProfilePayload
+      } = profilePayload;
+
+      return supabaseAny
+        .from('profiles')
+        .upsert(legacyProfilePayload, { onConflict: 'id' })
+        .select(
+          'id, email, onboarding_complete, questionnaire_answers, recommended_program, created_at, updated_at, expo_push_token, notifications_enabled, push_opt_in'
+        )
+        .single();
+    }
+
+    return result;
+  }
+
   const [{ data: persistedOnboarding, error: onboardingError }, { data: persistedProfile, error: profileError }] =
     await Promise.all([
       supabase
@@ -287,26 +331,7 @@ export async function saveOnboardingQuestionnaire(args: {
           'id, user_id, target_selection, language_selection, full_name, age, past_attempts, triggers, root_cause, physical_toll, mental_toll, daily_consumption_amount, daily_consumption_cost, primary_goal, created_at, updated_at'
         )
         .single(),
-      supabaseAny
-        .from('profiles')
-        .upsert(
-          {
-            id: userId,
-            email: email ?? null,
-            phone_number: normalizeOptionalPhoneNumber(answers.phoneNumber),
-            phone_verified_at: null,
-            onboarding_complete: true,
-            recommended_program: resolution.recommendedProgram,
-            questionnaire_answers: questionnaireAnswers,
-            onboarding_completed_at: updatedAt,
-            updated_at: updatedAt,
-          },
-          { onConflict: 'id' }
-        )
-        .select(
-          'id, email, phone_number, phone_verified_at, onboarding_complete, questionnaire_answers, recommended_program, created_at, updated_at, free_tier_activated_at, expo_push_token, notifications_enabled, push_opt_in'
-        )
-        .single(),
+      upsertProfile(),
     ]);
 
   if (onboardingError) {

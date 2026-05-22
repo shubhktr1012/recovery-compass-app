@@ -3,6 +3,7 @@ import type { ProgramSlug } from '@/types/content';
 import type { Database } from '@/types/database.types';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/providers/auth';
+import { isMissingColumnError } from '@/lib/db-compat';
 
 type ProgramAccessRow = Database['public']['Tables']['program_access']['Row'];
 
@@ -34,7 +35,7 @@ export function useOwnedPrograms() {
         return [];
       }
 
-      const { data, error } = await supabase
+      let { data, error }: { data: unknown[] | null; error: unknown } = await supabase
         .from('program_access')
         .select('owned_program, purchase_state, completion_state, program_state, current_day, scheduled_start_date, paused_at, priority_rank, started_at, updated_at')
         .eq('user_id', userId)
@@ -42,6 +43,19 @@ export function useOwnedPrograms() {
         .neq('purchase_state', 'not_owned')
         .order('priority_rank', { ascending: true, nullsFirst: false })
         .order('updated_at', { ascending: false });
+
+      if (error && isMissingColumnError(error, 'priority_rank')) {
+        const legacyResult = await supabase
+          .from('program_access')
+          .select('owned_program, purchase_state, completion_state, program_state, current_day, scheduled_start_date, paused_at, started_at, updated_at')
+          .eq('user_id', userId)
+          .not('owned_program', 'is', null)
+          .neq('purchase_state', 'not_owned')
+          .order('updated_at', { ascending: false });
+
+        data = legacyResult.data as unknown[] | null;
+        error = legacyResult.error;
+      }
 
       if (error) {
         throw error;

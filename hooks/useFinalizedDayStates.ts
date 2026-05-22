@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import type { FinalizedDayState } from '@/lib/day-state-summary';
 import { supabase } from '@/lib/supabase';
 import type { ProgramSlug } from '@/types/content';
+import { isMissingAnyColumnError } from '@/lib/db-compat';
 
 type UserDayStateRow = {
   day_number: number;
@@ -46,12 +47,31 @@ export function useFinalizedDayStates(userId: string | null | undefined, program
         return [];
       }
 
-      const { data, error } = await supabase
+      let { data, error } = await supabase
         .from('user_day_states')
         .select('day_number, day_state, cards_opened, cards_completed, cards_total, completion_percentage, finalized_at')
         .eq('user_id', userId)
         .eq('program_slug', programSlug)
         .order('day_number', { ascending: true });
+
+      if (error && isMissingAnyColumnError(error, ['cards_opened', 'completion_percentage'])) {
+        const legacyResult = await supabase
+          .from('user_day_states')
+          .select('day_number, day_state, cards_completed, cards_total, finalized_at')
+          .eq('user_id', userId)
+          .eq('program_slug', programSlug)
+          .order('day_number', { ascending: true });
+
+        data = (legacyResult.data ?? []).map((row) => ({
+          ...row,
+          cards_opened: row.cards_completed ?? 0,
+          completion_percentage:
+            row.cards_total && row.cards_total > 0
+              ? Number((((row.cards_completed ?? 0) / row.cards_total) * 100).toFixed(2))
+              : 0,
+        })) as typeof data;
+        error = legacyResult.error;
+      }
 
       if (error) {
         throw error;

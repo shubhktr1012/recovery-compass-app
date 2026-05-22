@@ -21,6 +21,7 @@ import * as FileSystem from 'expo-file-system/legacy';
 import { buildWidgetPayload, syncWidgetData } from '@/lib/widget-bridge';
 import { validateDisplayNameInput } from '@/lib/profile-identity';
 import { rescheduleProgramNotificationsForAccess } from '@/lib/notification-runtime';
+import { isMissingAnyColumnError } from '@/lib/db-compat';
 
 export interface UserProfile {
   id: string;
@@ -64,6 +65,9 @@ interface ProfileContextType {
 
 const PROFILE_COLUMNS =
   'id, email, phone_number, phone_verified_at, onboarding_complete, questionnaire_answers, recommended_program, created_at, updated_at, free_tier_activated_at, expo_push_token, notifications_enabled, push_opt_in, display_name, avatar_url';
+const LEGACY_PROFILE_COLUMNS =
+  'id, email, onboarding_complete, questionnaire_answers, recommended_program, created_at, updated_at, expo_push_token, notifications_enabled, push_opt_in, display_name, avatar_url';
+const OPTIONAL_PROFILE_COLUMNS = ['phone_number', 'phone_verified_at', 'free_tier_activated_at'];
 export const PROFILE_QUERY_KEY = (userId: string | null) => ['profile', userId];
 const PROFILE_IMAGE_BUCKET = 'profile-images';
 const PROFILE_IMAGE_SIGNED_URL_TTL_SECONDS = 60 * 60 * 24 * 7;
@@ -146,11 +150,23 @@ const ProfileContext = createContext<ProfileContextType>({
 });
 
 const fetchProfileFromApi = async (userId: string) => {
-  const { data, error } = await supabase
+  const supabaseAny = supabase as any;
+  let { data, error } = await supabaseAny
     .from('profiles')
     .select(PROFILE_COLUMNS)
     .eq('id', userId)
     .maybeSingle();
+
+  if (error && isMissingAnyColumnError(error, OPTIONAL_PROFILE_COLUMNS)) {
+    const legacyResult = await supabaseAny
+      .from('profiles')
+      .select(LEGACY_PROFILE_COLUMNS)
+      .eq('id', userId)
+      .maybeSingle();
+
+    data = legacyResult.data;
+    error = legacyResult.error;
+  }
 
   if (error) {
     throw error;

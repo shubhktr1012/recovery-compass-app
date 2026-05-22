@@ -15,6 +15,7 @@ import {
 import { getProgramScheduledDay } from '@/lib/programs/schedule';
 import { getOwnedProgramsFromCustomerInfo } from '@/lib/revenuecat/config';
 import { supabase } from '@/lib/supabase';
+import { isMissingColumnError, isMissingFunctionError } from '@/lib/db-compat';
 import {
   CompletionState,
   ProgramLifecycleState,
@@ -229,6 +230,11 @@ type OwnedProgramPurchaseRow = {
   purchase_state: string | null;
   updated_at: string | null;
 };
+
+const PROGRAM_ACCESS_SELECT =
+  'owned_program, purchase_state, completion_state, program_state, current_day, completed_at, archived_at, scheduled_start_date, paused_at, priority_rank, started_at, created_at, updated_at';
+const LEGACY_PROGRAM_ACCESS_SELECT =
+  'owned_program, purchase_state, completion_state, program_state, current_day, completed_at, archived_at, scheduled_start_date, paused_at, started_at, created_at, updated_at';
 
 function buildSnapshotFromAccessRow(
   userId: string,
@@ -579,10 +585,20 @@ export class AccessService {
 
   static async getServerAccessSnapshot(userId: string, preferredProgram?: ProgramSlug | null) {
     try {
-      const { data, error } = await supabase
+      let { data, error }: { data: unknown[] | null; error: unknown } = await supabase
         .from('program_access')
-        .select('owned_program, purchase_state, completion_state, program_state, current_day, completed_at, archived_at, scheduled_start_date, paused_at, priority_rank, started_at, created_at, updated_at')
+        .select(PROGRAM_ACCESS_SELECT)
         .eq('user_id', userId);
+
+      if (error && isMissingColumnError(error, 'priority_rank')) {
+        const legacyResult = await supabase
+          .from('program_access')
+          .select(LEGACY_PROGRAM_ACCESS_SELECT)
+          .eq('user_id', userId);
+
+        data = legacyResult.data as unknown[] | null;
+        error = legacyResult.error;
+      }
 
       if (error) throw error;
       const ownedRows = ((data ?? []) as ProgramAccessRow[]).filter((row) => {
@@ -723,6 +739,9 @@ export class AccessService {
       });
 
       if (error) {
+        if (isMissingFunctionError(error, 'record_owned_program_purchase')) {
+          return null;
+        }
         throw error;
       }
 
@@ -762,7 +781,8 @@ export class AccessService {
     if (error) {
       const currentSnapshot = await this.getAccessSnapshot();
       const canUseLocalFallback =
-        error.message?.toLowerCase().includes('program is not owned') &&
+        (error.message?.toLowerCase().includes('program is not owned') ||
+          isMissingFunctionError(error, 'configure_program_start')) &&
         isSnapshotOwnedByUser(currentSnapshot, userId) &&
         currentSnapshot.ownedProgram === programSlug &&
         currentSnapshot.purchaseState !== 'not_owned';
@@ -1408,6 +1428,14 @@ export class AccessService {
       });
 
       if (error) {
+        if (isMissingFunctionError(error, 'reorder_owned_program_queue')) {
+          return programSlugs.map((programSlug, index) => ({
+            programSlug,
+            priorityRank: index + 1,
+            programState: 'purchased' as ProgramLifecycleState,
+            updatedAt: new Date().toISOString(),
+          }));
+        }
         throw error;
       }
 
@@ -1437,12 +1465,24 @@ export class AccessService {
   }
 
   static async prepareOwnedProgramSetup(userId: string, programSlug: ProgramSlug) {
-    const { data, error } = await supabase
+    let { data, error }: { data: unknown | null; error: unknown } = await supabase
       .from('program_access')
-      .select('owned_program, purchase_state, completion_state, program_state, current_day, completed_at, archived_at, scheduled_start_date, paused_at, priority_rank, started_at, created_at, updated_at')
+      .select(PROGRAM_ACCESS_SELECT)
       .eq('user_id', userId)
       .eq('owned_program', programSlug)
       .maybeSingle();
+
+    if (error && isMissingColumnError(error, 'priority_rank')) {
+      const legacyResult = await supabase
+        .from('program_access')
+        .select(LEGACY_PROGRAM_ACCESS_SELECT)
+        .eq('user_id', userId)
+        .eq('owned_program', programSlug)
+        .maybeSingle();
+
+      data = legacyResult.data as unknown | null;
+      error = legacyResult.error;
+    }
 
     if (error) {
       throw error;

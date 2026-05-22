@@ -3,6 +3,7 @@ import type { RoutineEffortLevel, RoutineProgressRecord } from '@/lib/routine-pr
 import type { ContentCard, DayContent, ProgramSlug } from '@/types/content';
 import type { Json } from '@/types/database.types';
 import type { CardState, DayState, TimeSlot } from '@/types/resolver';
+import { isMissingAnyColumnError } from '@/lib/db-compat';
 
 type RuntimeCard = ContentCard & {
   timeSlot?: TimeSlot;
@@ -230,6 +231,29 @@ export async function upsertUserDayState(record: UserDayStateUpsert) {
       },
       { onConflict: 'user_id,program_slug,day_number' }
     );
+
+  if (error && isMissingAnyColumnError(error, ['cards_opened', 'completion_percentage'])) {
+    const {
+      cards_opened: _cardsOpened,
+      completion_percentage: _completionPercentage,
+      ...legacyRecord
+    } = record;
+
+    const { error: legacyError } = await supabase
+      .from('user_day_states')
+      .upsert(
+        {
+          ...legacyRecord,
+          card_details: legacyRecord.card_details as unknown as Json,
+        },
+        { onConflict: 'user_id,program_slug,day_number' }
+      );
+
+    if (legacyError) {
+      throw legacyError;
+    }
+    return;
+  }
 
   if (error) {
     throw error;
