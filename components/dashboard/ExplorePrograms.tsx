@@ -1,9 +1,12 @@
-import { View, Text, Pressable } from 'react-native';
+import { Alert, View, Text, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
+import { openBrowserAsync, WebBrowserPresentationStyle } from 'expo-web-browser';
 import { Svg, Path } from 'react-native-svg';
 import type { ProgramContent } from '@/types/content';
 import { SkeletonCircle, SkeletonLine, SkeletonTitle } from '@/components/ui/Skeleton';
 import { AppTypography } from '@/constants/typography';
+
+const DIET_PLAN_WEBSITE_URL = 'https://recoverycompass.co/diet-plan';
 
 interface ExploreProgramsProps {
   programs: ProgramContent[];
@@ -68,6 +71,16 @@ function getStatusTagProps(program: ProgramContent) {
   };
 }
 
+async function openDietPlanWebsite() {
+  try {
+    await openBrowserAsync(DIET_PLAN_WEBSITE_URL, {
+      presentationStyle: WebBrowserPresentationStyle.AUTOMATIC,
+    });
+  } catch (error: any) {
+    Alert.alert('Could not open Diet Plan', error?.message ?? 'Please visit recoverycompass.co/diet-plan.');
+  }
+}
+
 export function ProgramIcon({ category }: { category: ProgramContent['category'] }) {
   if (category === 'sleep') {
     return (
@@ -116,6 +129,37 @@ export function ProgramIcon({ category }: { category: ProgramContent['category']
     <Svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#06290C" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
       <Path d="M12 3C8 8 6 11 6 15a6 6 0 0012 0c0-4-2-7-6-12z" />
     </Svg>
+  );
+}
+
+function DietPlanWebsiteCard() {
+  return (
+    <Pressable
+      onPress={openDietPlanWebsite}
+      className="bg-forest rounded-[22px] p-4 mt-4 shadow-sm shadow-forest/10 flex-row gap-3.5 items-center"
+    >
+      <View className="w-[44px] h-[44px] rounded-2xl bg-white/10 border border-white/12 items-center justify-center shrink-0">
+        <Svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#E3F3E5" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+          <Path d="M4 19c4-1 7-4 8-8" />
+          <Path d="M12 11c2.5-1 4.5-3 6-6" />
+          <Path d="M18 5c.5 4-.2 8.5-3.4 11.6C11.4 19.8 7 20.5 3 20c-.5-4 .2-8.4 3.4-11.6C9.6 5.2 14 4.5 18 5Z" />
+        </Svg>
+      </View>
+      <View className="flex-1">
+        <Text className="uppercase text-sage/58" style={[AppTypography.eyebrow, { letterSpacing: 1.3 }]}>
+          Custom Diet Plan
+        </Text>
+        <Text className="text-white mt-1" style={AppTypography.displayCardSm}>
+          Get a food plan built around your routine.
+        </Text>
+        <Text className="text-sage/62 mt-1" style={AppTypography.bodyCompact}>
+          Opens the Recovery Compass website.
+        </Text>
+      </View>
+      <Svg width={15} height={15} viewBox="0 0 24 24" fill="none" stroke="rgba(227,243,229,0.72)" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+        <Path d="M9 18l6-6-6-6" />
+      </Svg>
+    </Pressable>
   );
 }
 
@@ -238,6 +282,7 @@ export function ExplorePrograms({
           </Pressable>
         ))
       )}
+      <DietPlanWebsiteCard />
     </View>
   );
 }
