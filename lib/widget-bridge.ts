@@ -21,6 +21,7 @@ import {
   isProgramStartPending,
 } from '@/lib/programs/lifecycle';
 import {
+  formatProgramClockTime,
   getProgramActiveDay,
   getProgramLastFinalizedDay,
   getProgramNextUnlockAt,
@@ -63,10 +64,7 @@ function formatWidgetAvailabilityLabel(nextUnlockAt: string | null | undefined, 
   const unlockDate = new Date(nextUnlockAt);
   if (Number.isNaN(unlockDate.getTime())) return null;
 
-  const timeLabel = unlockDate.toLocaleTimeString([], {
-    hour: 'numeric',
-    minute: '2-digit',
-  });
+  const timeLabel = formatProgramClockTime(unlockDate);
   const tomorrow = new Date(now);
   tomorrow.setDate(now.getDate() + 1);
   const isTomorrow =

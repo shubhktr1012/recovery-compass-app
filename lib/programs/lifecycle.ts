@@ -1,5 +1,5 @@
 import { PROGRAM_METADATA } from '@/content/programs/metadata';
-import { PROGRAM_UNLOCK_HOUR } from '@/lib/programs/schedule';
+import { formatProgramClockTime, PROGRAM_UNLOCK_HOUR } from '@/lib/programs/schedule';
 import type { ProgramAccessSnapshot, ProgramProgressRecord, ProgramSlug } from '@/lib/programs/types';
 
 export type ProgramStartOption = 'today' | 'tomorrow';
@@ -101,10 +101,7 @@ export function formatScheduledProgramStartLabel(
   const unlockAt = getScheduledProgramUnlockAt(scheduledStartDate);
   if (!unlockAt) return null;
 
-  const timeLabel = unlockAt.toLocaleTimeString([], {
-    hour: 'numeric',
-    minute: '2-digit',
-  });
+  const timeLabel = formatProgramClockTime(unlockAt);
   const tomorrow = new Date(now);
   tomorrow.setDate(now.getDate() + 1);
 

@@ -20,6 +20,14 @@ function addLocalDays(date: Date, days: number) {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate() + days);
 }
 
+export function formatProgramClockTime(date: Date) {
+  return date.toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  }).replace(/\b(am|pm)\b/i, (match) => match.toUpperCase());
+}
+
 export function getEffectiveScheduleDate(now: Date = new Date()) {
   const effective = new Date(now);
 
@@ -123,10 +131,7 @@ export function formatUnlockLabel(nextUnlockAt: string | null | undefined, now: 
     unlockDate.getMonth() === tomorrow.getMonth() &&
     unlockDate.getDate() === tomorrow.getDate();
 
-  const timeLabel = unlockDate.toLocaleTimeString([], {
-    hour: 'numeric',
-    minute: '2-digit',
-  });
+  const timeLabel = formatProgramClockTime(unlockDate);
 
   if (isTomorrow) {
     return `Your next step unlocks tomorrow at ${timeLabel}`;
