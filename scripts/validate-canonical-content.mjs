@@ -1,7 +1,12 @@
 import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 
-import { canonicalDir, repoRoot, validateCanonicalProgram } from './lib/canonical-content.mjs';
+import {
+  canonicalDir,
+  normalizeCanonicalProgramShape,
+  repoRoot,
+  validateCanonicalProgram,
+} from './lib/canonical-content.mjs';
 
 function parseArgs(argv) {
   const options = {
@@ -40,10 +45,12 @@ async function listCanonicalFiles(programSlug) {
 async function validateFile(filePath) {
   const raw = await readFile(filePath, 'utf8');
   const parsed = JSON.parse(raw);
-  const result = validateCanonicalProgram(parsed);
+  const fallbackSlug = path.basename(filePath, '.json');
+  const normalized = normalizeCanonicalProgramShape(parsed, fallbackSlug);
+  const result = validateCanonicalProgram(normalized);
   return {
     filePath,
-    slug: parsed?.slug ?? '(unknown)',
+    slug: normalized?.slug ?? '(unknown)',
     ...result,
   };
 }
@@ -88,4 +95,3 @@ main().catch((error) => {
   console.error(error.message || error);
   process.exitCode = 1;
 });
-

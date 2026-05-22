@@ -146,7 +146,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, nextSession) => {
-      console.log('Auth Event:', event);
+      if (__DEV__) {
+        console.log('Auth Event:', event);
+      }
       if (event === 'PASSWORD_RECOVERY') {
         setIsRecoveringPassword(true);
       } else if (event === 'SIGNED_OUT') {

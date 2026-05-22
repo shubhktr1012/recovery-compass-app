@@ -1,5 +1,7 @@
-import { readFile } from 'node:fs/promises';
+import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
+
+import { appRoot, normalizeCanonicalProgramShape } from './lib/canonical-content.mjs';
 
 const SUPPORTED_CARD_TYPES = new Set([
   'intro',
@@ -41,13 +43,20 @@ function parseArgs(argv) {
     throw new Error(`Unknown argument: ${token}`);
   }
 
-  if (!options.file) {
-    throw new Error(
-      'Missing SQL file path. Example: node ./scripts/validate-template-program-sql.mjs --file ./docs/new-program-sqls/energy-program-new-sql.sql'
-    );
+  return options;
+}
+
+async function listSqlFiles(options) {
+  if (options.file) {
+    return [path.resolve(options.file)];
   }
 
-  return options;
+  const migrationsDir = path.join(appRoot, 'supabase', 'migrations');
+  const entries = await readdir(migrationsDir, { withFileTypes: true });
+  return entries
+    .filter((entry) => entry.isFile() && /^\d+_seed_.*_template_program\.sql$/.test(entry.name))
+    .map((entry) => path.join(migrationsDir, entry.name))
+    .sort();
 }
 
 function toError(errors, pathName, message) {
@@ -63,7 +72,12 @@ function sqlUnquote(value) {
 }
 
 function parseSqlDocument(sql) {
-  const trimmed = sql.trim();
+  const templateInsertStart = sql.indexOf('INSERT INTO public.program_templates');
+  if (templateInsertStart === -1) {
+    throw new Error('Could not find program_templates insert.');
+  }
+
+  const trimmed = sql.slice(templateInsertStart).trim().replace(/\nCOMMIT;\s*$/i, '').trim();
   if (!trimmed.startsWith('INSERT INTO public.program_templates')) {
     throw new Error('SQL must begin with the program_templates insert.');
   }
@@ -182,15 +196,21 @@ function validateOverrides(overrides, slotIds, pathName, errors, warnings) {
 }
 
 function compareCanonical(rows, canonicalProgram, errors, warnings) {
-  if (!canonicalProgram || typeof canonicalProgram !== 'object' || !Array.isArray(canonicalProgram.days)) {
+  const fallbackSlug = rows[0]?.program_slug ?? null;
+  const normalizedCanonical = normalizeCanonicalProgramShape(canonicalProgram, fallbackSlug);
+  if (
+    !normalizedCanonical ||
+    typeof normalizedCanonical !== 'object' ||
+    !Array.isArray(normalizedCanonical.days)
+  ) {
     throw new Error('Canonical file must contain a top-level days array.');
   }
 
-  if (canonicalProgram.slug && canonicalProgram.slug !== rows[0]?.program_slug) {
-    toError(errors, 'canonical.slug', `expected ${rows[0]?.program_slug}, got ${canonicalProgram.slug}`);
+  if (normalizedCanonical.slug && normalizedCanonical.slug !== rows[0]?.program_slug) {
+    toError(errors, 'canonical.slug', `expected ${rows[0]?.program_slug}, got ${normalizedCanonical.slug}`);
   }
 
-  const canonicalByDay = new Map(canonicalProgram.days.map((day) => [day.dayNumber, day]));
+  const canonicalByDay = new Map(normalizedCanonical.days.map((day) => [day.dayNumber, day]));
   for (const row of rows) {
     const canonicalDay = canonicalByDay.get(row.day_number);
     if (!canonicalDay) {
@@ -207,9 +227,8 @@ function compareCanonical(rows, canonicalProgram, errors, warnings) {
   }
 }
 
-async function main() {
-  const options = parseArgs(process.argv.slice(2));
-  const sql = await readFile(path.resolve(options.file), 'utf8');
+async function validateFile(filePath, canonicalPath = null) {
+  const sql = await readFile(filePath, 'utf8');
   const { programSlug, templateSlots, rows } = parseSqlDocument(sql);
 
   const errors = [];
@@ -253,8 +272,8 @@ async function main() {
     }
   }
 
-  if (options.canonical) {
-    const canonical = JSON.parse(await readFile(path.resolve(options.canonical), 'utf8'));
+  if (canonicalPath) {
+    const canonical = JSON.parse(await readFile(path.resolve(canonicalPath), 'utf8'));
     compareCanonical(rows, canonical, errors, warnings);
   }
 
@@ -270,13 +289,31 @@ async function main() {
     for (const error of errors) {
       console.error(`  - ${error}`);
     }
-    process.exitCode = 1;
-    return;
+    return false;
   }
 
   console.log(
-    `[template-sql] OK: ${path.basename(options.file)} (${programSlug}, ${rows.length} days, ${templateSlots.length} template slots)`
+    `[template-sql] OK: ${path.basename(filePath)} (${programSlug}, ${rows.length} days, ${templateSlots.length} template slots)`
   );
+  return true;
+}
+
+async function main() {
+  const options = parseArgs(process.argv.slice(2));
+  const files = await listSqlFiles(options);
+  if (files.length === 0) {
+    throw new Error('No template program SQL migrations found.');
+  }
+
+  let allValid = true;
+  for (const filePath of files) {
+    const isValid = await validateFile(filePath, options.canonical);
+    allValid = allValid && isValid;
+  }
+
+  if (!allValid) {
+    process.exitCode = 1;
+  }
 }
 
 main().catch((error) => {

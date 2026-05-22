@@ -392,14 +392,16 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         snapshot,
         source: options?.source === 'supabase' ? 'supabase access refresh' : 'access refresh',
       });
-      console.log('[ProfileProvider] refreshAccess:resolved', {
-        userId,
-        snapshotOwnerUserId: resolvedLifecycle.snapshot.ownerUserId ?? null,
-        snapshotOwnedProgram: resolvedLifecycle.snapshot.ownedProgram,
-        snapshotPurchaseState: resolvedLifecycle.snapshot.purchaseState,
-        progressUserId: resolvedLifecycle.progress?.userId ?? null,
-        progressProgramSlug: resolvedLifecycle.progress?.programSlug ?? null,
-      });
+      if (__DEV__) {
+        console.log('[ProfileProvider] refreshAccess:resolved', {
+          userId,
+          snapshotOwnerUserId: resolvedLifecycle.snapshot.ownerUserId ?? null,
+          snapshotOwnedProgram: resolvedLifecycle.snapshot.ownedProgram,
+          snapshotPurchaseState: resolvedLifecycle.snapshot.purchaseState,
+          progressUserId: resolvedLifecycle.progress?.userId ?? null,
+          progressProgramSlug: resolvedLifecycle.progress?.programSlug ?? null,
+        });
+      }
       setAccess(resolvedLifecycle.snapshot);
       setProgress(resolvedLifecycle.progress);
       const widgetPayload = buildWidgetPayload({ access: resolvedLifecycle.snapshot, progress: resolvedLifecycle.progress, steps: 0 });
@@ -691,15 +693,17 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
               source: 'local',
             } satisfies ProgramAccessSnapshot;
 
-      console.log('[ProfileProvider] bootstrapAccessState:cached', {
-        userId,
-        cachedSnapshotOwnerUserId: cachedSnapshot.ownerUserId ?? null,
-        cachedSnapshotOwnedProgram: cachedSnapshot.ownedProgram,
-        cachedProgressUserId: cachedProgress?.userId ?? null,
-        cachedProgressProgramSlug: cachedProgress?.programSlug ?? null,
-        safeCachedSnapshotOwnedProgram: safeCachedSnapshot.ownedProgram,
-        safeCachedProgressProgramSlug: safeCachedProgress?.programSlug ?? null,
-      });
+      if (__DEV__) {
+        console.log('[ProfileProvider] bootstrapAccessState:cached', {
+          userId,
+          cachedSnapshotOwnerUserId: cachedSnapshot.ownerUserId ?? null,
+          cachedSnapshotOwnedProgram: cachedSnapshot.ownedProgram,
+          cachedProgressUserId: cachedProgress?.userId ?? null,
+          cachedProgressProgramSlug: cachedProgress?.programSlug ?? null,
+          safeCachedSnapshotOwnedProgram: safeCachedSnapshot.ownedProgram,
+          safeCachedProgressProgramSlug: safeCachedProgress?.programSlug ?? null,
+        });
+      }
 
       setAccess(safeCachedSnapshot);
       setProgress(safeCachedProgress);
@@ -711,14 +715,16 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         snapshot: liveSnapshot,
         source: 'access bootstrap',
       });
-      console.log('[ProfileProvider] bootstrapAccessState:live', {
-        userId,
-        liveSnapshotOwnerUserId: resolvedLifecycle.snapshot.ownerUserId ?? null,
-        liveSnapshotOwnedProgram: resolvedLifecycle.snapshot.ownedProgram,
-        liveSnapshotPurchaseState: resolvedLifecycle.snapshot.purchaseState,
-        liveProgressUserId: resolvedLifecycle.progress?.userId ?? null,
-        liveProgressProgramSlug: resolvedLifecycle.progress?.programSlug ?? null,
-      });
+      if (__DEV__) {
+        console.log('[ProfileProvider] bootstrapAccessState:live', {
+          userId,
+          liveSnapshotOwnerUserId: resolvedLifecycle.snapshot.ownerUserId ?? null,
+          liveSnapshotOwnedProgram: resolvedLifecycle.snapshot.ownedProgram,
+          liveSnapshotPurchaseState: resolvedLifecycle.snapshot.purchaseState,
+          liveProgressUserId: resolvedLifecycle.progress?.userId ?? null,
+          liveProgressProgramSlug: resolvedLifecycle.progress?.programSlug ?? null,
+        });
+      }
       setAccess(resolvedLifecycle.snapshot);
       setProgress(resolvedLifecycle.progress);
 
@@ -756,14 +762,16 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
             snapshot,
             source: 'customer info update',
           });
-          console.log('[ProfileProvider] customerInfoUpdate', {
-            userId,
-            snapshotOwnerUserId: resolvedLifecycle.snapshot.ownerUserId ?? null,
-            snapshotOwnedProgram: resolvedLifecycle.snapshot.ownedProgram,
-            snapshotPurchaseState: resolvedLifecycle.snapshot.purchaseState,
-            progressUserId: resolvedLifecycle.progress?.userId ?? null,
-            progressProgramSlug: resolvedLifecycle.progress?.programSlug ?? null,
-          });
+          if (__DEV__) {
+            console.log('[ProfileProvider] customerInfoUpdate', {
+              userId,
+              snapshotOwnerUserId: resolvedLifecycle.snapshot.ownerUserId ?? null,
+              snapshotOwnedProgram: resolvedLifecycle.snapshot.ownedProgram,
+              snapshotPurchaseState: resolvedLifecycle.snapshot.purchaseState,
+              progressUserId: resolvedLifecycle.progress?.userId ?? null,
+              progressProgramSlug: resolvedLifecycle.progress?.programSlug ?? null,
+            });
+          }
           setAccess(resolvedLifecycle.snapshot);
           setProgress(resolvedLifecycle.progress);
           await queryClient.invalidateQueries({ queryKey: OWNED_PROGRAMS_QUERY_ROOT });
