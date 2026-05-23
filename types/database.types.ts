@@ -1280,6 +1280,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      acknowledge_program_queue_review: {
+        Args: { p_active_program?: string | null }
+        Returns: {
+          active_program: string
+          queue_reviewed_at: string
+          updated_at: string
+        }[]
+      }
       consume_rate_limit: {
         Args: {
           p_bucket: string

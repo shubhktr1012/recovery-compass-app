@@ -335,18 +335,9 @@ export default function ProgramQueueReviewScreen() {
       throw new Error('No active program found.');
     }
 
-    const now = new Date().toISOString();
-    const { error } = await supabase
-      .from('user_program_preferences')
-      .upsert(
-        {
-          user_id: userId,
-          active_program: activeProgramForPreference,
-          queue_reviewed_at: now,
-          updated_at: now,
-        },
-        { onConflict: 'user_id' }
-      );
+    const { error } = await supabase.rpc('acknowledge_program_queue_review', {
+      p_active_program: activeProgramForPreference,
+    });
 
     if (error) {
       throw error;
