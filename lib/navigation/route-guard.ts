@@ -54,6 +54,7 @@ function isAllowedSubscribedRoute(segments: RouteSegments, modeParam?: string | 
   const inTabsGroup = segments[0] === '(tabs)';
   const inAccountStack = segments[0] === 'account';
   const inDayDetail = segments[0] === 'day-detail';
+  const inLegacyProgramDayRoute = segments[0] === 'program';
   const inProgramStartSetup = segments[0] === 'program-start';
   const inProgramQueueReview = segments[0] === 'program-queue-review';
   const inNotificationPermissionReview = segments[0] === 'notification-permission-review';
@@ -65,6 +66,7 @@ function isAllowedSubscribedRoute(segments: RouteSegments, modeParam?: string | 
     inTabsGroup ||
     inAccountStack ||
     inDayDetail ||
+    inLegacyProgramDayRoute ||
     inProgramStartSetup ||
     inProgramQueueReview ||
     inNotificationPermissionReview ||

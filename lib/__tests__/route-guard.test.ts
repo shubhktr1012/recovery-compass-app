@@ -73,6 +73,7 @@ describe('navigation guard target', () => {
   it('allows subscribed active users to stay in tabs, day detail, account, and completion routes', () => {
     expect(guardTarget({ isSubscribed: true, segments: ['(tabs)', 'program'] })).toBeNull();
     expect(guardTarget({ isSubscribed: true, segments: ['day-detail'] })).toBeNull();
+    expect(guardTarget({ isSubscribed: true, segments: ['program', '[programSlug]', '[dayNumber]'] })).toBeNull();
     expect(guardTarget({ isSubscribed: true, segments: ['account', 'programs'] })).toBeNull();
     expect(guardTarget({ isSubscribed: true, segments: ['program-complete'] })).toBeNull();
   });
