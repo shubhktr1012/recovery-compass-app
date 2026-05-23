@@ -2,6 +2,7 @@ import type { Href } from 'expo-router';
 
 import {
   HOME_ROUTE,
+  NOTIFICATION_PERMISSION_REVIEW_ROUTE,
   PAYWALL_ROUTE,
   PERSONALIZATION_ROUTE,
   PROGRAM_QUEUE_REVIEW_ROUTE,
@@ -20,6 +21,7 @@ export type NavigationGuardState = {
   isSubscribed: boolean;
   modeParam?: string | null;
   needsOnboardingRealignment: boolean;
+  needsNotificationPermissionReview: boolean;
   needsProgramQueueReview: boolean;
   needsProgramSetup: boolean;
   onboardingComplete?: boolean | null;
@@ -54,6 +56,7 @@ function isAllowedSubscribedRoute(segments: RouteSegments, modeParam?: string | 
   const inDayDetail = segments[0] === 'day-detail';
   const inProgramStartSetup = segments[0] === 'program-start';
   const inProgramQueueReview = segments[0] === 'program-queue-review';
+  const inNotificationPermissionReview = segments[0] === 'notification-permission-review';
   const inProgramComplete = segments[0] === 'program-complete';
   const inPaywall = isAuthScreen(segments, 'paywall');
   const inManualRealignment = isAuthScreen(segments, 'personalization') && modeParam === 'realign';
@@ -64,6 +67,7 @@ function isAllowedSubscribedRoute(segments: RouteSegments, modeParam?: string | 
     inDayDetail ||
     inProgramStartSetup ||
     inProgramQueueReview ||
+    inNotificationPermissionReview ||
     inProgramComplete ||
     inPaywall ||
     inManualRealignment
@@ -87,6 +91,7 @@ export function getNavigationGuardTarget(state: NavigationGuardState): Href | nu
     isSubscribed,
     modeParam,
     needsOnboardingRealignment,
+    needsNotificationPermissionReview,
     needsProgramQueueReview,
     needsProgramSetup,
     onboardingComplete,
@@ -119,6 +124,10 @@ export function getNavigationGuardTarget(state: NavigationGuardState): Href | nu
 
     if (needsProgramQueueReview) {
       return segments[0] === 'program-queue-review' ? null : PROGRAM_QUEUE_REVIEW_ROUTE;
+    }
+
+    if (needsNotificationPermissionReview) {
+      return segments[0] === 'notification-permission-review' ? null : NOTIFICATION_PERMISSION_REVIEW_ROUTE;
     }
 
     return isAllowedSubscribedRoute(segments, modeParam) ? null : HOME_ROUTE;

@@ -13,6 +13,7 @@ import { LogBox, Platform, Text, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { AppErrorBoundary } from '@/components/AppErrorBoundary';
 import { AppPreloader } from '@/components/ui/AppPreloader';
+import { useNotificationPermissionReviewStatus } from '@/hooks/useNotificationPermissionReviewStatus';
 import { useProgramQueueReviewStatus } from '@/hooks/useProgramQueueReviewStatus';
 import { getPublicEnvState } from '@/lib/env';
 import { installGlobalErrorHandler } from '@/lib/monitoring';
@@ -158,6 +159,7 @@ function ProgramNotificationTapRouter({
 
 function NavigationGate({
     needsOnboardingRealignment,
+    needsNotificationPermissionReview,
     needsProgramQueueReview,
     needsProgramSetup,
     isNavigationReady,
@@ -167,6 +169,7 @@ function NavigationGate({
     session,
 }: {
     needsOnboardingRealignment: boolean;
+    needsNotificationPermissionReview: boolean;
     needsProgramQueueReview: boolean;
     needsProgramSetup: boolean;
     isNavigationReady: boolean;
@@ -196,6 +199,7 @@ function NavigationGate({
           isSubscribed,
           modeParam,
           needsOnboardingRealignment,
+          needsNotificationPermissionReview,
           needsProgramQueueReview,
           needsProgramSetup,
           onboardingComplete: profile?.onboarding_complete ?? null,
@@ -221,6 +225,7 @@ function NavigationGate({
     isNavigationReady,
     modeParam,
     needsOnboardingRealignment,
+    needsNotificationPermissionReview,
     needsProgramQueueReview,
     needsProgramSetup,
     rootNavigationState?.key,
@@ -239,6 +244,14 @@ function RootLayoutContent() {
   const { session, isLoading: isAuthLoading, isRecoveringPassword } = useAuth();
   const { access, profile, isSubscribed, isLoading: isProfileLoading } = useProfile();
   const { isLoading: isQueueReviewLoading, shouldReviewQueue } = useProgramQueueReviewStatus();
+  const {
+    isLoading: isNotificationReviewLoading,
+    shouldReviewNotifications,
+  } = useNotificationPermissionReviewStatus({
+    enabled: Boolean(session && isSubscribed),
+    notificationsEnabled: Boolean(profile?.notifications_enabled || profile?.push_opt_in),
+    userId: session?.user?.id ?? null,
+  });
   const [fontsLoaded] = useFonts({
     'Erode': ErodeRegular,
     'Erode-Regular': ErodeRegular,
@@ -260,7 +273,9 @@ function RootLayoutContent() {
     'Satoshi-Bold': SatoshiBold,
   });
 
-  const isLoading = isAuthLoading || (session ? isProfileLoading || isQueueReviewLoading : false);
+  const isLoading = isAuthLoading || (
+    session ? isProfileLoading || isQueueReviewLoading || isNotificationReviewLoading : false
+  );
   const needsOnboardingRealignment = hasOnboardingContextMismatch({
     onboardingComplete: profile?.onboarding_complete,
     ownedProgram: access.ownedProgram,
@@ -345,6 +360,7 @@ function RootLayoutContent() {
         <Stack.Screen name="day-detail" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="program-start" options={{ animation: 'fade_from_bottom', gestureEnabled: false }} />
         <Stack.Screen name="program-queue-review" options={{ animation: 'fade_from_bottom', gestureEnabled: false }} />
+        <Stack.Screen name="notification-permission-review" options={{ animation: 'fade_from_bottom', gestureEnabled: false }} />
         <Stack.Screen name="program-complete" options={{ animation: 'fade_from_bottom', gestureEnabled: false }} />
       </Stack>
       <NavigationGate
@@ -352,6 +368,7 @@ function RootLayoutContent() {
         isRecoveringPassword={isRecoveringPassword}
         isSubscribed={isSubscribed}
         needsOnboardingRealignment={needsOnboardingRealignment}
+        needsNotificationPermissionReview={shouldReviewNotifications}
         needsProgramQueueReview={shouldReviewQueue}
         needsProgramSetup={needsProgramSetup}
         profile={profile}

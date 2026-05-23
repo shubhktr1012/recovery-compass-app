@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { getNavigationGuardTarget, type NavigationGuardState } from '@/lib/navigation/route-guard';
 import {
   HOME_ROUTE,
+  NOTIFICATION_PERMISSION_REVIEW_ROUTE,
   PAYWALL_ROUTE,
   PERSONALIZATION_ROUTE,
   PROGRAM_QUEUE_REVIEW_ROUTE,
@@ -19,6 +20,7 @@ const baseState: NavigationGuardState = {
   isSubscribed: false,
   modeParam: null,
   needsOnboardingRealignment: false,
+  needsNotificationPermissionReview: false,
   needsProgramQueueReview: false,
   needsProgramSetup: false,
   onboardingComplete: true,
@@ -91,6 +93,35 @@ describe('navigation guard target', () => {
         segments: ['program-queue-review'],
       })
     ).toBeNull();
+  });
+
+  it('sends subscribed users with pending notification review to the reminder prompt', () => {
+    expect(
+      guardTarget({
+        isSubscribed: true,
+        needsNotificationPermissionReview: true,
+        segments: ['(tabs)', 'program'],
+      })
+    ).toBe(NOTIFICATION_PERMISSION_REVIEW_ROUTE);
+
+    expect(
+      guardTarget({
+        isSubscribed: true,
+        needsNotificationPermissionReview: true,
+        segments: ['notification-permission-review'],
+      })
+    ).toBeNull();
+  });
+
+  it('prioritizes legacy queue review before notification review', () => {
+    expect(
+      guardTarget({
+        isSubscribed: true,
+        needsNotificationPermissionReview: true,
+        needsProgramQueueReview: true,
+        segments: ['(tabs)', 'program'],
+      })
+    ).toBe(PROGRAM_QUEUE_REVIEW_ROUTE);
   });
 
   it('sends subscribed users from stray routes back home', () => {
