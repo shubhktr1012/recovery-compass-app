@@ -4,6 +4,7 @@ import {
   HOME_ROUTE,
   PAYWALL_ROUTE,
   PERSONALIZATION_ROUTE,
+  PROGRAM_QUEUE_REVIEW_ROUTE,
   PROGRAM_START_ROUTE,
   RESET_PASSWORD_ROUTE,
   WELCOME_ROUTE,
@@ -19,6 +20,7 @@ export type NavigationGuardState = {
   isSubscribed: boolean;
   modeParam?: string | null;
   needsOnboardingRealignment: boolean;
+  needsProgramQueueReview: boolean;
   needsProgramSetup: boolean;
   onboardingComplete?: boolean | null;
   segments: RouteSegments;
@@ -51,6 +53,7 @@ function isAllowedSubscribedRoute(segments: RouteSegments, modeParam?: string | 
   const inAccountStack = segments[0] === 'account';
   const inDayDetail = segments[0] === 'day-detail';
   const inProgramStartSetup = segments[0] === 'program-start';
+  const inProgramQueueReview = segments[0] === 'program-queue-review';
   const inProgramComplete = segments[0] === 'program-complete';
   const inPaywall = isAuthScreen(segments, 'paywall');
   const inManualRealignment = isAuthScreen(segments, 'personalization') && modeParam === 'realign';
@@ -60,6 +63,7 @@ function isAllowedSubscribedRoute(segments: RouteSegments, modeParam?: string | 
     inAccountStack ||
     inDayDetail ||
     inProgramStartSetup ||
+    inProgramQueueReview ||
     inProgramComplete ||
     inPaywall ||
     inManualRealignment
@@ -83,6 +87,7 @@ export function getNavigationGuardTarget(state: NavigationGuardState): Href | nu
     isSubscribed,
     modeParam,
     needsOnboardingRealignment,
+    needsProgramQueueReview,
     needsProgramSetup,
     onboardingComplete,
     segments,
@@ -110,6 +115,10 @@ export function getNavigationGuardTarget(state: NavigationGuardState): Href | nu
 
     if (needsOnboardingRealignment) {
       return inPersonalization ? null : buildPersonalizationRoute({ mode: 'realign' });
+    }
+
+    if (needsProgramQueueReview) {
+      return segments[0] === 'program-queue-review' ? null : PROGRAM_QUEUE_REVIEW_ROUTE;
     }
 
     return isAllowedSubscribedRoute(segments, modeParam) ? null : HOME_ROUTE;

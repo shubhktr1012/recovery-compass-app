@@ -18,6 +18,7 @@ export const PERSONALIZATION_ROUTE = '/personalization' as Href;
 export const PROGRAM_TAB_ROUTE = '/(tabs)/program' as Href;
 export const JOURNAL_TAB_ROUTE = '/(tabs)/journal' as Href;
 export const PROGRAM_START_ROUTE = '/program-start' as Href;
+export const PROGRAM_QUEUE_REVIEW_ROUTE = '/program-queue-review' as Href;
 export const MY_PROGRAMS_ROUTE = '/account/programs' as Href;
 export const ACCOUNT_SETTINGS_ROUTE = '/account/settings' as Href;
 export const ACCOUNT_STATISTICS_ROUTE = '/account/statistics' as Href;

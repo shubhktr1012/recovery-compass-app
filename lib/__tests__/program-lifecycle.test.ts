@@ -51,6 +51,19 @@ describe('program lifecycle helpers', () => {
     expect(source).toBe(getScheduledProgramUnlockAt('2026-05-20')?.toISOString());
   });
 
+  it('uses reanchored start time for resumed queued programs after their scheduled resume opens', () => {
+    const source = getProgramScheduleStartSource(
+      {
+        currentDay: 4,
+        scheduledStartDate: '2026-05-20',
+        startedAt: '2026-05-17T23:30:00.000Z',
+      },
+      new Date(2026, 4, 20, 7, 0)
+    );
+
+    expect(source).toBe('2026-05-17T23:30:00.000Z');
+  });
+
   it('formats local dates for the configure start RPC', () => {
     expect(getLocalProgramStartDate('tomorrow', new Date(2026, 4, 19, 12, 0))).toBe('2026-05-20');
   });

@@ -5,6 +5,7 @@ import {
   HOME_ROUTE,
   PAYWALL_ROUTE,
   PERSONALIZATION_ROUTE,
+  PROGRAM_QUEUE_REVIEW_ROUTE,
   PROGRAM_START_ROUTE,
   RESET_PASSWORD_ROUTE,
   WELCOME_ROUTE,
@@ -18,6 +19,7 @@ const baseState: NavigationGuardState = {
   isSubscribed: false,
   modeParam: null,
   needsOnboardingRealignment: false,
+  needsProgramQueueReview: false,
   needsProgramSetup: false,
   onboardingComplete: true,
   segments: ['(tabs)', 'index'],
@@ -71,6 +73,24 @@ describe('navigation guard target', () => {
     expect(guardTarget({ isSubscribed: true, segments: ['day-detail'] })).toBeNull();
     expect(guardTarget({ isSubscribed: true, segments: ['account', 'programs'] })).toBeNull();
     expect(guardTarget({ isSubscribed: true, segments: ['program-complete'] })).toBeNull();
+  });
+
+  it('sends subscribed legacy queue users to queue review once', () => {
+    expect(
+      guardTarget({
+        isSubscribed: true,
+        needsProgramQueueReview: true,
+        segments: ['(tabs)', 'program'],
+      })
+    ).toBe(PROGRAM_QUEUE_REVIEW_ROUTE);
+
+    expect(
+      guardTarget({
+        isSubscribed: true,
+        needsProgramQueueReview: true,
+        segments: ['program-queue-review'],
+      })
+    ).toBeNull();
   });
 
   it('sends subscribed users from stray routes back home', () => {

@@ -1195,18 +1195,21 @@ export type Database = {
         Row: {
           active_program: string
           created_at: string
+          queue_reviewed_at: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
           active_program: string
           created_at?: string
+          queue_reviewed_at?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
           active_program?: string
           created_at?: string
+          queue_reviewed_at?: string | null
           updated_at?: string
           user_id?: string
         }

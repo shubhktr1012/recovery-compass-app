@@ -13,6 +13,7 @@ import { LogBox, Platform, Text, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { AppErrorBoundary } from '@/components/AppErrorBoundary';
 import { AppPreloader } from '@/components/ui/AppPreloader';
+import { useProgramQueueReviewStatus } from '@/hooks/useProgramQueueReviewStatus';
 import { getPublicEnvState } from '@/lib/env';
 import { installGlobalErrorHandler } from '@/lib/monitoring';
 import { hasOnboardingContextMismatch } from '@/lib/onboarding.realignment';
@@ -157,6 +158,7 @@ function ProgramNotificationTapRouter({
 
 function NavigationGate({
     needsOnboardingRealignment,
+    needsProgramQueueReview,
     needsProgramSetup,
     isNavigationReady,
     isRecoveringPassword,
@@ -165,6 +167,7 @@ function NavigationGate({
     session,
 }: {
     needsOnboardingRealignment: boolean;
+    needsProgramQueueReview: boolean;
     needsProgramSetup: boolean;
     isNavigationReady: boolean;
     isRecoveringPassword: boolean;
@@ -193,6 +196,7 @@ function NavigationGate({
           isSubscribed,
           modeParam,
           needsOnboardingRealignment,
+          needsProgramQueueReview,
           needsProgramSetup,
           onboardingComplete: profile?.onboarding_complete ?? null,
           segments,
@@ -217,6 +221,7 @@ function NavigationGate({
     isNavigationReady,
     modeParam,
     needsOnboardingRealignment,
+    needsProgramQueueReview,
     needsProgramSetup,
     rootNavigationState?.key,
     session,
@@ -233,6 +238,7 @@ function NavigationGate({
 function RootLayoutContent() {
   const { session, isLoading: isAuthLoading, isRecoveringPassword } = useAuth();
   const { access, profile, isSubscribed, isLoading: isProfileLoading } = useProfile();
+  const { isLoading: isQueueReviewLoading, shouldReviewQueue } = useProgramQueueReviewStatus();
   const [fontsLoaded] = useFonts({
     'Erode': ErodeRegular,
     'Erode-Regular': ErodeRegular,
@@ -254,7 +260,7 @@ function RootLayoutContent() {
     'Satoshi-Bold': SatoshiBold,
   });
 
-  const isLoading = isAuthLoading || (session ? isProfileLoading : false);
+  const isLoading = isAuthLoading || (session ? isProfileLoading || isQueueReviewLoading : false);
   const needsOnboardingRealignment = hasOnboardingContextMismatch({
     onboardingComplete: profile?.onboarding_complete,
     ownedProgram: access.ownedProgram,
@@ -338,6 +344,7 @@ function RootLayoutContent() {
         <Stack.Screen name="account" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="day-detail" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="program-start" options={{ animation: 'fade_from_bottom', gestureEnabled: false }} />
+        <Stack.Screen name="program-queue-review" options={{ animation: 'fade_from_bottom', gestureEnabled: false }} />
         <Stack.Screen name="program-complete" options={{ animation: 'fade_from_bottom', gestureEnabled: false }} />
       </Stack>
       <NavigationGate
@@ -345,6 +352,7 @@ function RootLayoutContent() {
         isRecoveringPassword={isRecoveringPassword}
         isSubscribed={isSubscribed}
         needsOnboardingRealignment={needsOnboardingRealignment}
+        needsProgramQueueReview={shouldReviewQueue}
         needsProgramSetup={needsProgramSetup}
         profile={profile}
         session={session}

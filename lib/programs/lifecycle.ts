@@ -89,9 +89,22 @@ export function isProgramStartPending(
 }
 
 export function getProgramScheduleStartSource(
-  access: Pick<ProgramAccessSnapshot, 'startedAt' | 'scheduledStartDate'>
+  access: Pick<ProgramAccessSnapshot, 'startedAt' | 'scheduledStartDate'> & {
+    currentDay?: number | null;
+  },
+  now: Date = new Date()
 ) {
-  return getScheduledProgramUnlockAt(access.scheduledStartDate)?.toISOString() ?? access.startedAt;
+  const scheduledUnlockAt = getScheduledProgramUnlockAt(access.scheduledStartDate);
+
+  if (scheduledUnlockAt && now.getTime() < scheduledUnlockAt.getTime()) {
+    return scheduledUnlockAt.toISOString();
+  }
+
+  if ((access.currentDay ?? 1) > 1 && access.startedAt) {
+    return access.startedAt;
+  }
+
+  return scheduledUnlockAt?.toISOString() ?? access.startedAt;
 }
 
 export function formatScheduledProgramStartLabel(
