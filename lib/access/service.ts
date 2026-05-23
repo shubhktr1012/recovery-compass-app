@@ -734,18 +734,25 @@ export class AccessService {
 
   static async recordOwnedProgramPurchase(userId: string, programSlug: ProgramSlug) {
     try {
-      const { data, error } = await supabase.rpc('record_owned_program_purchase', {
-        p_program_id: programSlug,
+      const { data, error } = await supabase.functions.invoke<{
+        access?: OwnedProgramPurchaseRow | null;
+        error?: string;
+        success?: boolean;
+      }>('verify-revenuecat-purchase', {
+        body: {
+          programSlug,
+        },
       });
 
       if (error) {
-        if (isMissingFunctionError(error, 'record_owned_program_purchase')) {
-          return null;
-        }
         throw error;
       }
 
-      return ((data ?? []) as OwnedProgramPurchaseRow[])
+      if (!data?.success || !data.access) {
+        throw new Error(data?.error ?? 'Purchase could not be verified.');
+      }
+
+      return ([data.access] as OwnedProgramPurchaseRow[])
         .map((row) => ({
           completionState: (row.completion_state as CompletionState | null) ?? 'not_started',
           programSlug: normalizeProgramSlug(row.owned_program),
