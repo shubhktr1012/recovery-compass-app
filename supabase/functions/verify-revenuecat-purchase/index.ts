@@ -1,8 +1,7 @@
 /* eslint-disable import/no-unresolved */
 
-// eslint-disable-next-line import/no-unresolved -- resolved via supabase/functions/deno.json import map
-import { serve } from "std/http/server.ts";
-import { createClient } from "@supabase/supabase-js";
+import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
+import { createClient } from "npm:@supabase/supabase-js@2";
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL");
 const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
