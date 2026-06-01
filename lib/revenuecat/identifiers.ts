@@ -1,5 +1,7 @@
 export const DEFAULT_SIX_DAY_REVENUECAT_ID = 'six_day_control';
 export const DEFAULT_NINETY_DAY_REVENUECAT_ID = 'ninety_day_quit';
+export const DEFAULT_SMOKING_ALCOHOL_QUIT_REVENUECAT_ID = 'smoking_alcohol_quit';
+export const DEFAULT_GUT_HEALTH_RESET_REVENUECAT_ID = 'gut_health_reset';
 export const REVENUECAT_CANONICAL_OFFERING_ID = 'main_production';
 
 export const SIX_DAY_REVENUECAT_ALIASES = [
@@ -17,4 +19,24 @@ export const NINETY_DAY_REVENUECAT_ALIASES = [
   '90daytransform',
   'ninety_day_transform',
   '90_day_quit',
+] as const;
+
+export const SMOKING_ALCOHOL_QUIT_REVENUECAT_ALIASES = [
+  DEFAULT_SMOKING_ALCOHOL_QUIT_REVENUECAT_ID,
+  '21_day_smoking_alcohol_quit',
+  '21-day-smoking-alcohol-quit',
+  '21daysmokingalcoholquit',
+  'smoking_alcohol_quit',
+  'smoking-alcohol-quit',
+  'smokingalcoholquit',
+] as const;
+
+export const GUT_HEALTH_RESET_REVENUECAT_ALIASES = [
+  DEFAULT_GUT_HEALTH_RESET_REVENUECAT_ID,
+  '21_day_gut_reset',
+  '21-day-gut-reset',
+  '21daygutreset',
+  'gut_health_reset',
+  'gut-health-reset',
+  'guthealthreset',
 ] as const;

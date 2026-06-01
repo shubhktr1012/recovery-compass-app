@@ -26,17 +26,21 @@ const normalize = (value: string | null | undefined) => value?.trim().toLowerCas
 
 const APP_SIX_DAY_PROGRAM = "six_day_reset";
 const APP_NINETY_DAY_PROGRAM = "ninety_day_transform";
+const APP_SMOKING_ALCOHOL_QUIT_PROGRAM = "smoking_alcohol_quit";
 const APP_SLEEP_RESET_PROGRAM = "sleep_disorder_reset";
 const APP_ENERGY_VITALITY_PROGRAM = "energy_vitality";
 const APP_AGE_REVERSAL_PROGRAM = "age_reversal";
 const APP_MALE_VITALITY_PROGRAM = "male_sexual_health";
+const APP_GUT_HEALTH_RESET_PROGRAM = "gut_health_reset";
 
 const DEFAULT_SIX_DAY_REVENUECAT_ID = "six_day_control";
 const DEFAULT_NINETY_DAY_REVENUECAT_ID = "ninety_day_quit";
+const DEFAULT_SMOKING_ALCOHOL_QUIT_ID = "smoking_alcohol_quit";
 const DEFAULT_SLEEP_RESET_REVENUECAT_ID = "sleep_disorder_reset";
 const DEFAULT_ENERGY_VITALITY_ID = "energy_vitality";
 const DEFAULT_AGE_REVERSAL_ID = "age_reversal";
 const DEFAULT_MALE_VITALITY_ID = "male_sexual_health";
+const DEFAULT_GUT_HEALTH_RESET_ID = "gut_health_reset";
 
 const parseCandidates = (value: string | null | undefined, fallbacks: string[]) =>
   Array.from(
@@ -49,6 +53,27 @@ const parseCandidates = (value: string | null | undefined, fallbacks: string[]) 
   );
 
 const PROGRAM_MATCHERS = [
+  {
+    programSlug: APP_SMOKING_ALCOHOL_QUIT_PROGRAM,
+    entitlementIds: parseCandidates(Deno.env.get("RC_SMOKING_ALCOHOL_QUIT_ENTITLEMENT_ID"), [
+      DEFAULT_SMOKING_ALCOHOL_QUIT_ID,
+      "21_day_smoking_alcohol_quit",
+      "21-day-smoking-alcohol-quit",
+      "21daysmokingalcoholquit",
+      "smoking_alcohol_quit",
+      "smoking-alcohol-quit",
+      "smokingalcoholquit",
+    ]),
+    productIds: parseCandidates(Deno.env.get("RC_SMOKING_ALCOHOL_QUIT_PRODUCT_IDS"), [
+      DEFAULT_SMOKING_ALCOHOL_QUIT_ID,
+      "21_day_smoking_alcohol_quit",
+      "21-day-smoking-alcohol-quit",
+      "21daysmokingalcoholquit",
+      "smoking_alcohol_quit",
+      "smoking-alcohol-quit",
+      "smokingalcoholquit",
+    ]),
+  },
   {
     programSlug: APP_NINETY_DAY_PROGRAM,
     entitlementIds: parseCandidates(Deno.env.get("RC_90_DAY_ENTITLEMENT_ID"), [
@@ -145,6 +170,27 @@ const PROGRAM_MATCHERS = [
       "male-vitality",
       "male_vitality",
       "malesexualhealth",
+    ]),
+  },
+  {
+    programSlug: APP_GUT_HEALTH_RESET_PROGRAM,
+    entitlementIds: parseCandidates(Deno.env.get("RC_GUT_HEALTH_RESET_ENTITLEMENT_ID"), [
+      DEFAULT_GUT_HEALTH_RESET_ID,
+      "21_day_gut_reset",
+      "21-day-gut-reset",
+      "21daygutreset",
+      "gut_health_reset",
+      "gut-health-reset",
+      "guthealthreset",
+    ]),
+    productIds: parseCandidates(Deno.env.get("RC_GUT_HEALTH_RESET_PRODUCT_IDS"), [
+      DEFAULT_GUT_HEALTH_RESET_ID,
+      "21_day_gut_reset",
+      "21-day-gut-reset",
+      "21daygutreset",
+      "gut_health_reset",
+      "gut-health-reset",
+      "guthealthreset",
     ]),
   },
 ] as const;
