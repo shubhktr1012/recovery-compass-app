@@ -16,7 +16,7 @@ import Purchases, { PURCHASES_ERROR_CODE, PurchasesPackage } from 'react-native-
 import { Ionicons } from '@expo/vector-icons';
 import { useQueryClient } from '@tanstack/react-query';
 
-import { PROGRAM_METADATA } from '@/content/programs/metadata';
+import { PROGRAM_METADATA, isPublicCatalogProgram } from '@/content/programs/metadata';
 import { captureError } from '@/lib/monitoring';
 import { hasAnyProgramEntitlement } from '@/lib/access/entitlements';
 import { AccessService } from '@/lib/access/service';
@@ -33,6 +33,7 @@ import {
   MY_PROGRAMS_ROUTE,
   PROGRAM_START_ROUTE,
   PROGRAM_TAB_ROUTE,
+  WELCOME_ROUTE,
   buildPersonalizationRoute,
 } from '@/lib/navigation/routes';
 import { assertRevenueCatReady, waitForRevenueCatReady } from '@/lib/revenuecat/runtime';
@@ -63,8 +64,12 @@ function getRecommendedPrograms(programSlug: ProgramSlug | null | undefined): Pr
     return [];
   }
 
-  if (programSlug === 'six_day_reset') {
-    return ['six_day_reset', 'ninety_day_transform'];
+  if (
+    programSlug === 'six_day_reset' ||
+    programSlug === 'ninety_day_transform' ||
+    programSlug === 'smoking_alcohol_quit'
+  ) {
+    return ['smoking_alcohol_quit'];
   }
 
   return [programSlug];
@@ -159,7 +164,7 @@ export default function Paywall() {
   const navigation = useNavigation<any>();
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
-  const { user } = useAuth();
+  const { signOut, user } = useAuth();
   const {
     access,
     profile,
@@ -176,6 +181,7 @@ export default function Paywall() {
   const [offeringsRetryKey, setOfferingsRetryKey] = useState(0);
   const [selectedPackageId, setSelectedPackageId] = useState<string | null>(null);
   const [canAutoRedirectOwnedUser, setCanAutoRedirectOwnedUser] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
   const hasProgramRouteParam = Array.isArray(params.program)
     ? params.program.some((value) => Boolean(value))
     : Boolean(params.program);
@@ -359,9 +365,38 @@ export default function Paywall() {
     }
   };
 
+  const handleSwitchAccount = () => {
+    if (loading || signingOut) {
+      return;
+    }
+
+    Alert.alert(
+      'Switch Account?',
+      "This will sign you out of your current session so you can log into a different account. Don't worry, your progress is saved.",
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Sign Out',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              setSigningOut(true);
+              await signOut();
+              router.replace(WELCOME_ROUTE);
+            } catch (error: any) {
+              Alert.alert('Could not sign out', error?.message ?? 'Please try again.');
+            } finally {
+              setSigningOut(false);
+            }
+          },
+        },
+      ]
+    );
+  };
+
   const visibleProgramSlugs = useMemo(() => {
     if (targetedProgram) {
-      return [targetedProgram] as ProgramSlug[];
+      return getRecommendedPrograms(targetedProgram);
     }
 
     if (hasTrustedEntitlement) {
@@ -409,7 +444,7 @@ export default function Paywall() {
 
     packages.forEach((pack) => {
       const slug = getProgramSlugForPackage(pack);
-      if (!slug || visibleSlugSet.has(slug) || uniquePackages.has(slug)) {
+      if (!slug || visibleSlugSet.has(slug) || uniquePackages.has(slug) || !isPublicCatalogProgram(slug)) {
         return;
       }
 
@@ -704,20 +739,55 @@ export default function Paywall() {
           <Pressable
             onPress={handleBack}
             hitSlop={20}
-            style={{
+            style={({ pressed }) => ({
               width: 32,
               height: 32,
               borderRadius: 16,
-              backgroundColor: 'rgba(6,41,12,0.06)',
+              backgroundColor: pressed ? 'rgba(6,41,12,0.12)' : 'rgba(6,41,12,0.06)',
               alignItems: 'center',
               justifyContent: 'center',
-            }}
+            })}
             accessibilityRole="button"
             accessibilityLabel="Go back"
           >
             <Ionicons name="chevron-back" size={14} color="rgba(6,41,12,0.55)" />
           </Pressable>
-          <View style={{ width: 32, height: 32 }} />
+          <Pressable
+            onPress={handleSwitchAccount}
+            disabled={loading || signingOut}
+            hitSlop={12}
+            style={({ pressed }) => ({
+              height: 32,
+              borderRadius: 16,
+              paddingHorizontal: 12,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: pressed ? 'rgba(6,41,12,0.08)' : 'rgba(6,41,12,0.04)',
+              borderWidth: 1,
+              borderColor: 'rgba(6,41,12,0.04)',
+              opacity: loading || signingOut ? 0.55 : 1,
+            })}
+            accessibilityRole="button"
+            accessibilityLabel="Switch to a different account"
+            accessibilityState={{ disabled: loading || signingOut }}
+          >
+            {signingOut ? (
+              <ActivityIndicator size="small" color="rgba(6,41,12,0.4)" style={{ marginRight: 6 }} />
+            ) : (
+              <Ionicons name="person-outline" size={13} color="rgba(6,41,12,0.56)" style={{ marginRight: 6 }} />
+            )}
+            <Text
+              numberOfLines={1}
+              style={{
+                fontFamily: 'Satoshi-Medium',
+                fontSize: 12,
+                color: 'rgba(6,41,12,0.58)',
+              }}
+            >
+              {signingOut ? 'Signing out...' : 'Switch Account'}
+            </Text>
+          </Pressable>
         </View>
 
         {/* ── Centered headline block (always rendered) ── */}
