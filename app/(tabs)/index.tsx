@@ -44,6 +44,7 @@ import type { QuestionnaireAnswersSnapshot } from '@/lib/program-statistics';
 import { StepPermissionPrompt } from '@/components/steps/StepPermissionPrompt';
 import { AppTypography } from '@/constants/typography';
 import { MotionScale } from '@/lib/motion/tokens';
+import { isPublicCatalogProgram } from '@/content/programs/metadata';
 
 const EMPTY_DAY_NUMBERS: number[] = [];
 
@@ -100,7 +101,7 @@ function FreeTierHomeScreen() {
   const { programs, isLoading: isProgramsLoading } = usePrograms();
   const recommendedProgram = profile?.recommended_program ?? null;
   const explorePrograms = useMemo(
-    () => orderProgramsForRecommendation(programs, recommendedProgram),
+    () => orderProgramsForRecommendation(programs.filter((program) => isPublicCatalogProgram(program.slug)), recommendedProgram),
     [programs, recommendedProgram]
   );
   const profileIdentity = resolveProfileIdentity({
@@ -310,7 +311,7 @@ function HomeScreenContent({ activeProgram }: { activeProgram: ProgramSlug }) {
   ]);
   const explorePrograms = isOwnedProgramsLoading
     ? []
-    : programs.filter((entry) => !ownedProgramSlugSet.has(entry.slug));
+    : programs.filter((entry) => !ownedProgramSlugSet.has(entry.slug) && isPublicCatalogProgram(entry.slug));
   return (
     <View className="flex-1 bg-surface">
       <StatusBar style="light" />

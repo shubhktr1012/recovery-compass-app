@@ -58,15 +58,9 @@ import { useProfile } from '@/providers/profile';
 import type { DayContent, ProgramSlug } from '@/types/content';
 import { TIME_SLOT_WINDOWS, type CardState, type DayState, type TimeSlot } from '@/types/resolver';
 import type { AnalyticsEventData } from '@/lib/analytics';
+import { PROGRAM_METADATA } from '@/content/programs/metadata';
 
-const PROGRAM_SLUGS: ProgramSlug[] = [
-  'six_day_reset',
-  'ninety_day_transform',
-  'sleep_disorder_reset',
-  'energy_vitality',
-  'age_reversal',
-  'male_sexual_health',
-];
+const PROGRAM_SLUGS = Object.keys(PROGRAM_METADATA) as ProgramSlug[];
 
 function isProgramSlug(value: string | null | undefined): value is ProgramSlug {
   if (!value) return false;

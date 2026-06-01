@@ -71,6 +71,7 @@ const OPTIONAL_PROFILE_COLUMNS = ['phone_number', 'phone_verified_at', 'free_tie
 export const PROFILE_QUERY_KEY = (userId: string | null) => ['profile', userId];
 const PROFILE_IMAGE_BUCKET = 'profile-images';
 const PROFILE_IMAGE_SIGNED_URL_TTL_SECONDS = 60 * 60 * 24 * 7;
+const DEFAULT_ELIGIBLE_PRODUCTS: ProgramSlug[] = ['smoking_alcohol_quit'];
 
 function isAbsoluteUrl(value: string) {
   return /^https?:\/\//i.test(value);
@@ -116,7 +117,7 @@ const ProfileContext = createContext<ProfileContextType>({
     pausedAt: null,
     completedAt: null,
     archivedAt: null,
-    eligibleProducts: ['six_day_reset', 'ninety_day_transform'],
+    eligibleProducts: DEFAULT_ELIGIBLE_PRODUCTS,
     source: 'local',
   },
   progress: null,
@@ -132,7 +133,7 @@ const ProfileContext = createContext<ProfileContextType>({
     pausedAt: null,
     completedAt: null,
     archivedAt: null,
-    eligibleProducts: ['six_day_reset', 'ninety_day_transform'],
+    eligibleProducts: DEFAULT_ELIGIBLE_PRODUCTS,
     source: 'local',
   }),
   refreshProfile: async () => { },
@@ -203,7 +204,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     pausedAt: null,
     completedAt: null,
     archivedAt: null,
-    eligibleProducts: ['six_day_reset', 'ninety_day_transform'],
+    eligibleProducts: DEFAULT_ELIGIBLE_PRODUCTS,
     source: 'local',
   });
   const [progress, setProgress] = useState<ProgramProgressRecord | null>(null);
@@ -390,7 +391,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         pausedAt: null,
         completedAt: null,
         archivedAt: null,
-        eligibleProducts: ['six_day_reset', 'ninety_day_transform'],
+        eligibleProducts: DEFAULT_ELIGIBLE_PRODUCTS,
         source: 'local',
       } satisfies ProgramAccessSnapshot;
     }
@@ -675,7 +676,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         pausedAt: null,
         completedAt: null,
         archivedAt: null,
-        eligibleProducts: ['six_day_reset', 'ninety_day_transform'],
+        eligibleProducts: DEFAULT_ELIGIBLE_PRODUCTS,
         source: 'local',
       });
       setProgress(null);
@@ -705,7 +706,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
               pausedAt: null,
               completedAt: null,
               archivedAt: null,
-              eligibleProducts: ['six_day_reset', 'ninety_day_transform'],
+              eligibleProducts: DEFAULT_ELIGIBLE_PRODUCTS,
               source: 'local',
             } satisfies ProgramAccessSnapshot;
 
@@ -837,7 +838,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
       pausedAt: null,
       completedAt: null,
       archivedAt: null,
-      eligibleProducts: ['six_day_reset', 'ninety_day_transform'],
+      eligibleProducts: DEFAULT_ELIGIBLE_PRODUCTS,
       source: 'local',
     });
     setProgress(null);

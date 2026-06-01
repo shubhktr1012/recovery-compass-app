@@ -5,6 +5,10 @@ import { SIX_DAY_RESET_PROGRAM } from '@/content/programs/six-day-reset';
 import type { DayContent, ProgramContent, ProgramSlug } from '@/types/content';
 
 const PROGRAMS: Record<ProgramSlug, ProgramContent> = {
+  smoking_alcohol_quit: {
+    ...PROGRAM_METADATA.smoking_alcohol_quit,
+    days: [],
+  },
   six_day_reset: SIX_DAY_RESET_PROGRAM,
   ninety_day_transform: NINETY_DAY_TRANSFORM_PROGRAM,
   sleep_disorder_reset: {
@@ -18,6 +22,10 @@ const PROGRAMS: Record<ProgramSlug, ProgramContent> = {
   age_reversal: AGE_REVERSAL_PROGRAM,
   male_sexual_health: {
     ...PROGRAM_METADATA.male_sexual_health,
+    days: [],
+  },
+  gut_health_reset: {
+    ...PROGRAM_METADATA.gut_health_reset,
     days: [],
   },
 };

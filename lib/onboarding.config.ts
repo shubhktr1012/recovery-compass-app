@@ -26,8 +26,8 @@ export const PATH_OPTIONS: SelectionOption<OnboardingPath>[] = [
 export const GUIDED_ISSUE_OPTIONS: SelectionOption<GuidedIssueId>[] = [
   {
     id: 'cravings_smoking_urges',
-    label: 'Cravings / smoking urges',
-    description: 'You keep getting pulled back into smoking even when you want out.',
+    label: 'Smoking / drinking urges',
+    description: 'You keep getting pulled back into smoking, alcohol, or both even when you want out.',
   },
   {
     id: 'poor_sleep',
@@ -59,16 +59,22 @@ export const GUIDED_ISSUE_OPTIONS: SelectionOption<GuidedIssueId>[] = [
     label: 'Low libido / poor performance',
     description: 'Confidence, desire, or sexual performance feel off right now.',
   },
+  {
+    id: 'gut_discomfort',
+    label: 'Gut discomfort',
+    description: 'Bloating, heaviness, irregularity, or food sensitivity keeps showing up.',
+  },
 ];
 
 export const SECONDARY_SYMPTOM_OPTIONS: SelectionOption<SecondarySymptomId>[] = [
-  { id: 'cravings_smoking_urges', label: 'Cravings / smoking urges' },
+  { id: 'cravings_smoking_urges', label: 'Smoking / drinking urges' },
   { id: 'poor_sleep', label: 'Poor sleep' },
   { id: 'low_energy', label: 'Low energy' },
   { id: 'brain_fog', label: 'Brain fog' },
   { id: 'stress_overload', label: 'Stress overload' },
   { id: 'weight_gain_slowed_metabolism', label: 'Weight gain / slowed metabolism' },
   { id: 'low_libido_poor_performance', label: 'Low libido / poor performance' },
+  { id: 'gut_discomfort', label: 'Gut discomfort' },
 ];
 
 const JOURNEY_ORDER: JourneyKey[] = [
@@ -77,6 +83,7 @@ const JOURNEY_ORDER: JourneyKey[] = [
   'energy_vitality',
   'age_reversal',
   'male_sexual_health',
+  'gut_health_reset',
 ];
 
 function createStartReasonQuestion(idPrefix: string) {
@@ -103,38 +110,38 @@ function createStartReasonQuestion(idPrefix: string) {
 
 const JOURNEY_CONFIG: Record<JourneyKey, JourneyConfig> = {
   smoking: {
-    selectionLabel: 'Quit Smoking',
-    selectionDescription: 'Interrupt the craving loop and regain control without relying on pressure or perfection.',
-    primaryGoal: 'Break the craving loop and rebuild calmer, more reliable control over smoking triggers.',
+    selectionLabel: 'Quit Smoking or Drinking',
+    selectionDescription: 'Interrupt the smoking, alcohol, or combined craving loop with a structured 21-day path.',
+    primaryGoal: 'Break the craving loop and rebuild calmer, more reliable control over smoking or drinking triggers.',
     recommendation: {
-      title: 'Your smoking paths are ready.',
-      subtitle: 'We recommend starting with a smoking program that interrupts urges and rebuilds control from the ground up.',
+      title: '21-Day Smoking & Alcohol Quit fits your current pattern.',
+      subtitle: 'We recommend the 21-day quit program that maps your triggers, builds urge tools, and supports slip recovery.',
       whyFits:
-        'Your main issue points to a nicotine loop driven by stress, habit timing, and environmental triggers, not just motivation.',
+        'Your main issue points to a substance loop driven by stress, habit timing, emotional cues, and environment, not just motivation.',
       focusLabel: 'What this path targets',
       focusPoints: [
-        'Interrupt automatic smoking moments before they run the day.',
+        'Interrupt automatic smoking or drinking moments before they run the day.',
         'Lower the intensity of craving spikes with simple regulation tools.',
-        'Build enough control to choose between a short reset or a longer guided quit path.',
+        'Build a 21-day quit structure with honesty, replacement practices, and relapse prevention.',
       ],
     },
     questions: {
       friction: {
         id: 'smoking_friction',
-        title: 'What about smoking is hurting you most right now?',
+        title: 'What about smoking or drinking is hurting you most right now?',
         description: 'Choose the one impact that feels most true in your day-to-day life.',
         type: 'single_select',
         required: true,
         options: [
           { id: 'controlled_by_cravings', label: 'Feeling controlled by cravings' },
-          { id: 'hiding_from_family', label: 'The anxiety of hiding it from family or people close to me' },
-          { id: 'stamina_drop', label: 'My stamina and breathing keep getting worse' },
+          { id: 'hiding_from_family', label: 'The anxiety of hiding it from people close to me' },
+          { id: 'body_energy_drop', label: 'My body, energy, or sleep keeps getting worse' },
           { id: 'health_crash_fear', label: 'The fear of a sudden health crash keeps following me' },
         ],
       },
       duration: {
         id: 'smoking_duration',
-        title: 'How long has smoking been part of your routine?',
+        title: 'How long has this habit been part of your routine?',
         description: 'This gives us history and context, not judgment.',
         type: 'single_select',
         required: true,
@@ -147,7 +154,7 @@ const JOURNEY_CONFIG: Record<JourneyKey, JourneyConfig> = {
       },
       lifestyle: {
         id: 'smoking_disconnect',
-        title: 'Does your current lifestyle give you space to disconnect from smoking cues?',
+        title: 'Does your current lifestyle give you space to disconnect from habit cues?',
         description: 'This helps us understand how much automatic pressure surrounds the habit.',
         type: 'single_select',
         required: true,
@@ -174,11 +181,11 @@ const JOURNEY_CONFIG: Record<JourneyKey, JourneyConfig> = {
       severity: {
         id: 'smoking_baseline',
         title: 'Tell us about your daily habit.',
-        description: 'Provide your typical daily count and spend. We use this to calculate your savings.',
+        description: 'Provide your typical daily count and spend. Use cigarettes, drinks, or combined episodes.',
         type: 'compound_number_input',
         required: true,
         inputs: [
-          { id: 'smoking_daily_count', label: 'Cigarettes per day', placeholder: 'Count' },
+          { id: 'smoking_daily_count', label: 'Uses per day', placeholder: 'Count' },
           { id: 'smoking_daily_spend', label: 'Daily spend', placeholder: 'Amount in INR' }
         ]
       },
@@ -198,12 +205,12 @@ const JOURNEY_CONFIG: Record<JourneyKey, JourneyConfig> = {
       outcome: {
         id: 'smoking_outcome',
         title: 'Which outcome do you need most right now?',
-        description: 'This helps us choose between immediate control and a longer quit path.',
+        description: 'This helps us understand the kind of control you want from the 21-day path.',
         type: 'single_select',
         required: true,
         options: [
           { id: 'immediate_control', label: 'I need immediate control over urges' },
-          { id: 'full_quit_longer_path', label: 'I want to fully quit with a longer guided path' },
+          { id: 'full_quit_longer_path', label: 'I want to fully quit with a guided path' },
           { id: 'not_sure', label: 'I am not sure yet' },
         ],
       },
@@ -626,6 +633,116 @@ const JOURNEY_CONFIG: Record<JourneyKey, JourneyConfig> = {
       startReason: createStartReasonQuestion('male'),
     },
   },
+  gut_health_reset: {
+    selectionLabel: '21-Day Gut Reset',
+    selectionDescription: 'Reset bloating, heaviness, and eating rhythm with a structured daily gut-health path.',
+    primaryGoal: 'Rebuild gut comfort and daily digestive rhythm through hydration, food timing, movement, and calm regulation.',
+    recommendation: {
+      title: '21-Day Gut Reset fits your current pattern.',
+      subtitle: 'Your answers point to a gut rhythm problem that needs consistency, not random food rules.',
+      whyFits:
+        'Bloating, heaviness, irregularity, and food sensitivity often get worse when meals, stress, hydration, and movement are inconsistent.',
+      focusLabel: 'What this path targets',
+      focusPoints: [
+        'Reduce daily gut discomfort by rebuilding steady hydration and meal timing.',
+        'Use gentle movement and breathing to support digestion instead of forcing strict diets.',
+        'Create a 21-day reset that is practical enough to repeat when your routine gets disrupted.',
+      ],
+    },
+    questions: {
+      friction: {
+        id: 'gut_friction',
+        title: 'What is the biggest gut issue showing up right now?',
+        description: 'Choose the one that affects your day most often.',
+        type: 'single_select',
+        required: true,
+        options: [
+          { id: 'bloating_heaviness', label: 'Bloating or heaviness after meals' },
+          { id: 'irregular_bowels', label: 'Irregular bowel routine' },
+          { id: 'food_sensitivity', label: 'Food sensitivity or uncertainty' },
+          { id: 'low_appetite_energy', label: 'Low appetite, energy, or comfort' },
+        ],
+      },
+      duration: {
+        id: 'gut_duration',
+        title: 'How long has your gut felt off?',
+        description: 'Pick the closest timeline.',
+        type: 'single_select',
+        required: true,
+        options: [
+          { id: 'few_weeks', label: 'A few weeks' },
+          { id: 'few_months', label: 'A few months' },
+          { id: '6_12_months', label: '6-12 months' },
+          { id: 'over_year', label: 'More than a year' },
+        ],
+      },
+      lifestyle: {
+        id: 'gut_routine',
+        title: 'How consistent are your meals and hydration right now?',
+        description: 'This helps us understand how much rhythm needs rebuilding.',
+        type: 'single_select',
+        required: true,
+        options: [
+          { id: 'very_consistent', label: 'Very consistent most days' },
+          { id: 'somewhat_consistent', label: 'Somewhat consistent' },
+          { id: 'chaotic_timing', label: 'Meal timing is chaotic' },
+          { id: 'skip_or_overeat', label: 'I often skip meals or overeat later' },
+        ],
+      },
+      trigger: {
+        id: 'gut_trigger',
+        title: 'What seems to trigger it most?',
+        description: 'Choose the pattern that feels most familiar.',
+        type: 'single_select',
+        required: true,
+        options: [
+          { id: 'heavy_meals', label: 'Heavy or late meals' },
+          { id: 'stress', label: 'Stress and rushing' },
+          { id: 'low_water', label: 'Low water or too much caffeine' },
+          { id: 'unclear_foods', label: 'I cannot tell which foods trigger it' },
+        ],
+      },
+      severity: {
+        id: 'gut_frequency',
+        title: 'How often does this affect you in a normal week?',
+        description: 'Pick the closest pattern.',
+        type: 'single_select',
+        required: true,
+        options: [
+          { id: '1_2_days', label: '1-2 days' },
+          { id: '3_4_days', label: '3-4 days' },
+          { id: '5_plus_days', label: '5+ days' },
+          { id: 'almost_daily', label: 'Almost daily' },
+        ],
+      },
+      baseline: [
+        {
+          id: 'gut_water_glasses',
+          title: 'How many glasses of water do you usually drink daily?',
+          description: 'A rough daily count is enough.',
+          type: 'number_input',
+          minValue: 0,
+          required: true,
+          placeholder: 'Enter a number',
+          keyboardType: 'number-pad',
+        },
+      ],
+      coping: {
+        id: 'gut_coping',
+        title: 'What do you usually do when your gut feels off?',
+        description: 'Choose your most common response.',
+        type: 'single_select',
+        required: true,
+        options: [
+          { id: 'ignore_it', label: 'Ignore it and continue' },
+          { id: 'random_restriction', label: 'Randomly restrict foods' },
+          { id: 'antacids_or_meds', label: 'Use antacids, tablets, or quick fixes' },
+          { id: 'search_online', label: 'Search online and try new rules' },
+        ],
+      },
+      startReason: createStartReasonQuestion('gut'),
+    },
+  },
 };
 
 export function getJourneyConfig(journey: JourneyKey): JourneyConfig {
@@ -679,11 +796,13 @@ export function getGuidedJourney(issueId: GuidedIssueId): JourneyKey {
       return 'age_reversal';
     case 'low_libido_poor_performance':
       return 'male_sexual_health';
+    case 'gut_discomfort':
+      return 'gut_health_reset';
   }
 }
 
 export function getRecommendedProgramForJourney(journey: JourneyKey): ProgramSlug {
-  return journey === 'smoking' ? 'six_day_reset' : journey;
+  return journey === 'smoking' ? 'smoking_alcohol_quit' : journey;
 }
 
 export function getGuidedIssueLabel(issueId: GuidedIssueId | null) {

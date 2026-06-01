@@ -12,6 +12,7 @@ import { useOwnedPrograms } from '@/hooks/useOwnedPrograms';
 import { useAuth } from '@/providers/auth';
 import { useProfile } from '@/providers/profile';
 import { ExplorePrograms, ProgramIcon } from '@/components/dashboard/ExplorePrograms';
+import { isPublicCatalogProgram } from '@/content/programs/metadata';
 import { SkeletonCircle, SkeletonLine, SkeletonTitle } from '@/components/ui/Skeleton';
 import { AppTypography } from '@/constants/typography';
 import type { ProgramContent, ProgramSlug } from '@/types/content';
@@ -489,7 +490,7 @@ export default function ProgramsLibraryScreen() {
         return rankDelta !== 0 ? rankDelta : left.name.localeCompare(right.name);
       });
     const catalogPrograms = programs
-      .filter((program) => !ownedSlugSet.has(program.slug))
+      .filter((program) => !ownedSlugSet.has(program.slug) && isPublicCatalogProgram(program.slug))
       .sort((left, right) => {
         const leftRecommended = left.slug === recommendedProgramSlug ? 1 : 0;
         const rightRecommended = right.slug === recommendedProgramSlug ? 1 : 0;

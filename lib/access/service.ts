@@ -31,6 +31,7 @@ const PROGRESS_STORAGE_KEY = 'program-progress-record';
 const PROGRESS_STORAGE_KEY_PREFIX = `${PROGRESS_STORAGE_KEY}:`;
 const REFRESH_IN_FLIGHT = new Map<string, Promise<ProgramAccessSnapshot>>();
 const SYNC_FROM_REVENUECAT_IN_FLIGHT = new Map<string, Promise<ProgramAccessSnapshot>>();
+const DEFAULT_ELIGIBLE_PRODUCTS: ProgramSlug[] = ['smoking_alcohol_quit'];
 
 type UserDayStateLifecycleRow = {
   day_number: number;
@@ -49,7 +50,7 @@ const DEFAULT_ACCESS_SNAPSHOT: ProgramAccessSnapshot = {
   pausedAt: null,
   completedAt: null,
   archivedAt: null,
-  eligibleProducts: ['six_day_reset', 'ninety_day_transform'],
+  eligibleProducts: DEFAULT_ELIGIBLE_PRODUCTS,
   source: 'local',
 };
 
@@ -141,14 +142,14 @@ function deriveEligibleProducts(snapshot: ProgramAccessSnapshot): ProgramSlug[] 
     snapshot.ownedProgram === 'six_day_reset' &&
     (snapshot.purchaseState === 'owned_completed' || snapshot.purchaseState === 'owned_archived')
   ) {
-    return ['ninety_day_transform'];
+    return ['smoking_alcohol_quit'];
   }
 
   if (snapshot.ownedProgram) {
     return [];
   }
 
-  return ['six_day_reset', 'ninety_day_transform'];
+  return DEFAULT_ELIGIBLE_PRODUCTS;
 }
 
 function normalizeProgramSlug(value: string | null | undefined): ProgramSlug | null {
@@ -255,7 +256,7 @@ function buildSnapshotFromAccessRow(
     pausedAt: selectedRow.paused_at ?? null,
     completedAt: selectedRow.completed_at,
     archivedAt: selectedRow.archived_at,
-    eligibleProducts: ['six_day_reset', 'ninety_day_transform'],
+    eligibleProducts: DEFAULT_ELIGIBLE_PRODUCTS,
     source: 'supabase',
   };
 

@@ -39,6 +39,7 @@ import { ProgramWatermark } from '@/components/ui/TabWatermarks';
 import { DayContent, ProgramSlug } from '@/types/content';
 import { programQueryKey } from '@/hooks/contentQueryUtils';
 import { AppTypography } from '@/constants/typography';
+import { isPublicCatalogProgram } from '@/content/programs/metadata';
 
 function getDayPreview(day: DayContent) {
   const introCard = day.cards.find((card) => card.type === 'intro');
@@ -112,11 +113,13 @@ function FreeProgramDiscoveryScreen() {
   const { programs, isLoading } = usePrograms();
   const recommendedProgram = profile?.recommended_program ?? null;
   const sortedPrograms = useMemo(() => {
+    const publicPrograms = programs.filter((program) => isPublicCatalogProgram(program.slug));
+
     if (!recommendedProgram) {
-      return programs;
+      return publicPrograms;
     }
 
-    return [...programs].sort((left, right) => {
+    return [...publicPrograms].sort((left, right) => {
       const leftRecommended = left.slug === recommendedProgram ? 1 : 0;
       const rightRecommended = right.slug === recommendedProgram ? 1 : 0;
       return rightRecommended - leftRecommended;

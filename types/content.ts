@@ -1,17 +1,20 @@
 export type ProgramSlug =
   | 'six_day_reset'
   | 'ninety_day_transform'
+  | 'smoking_alcohol_quit'
   | 'sleep_disorder_reset'
   | 'energy_vitality'
   | 'age_reversal'
-  | 'male_sexual_health';
+  | 'male_sexual_health'
+  | 'gut_health_reset';
 
 export type ProgramCategory =
   | 'smoking'
   | 'sleep'
   | 'energy'
   | 'aging'
-  | 'sexual_health';
+  | 'sexual_health'
+  | 'gut_health';
 
 export type ProgramContentStatus = 'sample' | 'ready' | 'placeholder';
 

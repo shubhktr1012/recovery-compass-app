@@ -17,10 +17,12 @@ const LEGACY_DAILY_CHECK_IN_TITLE = 'Daily Progress Check-in';
 const PROGRAM_SLUGS: ProgramSlug[] = [
   'six_day_reset',
   'ninety_day_transform',
+  'smoking_alcohol_quit',
   'sleep_disorder_reset',
   'energy_vitality',
   'age_reversal',
   'male_sexual_health',
+  'gut_health_reset',
 ];
 
 interface NotificationServiceOptions {

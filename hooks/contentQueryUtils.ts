@@ -30,7 +30,7 @@ export class MissingContentError extends Error {
 }
 
 const PROGRAM_SLUGS = Object.keys(PROGRAM_METADATA) as ProgramSlug[];
-const PROGRAM_CATEGORIES = ['smoking', 'sleep', 'energy', 'aging', 'sexual_health'] as const;
+const PROGRAM_CATEGORIES = ['smoking', 'sleep', 'energy', 'aging', 'sexual_health', 'gut_health'] as const;
 
 export type ProgramRow = {
   id: string;

@@ -1,6 +1,18 @@
 import type { ProgramCatalogEntry, ProgramSlug } from '@/types/content';
 
 export const PROGRAM_METADATA: Record<ProgramSlug, ProgramCatalogEntry> = {
+  smoking_alcohol_quit: {
+    slug: 'smoking_alcohol_quit',
+    name: '21-Day Smoking & Alcohol Quit',
+    description: 'A guided quit path for smoking, alcohol, or both, with trigger mapping, urge tools, and slip recovery.',
+    totalDays: 21,
+    category: 'smoking',
+    hasAudio: true,
+    contentStatus: 'ready',
+    priceString: '₹5,999',
+    dailyMinutesLabel: '15–20',
+    phaseCount: 3,
+  },
   six_day_reset: {
     slug: 'six_day_reset',
     name: '6-Day Control',
@@ -33,7 +45,7 @@ export const PROGRAM_METADATA: Record<ProgramSlug, ProgramCatalogEntry> = {
     category: 'sleep',
     hasAudio: true,
     contentStatus: 'ready',
-    priceString: '₹2,599',
+    priceString: '₹4,999',
     dailyMinutesLabel: '10–15',
     phaseCount: 3,
   },
@@ -73,4 +85,29 @@ export const PROGRAM_METADATA: Record<ProgramSlug, ProgramCatalogEntry> = {
     dailyMinutesLabel: '10–15',
     phaseCount: 3,
   },
+  gut_health_reset: {
+    slug: 'gut_health_reset',
+    name: '21-Day Gut Reset',
+    description: 'A structured gut-health reset with daily hydration, nervous-system, movement, and eating-rhythm practices.',
+    totalDays: 21,
+    category: 'gut_health',
+    hasAudio: false,
+    contentStatus: 'ready',
+    priceString: '₹4,999',
+    dailyMinutesLabel: '10–15',
+    phaseCount: 3,
+  },
 };
+
+export const LEGACY_REPLACED_PROGRAM_SLUGS = [
+  'six_day_reset',
+  'ninety_day_transform',
+] as const satisfies readonly ProgramSlug[];
+
+export function isLegacyReplacedProgram(programSlug: ProgramSlug) {
+  return LEGACY_REPLACED_PROGRAM_SLUGS.includes(programSlug as (typeof LEGACY_REPLACED_PROGRAM_SLUGS)[number]);
+}
+
+export function isPublicCatalogProgram(programSlug: ProgramSlug) {
+  return !isLegacyReplacedProgram(programSlug);
+}

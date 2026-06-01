@@ -116,6 +116,7 @@ function getPhaseLabel(dayNumber: number, totalDays: number) {
 
 function getStartReasonPrefix(programSlug: ProgramSlug | null | undefined) {
   switch (programSlug) {
+    case 'smoking_alcohol_quit':
     case 'six_day_reset':
     case 'ninety_day_transform':
       return 'smoking';
@@ -127,6 +128,8 @@ function getStartReasonPrefix(programSlug: ProgramSlug | null | undefined) {
       return 'age';
     case 'male_sexual_health':
       return 'male';
+    case 'gut_health_reset':
+      return 'gut';
     default:
       return null;
   }

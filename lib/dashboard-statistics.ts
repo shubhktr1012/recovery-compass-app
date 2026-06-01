@@ -46,6 +46,7 @@ function getJourneyForProgram(programSlug: ProgramSlug) {
   switch (programSlug) {
     case 'six_day_reset':
     case 'ninety_day_transform':
+    case 'smoking_alcohol_quit':
       return 'smoking';
     case 'sleep_disorder_reset':
       return 'sleep_disorder_reset';
@@ -55,6 +56,8 @@ function getJourneyForProgram(programSlug: ProgramSlug) {
       return 'age_reversal';
     case 'male_sexual_health':
       return 'male_sexual_health';
+    case 'gut_health_reset':
+      return 'gut_health_reset';
   }
 }
 
@@ -62,10 +65,12 @@ function isProgramSlug(value: unknown): value is ProgramSlug {
   return (
     value === 'six_day_reset' ||
     value === 'ninety_day_transform' ||
+    value === 'smoking_alcohol_quit' ||
     value === 'sleep_disorder_reset' ||
     value === 'energy_vitality' ||
     value === 'age_reversal' ||
-    value === 'male_sexual_health'
+    value === 'male_sexual_health' ||
+    value === 'gut_health_reset'
   );
 }
 
@@ -99,11 +104,15 @@ function getProgramSlugFromTargetSelection(targetSelection: string | null | unde
   }
 
   if (normalizedTarget.includes('6-day') || normalizedTarget.includes('6 day')) {
-    return 'six_day_reset';
+    return 'smoking_alcohol_quit';
   }
 
-  if (normalizedTarget.includes('smoking')) {
-    return 'ninety_day_transform';
+  if (
+    normalizedTarget.includes('smoking') ||
+    normalizedTarget.includes('drinking') ||
+    normalizedTarget.includes('alcohol')
+  ) {
+    return 'smoking_alcohol_quit';
   }
 
   if (normalizedTarget.includes('sleep')) {
@@ -120,6 +129,10 @@ function getProgramSlugFromTargetSelection(targetSelection: string | null | unde
 
   if (normalizedTarget.includes('men') || normalizedTarget.includes('sexual')) {
     return 'male_sexual_health';
+  }
+
+  if (normalizedTarget.includes('gut') || normalizedTarget.includes('digest')) {
+    return 'gut_health_reset';
   }
 
   return null;
@@ -170,10 +183,11 @@ function getCurrentStreak(completedDays: number[]) {
 function getQuestionnaireMetricSpecs(programSlug: ProgramSlug): MetricSpec[] {
   switch (programSlug) {
     case 'six_day_reset':
+    case 'smoking_alcohol_quit':
       return [
         {
-          id: 'daily-cigarettes',
-          label: 'Cigarettes / day',
+          id: 'daily-uses',
+          label: 'Daily uses',
           resolve: ({ onboardingResponse }) => {
             const projection = getOnboardingProjection(onboardingResponse);
             return projection.dailyAmount > 0 ? String(projection.dailyAmount) : null;
@@ -207,6 +221,27 @@ function getQuestionnaireMetricSpecs(programSlug: ProgramSlug): MetricSpec[] {
               ? formatInr(projection.projectedSavings90Days)
               : null;
           },
+        },
+      ];
+    case 'gut_health_reset':
+      return [
+        {
+          id: 'weekly-gut-impact',
+          label: 'Weekly impact',
+          resolve: ({ questionnaireAnswers }) =>
+            getQuestionnaireAnswer(questionnaireAnswers, 'gut_frequency'),
+        },
+        {
+          id: 'water-baseline',
+          label: 'Water baseline',
+          resolve: ({ questionnaireAnswers }) =>
+            getQuestionnaireAnswer(questionnaireAnswers, 'gut_water_glasses'),
+        },
+        {
+          id: 'main-trigger',
+          label: 'Main trigger',
+          resolve: ({ questionnaireAnswers }) =>
+            getQuestionnaireAnswer(questionnaireAnswers, 'gut_trigger'),
         },
       ];
     case 'sleep_disorder_reset':
