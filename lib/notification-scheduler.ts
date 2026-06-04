@@ -17,7 +17,8 @@ export type NotificationPlanType =
   | 'partial_day'
   | 'absence_waiting'
   | 'absence_last_active'
-  | 'paused_reentry';
+  | 'paused_reentry'
+  | 'paused_daily_reminder';
 
 export interface NotificationPlan {
   id: string;
@@ -26,6 +27,7 @@ export interface NotificationPlan {
   title: string;
   body: string;
   triggerAt: Date;
+  repeats?: 'daily';
   data: {
     notificationTier: NotificationTier;
     notificationType: NotificationPlanType;
@@ -93,6 +95,7 @@ const AFTERNOON_REMINDER_TIME = { hour: 12, minute: 0 };
 const EVENING_REMINDER_TIME = { hour: 19, minute: 0 };
 const MISSED_CARD_NUDGE_TIME = { hour: 14, minute: 15 };
 const PARTIAL_DAY_MOTIVATION_TIME = { hour: 21, minute: 0 };
+const MANUAL_PAUSE_REMINDER_TIME = { hour: 9, minute: 0 };
 
 export function buildProgramNotificationPlan(
   args: BuildProgramNotificationPlanArgs
@@ -101,6 +104,11 @@ export function buildProgramNotificationPlan(
 
   if (!isNotificationEligibleAccess(args)) {
     return [];
+  }
+
+  if (args.access.programState === 'paused') {
+    const pausePlan = buildManualPauseNotificationPlan(args, now);
+    return pausePlan ? [pausePlan] : [];
   }
 
   const absencePlan = buildAbsenceNotificationPlan(args, now);
@@ -148,7 +156,34 @@ function isNotificationEligibleAccess(args: BuildProgramNotificationPlanArgs) {
     return true;
   }
 
-  return programState === 'paused' && shouldSendPausedReentry(args.consecutiveAbsentDays);
+  return programState === 'paused';
+}
+
+function buildManualPauseNotificationPlan(
+  args: BuildProgramNotificationPlanArgs,
+  now: Date
+): NotificationPlan | null {
+  const copy = resolveNotificationCopy({
+    args,
+    type: 'paused_daily_reminder',
+    fallbackTitle: `${args.programName} is paused`,
+    fallbackBody: 'Your journey is still saved. Tap when you are ready to continue from the same day.',
+    variables: {
+      dayNumber: args.day.dayNumber,
+      dayTitle: args.day.dayTitle,
+      programName: args.programName,
+    },
+  });
+
+  return createPlan({
+    args,
+    tier: 'absence_reengagement',
+    type: 'paused_daily_reminder',
+    title: copy.title,
+    body: copy.body,
+    triggerAt: getNextDailyTriggerDate(now, MANUAL_PAUSE_REMINDER_TIME),
+    repeats: 'daily',
+  });
 }
 
 function buildTierOneCardReminders(
@@ -454,10 +489,11 @@ function createPlan(params: {
   title: string;
   body: string;
   triggerAt: Date;
+  repeats?: 'daily';
   cardIndex?: number;
   timeSlot?: TimeSlot;
 }): NotificationPlan {
-  const { args, cardIndex, timeSlot, tier, triggerAt, type } = params;
+  const { args, cardIndex, repeats, timeSlot, tier, triggerAt, type } = params;
 
   return {
     id: buildNotificationId({
@@ -470,6 +506,7 @@ function createPlan(params: {
     title: params.title,
     body: params.body,
     triggerAt,
+    ...(repeats ? { repeats } : {}),
     data: {
       notificationTier: tier,
       notificationType: type,
@@ -511,6 +548,24 @@ function getConfiguredTriggerDate(
   fallbackTime: { hour: number; minute: number }
 ) {
   return getTriggerDate(args, args.notificationTemplates?.[type]?.triggerTime ?? fallbackTime);
+}
+
+function getNextDailyTriggerDate(now: Date, time: { hour: number; minute: number }) {
+  const triggerAt = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+    time.hour,
+    time.minute,
+    0,
+    0
+  );
+
+  if (triggerAt.getTime() <= now.getTime()) {
+    triggerAt.setDate(triggerAt.getDate() + 1);
+  }
+
+  return triggerAt;
 }
 
 function getLocalScheduleDate(args: BuildProgramNotificationPlanArgs) {

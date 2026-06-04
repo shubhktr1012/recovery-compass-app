@@ -16,10 +16,10 @@ import { AppColors } from '@/constants/theme';
 import { markFirstLaunchComplete } from '@/lib/preloader-state';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
-const LOGO_REVEAL_DURATION = 2100;
-const TEXT_REVEAL_DURATION = 1400;
-const GUEST_EXIT_DELAY = 3600;
-const AUTHENTICATED_EXIT_DELAY = 3900;
+const LOGO_REVEAL_DURATION = 1050;
+const TEXT_REVEAL_DURATION = 700;
+const GUEST_EXIT_DELAY = 1800;
+const AUTHENTICATED_EXIT_DELAY = 1950;
 
 // Module-level guard: once a preloader run starts, remounts in the same JS session should not replay it.
 let hasPreloaderRun = false;
@@ -80,7 +80,7 @@ export function AppPreloader({ isNavigationReady, isAuthenticated }: AppPreloade
       curtainTranslateY.value = withDelay(
         GUEST_EXIT_DELAY,
         withTiming(-SCREEN_HEIGHT, {
-          duration: 900,
+          duration: 450,
           easing: Easing.bezier(0.76, 0, 0.24, 1),
         }, (finished) => {
           if (finished) runOnJS(completePreloader)();
@@ -90,7 +90,7 @@ export function AppPreloader({ isNavigationReady, isAuthenticated }: AppPreloade
       // Simple dissolve for authenticated users heading to the dashboard.
       opacity.value = withDelay(
         AUTHENTICATED_EXIT_DELAY,
-        withTiming(0, { duration: 800, easing: Easing.inOut(Easing.ease) }, (finished) => {
+        withTiming(0, { duration: 400, easing: Easing.inOut(Easing.ease) }, (finished) => {
           if (finished) runOnJS(completePreloader)();
         })
       );

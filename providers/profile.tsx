@@ -21,6 +21,7 @@ import * as FileSystem from 'expo-file-system/legacy';
 import { buildWidgetPayload, syncWidgetData } from '@/lib/widget-bridge';
 import { validateDisplayNameInput } from '@/lib/profile-identity';
 import { rescheduleProgramNotificationsForAccess } from '@/lib/notification-runtime';
+import { getCurrentNotificationPermissionStateAsync } from '@/lib/notification-permissions';
 import { isMissingAnyColumnError } from '@/lib/db-compat';
 
 export interface UserProfile {
@@ -53,6 +54,7 @@ interface ProfileContextType {
   setProgramAccess: (program: ProgramSlug | null) => Promise<void>;
   selectActiveProgram: (program: ProgramSlug) => Promise<void>;
   configureProgramStart: (program: ProgramSlug, scheduledStartDate: string) => Promise<void>;
+  pauseProgramManually: (program: ProgramSlug) => Promise<void>;
   resumeProgramFromPause: (program: ProgramSlug) => Promise<void>;
   prepareOwnedProgramSetup: (program: ProgramSlug) => Promise<void>;
   reorderOwnedProgramQueue: (programs: ProgramSlug[]) => Promise<ProgramSlug[]>;
@@ -140,6 +142,7 @@ const ProfileContext = createContext<ProfileContextType>({
   setProgramAccess: async () => { },
   selectActiveProgram: async () => { },
   configureProgramStart: async () => { },
+  pauseProgramManually: async () => { },
   resumeProgramFromPause: async () => { },
   prepareOwnedProgramSetup: async () => { },
   reorderOwnedProgramQueue: async () => [],
@@ -208,6 +211,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     source: 'local',
   });
   const [progress, setProgress] = useState<ProgramProgressRecord | null>(null);
+  const [notificationPermissionGranted, setNotificationPermissionGranted] = useState(false);
   const [notificationRefreshNonce, setNotificationRefreshNonce] = useState(0);
   const userId = user?.id ?? null;
   const previousUserIdRef = useRef<string | null>(null);
@@ -221,7 +225,9 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
   });
   const shouldRegisterPush = Boolean(
     userId &&
-    (profileQuery.data?.push_opt_in || profileQuery.data?.notifications_enabled) &&
+    (notificationPermissionGranted ||
+      profileQuery.data?.push_opt_in ||
+      profileQuery.data?.notifications_enabled) &&
     Platform.OS === 'ios'
   );
   const { expoPushToken, permissionStatus, error: pushError } = usePushNotifications({
@@ -303,6 +309,85 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     expoPushToken?.data,
     permissionStatus,
     profileQuery.data,
+    queryClient,
+    userId,
+  ]);
+
+  useEffect(() => {
+    if (!userId || !profileQuery.data?.onboarding_complete) {
+      setNotificationPermissionGranted(false);
+      return;
+    }
+
+    let isCancelled = false;
+
+    const reconcileNotificationPermission = async () => {
+      try {
+        const permission = await getCurrentNotificationPermissionStateAsync();
+        if (isCancelled) return;
+
+        const isGranted = permission.status === 'granted';
+        setNotificationPermissionGranted(isGranted);
+
+        const nextToken = permission.expoPushToken ?? profileQuery.data?.expo_push_token ?? null;
+        const shouldUpdateProfile =
+          Boolean(profileQuery.data?.notifications_enabled) !== isGranted ||
+          Boolean(profileQuery.data?.push_opt_in) !== isGranted ||
+          (isGranted && permission.expoPushToken && profileQuery.data?.expo_push_token !== permission.expoPushToken);
+
+        if (!shouldUpdateProfile) {
+          return;
+        }
+
+        const { error } = await supabase
+          .from('profiles')
+          .update({
+            expo_push_token: isGranted ? nextToken : null,
+            notifications_enabled: isGranted,
+            push_opt_in: isGranted,
+          })
+          .eq('id', userId);
+
+        if (error) {
+          throw error;
+        }
+
+        queryClient.setQueryData<UserProfile | null>(
+          PROFILE_QUERY_KEY(userId),
+          (currentProfile) =>
+            currentProfile
+              ? {
+                  ...currentProfile,
+                  expo_push_token: isGranted ? nextToken : null,
+                  notifications_enabled: isGranted,
+                  push_opt_in: isGranted,
+                }
+              : currentProfile
+        );
+      } catch (error) {
+        if (!isCancelled) {
+          console.warn('Failed to reconcile notification permission state', error);
+        }
+      }
+    };
+
+    void reconcileNotificationPermission();
+
+    const appStateSubscription = AppState.addEventListener('change', (nextState: string) => {
+      if (nextState === 'active') {
+        void reconcileNotificationPermission();
+      }
+    });
+
+    return () => {
+      isCancelled = true;
+      appStateSubscription.remove();
+    };
+  }, [
+    profileQuery.data?.expo_push_token,
+    profileQuery.data?.notifications_enabled,
+    profileQuery.data?.onboarding_complete,
+    profileQuery.data?.push_opt_in,
     queryClient,
     userId,
   ]);
@@ -510,6 +595,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         );
         setAccess(snapshot);
         setProgress(nextProgress);
+        setNotificationRefreshNonce((value) => value + 1);
         await queryClient.invalidateQueries({ queryKey: OWNED_PROGRAMS_QUERY_ROOT });
       } finally {
         setIsAccessLoading(false);
@@ -533,6 +619,31 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         );
         setAccess(snapshot);
         setProgress(nextProgress);
+        setNotificationRefreshNonce((value) => value + 1);
+        await queryClient.invalidateQueries({ queryKey: OWNED_PROGRAMS_QUERY_ROOT });
+      } finally {
+        setIsAccessLoading(false);
+      }
+    },
+    [queryClient, userId]
+  );
+
+  const pauseProgramManually = useCallback(
+    async (program: ProgramSlug) => {
+      if (!userId) {
+        return;
+      }
+
+      setIsAccessLoading(true);
+
+      try {
+        const { snapshot, progress: nextProgress } = await AccessService.pauseProgramManually(
+          userId,
+          program
+        );
+        setAccess(snapshot);
+        setProgress(nextProgress);
+        setNotificationRefreshNonce((value) => value + 1);
         await queryClient.invalidateQueries({ queryKey: OWNED_PROGRAMS_QUERY_ROOT });
       } finally {
         setIsAccessLoading(false);
@@ -936,8 +1047,8 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
       },
       openedToday: true,
       profile: {
-        notifications_enabled: profileQuery.data?.notifications_enabled,
-        push_opt_in: profileQuery.data?.push_opt_in,
+        notifications_enabled: Boolean(profileQuery.data?.notifications_enabled) || notificationPermissionGranted,
+        push_opt_in: Boolean(profileQuery.data?.push_opt_in) || notificationPermissionGranted,
       },
       userId,
     }).catch((error) => {
@@ -958,6 +1069,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     access.purchaseState,
     access.scheduledStartDate,
     notificationRefreshNonce,
+    notificationPermissionGranted,
     profileQuery.data?.notifications_enabled,
     profileQuery.data?.push_opt_in,
     profileQuery.isPending,
@@ -1086,6 +1198,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
       setProgramAccess,
       selectActiveProgram,
       configureProgramStart,
+      pauseProgramManually,
       resumeProgramFromPause,
       prepareOwnedProgramSetup,
       reorderOwnedProgramQueue,
@@ -1100,6 +1213,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
       access,
       completeProgramDay,
       configureProgramStart,
+      pauseProgramManually,
       prepareOwnedProgramSetup,
       profileQuery.data,
       profileQuery.isPending,

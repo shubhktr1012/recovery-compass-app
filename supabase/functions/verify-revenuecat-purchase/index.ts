@@ -42,6 +42,11 @@ const DEFAULT_AGE_REVERSAL_ID = "age_reversal";
 const DEFAULT_MALE_VITALITY_ID = "male_sexual_health";
 const DEFAULT_GUT_HEALTH_RESET_ID = "gut_health_reset";
 
+const BUNDLE_MALE_SMOKES_ALL = "bundle_male_smokes_all";
+const BUNDLE_MALE_NO_SMOKE = "bundle_male_no_smoke";
+const BUNDLE_FEMALE_SMOKES_ALL = "bundle_female_smokes_all";
+const BUNDLE_FEMALE_NO_SMOKE = "bundle_female_no_smoke";
+
 const parseCandidates = (value: string | null | undefined, fallbacks: string[]) =>
   Array.from(
     new Set(
@@ -197,6 +202,63 @@ const PROGRAM_MATCHERS = [
 
 type ProgramSlug = typeof PROGRAM_MATCHERS[number]["programSlug"];
 
+const BUNDLE_MATCHERS = [
+  {
+    bundleId: BUNDLE_MALE_SMOKES_ALL,
+    productIds: parseCandidates(Deno.env.get("RC_BUNDLE_MALE_SMOKES_ALL_PRODUCT_IDS"), [
+      BUNDLE_MALE_SMOKES_ALL,
+    ]),
+    programSlugs: [
+      APP_SMOKING_ALCOHOL_QUIT_PROGRAM,
+      APP_SLEEP_RESET_PROGRAM,
+      APP_ENERGY_VITALITY_PROGRAM,
+      APP_AGE_REVERSAL_PROGRAM,
+      APP_MALE_VITALITY_PROGRAM,
+      APP_GUT_HEALTH_RESET_PROGRAM,
+    ],
+  },
+  {
+    bundleId: BUNDLE_MALE_NO_SMOKE,
+    productIds: parseCandidates(Deno.env.get("RC_BUNDLE_MALE_NO_SMOKE_PRODUCT_IDS"), [
+      BUNDLE_MALE_NO_SMOKE,
+    ]),
+    programSlugs: [
+      APP_SLEEP_RESET_PROGRAM,
+      APP_ENERGY_VITALITY_PROGRAM,
+      APP_AGE_REVERSAL_PROGRAM,
+      APP_MALE_VITALITY_PROGRAM,
+      APP_GUT_HEALTH_RESET_PROGRAM,
+    ],
+  },
+  {
+    bundleId: BUNDLE_FEMALE_SMOKES_ALL,
+    productIds: parseCandidates(Deno.env.get("RC_BUNDLE_FEMALE_SMOKES_ALL_PRODUCT_IDS"), [
+      BUNDLE_FEMALE_SMOKES_ALL,
+    ]),
+    programSlugs: [
+      APP_SMOKING_ALCOHOL_QUIT_PROGRAM,
+      APP_SLEEP_RESET_PROGRAM,
+      APP_ENERGY_VITALITY_PROGRAM,
+      APP_AGE_REVERSAL_PROGRAM,
+      APP_GUT_HEALTH_RESET_PROGRAM,
+    ],
+  },
+  {
+    bundleId: BUNDLE_FEMALE_NO_SMOKE,
+    productIds: parseCandidates(Deno.env.get("RC_BUNDLE_FEMALE_NO_SMOKE_PRODUCT_IDS"), [
+      BUNDLE_FEMALE_NO_SMOKE,
+    ]),
+    programSlugs: [
+      APP_SLEEP_RESET_PROGRAM,
+      APP_ENERGY_VITALITY_PROGRAM,
+      APP_AGE_REVERSAL_PROGRAM,
+      APP_GUT_HEALTH_RESET_PROGRAM,
+    ],
+  },
+] as const;
+
+type BundleId = typeof BUNDLE_MATCHERS[number]["bundleId"];
+
 type RevenueCatEntitlement = {
   expires_date?: string | null;
   product_identifier?: string | null;
@@ -225,6 +287,12 @@ type VerifiedProgram = {
   productId: string | null;
 };
 
+type VerifiedBundle = {
+  bundleId: BundleId;
+  productId: string | null;
+  programSlugs: readonly ProgramSlug[];
+};
+
 function jsonResponse(body: Record<string, unknown>, status = 200) {
   return new Response(JSON.stringify(body), {
     headers: {
@@ -236,6 +304,10 @@ function jsonResponse(body: Record<string, unknown>, status = 200) {
 
 function isValidProgramSlug(value: string): value is ProgramSlug {
   return PROGRAM_MATCHERS.some((matcher) => matcher.programSlug === value);
+}
+
+function isValidBundleId(value: string): value is BundleId {
+  return BUNDLE_MATCHERS.some((matcher) => matcher.bundleId === value);
 }
 
 function isActiveUntil(expiresDate: string | null | undefined) {
@@ -316,6 +388,71 @@ function findVerifiedProgram(
       return {
         programSlug: requestedProgram,
         productId,
+      };
+    }
+  }
+
+  return null;
+}
+
+function findVerifiedBundle(
+  payload: RevenueCatSubscriberResponse,
+  requestedBundle: BundleId,
+): VerifiedBundle | null {
+  const subscriber = payload.subscriber;
+  if (!subscriber) {
+    return null;
+  }
+
+  const requestedMatcher = BUNDLE_MATCHERS.find((matcher) => matcher.bundleId === requestedBundle);
+  if (!requestedMatcher) {
+    return null;
+  }
+
+  for (const entitlement of Object.values(subscriber.entitlements ?? {})) {
+    if (!isActiveUntil(entitlement.expires_date)) {
+      continue;
+    }
+
+    if (isMatchingProduct(entitlement.product_identifier, requestedMatcher.productIds)) {
+      return {
+        bundleId: requestedBundle,
+        productId: entitlement.product_identifier ?? null,
+        programSlugs: requestedMatcher.programSlugs,
+      };
+    }
+  }
+
+  for (const [productId, subscription] of Object.entries(subscriber.subscriptions ?? {})) {
+    if (!isActiveUntil(subscription.expires_date)) {
+      continue;
+    }
+
+    if (
+      isMatchingProduct(productId, requestedMatcher.productIds) ||
+      isMatchingProduct(subscription.product_identifier, requestedMatcher.productIds)
+    ) {
+      return {
+        bundleId: requestedBundle,
+        productId: subscription.product_identifier ?? productId,
+        programSlugs: requestedMatcher.programSlugs,
+      };
+    }
+  }
+
+  for (const [productId, purchases] of Object.entries(subscriber.non_subscriptions ?? {})) {
+    if (!Array.isArray(purchases) || purchases.length === 0) {
+      continue;
+    }
+
+    if (
+      isMatchingProduct(productId, requestedMatcher.productIds) ||
+      purchases.some((purchase) => isMatchingProduct(purchase.product_identifier, requestedMatcher.productIds))
+    ) {
+      return {
+        bundleId: requestedBundle,
+        productId,
+        programSlugs: requestedMatcher.programSlugs,
       };
     }
   }
@@ -428,7 +565,7 @@ serve(async (req: Request) => {
     return jsonResponse({ error: userError?.message ?? "Unauthorized" }, 401);
   }
 
-  let body: { programSlug?: unknown } = {};
+  let body: { bundleId?: unknown; programSlug?: unknown } = {};
 
   try {
     body = await req.json();
@@ -437,8 +574,16 @@ serve(async (req: Request) => {
   }
 
   const requestedProgram = typeof body.programSlug === "string" ? normalize(body.programSlug) : "";
-  if (!isValidProgramSlug(requestedProgram)) {
+  const requestedBundle = typeof body.bundleId === "string" ? normalize(body.bundleId) : "";
+  const hasProgramRequest = isValidProgramSlug(requestedProgram);
+  const hasBundleRequest = isValidBundleId(requestedBundle);
+
+  if (!hasProgramRequest && !hasBundleRequest) {
     return jsonResponse({ error: "Unknown programSlug" }, 400);
+  }
+
+  if (hasProgramRequest && hasBundleRequest) {
+    return jsonResponse({ error: "Pass either programSlug or bundleId, not both" }, 400);
   }
 
   const rateLimit = await enforceRateLimit(supabaseAdmin, user.id);
@@ -472,6 +617,7 @@ serve(async (req: Request) => {
   );
 
   let verifiedProgram: VerifiedProgram | null = null;
+  let verifiedBundle: VerifiedBundle | null = null;
   let matchedRevenueCatAppUserId: string | null = null;
   let lastLookupError: unknown = null;
 
@@ -483,10 +629,21 @@ serve(async (req: Request) => {
     for (const apiKey of revenueCatApiKeys) {
       try {
         const subscriber = await fetchRevenueCatSubscriber(appUserId, apiKey);
-        const candidateProgram = findVerifiedProgram(subscriber, requestedProgram);
+        const candidateProgram = hasProgramRequest
+          ? findVerifiedProgram(subscriber, requestedProgram as ProgramSlug)
+          : null;
+        const candidateBundle = hasBundleRequest
+          ? findVerifiedBundle(subscriber, requestedBundle as BundleId)
+          : null;
 
         if (candidateProgram) {
           verifiedProgram = candidateProgram;
+          matchedRevenueCatAppUserId = appUserId;
+          break;
+        }
+
+        if (candidateBundle) {
+          verifiedBundle = candidateBundle;
           matchedRevenueCatAppUserId = appUserId;
           break;
         }
@@ -500,16 +657,59 @@ serve(async (req: Request) => {
       }
     }
 
-    if (verifiedProgram) {
+    if (verifiedProgram || verifiedBundle) {
       break;
     }
   }
 
-  if (!verifiedProgram || !matchedRevenueCatAppUserId) {
+  if ((!verifiedProgram && !verifiedBundle) || !matchedRevenueCatAppUserId) {
     if (lastLookupError) {
       return jsonResponse({ error: "Could not verify purchase with RevenueCat" }, 502);
     }
 
+    return jsonResponse({ error: "No active RevenueCat entitlement found for this purchase" }, 403);
+  }
+
+  if (verifiedBundle) {
+    const accessRows = [];
+
+    for (const programSlug of verifiedBundle.programSlugs) {
+      const { data: grantRows, error: grantError } = await supabaseAdmin.rpc(
+        "record_verified_owned_program_purchase",
+        {
+          p_user_id: user.id,
+          p_program_id: programSlug,
+          p_revenuecat_app_user_id: matchedRevenueCatAppUserId,
+          p_revenuecat_product_id: verifiedBundle.productId,
+        },
+      );
+
+      if (grantError) {
+        console.error("Verified bundle grant failed", {
+          userId: user.id,
+          bundleId: verifiedBundle.bundleId,
+          programSlug,
+          error: grantError.message,
+        });
+        return jsonResponse({ error: "Could not grant verified bundle purchase" }, 500);
+      }
+
+      const access = Array.isArray(grantRows) ? grantRows[0] ?? null : grantRows;
+      if (access) {
+        accessRows.push(access);
+      }
+    }
+
+    return jsonResponse({
+      success: true,
+      bundleId: verifiedBundle.bundleId,
+      revenueCatAppUserId: matchedRevenueCatAppUserId,
+      access: accessRows[0] ?? null,
+      accessRows,
+    });
+  }
+
+  if (!verifiedProgram) {
     return jsonResponse({ error: "No active RevenueCat entitlement found for this program" }, 403);
   }
 

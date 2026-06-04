@@ -1,6 +1,6 @@
 # Sprint Status — Recovery Compass
 
-> Last updated: April 11, 2026
+> Last updated: June 2, 2026
 > Branch: `rebuild/multi-program`
 > Questionnaire foundation: ready
 > Sellable catalog: 6 products configured in RevenueCat, final INR pricing entered in App Store Connect and Google Play, unified `main_production` offering live
@@ -159,6 +159,8 @@ Launch → V4 Splash → Onboarding Carousel → Sign Up / Sign In
 
 ## Latest Verification
 
+- [x] RevenueCat Android product `smoking_alcohol_quit` (`prode1975f34d9`) is active, one-time, and non-consumable
+- [x] RevenueCat Android product `gut_health_reset` (`prod6fc264497d`) is active, one-time, and non-consumable
 - [x] iOS simulator fetches `main_production` correctly when launched from Xcode with local `.storekit`
 - [x] StoreKit local purchase for `ninety_day_quit` posts receipt to RevenueCat successfully
 - [x] Paywall purchase flow now waits for confirmed unlock before routing to Program tab

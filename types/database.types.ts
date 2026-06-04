@@ -1363,6 +1363,20 @@ export type Database = {
           updated_at: string
         }[]
       }
+      pause_program_manually: {
+        Args: {
+          p_current_day: number
+          p_paused_at?: string
+          p_program_id: string
+        }
+        Returns: {
+          current_day: number
+          owned_program: string
+          paused_at: string
+          program_state: string
+          updated_at: string
+        }[]
+      }
       pause_program_for_absence: {
         Args: {
           p_current_day: number
@@ -1380,6 +1394,7 @@ export type Database = {
       resume_program_from_pause: {
         Args: {
           p_program_id: string
+          p_scheduled_start_date?: string | null
           p_started_at: string
         }
         Returns: {

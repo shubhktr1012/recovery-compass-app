@@ -826,10 +826,10 @@ export default function DayDetailScreen() {
       return lastReviewDay > 0 ? Math.min(program.totalDays, lastReviewDay) : program.totalDays;
     }
 
-    return scheduleStartSource && !isScheduledStartPending
+    return scheduleStartSource && !isScheduledStartPending && access.programState !== 'paused'
       ? getProgramLastFinalizedDay(scheduleStartSource, program.totalDays, currentTime)
       : Math.max(0, ...completedDays, ...partialDays);
-  }, [completedDays, currentTime, finalizedDayStates, isCompletedProgramReview, isScheduledStartPending, partialDays, program, scheduleStartSource]);
+  }, [access.programState, completedDays, currentTime, finalizedDayStates, isCompletedProgramReview, isScheduledStartPending, partialDays, program, scheduleStartSource]);
   const historicalDayState = useMemo<DayState | null>(() => {
     if (!normalizedDayNumber || normalizedDayNumber > lastFinalizedDay) {
       return null;
@@ -854,13 +854,14 @@ export default function DayDetailScreen() {
     return 'skipped';
   }, [finalizedDayState, isCompletedProgramReview, isDayCompleted, isDayPartial, lastFinalizedDay, normalizedDayNumber]);
   const isHistoricalReadOnlyDay = Boolean(historicalDayState);
+  const isPausedProgram = !isCompletedProgramReview && access.programState === 'paused';
 
   const isFutureLocked = Boolean(
     normalizedDayNumber &&
     !isCompletedProgramReview &&
-    (isScheduledStartPending || normalizedDayNumber > unlockedThroughDay) &&
     !isDayCompleted &&
-    !isDayPartial
+    (isPausedProgram ||
+      ((isScheduledStartPending || normalizedDayNumber > unlockedThroughDay) && !isDayPartial))
   );
   const hasCloseCard = dayContent?.cards.some((card) => card.type === 'close') ?? false;
   const isLastCard = Boolean(dayContent && currentIndex === dayContent.cards.length - 1);
@@ -868,11 +869,14 @@ export default function DayDetailScreen() {
   const shouldShowCompletionBar = !hasCloseCard && (isDayCompleted || isDayPartial || isLastCard);
   const nextUnlockLabel = useMemo(() => {
     if (!program || isCompletedProgramReview || access.completionState === 'completed') return null;
+    if (isPausedProgram) {
+      return 'Paused. Resume from the Program tab when you are ready.';
+    }
     if (isScheduledStartPending) {
       return formatScheduledProgramStartLabel(access.scheduledStartDate, currentTime);
     }
     return formatUnlockLabel(getProgramNextUnlockAt(scheduleStartSource, program.totalDays, currentTime), currentTime);
-  }, [access.completionState, access.scheduledStartDate, currentTime, isCompletedProgramReview, isScheduledStartPending, program, scheduleStartSource]);
+  }, [access.completionState, access.scheduledStartDate, currentTime, isCompletedProgramReview, isPausedProgram, isScheduledStartPending, program, scheduleStartSource]);
   const runtimeCards = useMemo(
     () => dayContent?.cards.map((card) => ({ card, meta: getCardTimeMeta(card) })) ?? [],
     [dayContent?.cards]
@@ -1328,7 +1332,9 @@ export default function DayDetailScreen() {
   if (isFutureLocked) {
     return (
       <ErrorState
-        message={nextUnlockLabel
+        message={isPausedProgram
+          ? 'This journey is paused. Resume it from the Program tab to continue today’s cards.'
+          : nextUnlockLabel
           ? `This day has not unlocked yet. ${nextUnlockLabel}.`
           : 'This day has not unlocked yet. Please return to the Program tab for the next available step.'}
       />

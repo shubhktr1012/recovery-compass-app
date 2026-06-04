@@ -173,6 +173,10 @@ function getProgramNotificationTargetFromResponse(response: {
 }
 
 function shouldSchedulePlan(plan: NotificationPlan, now: Date) {
+  if (plan.repeats === 'daily') {
+    return true;
+  }
+
   if (plan.triggerAt.getTime() > now.getTime()) {
     return true;
   }
@@ -181,6 +185,16 @@ function shouldSchedulePlan(plan: NotificationPlan, now: Date) {
 }
 
 function getPlanTrigger(plan: NotificationPlan, notificationsModule: NotificationsModule, now: Date) {
+  if (plan.repeats === 'daily') {
+    return {
+      type: notificationsModule.SchedulableTriggerInputTypes.CALENDAR ?? 'calendar',
+      hour: plan.triggerAt.getHours(),
+      minute: plan.triggerAt.getMinutes(),
+      repeats: true,
+      channelId: PROGRAM_NOTIFICATION_CHANNEL_ID,
+    };
+  }
+
   if (plan.triggerAt.getTime() <= now.getTime()) {
     return null;
   }
@@ -278,6 +292,19 @@ export const NotificationService = {
       });
 
       scheduledIds.push(scheduledId);
+    }
+
+    if (
+      (typeof __DEV__ !== 'undefined' && __DEV__) ||
+      process.env.EXPO_PUBLIC_ENABLE_NOTIFICATION_QA_LOGS === 'true'
+    ) {
+      console.info('[NotificationQA]', {
+        cancelledCount: cancelledIds.length,
+        cancelledIds,
+        plannedCount: plans.length,
+        scheduledCount: scheduledIds.length,
+        scheduledIds,
+      });
     }
 
     return {

@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useRef, memo } from 'react';
-import { NativeSyntheticEvent, NativeScrollEvent, ScrollView, Text, View } from 'react-native';
+import { Alert, NativeSyntheticEvent, NativeScrollEvent, Pressable, ScrollView, Text, View } from 'react-native';
 
 import { StatusBar } from 'expo-status-bar';
 import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
@@ -184,13 +184,14 @@ function ProgramScreenContent({
   isCompletedReview?: boolean;
 }) {
   const router = useRouter();
-  const { access, profile, progress } = useProfile();
+  const { access, pauseProgramManually, profile, progress, resumeProgramFromPause } = useProfile();
   const queryClient = useQueryClient();
   const { program } = useProgram(activeProgram);
   const now = useMinuteClock();
   const totalDays = program?.totalDays ?? 1;
   const isCompletedTimeline = isCompletedReview || access.completionState === 'completed';
   const scheduledStartPending = !isCompletedReview && isProgramStartPending(access, now);
+  const isPausedJourney = !isCompletedReview && access.programState === 'paused';
   const finalizedDayStatesQuery = useFinalizedDayStates(profile?.id ?? access.ownerUserId ?? null, activeProgram);
   const finalizedDayStates = finalizedDayStatesQuery.data ?? EMPTY_FINALIZED_DAY_STATES;
   const dayStateSummary = useMemo(
@@ -239,7 +240,7 @@ function ProgramScreenContent({
       : scheduleStartSource
       ? getProgramActiveDay(scheduleStartSource, totalDays, now)
       : derivedUnlockedDay;
-    const derivedLastFinalizedDay = scheduleStartSource && !scheduledStartPending
+    const derivedLastFinalizedDay = scheduleStartSource && !scheduledStartPending && access.programState !== 'paused'
       ? getProgramLastFinalizedDay(scheduleStartSource, totalDays, now)
       : Math.max(0, ...progressCompletedDays, ...progressPartialDays);
     const highestTouchedDay = Math.max(
@@ -268,16 +269,56 @@ function ProgramScreenContent({
     : Math.max(0, Math.min(100, Math.round((completedCount / totalDays) * 100)));
   const nextUnlockLabel = useMemo(() => {
     if (isCompletedTimeline) return null;
+    if (isPausedJourney) {
+      return 'Paused. Resume when you are ready to continue.';
+    }
     if (isProgramStartPending(access, now)) {
       return formatScheduledProgramStartLabel(access.scheduledStartDate, now);
     }
     return formatUnlockLabel(getProgramNextUnlockAt(getProgramScheduleStartSource(access), totalDays, now), now);
-  }, [access, isCompletedTimeline, now, totalDays]);
+  }, [access, isCompletedTimeline, isPausedJourney, now, totalDays]);
   const nextLockedDayNumber = isCompletedTimeline
     ? null
+    : isPausedJourney
+      ? access.currentDay ?? 1
     : scheduledStartPending
       ? 1
       : Math.min(unlockedThroughDay + 1, totalDays);
+  const canPauseJourney = Boolean(
+    !isCompletedTimeline &&
+      !isCompletedReview &&
+      !scheduledStartPending &&
+      !isPausedJourney &&
+      access.ownedProgram === activeProgram &&
+      access.purchaseState === 'owned_active'
+  );
+
+  const handlePauseJourney = useCallback(() => {
+    Alert.alert(
+      'Pause journey?',
+      'Your current day and progress will be frozen. You will get one daily reminder until you resume.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Pause',
+          style: 'destructive',
+          onPress: () => {
+            void pauseProgramManually(activeProgram).catch((error) => {
+              console.warn('Failed to pause program', error);
+              Alert.alert('Could not pause journey', 'Please try again in a moment.');
+            });
+          },
+        },
+      ]
+    );
+  }, [activeProgram, pauseProgramManually]);
+
+  const handleResumeJourney = useCallback(() => {
+    void resumeProgramFromPause(activeProgram).catch((error) => {
+      console.warn('Failed to resume program', error);
+      Alert.alert('Could not resume journey', 'Please try again in a moment.');
+    });
+  }, [activeProgram, resumeProgramFromPause]);
 
   // Determine if user has been away for 3+ days (72 hours)
   const isReturningUser = useMemo(() => {
@@ -381,6 +422,19 @@ function ProgramScreenContent({
                 {nextUnlockLabel}
               </Text>
             ) : null}
+
+            {(canPauseJourney || isPausedJourney) && access.ownedProgram === activeProgram ? (
+              <Pressable
+                onPress={isPausedJourney ? handleResumeJourney : handlePauseJourney}
+                accessibilityRole="button"
+                accessibilityLabel={isPausedJourney ? 'Resume journey' : 'Pause journey'}
+                className="self-start mt-3 rounded-full border border-sage/18 bg-white/8 px-4 py-2"
+              >
+                <Text className="text-sage" style={AppTypography.metaMedium}>
+                  {isPausedJourney ? 'Resume journey' : 'Pause journey'}
+                </Text>
+              </Pressable>
+            ) : null}
           </View>
         </View>
 
@@ -434,6 +488,7 @@ function ProgramScreenContent({
                   const isLocked =
                     !isCompletedTimeline &&
                     (isArchivedReset ||
+                      (isPausedJourney && !isCompleted) ||
                       scheduledStartPending ||
                       (!isCompleted && !isPartial && !isSkipped && day.dayNumber > unlockedThroughDay));
                   const isCurrent =

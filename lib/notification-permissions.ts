@@ -90,3 +90,41 @@ export async function requestNotificationPermissionAsync(): Promise<Notification
     status: 'granted',
   };
 }
+
+export async function getCurrentNotificationPermissionStateAsync(): Promise<NotificationPermissionResult> {
+  const notificationsModule = await getNotificationsModule();
+
+  if (!notificationsModule) {
+    return {
+      expoPushToken: null,
+      reason: 'Notification permission is not available in this simulator.',
+      status: 'unavailable',
+    };
+  }
+
+  await configureAndroidChannel(notificationsModule);
+
+  const permission = await notificationsModule.getPermissionsAsync();
+
+  if (permission.status !== 'granted') {
+    return {
+      canAskAgain: permission.canAskAgain,
+      expoPushToken: null,
+      status: permission.status,
+    };
+  }
+
+  let expoPushToken: string | null = null;
+
+  try {
+    expoPushToken = await getExpoPushToken(notificationsModule);
+  } catch (error) {
+    console.warn('Notification permission is granted, but push token lookup failed.', error);
+  }
+
+  return {
+    canAskAgain: permission.canAskAgain,
+    expoPushToken,
+    status: 'granted',
+  };
+}

@@ -291,6 +291,7 @@ function normalizeNotificationPlanType(value: string): NotificationPlanType | nu
     'absence_waiting',
     'absence_last_active',
     'paused_reentry',
+    'paused_daily_reminder',
   ];
 
   return validTypes.includes(value as NotificationPlanType) ? (value as NotificationPlanType) : null;

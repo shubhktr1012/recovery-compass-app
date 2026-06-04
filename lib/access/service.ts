@@ -1022,12 +1022,74 @@ export class AccessService {
     };
   }
 
+  static async pauseProgramManually(userId: string, programSlug: ProgramSlug) {
+    const currentSnapshot = await this.getAccessSnapshot();
+    const currentProgress = await this.getProgressRecord(userId, programSlug);
+    const serverSnapshotBeforePause = await this.getServerAccessSnapshot(userId, programSlug);
+    const safeSnapshot =
+      isSnapshotOwnedByUser(currentSnapshot, userId) && currentSnapshot.ownedProgram === programSlug
+        ? currentSnapshot
+        : createDefaultSnapshot('local', userId);
+    const pauseBaseSnapshot =
+      serverSnapshotBeforePause?.ownedProgram === programSlug ? serverSnapshotBeforePause : safeSnapshot;
+    const currentDay = Math.max(1, pauseBaseSnapshot.currentDay ?? currentProgress?.currentDay ?? 1);
+    const pausedAt = new Date().toISOString();
+
+    try {
+      const { error } = await supabase.rpc('pause_program_manually', {
+        p_current_day: currentDay,
+        p_paused_at: pausedAt,
+        p_program_id: programSlug,
+      });
+
+      if (error) {
+        throw error;
+      }
+    } catch (error) {
+      console.warn('Failed to persist manual program pause to Supabase, using local fallback', {
+        userId,
+        programSlug,
+        error,
+      });
+    }
+
+    const serverSnapshot = await this.getServerAccessSnapshot(userId, programSlug);
+    const progress = currentProgress ?? this.buildProgressRecord(userId, programSlug);
+    const baseSnapshot = serverSnapshot?.ownedProgram === programSlug ? serverSnapshot : pauseBaseSnapshot;
+    const nextSnapshot: ProgramAccessSnapshot = {
+      ...baseSnapshot,
+      ownerUserId: userId,
+      ownedProgram: programSlug,
+      purchaseState: 'owned_active',
+      programState: 'paused',
+      currentDay,
+      pausedAt: serverSnapshot?.pausedAt ?? baseSnapshot.pausedAt ?? pausedAt,
+      eligibleProducts: [],
+    };
+
+    nextSnapshot.eligibleProducts = deriveEligibleProducts(nextSnapshot);
+    progress.currentDay = currentDay;
+
+    await Promise.all([
+      this.saveAccessSnapshot(nextSnapshot),
+      this.saveProgressRecord(progress),
+    ]);
+
+    return {
+      snapshot: nextSnapshot,
+      progress,
+    };
+  }
+
   static async resumeProgramFromPause(userId: string, programSlug: ProgramSlug) {
     const currentSnapshot = await this.getAccessSnapshot();
     const safeSnapshot = isSnapshotOwnedByUser(currentSnapshot, userId)
       ? currentSnapshot
       : createDefaultSnapshot('local', userId);
-    const currentDay = Math.max(1, safeSnapshot.currentDay ?? 1);
+    const serverSnapshotBeforeResume = await this.getServerAccessSnapshot(userId, programSlug);
+    const resumeBaseSnapshot =
+      serverSnapshotBeforeResume?.ownedProgram === programSlug ? serverSnapshotBeforeResume : safeSnapshot;
+    const currentDay = Math.max(1, resumeBaseSnapshot.currentDay ?? 1);
     const resumedStartDate = getResumeStartedAtForDay(currentDay);
     const resumedStartedAt = resumedStartDate.toISOString();
     const resumedScheduledStartDate = formatLocalDateForProgramStart(resumedStartDate);
@@ -1035,6 +1097,7 @@ export class AccessService {
     try {
       const { error } = await supabase.rpc('resume_program_from_pause', {
         p_program_id: programSlug,
+        p_scheduled_start_date: resumedScheduledStartDate,
         p_started_at: resumedStartedAt,
       });
 
@@ -1052,7 +1115,7 @@ export class AccessService {
     const serverSnapshot = await this.getServerAccessSnapshot(userId, programSlug);
     const progress =
       (await this.getProgressRecord(userId, programSlug)) ?? this.buildProgressRecord(userId, programSlug);
-    const baseSnapshot = serverSnapshot?.ownedProgram === programSlug ? serverSnapshot : safeSnapshot;
+    const baseSnapshot = serverSnapshot?.ownedProgram === programSlug ? serverSnapshot : resumeBaseSnapshot;
     const nextSnapshot: ProgramAccessSnapshot = {
       ...baseSnapshot,
       ownerUserId: userId,

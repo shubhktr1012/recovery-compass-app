@@ -332,7 +332,14 @@ export default function ProgramsLibraryScreen() {
   const { programs, isLoading: isProgramsLoading } = usePrograms();
   const { ownedPrograms, isLoading } = useOwnedPrograms();
   const { user } = useAuth();
-  const { access, profile, prepareOwnedProgramSetup, reorderOwnedProgramQueue } = useProfile();
+  const {
+    access,
+    pauseProgramManually,
+    profile,
+    prepareOwnedProgramSetup,
+    reorderOwnedProgramQueue,
+    resumeProgramFromPause,
+  } = useProfile();
   const [switchingProgram, setSwitchingProgram] = useState<ProgramSlug | null>(null);
   const [isDraggingQueue, setIsDraggingQueue] = useState(false);
   const [queueOrderOverride, setQueueOrderOverride] = useState<ProgramSlug[] | null>(null);
@@ -353,6 +360,8 @@ export default function ProgramsLibraryScreen() {
   );
   const userId = profile?.id ?? null;
   const canPersistQueuePriority = Boolean(user?.id && userId && user.id === userId);
+  const isActiveProgramPaused = access.programState === 'paused';
+  const activeProgramDayLabel = access.currentDay ? `Day ${access.currentDay}` : 'your current day';
 
   const questionnaireRunsQuery = useQuery({
     queryKey: ['questionnaire-runs', userId, 'journeys'],
@@ -453,6 +462,45 @@ export default function ProgramsLibraryScreen() {
     },
     [hasProgramPersonalization, programs, router, startQueuedProgramSetup]
   );
+
+  const handlePauseActiveProgram = useCallback(() => {
+    if (!activeProgramSlug) {
+      return;
+    }
+
+    Alert.alert(
+      'Pause journey?',
+      'Your current day and progress will be frozen. You will get one daily reminder until you resume.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Pause',
+          style: 'destructive',
+          onPress: () => {
+            void pauseProgramManually(activeProgramSlug).catch((error) => {
+              if (__DEV__) {
+                console.log('Failed to pause active program', error);
+              }
+              Alert.alert('Could not pause journey', 'Please try again in a moment.');
+            });
+          },
+        },
+      ]
+    );
+  }, [activeProgramSlug, pauseProgramManually]);
+
+  const handleResumeActiveProgram = useCallback(() => {
+    if (!activeProgramSlug) {
+      return;
+    }
+
+    void resumeProgramFromPause(activeProgramSlug).catch((error) => {
+      if (__DEV__) {
+        console.log('Failed to resume active program', error);
+      }
+      Alert.alert('Could not resume journey', 'Please try again in a moment.');
+    });
+  }, [activeProgramSlug, resumeProgramFromPause]);
 
   const { activeProgram, otherOwnedPrograms, completedPrograms, catalogPrograms } = useMemo(() => {
     const ownedSlugSet = new Set([
@@ -654,15 +702,39 @@ export default function ProgramsLibraryScreen() {
               <ProgramLibraryCard
                 program={activeProgram}
                 eyebrow="Current journey"
-                body="Pinned to Home, Program, reminders, and today’s flow."
+                body={
+                  isActiveProgramPaused
+                    ? `Paused at ${activeProgramDayLabel}. Resume when you are ready; your queue stays unchanged.`
+                    : 'Pinned to Home, Program, reminders, and today’s flow.'
+                }
                 notice={
                   hasProgramPersonalization(activeProgram.slug)
                     ? undefined
                     : 'Personalization not completed'
                 }
                 dark
-                actionLabel="Open program"
-                onPress={() => router.push(PROGRAM_TAB_ROUTE)}
+                footer={
+                  <View className="flex-row flex-wrap gap-2">
+                    <Pressable
+                      onPress={() => router.push(PROGRAM_TAB_ROUTE)}
+                      accessibilityRole="button"
+                      className="rounded-full bg-white px-4 py-2"
+                    >
+                      <Text className="text-forest" style={AppTypography.metaMedium}>
+                        Open program
+                      </Text>
+                    </Pressable>
+                    <Pressable
+                      onPress={isActiveProgramPaused ? handleResumeActiveProgram : handlePauseActiveProgram}
+                      accessibilityRole="button"
+                      className="rounded-full border border-white/15 bg-white/10 px-4 py-2"
+                    >
+                      <Text className="text-white" style={AppTypography.metaMedium}>
+                        {isActiveProgramPaused ? 'Resume journey' : 'Pause journey'}
+                      </Text>
+                    </Pressable>
+                  </View>
+                }
               />
             ) : null}
 

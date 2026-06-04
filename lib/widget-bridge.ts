@@ -155,6 +155,29 @@ export function buildWidgetPayload(args: {
   const partialDays = progress?.partialDays ?? [];
   const isProgramComplete = access.completionState === 'completed';
   const scheduledStartPending = isProgramStartPending(access, now);
+  const highestFinalizedDay = Math.max(0, ...completedDays, ...partialDays);
+
+  if (access.programState === 'paused') {
+    const currentDay = Math.min(
+      totalDays,
+      Math.max(1, access.currentDay ?? progress?.currentDay ?? highestFinalizedDay + 1)
+    );
+
+    return {
+      programSlug: access.ownedProgram,
+      programName: meta.name,
+      currentDay,
+      totalDays: meta.totalDays,
+      cardIndex,
+      totalCards,
+      streak: getCompletedStreakEndingBefore(completedDays, currentDay),
+      steps,
+      isDayCompleted: completedDays.includes(currentDay),
+      isSessionLocked: true,
+      availabilityLabel: 'Paused',
+      updatedAt: new Date().toISOString(),
+    };
+  }
 
   if (scheduledStartPending) {
     return {
@@ -186,17 +209,10 @@ export function buildWidgetPayload(args: {
       : scheduledDay;
   const lastFinalizedDay = access.startedAt
     ? getProgramLastFinalizedDay(access.startedAt, totalDays, now)
-    : Math.max(0, ...completedDays, ...partialDays);
-  const highestTouchedDay = Math.max(
-    0,
-    access.currentDay ?? 0,
-    progress?.currentDay ?? 0,
-    ...completedDays,
-    ...partialDays
-  );
+    : highestFinalizedDay;
   const unlockedThroughDay = isProgramComplete
     ? totalDays
-    : Math.min(totalDays, Math.max(scheduledDay, highestTouchedDay || 1));
+    : Math.min(totalDays, Math.max(scheduledDay, highestFinalizedDay + 1, 1));
   const currentDay = isProgramComplete
     ? totalDays
     : activeDay ?? Math.min(totalDays, Math.max(unlockedThroughDay, lastFinalizedDay + 1, 1));
@@ -206,14 +222,7 @@ export function buildWidgetPayload(args: {
     : null;
 
   // Streak = number of consecutive completed days ending at currentDay - 1
-  let streak = 0;
-  for (let d = currentDay - 1; d >= 1; d--) {
-    if (completedDays.includes(d)) {
-      streak++;
-    } else {
-      break;
-    }
-  }
+  const streak = getCompletedStreakEndingBefore(completedDays, currentDay);
 
   const isDayCompleted = completedDays.includes(currentDay);
 
@@ -231,4 +240,18 @@ export function buildWidgetPayload(args: {
     availabilityLabel,
     updatedAt: new Date().toISOString(),
   };
+}
+
+function getCompletedStreakEndingBefore(completedDays: number[], currentDay: number) {
+  let streak = 0;
+
+  for (let day = currentDay - 1; day >= 1; day--) {
+    if (completedDays.includes(day)) {
+      streak++;
+    } else {
+      break;
+    }
+  }
+
+  return streak;
 }

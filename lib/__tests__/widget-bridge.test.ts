@@ -80,6 +80,72 @@ describe('buildWidgetPayload', () => {
     expect(payload?.isDayCompleted).toBe(false);
   });
 
+  it('does not treat stale current_day as earned future widget progress', () => {
+    const payload = buildWidgetPayload({
+      access: {
+        ...access,
+        currentDay: 12,
+      },
+      progress: {
+        ...progress,
+        currentDay: 12,
+        completedDays: [1],
+      },
+      now: new Date('2026-05-18T05:00:00'),
+    });
+
+    expect(payload?.currentDay).toBe(2);
+    expect(payload?.isSessionLocked).toBe(false);
+    expect(payload?.streak).toBe(1);
+  });
+
+  it('keeps paused programs frozen and locked at the preserved current day', () => {
+    const payload = buildWidgetPayload({
+      access: {
+        ...access,
+        currentDay: 6,
+        pausedAt: '2026-05-21T10:00:00.000Z',
+        programState: 'paused',
+      },
+      progress: {
+        ...progress,
+        currentDay: 6,
+        completedDays: [1, 2, 3, 4, 5],
+      },
+      now: new Date('2026-05-25T09:00:00'),
+    });
+
+    expect(payload?.currentDay).toBe(6);
+    expect(payload?.isSessionLocked).toBe(true);
+    expect(payload?.availabilityLabel).toBe('Paused');
+    expect(payload?.streak).toBe(5);
+  });
+
+  it('shows completed programs without locking the widget session', () => {
+    const allDays = Array.from({ length: 90 }, (_value, index) => index + 1);
+    const payload = buildWidgetPayload({
+      access: {
+        ...access,
+        completionState: 'completed',
+        completedAt: '2026-08-14T10:00:00.000Z',
+        currentDay: 90,
+        programState: 'completed',
+        purchaseState: 'owned_completed',
+      },
+      progress: {
+        ...progress,
+        completedAt: '2026-08-14T10:00:00.000Z',
+        completedDays: allDays,
+        currentDay: 90,
+      },
+      now: new Date('2026-08-15T09:00:00'),
+    });
+
+    expect(payload?.currentDay).toBe(90);
+    expect(payload?.isSessionLocked).toBe(false);
+    expect(payload?.isDayCompleted).toBe(true);
+  });
+
   it('keeps scheduled programs locked until their selected start date opens', () => {
     const payload = buildWidgetPayload({
       access: {

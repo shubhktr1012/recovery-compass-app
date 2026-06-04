@@ -224,7 +224,7 @@ describe('buildProgramNotificationPlan', () => {
     ).toEqual([]);
   });
 
-  it('uses graduated absence notifications and then becomes silent', () => {
+  it('uses graduated absence notifications and then switches to a paused daily reminder', () => {
     expect(buildPlan({ consecutiveAbsentDays: 1 }).map((notification) => notification.type)).toEqual([
       'absence_waiting',
     ]);
@@ -242,9 +242,28 @@ describe('buildProgramNotificationPlan', () => {
         },
         consecutiveAbsentDays: 3,
       }).map((notification) => notification.type)
-    ).toEqual(['paused_reentry']);
+    ).toEqual(['paused_daily_reminder']);
 
     expect(buildPlan({ consecutiveAbsentDays: 5 })).toEqual([]);
+  });
+
+  it('plans one repeating daily reminder while a program is manually paused', () => {
+    const plan = buildPlan({
+      access: {
+        ...activeAccess,
+        programState: 'paused',
+        pausedAt: '2026-05-18T19:00:00.000Z',
+      },
+      now: new Date(2026, 4, 19, 9, 30),
+    });
+
+    expect(plan).toHaveLength(1);
+    expect(plan[0]).toMatchObject({
+      repeats: 'daily',
+      tier: 'absence_reengagement',
+      type: 'paused_daily_reminder',
+    });
+    expect(plan[0].triggerAt).toEqual(new Date(2026, 4, 20, 9, 0));
   });
 
   it('keeps stable IDs and analytics-ready data payloads', () => {

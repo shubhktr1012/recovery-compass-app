@@ -191,6 +191,41 @@ describe('NotificationService', () => {
     );
   });
 
+  it('schedules repeating daily paused reminders with a calendar trigger', async () => {
+    const notificationsModule = createNotificationsModule();
+    const plan = createPlan({
+      id: 'program:energy_vitality:day:2:paused_daily_reminder',
+      repeats: 'daily',
+      tier: 'absence_reengagement',
+      type: 'paused_daily_reminder',
+      triggerAt: new Date(2026, 4, 20, 9, 0),
+      data: {
+        notificationTier: 'absence_reengagement',
+        notificationType: 'paused_daily_reminder',
+        programSlug: 'energy_vitality',
+        dayNumber: 2,
+      },
+    });
+
+    await NotificationService.scheduleProgramNotificationPlans([plan], {
+      notificationsModule: notificationsModule as never,
+      now: new Date(2026, 4, 20, 9, 30),
+    });
+
+    expect(notificationsModule.scheduleNotificationAsync).toHaveBeenCalledWith(
+      expect.objectContaining({
+        identifier: plan.id,
+        trigger: {
+          type: 'calendar',
+          hour: 9,
+          minute: 0,
+          repeats: true,
+          channelId: 'program-reminders',
+        },
+      })
+    );
+  });
+
   it('skips stale non-completion notifications', async () => {
     const notificationsModule = createNotificationsModule();
 
