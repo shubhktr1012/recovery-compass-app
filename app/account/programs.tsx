@@ -13,6 +13,7 @@ import { useAuth } from '@/providers/auth';
 import { useProfile } from '@/providers/profile';
 import { ExplorePrograms, ProgramIcon } from '@/components/dashboard/ExplorePrograms';
 import { isPublicCatalogProgram } from '@/content/programs/metadata';
+import { isFinishedProgramAccess } from '@/lib/access/entitlements';
 import { SkeletonCircle, SkeletonLine, SkeletonTitle } from '@/components/ui/Skeleton';
 import { AppTypography } from '@/constants/typography';
 import type { ProgramContent, ProgramSlug } from '@/types/content';
@@ -342,15 +343,20 @@ export default function ProgramsLibraryScreen() {
   } = useProfile();
   const [switchingProgram, setSwitchingProgram] = useState<ProgramSlug | null>(null);
   const [isDraggingQueue, setIsDraggingQueue] = useState(false);
+  const [isManualPausePending, setIsManualPausePending] = useState(false);
+  const [showAutomaticPauseNotice, setShowAutomaticPauseNotice] = useState(false);
   const [queueOrderOverride, setQueueOrderOverride] = useState<ProgramSlug[] | null>(null);
   const queueListRef = useRef<React.ElementRef<typeof View> | null>(null);
   const queueListPageYRef = useRef<number | null>(null);
   const dragTouchOffsetRef = useRef<number | null>(null);
+  const pauseConfirmationOpenRef = useRef(false);
+  const manualPauseConfirmedRef = useRef(false);
   const [queueItemLayouts, setQueueItemLayouts] = useState<Record<string, QueueItemLayout>>({});
 
   const accessProgramSlug = access.ownedProgram ?? null;
+  const isAccessFinished = isFinishedProgramAccess(access);
   const activeProgramSlug =
-    accessProgramSlug && access.completionState !== 'completed' && access.programState !== 'purchased'
+    accessProgramSlug && !isAccessFinished && access.programState !== 'purchased'
       ? accessProgramSlug
       : null;
   const hasBlockingActiveProgram = Boolean(
@@ -362,6 +368,24 @@ export default function ProgramsLibraryScreen() {
   const canPersistQueuePriority = Boolean(user?.id && userId && user.id === userId);
   const isActiveProgramPaused = access.programState === 'paused';
   const activeProgramDayLabel = access.currentDay ? `Day ${access.currentDay}` : 'your current day';
+
+  React.useEffect(() => {
+    if (!isActiveProgramPaused) {
+      setIsManualPausePending(false);
+      setShowAutomaticPauseNotice(false);
+      manualPauseConfirmedRef.current = false;
+      pauseConfirmationOpenRef.current = false;
+      return;
+    }
+
+    if (pauseConfirmationOpenRef.current && !manualPauseConfirmedRef.current) {
+      setShowAutomaticPauseNotice(true);
+    }
+
+    setIsManualPausePending(false);
+    manualPauseConfirmedRef.current = false;
+    pauseConfirmationOpenRef.current = false;
+  }, [activeProgramSlug, isActiveProgramPaused]);
 
   const questionnaireRunsQuery = useQuery({
     queryKey: ['questionnaire-runs', userId, 'journeys'],
@@ -464,36 +488,55 @@ export default function ProgramsLibraryScreen() {
   );
 
   const handlePauseActiveProgram = useCallback(() => {
-    if (!activeProgramSlug) {
+    if (!activeProgramSlug || isManualPausePending) {
       return;
     }
+
+    pauseConfirmationOpenRef.current = true;
+    manualPauseConfirmedRef.current = false;
 
     Alert.alert(
       'Pause journey?',
       'Your current day and progress will be frozen. You will get one daily reminder until you resume.',
       [
-        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Cancel',
+          style: 'cancel',
+          onPress: () => {
+            pauseConfirmationOpenRef.current = false;
+            manualPauseConfirmedRef.current = false;
+          },
+        },
         {
           text: 'Pause',
           style: 'destructive',
           onPress: () => {
-            void pauseProgramManually(activeProgramSlug).catch((error) => {
-              if (__DEV__) {
-                console.log('Failed to pause active program', error);
-              }
-              Alert.alert('Could not pause journey', 'Please try again in a moment.');
-            });
+            pauseConfirmationOpenRef.current = false;
+            manualPauseConfirmedRef.current = true;
+            setIsManualPausePending(true);
+            setShowAutomaticPauseNotice(false);
+            void pauseProgramManually(activeProgramSlug)
+              .catch((error) => {
+                if (__DEV__) {
+                  console.log('Failed to pause active program', error);
+                }
+                Alert.alert('Could not pause journey', 'Please try again in a moment.');
+              })
+              .finally(() => {
+                setIsManualPausePending(false);
+              });
           },
         },
       ]
     );
-  }, [activeProgramSlug, pauseProgramManually]);
+  }, [activeProgramSlug, isManualPausePending, pauseProgramManually]);
 
   const handleResumeActiveProgram = useCallback(() => {
     if (!activeProgramSlug) {
       return;
     }
 
+    setShowAutomaticPauseNotice(false);
     void resumeProgramFromPause(activeProgramSlug).catch((error) => {
       if (__DEV__) {
         console.log('Failed to resume active program', error);
@@ -516,10 +559,8 @@ export default function ProgramsLibraryScreen() {
       const record = ownedProgramRecord.get(programSlug);
 
       return (
-        record?.purchaseState === 'owned_completed' ||
-        record?.completionState === 'completed' ||
-        record?.programState === 'completed' ||
-        (programSlug === accessProgramSlug && access.completionState === 'completed')
+        Boolean(record && isFinishedProgramAccess(record)) ||
+        (programSlug === accessProgramSlug && isAccessFinished)
       );
     };
 
@@ -551,7 +592,7 @@ export default function ProgramsLibraryScreen() {
       completedPrograms,
       catalogPrograms,
     };
-  }, [access.completionState, accessProgramSlug, activeProgramSlug, ownedPrograms, profile?.recommended_program, programs]);
+  }, [accessProgramSlug, activeProgramSlug, isAccessFinished, ownedPrograms, profile?.recommended_program, programs]);
 
   const displayedQueuedPrograms = useMemo(() => {
     if (!queueOrderOverride) {
@@ -704,7 +745,9 @@ export default function ProgramsLibraryScreen() {
                 eyebrow="Current journey"
                 body={
                   isActiveProgramPaused
-                    ? `Paused at ${activeProgramDayLabel}. Resume when you are ready; your queue stays unchanged.`
+                    ? showAutomaticPauseNotice
+                      ? `Paused automatically after missed days at ${activeProgramDayLabel}. Resume when you are ready; your queue stays unchanged.`
+                      : `Paused at ${activeProgramDayLabel}. Resume when you are ready; your queue stays unchanged.`
                     : 'Pinned to Home, Program, reminders, and today’s flow.'
                 }
                 notice={
@@ -726,11 +769,13 @@ export default function ProgramsLibraryScreen() {
                     </Pressable>
                     <Pressable
                       onPress={isActiveProgramPaused ? handleResumeActiveProgram : handlePauseActiveProgram}
+                      disabled={isManualPausePending}
                       accessibilityRole="button"
                       className="rounded-full border border-white/15 bg-white/10 px-4 py-2"
+                      style={{ opacity: isManualPausePending ? 0.62 : 1 }}
                     >
                       <Text className="text-white" style={AppTypography.metaMedium}>
-                        {isActiveProgramPaused ? 'Resume journey' : 'Pause journey'}
+                        {isManualPausePending ? 'Pausing...' : isActiveProgramPaused ? 'Resume journey' : 'Pause journey'}
                       </Text>
                     </Pressable>
                   </View>

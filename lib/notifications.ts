@@ -187,10 +187,9 @@ function shouldSchedulePlan(plan: NotificationPlan, now: Date) {
 function getPlanTrigger(plan: NotificationPlan, notificationsModule: NotificationsModule, now: Date) {
   if (plan.repeats === 'daily') {
     return {
-      type: notificationsModule.SchedulableTriggerInputTypes.CALENDAR ?? 'calendar',
+      type: notificationsModule.SchedulableTriggerInputTypes.DAILY,
       hour: plan.triggerAt.getHours(),
       minute: plan.triggerAt.getMinutes(),
-      repeats: true,
       channelId: PROGRAM_NOTIFICATION_CHANNEL_ID,
     };
   }

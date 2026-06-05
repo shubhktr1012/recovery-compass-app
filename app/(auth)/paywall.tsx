@@ -50,6 +50,8 @@ import { OWNED_PROGRAMS_QUERY_ROOT } from '@/hooks/useOwnedPrograms';
 
 const ACCESS_CONFIRMATION_RETRY_DELAY_MS = 1500;
 const ACCESS_CONFIRMATION_RETRY_COUNT = 4;
+const OFFERINGS_FETCH_RETRY_DELAY_MS = 650;
+const OFFERINGS_FETCH_RETRY_COUNT = 3;
 const ENABLE_PURCHASE_QA_LOGS = process.env.EXPO_PUBLIC_ENABLE_PURCHASE_QA_LOGS === 'true';
 const ENABLE_FREE_TIER_ENTRY = process.env.EXPO_PUBLIC_ENABLE_FREE_TIER_ENTRY === 'true';
 
@@ -122,6 +124,60 @@ function getPreferredOffering(
   }
 
   return null;
+}
+
+function getErrorText(error: unknown) {
+  if (!error || typeof error !== 'object') {
+    return String(error ?? '');
+  }
+
+  const maybeError = error as {
+    code?: unknown;
+    message?: unknown;
+    underlyingErrorMessage?: unknown;
+  };
+
+  return [
+    maybeError.code,
+    maybeError.message,
+    maybeError.underlyingErrorMessage,
+  ]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
+}
+
+function isTransientAndroidBillingStartupError(error: unknown) {
+  if (Platform.OS !== 'android') {
+    return false;
+  }
+
+  const errorText = getErrorText(error);
+
+  return (
+    errorText.includes('billingwrapper is not attached to a listener') ||
+    errorText.includes('billing service disconnected')
+  );
+}
+
+async function getOfferingsWithStartupRetry() {
+  let lastError: unknown = null;
+
+  for (let attempt = 0; attempt <= OFFERINGS_FETCH_RETRY_COUNT; attempt += 1) {
+    try {
+      return await Purchases.getOfferings();
+    } catch (error) {
+      lastError = error;
+
+      if (!isTransientAndroidBillingStartupError(error) || attempt >= OFFERINGS_FETCH_RETRY_COUNT) {
+        break;
+      }
+
+      await wait(OFFERINGS_FETCH_RETRY_DELAY_MS * (attempt + 1));
+    }
+  }
+
+  throw lastError;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -253,7 +309,7 @@ export default function Paywall() {
           throw new Error('The purchase service is still starting. Please wait a moment and try again.');
         }
 
-        const offerings = await Purchases.getOfferings();
+        const offerings = await getOfferingsWithStartupRetry();
         const currentOffering = getPreferredOffering(offerings);
 
         if (!isMounted) {
@@ -533,9 +589,18 @@ export default function Paywall() {
   const handlePurchase = async () => {
     if (!activePackage) return;
 
-    setLoading(true);
     const pack = activePackage;
     const programSlug = getProgramSlugForPackage(pack);
+
+    if (!programSlug || !isPublicCatalogProgram(programSlug)) {
+      Alert.alert(
+        'Program unavailable',
+        'This older program is no longer available for new purchases. Please choose the 21-Day Smoking & Alcohol Quit program instead.'
+      );
+      return;
+    }
+
+    setLoading(true);
     logPurchaseQaEvent('purchase_start', pack, programSlug, {
       selectedPackageId,
       expectedProgramSlug: activePackageOption?.slug ?? null,

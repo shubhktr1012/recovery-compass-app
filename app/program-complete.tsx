@@ -13,7 +13,7 @@ import { EMPTY_FINALIZED_DAY_STATES, useFinalizedDayStates } from '@/hooks/useFi
 import { useOwnedPrograms } from '@/hooks/useOwnedPrograms';
 import { useProfile } from '@/providers/profile';
 import type { ProgramSlug } from '@/types/content';
-import { canAccessOwnedProgramRecord, canAccessProgramContent, hasAnyProgramEntitlement } from '@/lib/access/entitlements';
+import { canAccessOwnedProgramRecord, canAccessProgramContent, hasAnyProgramEntitlement, isFinishedProgramAccess } from '@/lib/access/entitlements';
 import { buildDayStateProgressSummary, buildRollingCompletionSummary } from '@/lib/day-state-summary';
 import { MY_PROGRAMS_ROUTE, PAYWALL_ROUTE, PROGRAM_START_ROUTE, PROGRAM_TAB_ROUTE } from '@/lib/navigation/routes';
 import { PaperGrain } from '@/components/ui/PaperGrain';
@@ -67,8 +67,7 @@ export default function ProgramCompleteScreen() {
         .filter(
           (program) =>
             program.programState === 'purchased' &&
-            program.purchaseState !== 'owned_completed' &&
-            program.completionState !== 'completed'
+            !isFinishedProgramAccess(program)
         )
         .sort((first, second) => {
           const firstRank = first.priorityRank ?? Number.MAX_SAFE_INTEGER;

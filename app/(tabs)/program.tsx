@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef, memo } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState, memo } from 'react';
 import { Alert, NativeSyntheticEvent, NativeScrollEvent, Pressable, ScrollView, Text, View } from 'react-native';
 
 import { StatusBar } from 'expo-status-bar';
@@ -14,7 +14,7 @@ import { useProfile } from '@/providers/profile';
 import { useMinuteClock } from '@/hooks/useMinuteClock';
 import { EMPTY_FINALIZED_DAY_STATES, useFinalizedDayStates } from '@/hooks/useFinalizedDayStates';
 import { useOwnedPrograms } from '@/hooks/useOwnedPrograms';
-import { hasAnyProgramEntitlement } from '@/lib/access/entitlements';
+import { hasAnyProgramEntitlement, isFinishedProgramAccess } from '@/lib/access/entitlements';
 import { buildDayStateProgressSummary } from '@/lib/day-state-summary';
 import {
   formatUnlockLabel,
@@ -189,9 +189,13 @@ function ProgramScreenContent({
   const { program } = useProgram(activeProgram);
   const now = useMinuteClock();
   const totalDays = program?.totalDays ?? 1;
-  const isCompletedTimeline = isCompletedReview || access.completionState === 'completed';
-  const scheduledStartPending = !isCompletedReview && isProgramStartPending(access, now);
-  const isPausedJourney = !isCompletedReview && access.programState === 'paused';
+  const isCompletedTimeline = isCompletedReview || isFinishedProgramAccess(access);
+  const scheduledStartPending = !isCompletedTimeline && isProgramStartPending(access, now);
+  const isPausedJourney = !isCompletedTimeline && access.programState === 'paused';
+  const [isManualPausePending, setIsManualPausePending] = useState(false);
+  const [showAutomaticPauseNotice, setShowAutomaticPauseNotice] = useState(false);
+  const pauseConfirmationOpenRef = useRef(false);
+  const manualPauseConfirmedRef = useRef(false);
   const finalizedDayStatesQuery = useFinalizedDayStates(profile?.id ?? access.ownerUserId ?? null, activeProgram);
   const finalizedDayStates = finalizedDayStatesQuery.data ?? EMPTY_FINALIZED_DAY_STATES;
   const dayStateSummary = useMemo(
@@ -293,27 +297,68 @@ function ProgramScreenContent({
       access.purchaseState === 'owned_active'
   );
 
+  useEffect(() => {
+    if (!isPausedJourney) {
+      setIsManualPausePending(false);
+      setShowAutomaticPauseNotice(false);
+      manualPauseConfirmedRef.current = false;
+      pauseConfirmationOpenRef.current = false;
+      return;
+    }
+
+    if (pauseConfirmationOpenRef.current && !manualPauseConfirmedRef.current) {
+      setShowAutomaticPauseNotice(true);
+    }
+
+    setIsManualPausePending(false);
+    manualPauseConfirmedRef.current = false;
+    pauseConfirmationOpenRef.current = false;
+  }, [activeProgram, isPausedJourney]);
+
   const handlePauseJourney = useCallback(() => {
+    if (isManualPausePending) {
+      return;
+    }
+
+    pauseConfirmationOpenRef.current = true;
+    manualPauseConfirmedRef.current = false;
+
     Alert.alert(
       'Pause journey?',
       'Your current day and progress will be frozen. You will get one daily reminder until you resume.',
       [
-        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Cancel',
+          style: 'cancel',
+          onPress: () => {
+            pauseConfirmationOpenRef.current = false;
+            manualPauseConfirmedRef.current = false;
+          },
+        },
         {
           text: 'Pause',
           style: 'destructive',
           onPress: () => {
-            void pauseProgramManually(activeProgram).catch((error) => {
-              console.warn('Failed to pause program', error);
-              Alert.alert('Could not pause journey', 'Please try again in a moment.');
-            });
+            pauseConfirmationOpenRef.current = false;
+            manualPauseConfirmedRef.current = true;
+            setIsManualPausePending(true);
+            setShowAutomaticPauseNotice(false);
+            void pauseProgramManually(activeProgram)
+              .catch((error) => {
+                console.warn('Failed to pause program', error);
+                Alert.alert('Could not pause journey', 'Please try again in a moment.');
+              })
+              .finally(() => {
+                setIsManualPausePending(false);
+              });
           },
         },
       ]
     );
-  }, [activeProgram, pauseProgramManually]);
+  }, [activeProgram, isManualPausePending, pauseProgramManually]);
 
   const handleResumeJourney = useCallback(() => {
+    setShowAutomaticPauseNotice(false);
     void resumeProgramFromPause(activeProgram).catch((error) => {
       console.warn('Failed to resume program', error);
       Alert.alert('Could not resume journey', 'Please try again in a moment.');
@@ -426,14 +471,21 @@ function ProgramScreenContent({
             {(canPauseJourney || isPausedJourney) && access.ownedProgram === activeProgram ? (
               <Pressable
                 onPress={isPausedJourney ? handleResumeJourney : handlePauseJourney}
+                disabled={isManualPausePending}
                 accessibilityRole="button"
-                accessibilityLabel={isPausedJourney ? 'Resume journey' : 'Pause journey'}
+                accessibilityLabel={isManualPausePending ? 'Pausing journey' : isPausedJourney ? 'Resume journey' : 'Pause journey'}
                 className="self-start mt-3 rounded-full border border-sage/18 bg-white/8 px-4 py-2"
+                style={{ opacity: isManualPausePending ? 0.62 : 1 }}
               >
                 <Text className="text-sage" style={AppTypography.metaMedium}>
-                  {isPausedJourney ? 'Resume journey' : 'Pause journey'}
+                  {isManualPausePending ? 'Pausing...' : isPausedJourney ? 'Resume journey' : 'Pause journey'}
                 </Text>
               </Pressable>
+            ) : null}
+            {showAutomaticPauseNotice && isPausedJourney ? (
+              <Text className="text-sage/45 mt-2" style={AppTypography.meta}>
+                Paused automatically after missed days. Resume when you are ready.
+              </Text>
             ) : null}
           </View>
         </View>
@@ -443,26 +495,30 @@ function ProgramScreenContent({
           <PaperGrain />
           <View onLayout={(e) => { daysContainerY.current = e.nativeEvent.layout.y; }}>
             
-            {isArchivedReset && isCompletedTimeline ? (
+          {isArchivedReset && isCompletedTimeline ? (
               <View className="mx-5 mb-4 bg-white rounded-[20px] px-[18px] py-4 shadow-sm shadow-forest/5" style={{ shadowColor: '#06290C', shadowOpacity: 0.06, shadowRadius: 24, shadowOffset: { width: 0, height: 8 }, borderLeftWidth: 3, borderLeftColor: '#06290C' }}>
                 <Text className="uppercase text-forest/40" style={[AppTypography.eyebrow, { letterSpacing: 1.4 }]}>
                   {`What's Next`}
                 </Text>
                 <Text className="text-forest mt-1" style={AppTypography.displayCardSmTight}>
-                  Ready for the <Text className="italic">full 90 days?</Text>
+                  Ready for the <Text className="italic">21-day quit path?</Text>
                 </Text>
                 <Text
                   className="text-forest/60 mt-1"
                   style={AppTypography.bodyCompact}
                 >
-                  {`You've broken the initial autopilot. The 90-Day Quit now takes you to lasting freedom.`}
+                  {`You've completed the original reset. The new Smoking & Alcohol Quit journey is the current replacement path.`}
                 </Text>
-                <View className="flex-row items-center bg-forest rounded-full px-4 py-2 mt-3 self-start">
+                <Pressable
+                  accessibilityRole="button"
+                  onPress={() => router.push({ pathname: '/paywall', params: { program: 'smoking_alcohol_quit' } })}
+                  className="flex-row items-center bg-forest rounded-full px-4 py-2 mt-3 self-start"
+                >
                   <Svg width="11" height="11" viewBox="0 0 24 24" fill="#fff" stroke="none" className="mr-1.5">
                     <Path d="M5 3 L19 12 L5 21 Z" />
                   </Svg>
-                  <Text className="text-white" style={AppTypography.metaMedium}>Explore 90-Day Quit</Text>
-                </View>
+                  <Text className="text-white" style={AppTypography.metaMedium}>Explore 21-Day Quit</Text>
+                </Pressable>
               </View>
             ) : null}
 
@@ -521,6 +577,8 @@ function ProgramScreenContent({
                         router.push(
                           isCompletedReview
                             ? buildDayDetailRoute({ programSlug: activeProgram, dayNumber: day.dayNumber, mode: 'review' })
+                            : isCompletedTimeline
+                            ? buildDayDetailRoute({ programSlug: activeProgram, dayNumber: day.dayNumber, mode: 'review' })
                             : buildDayDetailRoute({ programSlug: activeProgram, dayNumber: day.dayNumber })
                         )
                       }
@@ -556,9 +614,7 @@ export default function ProgramScreen() {
   const completedReviewProgram = ownedPrograms.find(
     (program) =>
       program.slug === requestedReviewProgram &&
-      (program.purchaseState === 'owned_completed' ||
-        program.completionState === 'completed' ||
-        program.programState === 'completed')
+      isFinishedProgramAccess(program)
   );
 
   if (isLoading || (requestedReviewProgram && isOwnedProgramsLoading)) {

@@ -28,7 +28,7 @@ import { finalizedDayStatesQueryKey, useFinalizedDayStates } from '@/hooks/useFi
 import { useOwnedPrograms } from '@/hooks/useOwnedPrograms';
 import { useMinuteClock } from '@/hooks/useMinuteClock';
 import { logEvent } from '@/lib/analytics';
-import { canAccessProgramContent, canReviewCompletedProgram } from '@/lib/access/entitlements';
+import { canAccessProgramContent, canReviewCompletedProgram, isFinishedProgramAccess } from '@/lib/access/entitlements';
 import { getCardState, toLocalHHMM } from '@/lib/card-state';
 import { buildUserDayStateRecord, upsertUserDayState, type UserDayStateUpsert } from '@/lib/day-states';
 import { buildDayStateProgressSummary, formatFinalizedDaySummary } from '@/lib/day-state-summary';
@@ -622,7 +622,14 @@ export default function DayDetailScreen() {
   const { ownedPrograms, isLoading: isOwnedProgramsLoading } = useOwnedPrograms();
   const activeAccessDecision = canAccessProgramContent(access, programSlug);
   const completedReviewAccessDecision = canReviewCompletedProgram(ownedPrograms, programSlug);
-  const isCompletedProgramReview = rawMode === 'review' && completedReviewAccessDecision.allowed;
+  const isFinishedActiveAccess = Boolean(
+    programSlug &&
+      access.ownedProgram === programSlug &&
+      isFinishedProgramAccess(access)
+  );
+  const isCompletedProgramReview =
+    (rawMode === 'review' && completedReviewAccessDecision.allowed) ||
+    isFinishedActiveAccess;
   const canAccessRequestedProgramDay =
     activeAccessDecision.allowed || completedReviewAccessDecision.allowed;
   const finalizedDayStatesQuery = useFinalizedDayStates(user?.id ?? access.ownerUserId ?? null, programSlug);

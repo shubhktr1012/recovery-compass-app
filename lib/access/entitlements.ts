@@ -1,5 +1,6 @@
 import type { OwnedProgramRecord } from '@/hooks/useOwnedPrograms';
 import type {
+  CompletionState,
   ProgramAccessSnapshot,
   ProgramLifecycleState,
   ProgramSlug,
@@ -17,9 +18,24 @@ export interface PremiumAccessDecision {
 }
 
 type AccessSource = ProgramAccessSnapshot['source'];
+type ProgramCompletionLikeState = {
+  completionState?: CompletionState | string | null;
+  programState?: ProgramLifecycleState | string | null;
+  purchaseState?: PurchaseState | string | null;
+};
 
 export function isOwnedPurchaseState(purchaseState?: PurchaseState | string | null) {
   return Boolean(purchaseState && purchaseState !== 'not_owned');
+}
+
+export function isFinishedProgramAccess(state: ProgramCompletionLikeState) {
+  return (
+    state.purchaseState === 'owned_completed' ||
+    state.purchaseState === 'owned_archived' ||
+    state.completionState === 'completed' ||
+    state.completionState === 'archived' ||
+    state.programState === 'completed'
+  );
 }
 
 export function isTrustedAccessSource(source?: AccessSource | null) {
@@ -84,9 +100,7 @@ export function canReviewCompletedProgram(
     (program) =>
       program.slug === programSlug &&
       isOwnedPurchaseState(program.purchaseState) &&
-      (program.purchaseState === 'owned_completed' ||
-        program.completionState === 'completed' ||
-        program.programState === 'completed')
+      isFinishedProgramAccess(program)
   );
 
   return completedRecord

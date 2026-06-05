@@ -6,6 +6,7 @@ import {
   canAccessProgramStartSetup,
   canReviewCompletedProgram,
   hasAnyProgramEntitlement,
+  isFinishedProgramAccess,
   isTrustedAccessSource,
 } from '@/lib/access/entitlements';
 
@@ -128,6 +129,30 @@ describe('premium entitlement decisions', () => {
         'ninety_day_transform'
       )
     ).toEqual({ allowed: false, reason: 'not_owned' });
+  });
+
+  it('treats archived legacy rows as finished review-only access', () => {
+    expect(
+      isFinishedProgramAccess({
+        completionState: 'archived',
+        programState: 'active',
+        purchaseState: 'owned_archived',
+      })
+    ).toBe(true);
+
+    expect(
+      canReviewCompletedProgram(
+        [
+          {
+            completionState: 'archived',
+            programState: 'active',
+            purchaseState: 'owned_archived',
+            slug: 'six_day_reset',
+          },
+        ],
+        'six_day_reset'
+      )
+    ).toEqual({ allowed: true, reason: 'completed_review_access' });
   });
 
   it('can check secondary owned program records for queued/manual-granted programs', () => {

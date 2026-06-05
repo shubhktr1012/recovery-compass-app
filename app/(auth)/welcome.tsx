@@ -84,19 +84,20 @@ export default function WelcomeScreen() {
     // Keep the welcome footer in sync with the preloader curtain reveal.
     const shouldAnimateEntrance = useRef(isFirstAppLaunch()).current;
     const footerOpacity = useSharedValue(shouldAnimateEntrance ? 0 : 1);
-    const footerTranslateY = useSharedValue(shouldAnimateEntrance ? 28 : 0);
+    const footerTranslateY = useSharedValue(shouldAnimateEntrance ? 20 : 0);
 
     useEffect(() => {
         if (!shouldAnimateEntrance) return;
 
-        const FOOTER_DELAY = 3800;
+        const FOOTER_DELAY = 1800;
+        const FOOTER_ANIMATION_DURATION = 400;
         footerOpacity.value = withDelay(
             FOOTER_DELAY,
-            withTiming(1, { duration: 600, easing: Easing.out(Easing.ease) })
+            withTiming(1, { duration: FOOTER_ANIMATION_DURATION, easing: Easing.out(Easing.ease) })
         );
         footerTranslateY.value = withDelay(
             FOOTER_DELAY,
-            withTiming(0, { duration: 600, easing: Easing.out(Easing.ease) })
+            withTiming(0, { duration: FOOTER_ANIMATION_DURATION, easing: Easing.out(Easing.ease) })
         );
     }, [footerOpacity, footerTranslateY, shouldAnimateEntrance]);
 

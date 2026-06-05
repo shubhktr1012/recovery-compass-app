@@ -1,10 +1,30 @@
 # Sprint Status — Recovery Compass
 
-> Last updated: June 2, 2026
-> Branch: `rebuild/multi-program`
+> Last updated: June 5, 2026
+> Branch: `feature/motion-system-pass`
 > Questionnaire foundation: ready
 > Sellable catalog: 6 products configured in RevenueCat, final INR pricing entered in App Store Connect and Google Play, unified `main_production` offering live
 > Final content files received for Sleep, Energy, and Men's Health — live in Supabase, metadata aligned, Sleep cleanup refresh shipped, redesigned day-detail/card pass now underway
+
+## Current Release Execution Checklist — June 5, 2026
+
+Use this as the active release ledger for the next app binary. Do not add new scope until these steps are either completed or explicitly deferred.
+
+1. [x] Freeze this release scope: two new programs, legacy smoking-program handling, pause stability, preloader timing, and required purchase/runtime wiring only.
+2. [x] Clean and commit the current app work; exclude scratch/generated files such as `graphify-out/`, `supabase/snippets/`, and `temp_days.sql`.
+3. [ ] Test the five pending Supabase migrations locally before production push:
+   - `20260529120000_seed_gut_health_reset_program.sql`
+   - `20260529170000_seed_smoking_alcohol_quit_program.sql`
+   - `20260529180000_wire_new_program_runtime_allowlists.sql`
+   - `20260601120000_manual_pause_program_lifecycle.sql`
+   - `20260604112741_make_absence_pause_idempotent.sql`
+4. [ ] Run local app QA before production DB changes: login/auth, onboarding, Explore visibility, paywall, new program surfaces, legacy owner behavior, pause cancel/confirm, program detail, restore, and basic notification behavior.
+5. [ ] Push the five production DB migrations only after local QA passes. These migrations must be live before any binary exposes `smoking_alcohol_quit` or `gut_health_reset`.
+6. [ ] Verify RevenueCat/store setup for the two new non-consumable products, offerings, app env/product IDs, webhook handling, and purchase verification.
+7. [ ] Run final checks: `npm run typecheck`, `npm run lint:strict`, and `npm run test` in the app repo. Run web checks only if web changes are included in the release.
+8. [ ] Cut production iOS and Android builds only after DB and RevenueCat are ready.
+9. [ ] Submit builds and smoke-test one real install/update on each platform after release.
+10. [ ] After release, run targeted cleanup only: stale `user_program_preferences`, duplicate Expo push token, old transaction statuses, and any admin-dashboard follow-up. Avoid broad DB cleanup during the release window.
 
 ## Launch Blockers (must fix before ANY submission)
 
@@ -161,6 +181,8 @@ Launch → V4 Splash → Onboarding Carousel → Sign Up / Sign In
 
 - [x] RevenueCat Android product `smoking_alcohol_quit` (`prode1975f34d9`) is active, one-time, and non-consumable
 - [x] RevenueCat Android product `gut_health_reset` (`prod6fc264497d`) is active, one-time, and non-consumable
+- [x] `six_day_reset` and `ninety_day_transform` are legacy-supported only: hidden from public Explore/catalog/new-purchase surfaces while existing owners, restores, admin grants, and historical access stay supported
+- [x] Archived legacy access rows (`owned_archived` / `completion_state='archived'`) are treated as finished review-only journeys, not resumable active journeys
 - [x] iOS simulator fetches `main_production` correctly when launched from Xcode with local `.storekit`
 - [x] StoreKit local purchase for `ninety_day_quit` posts receipt to RevenueCat successfully
 - [x] Paywall purchase flow now waits for confirmed unlock before routing to Program tab

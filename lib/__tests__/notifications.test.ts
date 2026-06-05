@@ -39,6 +39,7 @@ function createNotificationsModule() {
       HIGH: 'high',
     },
     SchedulableTriggerInputTypes: {
+      DAILY: 'daily',
       DATE: 'date',
     },
     cancelScheduledNotificationAsync: vi.fn(async () => undefined),
@@ -191,7 +192,7 @@ describe('NotificationService', () => {
     );
   });
 
-  it('schedules repeating daily paused reminders with a calendar trigger', async () => {
+  it('schedules repeating daily paused reminders with a daily trigger', async () => {
     const notificationsModule = createNotificationsModule();
     const plan = createPlan({
       id: 'program:energy_vitality:day:2:paused_daily_reminder',
@@ -216,10 +217,9 @@ describe('NotificationService', () => {
       expect.objectContaining({
         identifier: plan.id,
         trigger: {
-          type: 'calendar',
+          type: 'daily',
           hour: 9,
           minute: 0,
-          repeats: true,
           channelId: 'program-reminders',
         },
       })
