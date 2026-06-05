@@ -20,11 +20,17 @@ Use this as the active release ledger for the next app binary. Do not add new sc
    - `20260604112741_make_absence_pause_idempotent.sql`
 4. [ ] Run local app QA before production DB changes: login/auth, onboarding, Explore visibility, paywall, new program surfaces, legacy owner behavior, pause cancel/confirm, program detail, restore, and basic notification behavior.
 5. [ ] Push the five production DB migrations only after local QA passes. These migrations must be live before any binary exposes `smoking_alcohol_quit` or `gut_health_reset`.
-6. [ ] Verify RevenueCat/store setup for the two new non-consumable products, offerings, app env/product IDs, webhook handling, and purchase verification.
+6. [x] Verify RevenueCat/store setup for the two new non-consumable products, offerings, app env/product IDs, webhook handling, and purchase verification.
 7. [ ] Run final checks: `npm run typecheck`, `npm run lint:strict`, and `npm run test` in the app repo. Run web checks only if web changes are included in the release.
 8. [ ] Cut production iOS and Android builds only after DB and RevenueCat are ready.
 9. [ ] Submit builds and smoke-test one real install/update on each platform after release.
 10. [ ] After release, run targeted cleanup only: stale `user_program_preferences`, duplicate Expo push token, old transaction statuses, and any admin-dashboard follow-up. Avoid broad DB cleanup during the release window.
+
+Status notes:
+- 2026-06-05: Steps 1-2 committed in `2c0ef8a` (`fix(app): harden launch program and pause flows`).
+- 2026-06-05: App checks passed after the release-scope commit: `npm run typecheck`, `npm run lint:strict`, and `npm run test`.
+- 2026-06-05: Step 3 is blocked locally because Supabase Postgres on `127.0.0.1:54322` is not running; `supabase start` hung and was stopped. Start Docker/Supabase locally, then rerun `supabase migration list --local` and local migration testing.
+- 2026-06-05: RevenueCat MCP verification found the two new Android products active but not attached to `main_production` packages or entitlements. Attached `prode1975f34d9` to Smoking & Alcohol Quit and `prod6fc264497d` to Gut Reset, then re-verified both packages and entitlements contain iOS + Android + test-store products. No local env overrides are currently set for these two products; the app uses the built-in fallback store identifiers.
 
 ## Launch Blockers (must fix before ANY submission)
 
