@@ -20,7 +20,7 @@ Use this as the active release ledger for the next app binary. Do not add new sc
    - `20260604112741_make_absence_pause_idempotent.sql`
 4. [ ] Run local app QA before production DB changes: login/auth, onboarding, Explore visibility, paywall, new program surfaces, legacy owner behavior, pause cancel/confirm, program detail, restore, and basic notification behavior.
 5. [ ] Push the five production DB migrations only after local QA passes. These migrations must be live before any binary exposes `smoking_alcohol_quit` or `gut_health_reset`.
-6. [x] Verify RevenueCat/store setup for the two new non-consumable products, offerings, app env/product IDs, webhook handling, and purchase verification.
+6. [ ] Verify RevenueCat/store setup for the two new non-consumable products, offerings, app env/product IDs, webhook handling, and purchase verification.
 7. [ ] Run final checks: `npm run typecheck`, `npm run lint:strict`, and `npm run test` in the app repo. Run web checks only if web changes are included in the release.
 8. [ ] Cut production iOS and Android builds only after DB and RevenueCat are ready.
 9. [ ] Submit builds and smoke-test one real install/update on each platform after release.
@@ -31,6 +31,9 @@ Status notes:
 - 2026-06-05: App checks passed after the release-scope commit: `npm run typecheck`, `npm run lint:strict`, and `npm run test`.
 - 2026-06-05: Step 3 is blocked locally because Supabase Postgres on `127.0.0.1:54322` is not running; `supabase start` hung and was stopped. Start Docker/Supabase locally, then rerun `supabase migration list --local` and local migration testing.
 - 2026-06-05: RevenueCat MCP verification found the two new Android products active but not attached to `main_production` packages or entitlements. Attached `prode1975f34d9` to Smoking & Alcohol Quit and `prod6fc264497d` to Gut Reset, then re-verified both packages and entitlements contain iOS + Android + test-store products. No local env overrides are currently set for these two products; the app uses the built-in fallback store identifiers.
+- 2026-06-05: Full store setup remains blocked: RevenueCat store-state lookup reports the two new iOS App Store products as `not_found`, and the Android Play store-state endpoint is returning a retryable RevenueCat server error. Do not cut the next production binary until App Store Connect / Play Console product readiness is confirmed.
+- 2026-06-05: RevenueCat product push created App Store Connect products `6776996729` (`smoking_alcohol_quit`) and `6776996638` (`gut_health_reset`). RevenueCat store-state still reports `not_found` immediately after creation, so App Store Connect metadata, pricing, screenshots/review info, and readiness still need manual confirmation.
+- 2026-06-05: Production Edge Function audit found deployed `verify-revenuecat-purchase` v2 and `revenuecat-webhook` v16 do not yet include `smoking_alcohol_quit` or `gut_health_reset`. Local function source includes both new programs and bundle expansion, but the Supabase CLI deploy stalled in the deploy HTTP request and further escalation was blocked by the environment usage limit. Deploy both functions before purchase QA and before exposing the new products in a binary.
 
 ## Launch Blockers (must fix before ANY submission)
 
