@@ -267,7 +267,7 @@ struct SmallWidgetView: View {
 
     private var progressFraction: Double {
         guard data.totalDays > 0 else { return 0 }
-        return Double(data.currentDay) / Double(data.totalDays)
+        return Double(data.safeProgressDayCount) / Double(data.totalDays)
     }
 
     var body: some View {
@@ -414,7 +414,7 @@ struct MediumWidgetView: View {
 
     private var progressFraction: Double {
         guard data.totalDays > 0 else { return 0 }
-        return Double(data.currentDay) / Double(data.totalDays)
+        return Double(data.safeProgressDayCount) / Double(data.totalDays)
     }
 
     var body: some View {
@@ -544,7 +544,7 @@ struct MediumWidgetView: View {
                             .frame(height: 4)
                         RoundedRectangle(cornerRadius: 999)
                             .fill(fillColor)
-                            .frame(width: geo.size.width, height: 4)
+                            .frame(width: max(4, geo.size.width * progressFraction), height: 4)
                     }
                 }
                 .frame(height: 4)
@@ -710,6 +710,7 @@ private let darkSampleData = WidgetData(
     totalCards: 8,
     streak: 7,
     steps: 4821,
+    progressDayCount: 13,
     isDayCompleted: false,
     isSessionLocked: false,
     availabilityLabel: nil,
@@ -725,6 +726,7 @@ private let lightSampleData = WidgetData(
     totalCards: 8,
     streak: 7,
     steps: 4821,
+    progressDayCount: 13,
     isDayCompleted: false,
     isSessionLocked: false,
     availabilityLabel: nil,
@@ -740,6 +742,7 @@ private let completedSampleData = WidgetData(
     totalCards: 8,
     streak: 7,
     steps: 4821,
+    progressDayCount: 14,
     isDayCompleted: true,
     isSessionLocked: false,
     availabilityLabel: nil,

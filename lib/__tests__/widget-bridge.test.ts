@@ -42,6 +42,7 @@ describe('buildWidgetPayload', () => {
 
     expect(payload?.currentDay).toBe(1);
     expect(payload?.isSessionLocked).toBe(false);
+    expect(payload?.progressDayCount).toBe(0);
   });
 
   it('keeps the current day active before the 1 AM finalization boundary', () => {
@@ -54,6 +55,7 @@ describe('buildWidgetPayload', () => {
     expect(payload?.currentDay).toBe(1);
     expect(payload?.isSessionLocked).toBe(false);
     expect(payload?.isDayCompleted).toBe(false);
+    expect(payload?.progressDayCount).toBe(0);
   });
 
   it('shows the next day as locked during the 1 AM to 5 AM overnight gap', () => {
@@ -66,6 +68,7 @@ describe('buildWidgetPayload', () => {
     expect(payload?.currentDay).toBe(2);
     expect(payload?.isSessionLocked).toBe(true);
     expect(payload?.availabilityLabel).toContain('5:00 AM');
+    expect(payload?.progressDayCount).toBe(0);
   });
 
   it('unlocks the next day at 5 AM', () => {
@@ -78,6 +81,7 @@ describe('buildWidgetPayload', () => {
     expect(payload?.currentDay).toBe(2);
     expect(payload?.isSessionLocked).toBe(false);
     expect(payload?.isDayCompleted).toBe(false);
+    expect(payload?.progressDayCount).toBe(0);
   });
 
   it('does not treat stale current_day as earned future widget progress', () => {
@@ -97,6 +101,27 @@ describe('buildWidgetPayload', () => {
     expect(payload?.currentDay).toBe(2);
     expect(payload?.isSessionLocked).toBe(false);
     expect(payload?.streak).toBe(1);
+    expect(payload?.progressDayCount).toBe(1);
+  });
+
+  it('counts finalized partial days as earned widget progress without advancing the shown day', () => {
+    const payload = buildWidgetPayload({
+      access: {
+        ...access,
+        currentDay: 12,
+      },
+      progress: {
+        ...progress,
+        currentDay: 12,
+        completedDays: [1],
+        partialDays: [2],
+      },
+      now: new Date('2026-05-18T05:00:00'),
+    });
+
+    expect(payload?.currentDay).toBe(2);
+    expect(payload?.isDayCompleted).toBe(false);
+    expect(payload?.progressDayCount).toBe(2);
   });
 
   it('keeps paused programs frozen and locked at the preserved current day', () => {
@@ -119,6 +144,7 @@ describe('buildWidgetPayload', () => {
     expect(payload?.isSessionLocked).toBe(true);
     expect(payload?.availabilityLabel).toBe('Paused');
     expect(payload?.streak).toBe(5);
+    expect(payload?.progressDayCount).toBe(5);
   });
 
   it('shows completed programs without locking the widget session', () => {
@@ -144,6 +170,7 @@ describe('buildWidgetPayload', () => {
     expect(payload?.currentDay).toBe(90);
     expect(payload?.isSessionLocked).toBe(false);
     expect(payload?.isDayCompleted).toBe(true);
+    expect(payload?.progressDayCount).toBe(90);
   });
 
   it('keeps scheduled programs locked until their selected start date opens', () => {
@@ -161,5 +188,6 @@ describe('buildWidgetPayload', () => {
     expect(payload?.currentDay).toBe(1);
     expect(payload?.isSessionLocked).toBe(true);
     expect(payload?.availabilityLabel).toContain('5:00 AM');
+    expect(payload?.progressDayCount).toBe(0);
   });
 });

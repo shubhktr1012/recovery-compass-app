@@ -52,6 +52,7 @@ export interface WidgetPayload {
   totalCards: number;
   streak: number;
   steps: number;
+  progressDayCount: number;
   isDayCompleted: boolean;
   isSessionLocked: boolean;
   availabilityLabel: string | null;
@@ -156,6 +157,7 @@ export function buildWidgetPayload(args: {
   const isProgramComplete = access.completionState === 'completed';
   const scheduledStartPending = isProgramStartPending(access, now);
   const highestFinalizedDay = Math.max(0, ...completedDays, ...partialDays);
+  const progressDayCount = getFinalizedProgressDayCount(completedDays, partialDays, totalDays);
 
   if (access.programState === 'paused') {
     const currentDay = Math.min(
@@ -172,6 +174,7 @@ export function buildWidgetPayload(args: {
       totalCards,
       streak: getCompletedStreakEndingBefore(completedDays, currentDay),
       steps,
+      progressDayCount,
       isDayCompleted: completedDays.includes(currentDay),
       isSessionLocked: true,
       availabilityLabel: 'Paused',
@@ -189,6 +192,7 @@ export function buildWidgetPayload(args: {
       totalCards,
       streak: 0,
       steps,
+      progressDayCount: 0,
       isDayCompleted: false,
       isSessionLocked: true,
       availabilityLabel: formatWidgetAvailabilityLabel(
@@ -235,11 +239,17 @@ export function buildWidgetPayload(args: {
     totalCards,
     streak,
     steps,
+    progressDayCount: isProgramComplete ? totalDays : progressDayCount,
     isDayCompleted,
     isSessionLocked,
     availabilityLabel,
     updatedAt: new Date().toISOString(),
   };
+}
+
+function getFinalizedProgressDayCount(completedDays: number[], partialDays: number[], totalDays: number) {
+  const finalizedDays = new Set([...completedDays, ...partialDays]);
+  return Math.min(totalDays, Math.max(0, finalizedDays.size));
 }
 
 function getCompletedStreakEndingBefore(completedDays: number[], currentDay: number) {
