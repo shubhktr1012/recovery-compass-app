@@ -116,7 +116,27 @@ describe('content query utils template support', () => {
 
     expect(program).not.toBeNull();
     expect(program?.totalDays).toBe(14);
+    expect(program?.timeSlotsEnabled).toBe(true);
     expect(program?.days).toHaveLength(2);
     expect(program?.days[1]?.dayTitle).toBe('Light Before Screens');
+  });
+
+  it('preserves disabled time slots from Supabase rows for unique programs', () => {
+    const program = mapProgramRowToProgramContent(
+      {
+        ...programRow,
+        id: 'prog-gut',
+        slug: 'gut_health_reset',
+        title: '21-Day Gut Reset',
+        category: 'gut_health',
+        content_mode: 'unique',
+        time_slots_enabled: false,
+        total_days: 21,
+      },
+      []
+    );
+
+    expect(program).not.toBeNull();
+    expect(program?.timeSlotsEnabled).toBe(false);
   });
 });

@@ -36,8 +36,13 @@ function validateActionStepCard(card, pathName, errors) {
   if (!isNonEmptyString(card.title)) {
     toError(errors, pathName, 'title is required');
   }
-  if (!Array.isArray(card.instructions) || card.instructions.length === 0) {
-    toError(errors, pathName, 'instructions must be a non-empty array');
+  const hasInstructions = Array.isArray(card.instructions) && card.instructions.length > 0;
+  const hasChecklistItems = Array.isArray(card.checklistItems) && card.checklistItems.length > 0;
+  if (!hasInstructions && !hasChecklistItems) {
+    toError(errors, pathName, 'instructions or checklistItems must be a non-empty array');
+  }
+  if (card.variant === 'checklist' && !hasChecklistItems) {
+    toError(errors, pathName, 'checklist variant requires checklistItems');
   }
 }
 

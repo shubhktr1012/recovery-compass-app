@@ -25,6 +25,7 @@ export interface ProgramCatalogEntry {
   totalDays: number;
   category: ProgramCategory;
   hasAudio: boolean;
+  timeSlotsEnabled: boolean;
   contentStatus: ProgramContentStatus;
   priceString?: string;
   /** Label for the recommendation stats row, e.g. "10–15" */
@@ -69,6 +70,7 @@ export interface LessonCard {
 
 export interface ActionStepCard {
   type: 'action_step';
+  variant?: 'checklist';
   stepNumber?: number;
   /** Age Reversal format: e.g. "Step 1 · Body Circulation" */
   stepLabel?: string;
@@ -76,7 +78,9 @@ export interface ActionStepCard {
   /** Age Reversal format: short subtitle below the title */
   subtitle?: string;
   duration?: string;
-  instructions: string[];
+  instructions?: string[];
+  checklistItems?: string[];
+  checklistQuote?: string;
   whyThisWorks?: string;
   proTip?: string;
   /** Age Reversal format: why this step matters, shown as a callout */

@@ -189,7 +189,8 @@ describe('resolveDay template mode', () => {
     const coldCard = result.cards[0];
     expect(coldCard.type).toBe('action_step');
     if (coldCard.type === 'action_step') {
-      expect(coldCard.instructions[0]).toBe('50 seconds of cold water.');
+      const instructions = coldCard.instructions ?? [];
+      expect(instructions[0]).toBe('50 seconds of cold water.');
       expect(coldCard.duration).toBe('50 seconds');
     }
 

@@ -25,6 +25,10 @@ import {
 } from '@/lib/api/program-reflections';
 import { getAudioThresholds } from '@/lib/card-resolver';
 import {
+  parseChecklistProgress,
+  serializeChecklistProgress,
+} from '@/lib/checklist-progress';
+import {
   parseRoutineProgress,
   serializeRoutineProgress,
   type RoutineEffortLevel,
@@ -570,12 +574,32 @@ function LessonCardView({ card, cardIndex: _cardIndex }: { card: LessonCard; car
   );
 }
 
-function ActionStepCardView({ card, cardIndex, onContinue }: { card: ActionStepCard; cardIndex?: number; onContinue?: () => void; }) {
+function getChecklistItemKey(label: string, index: number) {
+  return `${label}-${index}`;
+}
+
+function ActionStepCardView({
+  card,
+  cardIndex,
+  checklistStorageKey,
+  isReadOnly = false,
+  onContinue,
+}: {
+  card: ActionStepCard;
+  cardIndex?: number;
+  checklistStorageKey?: string;
+  isReadOnly?: boolean;
+  onContinue?: () => void;
+}) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isDone, setIsDone] = useState(false);
+  const [checkedChecklistItems, setCheckedChecklistItems] = useState<Set<string>>(new Set());
+  const [hasChecklistRestored, setHasChecklistRestored] = useState(false);
   const { registerConfig } = useContext(TransportContext);
+  const checklistItems = card.checklistItems ?? [];
+  const isChecklist = card.variant === 'checklist' || checklistItems.length > 0;
 
-  // Register transport config: "MARK DONE" → marks complete → auto-advances
+  // Checklist cards are reflective: ticking items is optional and never blocks progress.
   useEffect(() => {
     if (cardIndex == null) return;
 
@@ -587,7 +611,7 @@ function ActionStepCardView({ card, cardIndex, onContinue }: { card: ActionStepC
           color={isDone ? '#16a34a' : '#06290C'}
         />
       ),
-      centerLabel: isDone ? 'DONE ✓' : 'MARK DONE',
+      centerLabel: isDone ? 'DONE ✓' : isChecklist ? 'CONTINUE' : 'MARK DONE',
       onCenterPress: () => {
         if (isDone) {
           onContinue?.();
@@ -600,7 +624,85 @@ function ActionStepCardView({ card, cardIndex, onContinue }: { card: ActionStepC
         }, 600);
       },
     });
-  }, [cardIndex, isDone, onContinue, registerConfig]);
+  }, [cardIndex, isChecklist, isDone, onContinue, registerConfig]);
+
+  useEffect(() => {
+    if (!isChecklist) {
+      return;
+    }
+
+    let isCancelled = false;
+
+    const restoreProgress = async () => {
+      if (!checklistStorageKey) {
+        if (!isCancelled) {
+          setCheckedChecklistItems(new Set());
+          setHasChecklistRestored(true);
+        }
+        return;
+      }
+
+      try {
+        const rawValue = await AsyncStorage.getItem(checklistStorageKey);
+        if (isCancelled) return;
+
+        const progressRecord = parseChecklistProgress(rawValue);
+        setCheckedChecklistItems(new Set(progressRecord.checkedItems));
+      } catch (error) {
+        console.error('Failed to restore checklist progress', error);
+        if (!isCancelled) {
+          setCheckedChecklistItems(new Set());
+        }
+      } finally {
+        if (!isCancelled) {
+          setHasChecklistRestored(true);
+        }
+      }
+    };
+
+    void restoreProgress();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [checklistStorageKey, isChecklist]);
+
+  useEffect(() => {
+    if (!isChecklist || !hasChecklistRestored || !checklistStorageKey || isReadOnly) {
+      return;
+    }
+
+    const persistProgress = async () => {
+      try {
+        await AsyncStorage.setItem(
+          checklistStorageKey,
+          serializeChecklistProgress({
+            checkedItems: Array.from(checkedChecklistItems),
+          })
+        );
+      } catch (error) {
+        console.error('Failed to persist checklist progress', error);
+      }
+    };
+
+    void persistProgress();
+  }, [checkedChecklistItems, checklistStorageKey, hasChecklistRestored, isChecklist, isReadOnly]);
+
+  const toggleChecklistItem = (id: string) => {
+    if (isReadOnly) {
+      return;
+    }
+
+    setCheckedChecklistItems((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
 
   // Support both legacy stepNumber and new stepLabel format
   const eyebrowText = card.stepLabel ?? (card.stepNumber != null ? `Action Step ${card.stepNumber}` : 'Action Step');
@@ -624,7 +726,48 @@ function ActionStepCardView({ card, cardIndex, onContinue }: { card: ActionStepC
           </View>
         ) : null}
 
-        <DotList items={card.instructions} textStyle={{ color: '#374151', fontSize: 16, lineHeight: 26 }} />
+        {isChecklist ? (
+          <View style={styles.routineList}>
+            {checklistItems.map((item, index) => {
+              const itemId = getChecklistItemKey(item, index);
+              const isChecked = checkedChecklistItems.has(itemId);
+
+              return (
+                <Pressable
+                  key={itemId}
+                  onPress={() => toggleChecklistItem(itemId)}
+                  disabled={isReadOnly}
+                  style={[
+                    styles.checklistItem,
+                    index < checklistItems.length - 1 && styles.routineItemBorder,
+                    isReadOnly && { opacity: isChecked ? 0.55 : 1 },
+                  ]}
+                >
+                  <View style={[
+                    styles.routineItemCheckbox,
+                    isChecked && styles.routineItemCheckboxChecked,
+                  ]}>
+                    {isChecked ? <Ionicons name="checkmark" size={10} color="white" /> : null}
+                  </View>
+                  <Text style={[
+                    styles.checklistItemText,
+                    isChecked && styles.routineItemTitleCompleted,
+                  ]}>
+                    {item}
+                  </Text>
+                </Pressable>
+              );
+            })}
+
+            {card.checklistQuote ? (
+              <View style={styles.checklistQuoteContainer}>
+                <Text style={styles.checklistQuoteText}>{card.checklistQuote}</Text>
+              </View>
+            ) : null}
+          </View>
+        ) : (
+          <DotList items={card.instructions ?? []} textStyle={{ color: '#374151', fontSize: 16, lineHeight: 26 }} />
+        )}
 
         {/* Age Reversal purpose callout */}
         {card.purpose ? (
@@ -2164,6 +2307,7 @@ export function CardRenderer({
   onContinue,
   reflectionStorageKey,
   routineStorageKey,
+  checklistStorageKey,
   hasEffortCheck,
   isReadOnly = false,
   programReflectionContext,
@@ -2178,6 +2322,7 @@ export function CardRenderer({
   onContinue?: () => void;
   reflectionStorageKey?: string;
   routineStorageKey?: string;
+  checklistStorageKey?: string;
   hasEffortCheck?: boolean;
   isReadOnly?: boolean;
   programReflectionContext?: {
@@ -2215,7 +2360,15 @@ export function CardRenderer({
     case 'lesson':
       return <LessonCardView card={card} cardIndex={cardIndex} />;
     case 'action_step':
-      return <ActionStepCardView card={card} cardIndex={cardIndex} onContinue={onContinue} />;
+      return (
+        <ActionStepCardView
+          card={card}
+          cardIndex={cardIndex}
+          checklistStorageKey={checklistStorageKey}
+          isReadOnly={isReadOnly}
+          onContinue={onContinue}
+        />
+      );
     case 'mindfulness_exercise':
     case 'breathing_exercise':
       return (
@@ -2687,6 +2840,31 @@ const styles = StyleSheet.create({
   },
   actionBody: {
     marginTop: 8,
+  },
+  checklistItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    paddingVertical: 18,
+  },
+  checklistItemText: {
+    flex: 1,
+    fontFamily: 'Satoshi-Medium',
+    fontSize: 16,
+    lineHeight: 24,
+    color: '#1F2937',
+  },
+  checklistQuoteContainer: {
+    marginTop: 18,
+    borderRadius: 16,
+    backgroundColor: 'rgba(6, 41, 12, 0.04)',
+    paddingHorizontal: 18,
+    paddingVertical: 16,
+  },
+  checklistQuoteText: {
+    fontFamily: 'Erode',
+    fontSize: 19,
+    lineHeight: 27,
+    color: '#06290C',
   },
   whyWorksContainer: {
     marginTop: 32,

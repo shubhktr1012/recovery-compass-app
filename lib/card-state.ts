@@ -13,6 +13,15 @@ export interface CardCompletionRecord {
   skippedAt?: string | null;
 }
 
+export interface ProgramRuntimeCardStateInput {
+  card: CardStateInput;
+  currentTime: Date | string;
+  isDayCompleted: boolean;
+  isFutureLocked: boolean;
+  isHistoricalReadOnlyDay: boolean;
+  timeSlotsEnabled: boolean;
+}
+
 export type WindowPhase = 'before_open' | 'open' | 'after_close';
 
 export function toLocalHHMM(date: Date): string {
@@ -72,6 +81,33 @@ export function getCardState(
     case 'after_close':
       return card.isTimeSensitive ? 'blocked' : 'catch_up';
   }
+}
+
+export function getProgramRuntimeCardState({
+  card,
+  currentTime,
+  isDayCompleted,
+  isFutureLocked,
+  isHistoricalReadOnlyDay,
+  timeSlotsEnabled,
+}: ProgramRuntimeCardStateInput): CardState {
+  if (isFutureLocked) {
+    return 'locked';
+  }
+
+  if (isDayCompleted) {
+    return 'completed';
+  }
+
+  if (isHistoricalReadOnlyDay) {
+    return 'skipped';
+  }
+
+  if (!timeSlotsEnabled) {
+    return 'available';
+  }
+
+  return getCardState(card, currentTime);
 }
 
 function getRecordedTerminalState(

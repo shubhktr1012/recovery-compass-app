@@ -29,7 +29,7 @@ import { useOwnedPrograms } from '@/hooks/useOwnedPrograms';
 import { useMinuteClock } from '@/hooks/useMinuteClock';
 import { logEvent } from '@/lib/analytics';
 import { canAccessProgramContent, canReviewCompletedProgram, isFinishedProgramAccess } from '@/lib/access/entitlements';
-import { getCardState, toLocalHHMM } from '@/lib/card-state';
+import { getProgramRuntimeCardState } from '@/lib/card-state';
 import { buildUserDayStateRecord, upsertUserDayState, type UserDayStateUpsert } from '@/lib/day-states';
 import { buildDayStateProgressSummary, formatFinalizedDaySummary } from '@/lib/day-state-summary';
 import {
@@ -73,6 +73,10 @@ function getProgressStorageKey(programSlug: ProgramSlug, dayNumber: number) {
 
 function getRoutineStorageKey(programSlug: ProgramSlug, dayNumber: number, cardIndex: number) {
   return `day-routine:${programSlug}:${dayNumber}:${cardIndex}`;
+}
+
+function getChecklistStorageKey(programSlug: ProgramSlug, dayNumber: number, cardIndex: number) {
+  return `day-checklist:${programSlug}:${dayNumber}:${cardIndex}`;
 }
 
 function getRoutineItemKey(name: string, index: number) {
@@ -396,21 +400,48 @@ function CardStatePlaceholder({
 }: {
   card: DayContent['cards'][number];
   state: Extract<CardState, 'locked' | 'blocked'>;
-  slot: TimeSlot;
+  slot?: TimeSlot;
 }) {
+  if (state === 'locked' && !slot) {
+    return (
+      <View style={styles.placeholderCard}>
+        <View style={styles.placeholderEyebrowRow}>
+          <Text style={styles.placeholderEyebrow}>Coming up</Text>
+        </View>
+
+        <Text style={styles.placeholderTitle}>This day is not open yet</Text>
+        <Text style={styles.placeholderBody}>
+          It will unlock naturally as your journey reaches this day.
+        </Text>
+
+        <View style={styles.placeholderMetaRow}>
+          <Ionicons
+            name="calendar-outline"
+            size={16}
+            color="rgba(6, 41, 12, 0.45)"
+          />
+          <Text style={styles.placeholderMetaText}>
+            Continue with the day that is available now.
+          </Text>
+        </View>
+      </View>
+    );
+  }
+
+  const displaySlot = slot ?? DEFAULT_CARD_TIME_META.timeSlot;
   const title =
     state === 'locked'
-      ? slot === 'evening'
+      ? displaySlot === 'evening'
         ? 'All caught up for now'
-        : `${formatSlotLabel(slot)} session coming up`
-      : `${formatSlotLabel(slot)} window closed`;
+        : `${formatSlotLabel(displaySlot)} session coming up`
+      : `${formatSlotLabel(displaySlot)} window closed`;
 
   const message =
     state === 'locked'
-      ? slot === 'evening'
+      ? displaySlot === 'evening'
         ? `Evening cards unlock at ${formatWindowTime(TIME_SLOT_WINDOWS.evening.opens)}.`
-        : `Unlocks at ${formatWindowTime(TIME_SLOT_WINDOWS[slot].opens)}.`
-      : `This ${formatSlotLabel(slot).toLowerCase()} card closed at ${formatWindowTime(TIME_SLOT_WINDOWS[slot].closes)}.`;
+        : `Unlocks at ${formatWindowTime(TIME_SLOT_WINDOWS[displaySlot].opens)}.`
+      : `This ${formatSlotLabel(displaySlot).toLowerCase()} card closed at ${formatWindowTime(TIME_SLOT_WINDOWS[displaySlot].closes)}.`;
 
   return (
     <View style={styles.placeholderCard}>
@@ -424,7 +455,7 @@ function CardStatePlaceholder({
             state === 'locked' ? styles.placeholderSlotPillLocked : styles.placeholderSlotPillMissed,
           ]}
         >
-          <Text style={styles.placeholderSlotPillText}>{formatSlotLabel(slot)}</Text>
+          <Text style={styles.placeholderSlotPillText}>{formatSlotLabel(displaySlot)}</Text>
         </View>
       </View>
 
@@ -458,6 +489,7 @@ const SwipeDeckCard = memo(function SwipeDeckCard({
   onContinue,
   reflectionStorageKey,
   routineStorageKey,
+  checklistStorageKey,
   hasEffortCheck,
   isReadOnly,
   programReflectionContext,
@@ -475,6 +507,7 @@ const SwipeDeckCard = memo(function SwipeDeckCard({
   onContinue?: () => void;
   reflectionStorageKey?: string;
   routineStorageKey?: string;
+  checklistStorageKey?: string;
   hasEffortCheck?: boolean;
   isReadOnly?: boolean;
   programReflectionContext?: {
@@ -526,7 +559,7 @@ const SwipeDeckCard = memo(function SwipeDeckCard({
             <CardStatePlaceholder
               card={card}
               state={cardState}
-              slot={cardTimeSlot ?? DEFAULT_CARD_TIME_META.timeSlot}
+              slot={cardTimeSlot}
             />
           ) : (
             <CardRenderer
@@ -537,6 +570,7 @@ const SwipeDeckCard = memo(function SwipeDeckCard({
               onContinue={onContinue}
               reflectionStorageKey={reflectionStorageKey}
               routineStorageKey={routineStorageKey}
+              checklistStorageKey={checklistStorageKey}
               hasEffortCheck={hasEffortCheck}
               isReadOnly={isReadOnly}
               onRoutineProgressChange={onRoutineProgressChange}
@@ -884,6 +918,7 @@ export default function DayDetailScreen() {
     }
     return formatUnlockLabel(getProgramNextUnlockAt(scheduleStartSource, program.totalDays, currentTime), currentTime);
   }, [access.completionState, access.scheduledStartDate, currentTime, isCompletedProgramReview, isPausedProgram, isScheduledStartPending, program, scheduleStartSource]);
+  const areTimeSlotsEnabled = program?.timeSlotsEnabled ?? false;
   const runtimeCards = useMemo(
     () => dayContent?.cards.map((card) => ({ card, meta: getCardTimeMeta(card) })) ?? [],
     [dayContent?.cards]
@@ -891,19 +926,16 @@ export default function DayDetailScreen() {
   const cardStates = useMemo(
     () =>
       runtimeCards.map(({ meta }) =>
-        isFutureLocked
-          ? 'locked'
-          : getCardState(
-              meta,
-              toLocalHHMM(currentTime),
-              isDayCompleted
-                ? { state: 'completed' }
-                : isHistoricalReadOnlyDay
-                  ? { state: 'skipped' }
-                  : undefined
-            )
+        getProgramRuntimeCardState({
+          card: meta,
+          currentTime,
+          isDayCompleted,
+          isFutureLocked,
+          isHistoricalReadOnlyDay,
+          timeSlotsEnabled: areTimeSlotsEnabled,
+        })
       ),
-    [currentTime, isDayCompleted, isFutureLocked, isHistoricalReadOnlyDay, runtimeCards]
+    [areTimeSlotsEnabled, currentTime, isDayCompleted, isFutureLocked, isHistoricalReadOnlyDay, runtimeCards]
   );
   const currentCard = dayContent?.cards[currentIndex];
   const currentCardMeta = runtimeCards[currentIndex]?.meta ?? DEFAULT_CARD_TIME_META;
@@ -994,9 +1026,13 @@ export default function DayDetailScreen() {
         return null;
       }
 
+      if (!areTimeSlotsEnabled) {
+        return null;
+      }
+
       return getCardStateNotice(currentCardState, currentCardMeta.timeSlot);
     },
-    [currentCardMeta.timeSlot, currentCardState, historicalDayState, isDayCompleted]
+    [areTimeSlotsEnabled, currentCardMeta.timeSlot, currentCardState, historicalDayState, isDayCompleted]
   );
   const isCurrentCardActionLocked =
     isFutureLocked || isHistoricalReadOnlyDay || currentCardState === 'locked' || currentCardState === 'blocked';
@@ -1523,7 +1559,7 @@ export default function DayDetailScreen() {
               <SwipeDeckCard
                 card={card}
                 cardState={cardStates[index]}
-                cardTimeSlot={runtimeCards[index]?.meta.timeSlot}
+                cardTimeSlot={areTimeSlotsEnabled ? runtimeCards[index]?.meta.timeSlot : undefined}
                 index={index}
                 totalCards={dayContent.cards.length}
                 progress={swipeProgress}
@@ -1537,6 +1573,11 @@ export default function DayDetailScreen() {
                 routineStorageKey={
                   card.type === 'exercise_routine'
                     ? getRoutineStorageKey(dayContent.programSlug, dayContent.dayNumber, index)
+                    : undefined
+                }
+                checklistStorageKey={
+                  card.type === 'action_step'
+                    ? getChecklistStorageKey(dayContent.programSlug, dayContent.dayNumber, index)
                     : undefined
                 }
                 hasEffortCheck={runtimeCards[index]?.meta.hasEffortCheck}

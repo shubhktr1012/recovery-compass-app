@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   getCardState,
+  getProgramRuntimeCardState,
   getWindowPhase,
   isWindowOpen,
   toLocalHHMM,
@@ -85,6 +86,58 @@ describe('getCardState', () => {
   it('supports explicit terminal state values for future persisted records', () => {
     expect(getCardState(anytimeCard, '10:00', { state: 'completed' })).toBe('completed');
     expect(getCardState(anytimeCard, '10:00', { state: 'skipped' })).toBe('skipped');
+  });
+});
+
+describe('getProgramRuntimeCardState', () => {
+  it('disables clock-based gating for non-time-slotted programs', () => {
+    expect(
+      getProgramRuntimeCardState({
+        card: morningStrictCard,
+        currentTime: '15:00',
+        isDayCompleted: false,
+        isFutureLocked: false,
+        isHistoricalReadOnlyDay: false,
+        timeSlotsEnabled: false,
+      })
+    ).toBe('available');
+
+    expect(
+      getProgramRuntimeCardState({
+        card: anytimeCard,
+        currentTime: '04:30',
+        isDayCompleted: false,
+        isFutureLocked: false,
+        isHistoricalReadOnlyDay: false,
+        timeSlotsEnabled: false,
+      })
+    ).toBe('available');
+  });
+
+  it('keeps lifecycle locks even when time slots are disabled', () => {
+    expect(
+      getProgramRuntimeCardState({
+        card: anytimeCard,
+        currentTime: '10:00',
+        isDayCompleted: false,
+        isFutureLocked: true,
+        isHistoricalReadOnlyDay: false,
+        timeSlotsEnabled: false,
+      })
+    ).toBe('locked');
+  });
+
+  it('preserves clock-based gating for time-slotted programs', () => {
+    expect(
+      getProgramRuntimeCardState({
+        card: morningStrictCard,
+        currentTime: '15:00',
+        isDayCompleted: false,
+        isFutureLocked: false,
+        isHistoricalReadOnlyDay: false,
+        timeSlotsEnabled: true,
+      })
+    ).toBe('blocked');
   });
 });
 

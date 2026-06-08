@@ -1,3 +1,7 @@
+-- Phase 1 Gut Reset checklist card polish.
+-- Updates only public.program_days for gut_health_reset.
+-- Converts completion checklist action cards from plain ': done' text to structured checklistItems.
+
 -- gut_health_reset seed (generated from canonical content)
 -- Source: Downloads/21 days Gut reset.md
 -- Generated at: 2026-06-08T09:56:24.358Z

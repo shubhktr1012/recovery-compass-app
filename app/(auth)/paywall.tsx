@@ -52,6 +52,7 @@ const ACCESS_CONFIRMATION_RETRY_DELAY_MS = 1500;
 const ACCESS_CONFIRMATION_RETRY_COUNT = 4;
 const OFFERINGS_FETCH_RETRY_DELAY_MS = 650;
 const OFFERINGS_FETCH_RETRY_COUNT = 3;
+const OFFERINGS_STARTUP_RETRY_DELAY_MS = 900;
 const ENABLE_PURCHASE_QA_LOGS = process.env.EXPO_PUBLIC_ENABLE_PURCHASE_QA_LOGS === 'true';
 const ENABLE_FREE_TIER_ENTRY = process.env.EXPO_PUBLIC_ENABLE_FREE_TIER_ENTRY === 'true';
 
@@ -290,8 +291,11 @@ export default function Paywall() {
 
   useEffect(() => {
     let isMounted = true;
+    let startupRetryTimer: ReturnType<typeof setTimeout> | null = null;
 
     const getOfferings = async () => {
+      let keepFetchingForStartupRetry = false;
+
       setFetchingOfferings(true);
       setOfferingsLoadFailed(false);
 
@@ -306,7 +310,13 @@ export default function Paywall() {
         }
 
         if (!isRevenueCatReady) {
-          throw new Error('The purchase service is still starting. Please wait a moment and try again.');
+          keepFetchingForStartupRetry = true;
+          startupRetryTimer = setTimeout(() => {
+            if (isMounted) {
+              setOfferingsRetryKey((key) => key + 1);
+            }
+          }, OFFERINGS_STARTUP_RETRY_DELAY_MS);
+          return;
         }
 
         const offerings = await getOfferingsWithStartupRetry();
@@ -349,7 +359,7 @@ export default function Paywall() {
         setOfferingsLoadFailed(true);
         void captureError(e, { source: 'paywall', metadata: { stage: 'get_offerings' } });
       } finally {
-        if (isMounted) {
+        if (isMounted && !keepFetchingForStartupRetry) {
           setFetchingOfferings(false);
         }
       }
@@ -359,6 +369,9 @@ export default function Paywall() {
 
     return () => {
       isMounted = false;
+      if (startupRetryTimer) {
+        clearTimeout(startupRetryTimer);
+      }
     };
   }, [offeringsRetryKey, refreshAccess, revenueCatAppUserId]);
 
@@ -825,9 +838,8 @@ export default function Paywall() {
               height: 32,
               borderRadius: 16,
               paddingHorizontal: 12,
-              flexDirection: 'row',
-              alignItems: 'center',
               justifyContent: 'center',
+              alignItems: 'center',
               backgroundColor: pressed ? 'rgba(6,41,12,0.08)' : 'rgba(6,41,12,0.04)',
               borderWidth: 1,
               borderColor: 'rgba(6,41,12,0.04)',
@@ -837,21 +849,29 @@ export default function Paywall() {
             accessibilityLabel="Switch to a different account"
             accessibilityState={{ disabled: loading || signingOut }}
           >
-            {signingOut ? (
-              <ActivityIndicator size="small" color="rgba(6,41,12,0.4)" style={{ marginRight: 6 }} />
-            ) : (
-              <Ionicons name="person-outline" size={13} color="rgba(6,41,12,0.56)" style={{ marginRight: 6 }} />
-            )}
-            <Text
-              numberOfLines={1}
+            <View
               style={{
-                fontFamily: 'Satoshi-Medium',
-                fontSize: 12,
-                color: 'rgba(6,41,12,0.58)',
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
               }}
             >
-              {signingOut ? 'Signing out...' : 'Switch Account'}
-            </Text>
+              {signingOut ? (
+                <ActivityIndicator size="small" color="rgba(6,41,12,0.4)" style={{ marginRight: 6 }} />
+              ) : (
+                <Ionicons name="person-outline" size={13} color="rgba(6,41,12,0.56)" style={{ marginRight: 6 }} />
+              )}
+              <Text
+                numberOfLines={1}
+                style={{
+                  fontFamily: 'Satoshi-Medium',
+                  fontSize: 12,
+                  color: 'rgba(6,41,12,0.58)',
+                }}
+              >
+                {signingOut ? 'Signing out...' : 'Switch Account'}
+              </Text>
+            </View>
           </Pressable>
         </View>
 

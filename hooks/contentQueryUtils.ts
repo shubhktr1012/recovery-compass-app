@@ -264,6 +264,7 @@ export function mapProgramRowToProgramContent(
     totalDays: row.total_days ?? fallbackProgram.totalDays,
     category: isProgramCategory(row.category) ? row.category : fallbackProgram.category,
     hasAudio: row.has_audio ?? fallbackProgram.hasAudio,
+    timeSlotsEnabled: row.time_slots_enabled ?? fallbackProgram.timeSlotsEnabled,
     contentStatus: resolveContentStatus(row.slug, mergedDays),
     priceString: fallbackProgram.priceString,
     dailyMinutesLabel: fallbackProgram.dailyMinutesLabel,

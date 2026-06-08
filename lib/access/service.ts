@@ -699,7 +699,16 @@ export class AccessService {
       if (error) throw error;
       didSyncProgress = true;
     } catch (error) {
-      console.warn('Failed to sync extended program progress to Supabase, falling back to legacy sync', error);
+      if (!isMissingFunctionError(error, 'sync_program_progress_v2')) {
+        console.warn('Deferred program progress sync until server ownership is confirmed', {
+          programSlug: progress.programSlug,
+          userId: progress.userId,
+          error,
+        });
+        return;
+      }
+
+      console.warn('Extended program progress RPC is unavailable, falling back to legacy sync', error);
 
       try {
         const { error: fallbackError } = await supabase.rpc('sync_program_progress', {
