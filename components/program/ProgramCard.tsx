@@ -298,10 +298,10 @@ function NextLockedDayCard({ day, availabilityLabel }: { day: ProgramCardDay; av
   return (
     <View
       style={{
-        backgroundColor: 'rgba(227, 243, 229, 0.65)',
+        backgroundColor: 'rgba(227, 243, 229, 0.45)',
         borderRadius: 18,
         borderWidth: 1,
-        borderColor: 'rgba(6, 41, 12, 0.03)',
+        borderColor: 'rgba(6, 41, 12, 0.05)',
         paddingHorizontal: 16,
         paddingVertical: 12,
         flexDirection: 'row',
@@ -331,13 +331,13 @@ function NextLockedDayCard({ day, availabilityLabel }: { day: ProgramCardDay; av
             fontSize: 9,
             letterSpacing: 1.5,
             textTransform: 'uppercase',
-            color: 'rgba(6,41,12,0.3)',
+            color: 'rgba(6,41,12,0.35)',
             marginBottom: 2,
           }}
         >
           Day {day.id}
         </Text>
-        <Text style={{ fontFamily: 'Erode-Regular', fontSize: 15, lineHeight: 18, color: 'rgba(6,41,12,0.55)' }}>
+        <Text style={{ fontFamily: 'Erode-Regular', fontSize: 15, lineHeight: 18, color: 'rgba(6,41,12,0.58)' }}>
           {day.title}
         </Text>
         {availabilityLabel && (
@@ -351,21 +351,36 @@ function NextLockedDayCard({ day, availabilityLabel }: { day: ProgramCardDay; av
 }
 
 // ─── LOCKED DAY (further in future) ──────────────────────────────────────────
-// Clean borderless, lock-icon-free list representation
+// Clean card representation to align visual timeline layout
 function LockedDayCard({ day }: { day: ProgramCardDay }) {
   return (
     <View
       style={{
-        backgroundColor: 'transparent',
+        backgroundColor: 'rgba(255, 255, 255, 0.45)',
         borderRadius: 18,
+        borderWidth: 1,
+        borderColor: 'rgba(6, 41, 12, 0.04)',
         paddingHorizontal: 16,
-        paddingVertical: 10,
+        paddingVertical: 12,
         flexDirection: 'row',
         alignItems: 'center',
+        gap: 12,
       }}
     >
-      {/* Spacer to align text with the 24px icon + 12px gap in other cards */}
-      <View style={{ width: 36, flexShrink: 0 }} />
+      {/* Lock circle to align icon column */}
+      <View
+        style={{
+          width: 24,
+          height: 24,
+          borderRadius: 12,
+          backgroundColor: 'rgba(6,41,12,0.025)',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexShrink: 0,
+        }}
+      >
+        <LockSvg size={11} stroke="rgba(6,41,12,0.22)" strokeWidth={1.8} />
+      </View>
 
       <View style={{ flex: 1 }}>
         <Text
@@ -374,13 +389,13 @@ function LockedDayCard({ day }: { day: ProgramCardDay }) {
             fontSize: 9,
             letterSpacing: 1.5,
             textTransform: 'uppercase',
-            color: 'rgba(6,41,12,0.22)',
-            marginBottom: 1,
+            color: 'rgba(6,41,12,0.25)',
+            marginBottom: 2,
           }}
         >
           Day {day.id}
         </Text>
-        <Text style={{ fontFamily: 'Erode-Regular', fontSize: 15, lineHeight: 18, color: 'rgba(6,41,12,0.33)' }}>
+        <Text style={{ fontFamily: 'Erode-Regular', fontSize: 15, lineHeight: 18, color: 'rgba(6,41,12,0.38)' }}>
           {day.title}
         </Text>
       </View>

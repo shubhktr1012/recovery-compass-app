@@ -28,6 +28,10 @@ const PROGRAMS: Record<ProgramSlug, ProgramContent> = {
     ...PROGRAM_METADATA.gut_health_reset,
     days: [],
   },
+  free_detox_reset: {
+    ...PROGRAM_METADATA.free_detox_reset,
+    days: [],
+  },
 };
 
 export class ContentRepository {

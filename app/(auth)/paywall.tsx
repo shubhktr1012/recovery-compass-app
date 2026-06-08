@@ -226,6 +226,7 @@ export default function Paywall() {
     access,
     profile,
     refreshAccess,
+    refreshProfile,
     setProgramAccess,
     activateFreeTier,
     isLoading: isProfileLoading,
@@ -392,12 +393,28 @@ export default function Paywall() {
   }, []);
 
   useEffect(() => {
-    if (isProfileLoading || !canAutoRedirectOwnedUser || !hasTrustedEntitlement || hasProgramRouteParam) {
+    if (isProfileLoading || !canAutoRedirectOwnedUser) {
       return;
     }
 
-    router.replace(needsOnboardingRealignment ? buildPersonalizationRoute({ mode: 'realign' }) : PROGRAM_TAB_ROUTE);
-  }, [canAutoRedirectOwnedUser, hasProgramRouteParam, hasTrustedEntitlement, isProfileLoading, needsOnboardingRealignment, router]);
+    if (hasTrustedEntitlement && !hasProgramRouteParam) {
+      router.replace(needsOnboardingRealignment ? buildPersonalizationRoute({ mode: 'realign' }) : PROGRAM_TAB_ROUTE);
+      return;
+    }
+
+    if (profile?.free_tier_activated_at && !hasProgramRouteParam) {
+      router.replace(PROGRAM_TAB_ROUTE);
+      return;
+    }
+  }, [
+    canAutoRedirectOwnedUser,
+    hasProgramRouteParam,
+    hasTrustedEntitlement,
+    isProfileLoading,
+    needsOnboardingRealignment,
+    router,
+    profile?.free_tier_activated_at,
+  ]);
 
   const handleBack = () => {
     if (hasProgramRouteParam) {
@@ -422,9 +439,10 @@ export default function Paywall() {
 
     try {
       await activateFreeTier();
-      router.replace(HOME_ROUTE);
+      await refreshProfile();
+      router.replace(PROGRAM_TAB_ROUTE);
     } catch (error: any) {
-      void captureError(error, { source: 'paywall', metadata: { stage: 'continue_free_access' } });
+      void captureError(error, { source: 'paywall', metadata: { stage: 'start_free_detox' } });
       Alert.alert(
         'Could not continue',
         error?.message ?? 'Please try again in a moment.'
@@ -1041,7 +1059,6 @@ export default function Paywall() {
                 <PurchaseCard
                   key={`${selectionId}:${pack.product.identifier}`}
                   programName={getPackageDisplayName(pack)}
-                  durationDays={meta?.totalDays ?? 0}
                   description={
                     pack.product.description ||
                     (meta ? meta.description : 'A guided Recovery Compass program.')
@@ -1053,6 +1070,21 @@ export default function Paywall() {
                 />
               );
             })}
+
+            <Text
+              style={{
+                fontFamily: 'Satoshi-Medium',
+                fontSize: 11,
+                color: 'rgba(6,41,12,0.42)',
+                textAlign: 'center',
+                marginTop: 6,
+                marginBottom: 10,
+                paddingHorizontal: 16,
+                lineHeight: 16,
+              }}
+            >
+              Every program includes the 6-Day Free Detox Program as a bonus.
+            </Text>
 
             {/* ── Free-access path (below recommended card) ── */}
             {canContinueFreeAccess && (
@@ -1071,7 +1103,7 @@ export default function Paywall() {
                   opacity: loading ? 0.58 : 1,
                 }}
                 accessibilityRole="button"
-                accessibilityLabel="Continue with free access — includes CALM and program browsing"
+                accessibilityLabel="Try the free 6-day Detox Program"
               >
                 <Text
                   numberOfLines={1}
@@ -1083,7 +1115,7 @@ export default function Paywall() {
                     textDecorationColor: 'rgba(6,41,12,0.18)',
                   }}
                 >
-                  Continue with free access
+                  Try the free 6-day Detox
                 </Text>
               </Pressable>
             )}
@@ -1111,7 +1143,6 @@ export default function Paywall() {
                     <PurchaseCard
                       key={`${selectionId}:${pack.product.identifier}`}
                       programName={getPackageDisplayName(pack)}
-                      durationDays={meta?.totalDays ?? 0}
                       description={
                         pack.product.description ||
                         (meta ? meta.description : 'A guided Recovery Compass program.')

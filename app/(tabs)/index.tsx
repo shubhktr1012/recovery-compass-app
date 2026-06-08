@@ -27,9 +27,9 @@ import { StatsRow } from '@/components/dashboard/StatsRow';
 import { JournalCheckIn } from '@/components/dashboard/JournalCheckIn';
 import { MyPrograms } from '@/components/dashboard/MyPrograms';
 import { ExplorePrograms } from '@/components/dashboard/ExplorePrograms';
-import { PressableScale } from '@/components/motion/PressableScale';
+import { FreeDetoxJourneyCard } from '@/components/dashboard/FreeDetoxJourneyCard';
 import { StaggeredItem } from '@/components/motion/StaggeredItem';
-import type { ProgramSlug } from '@/types/content';
+import type { DayContent, ProgramSlug } from '@/types/content';
 import { programDayQueryKey, programQueryKey } from '@/hooks/contentQueryUtils';
 import { useOnboardingResponse } from '@/hooks/useOnboardingResponse';
 import { useOwnedPrograms } from '@/hooks/useOwnedPrograms';
@@ -38,13 +38,13 @@ import { EMPTY_FINALIZED_DAY_STATES, useFinalizedDayStates } from '@/hooks/useFi
 import { hasAnyProgramEntitlement } from '@/lib/access/entitlements';
 import { resolveDashboardStatItems } from '@/lib/dashboard-statistics';
 import { buildDayStateProgressSummary, buildRollingCompletionSummary } from '@/lib/day-state-summary';
-import { JOURNAL_TAB_ROUTE, PAYWALL_ROUTE, buildDayDetailRoute } from '@/lib/navigation/routes';
+import { PAYWALL_ROUTE, buildDayDetailRoute } from '@/lib/navigation/routes';
 import { resolveProfileIdentity } from '@/lib/profile-identity';
 import type { QuestionnaireAnswersSnapshot } from '@/lib/program-statistics';
 import { StepPermissionPrompt } from '@/components/steps/StepPermissionPrompt';
-import { AppTypography } from '@/constants/typography';
-import { MotionScale } from '@/lib/motion/tokens';
 import { isPublicCatalogProgram } from '@/content/programs/metadata';
+import { useFreeDetoxProgress } from '@/hooks/useFreeDetoxProgress';
+import { FREE_DETOX_PROGRAM_SLUG, getNextFreeDetoxDay } from '@/lib/free-program-progress';
 
 const EMPTY_DAY_NUMBERS: number[] = [];
 
@@ -55,55 +55,39 @@ function getGreetingLabel() {
   return 'Good evening';
 }
 
-function orderProgramsForRecommendation(programs: ReturnType<typeof usePrograms>['programs'], recommendedProgram: ProgramSlug | null) {
-  if (!recommendedProgram) {
-    return programs;
+function getFreeDetoxDayPreview(day: DayContent) {
+  const introCard = day.cards.find((card) => card.type === 'intro');
+  if (introCard?.type === 'intro') {
+    return introCard.goal;
   }
 
-  return [...programs].sort((left, right) => {
-    const leftRecommended = left.slug === recommendedProgram ? 1 : 0;
-    const rightRecommended = right.slug === recommendedProgram ? 1 : 0;
-    return rightRecommended - leftRecommended;
-  });
-}
+  const lessonCard = day.cards.find((card) => card.type === 'lesson');
+  if (lessonCard?.type === 'lesson') {
+    return lessonCard.highlight ?? lessonCard.paragraphs[0] ?? "Open today's detox guidance and keep moving.";
+  }
 
-function FreeCalmCard() {
-  const router = useRouter();
-
-  return (
-    <PressableScale
-      onPress={() => router.push(JOURNAL_TAB_ROUTE)}
-      pressScale={MotionScale.pressLarge}
-      className="bg-forest rounded-3xl px-5 py-5 shadow-sm shadow-forest/10"
-    >
-      <Text className="uppercase text-sage/65" style={[AppTypography.metaMedium, { letterSpacing: 1.5 }]}>
-        Free Access
-      </Text>
-      <Text className="text-white mt-2" style={AppTypography.displayMetric}>
-        CALM access stays open.
-      </Text>
-      <Text className="text-white/58 mt-2" style={AppTypography.body}>
-        Use the journal and regulation space while you decide which guided program to unlock.
-      </Text>
-      <View className="self-start bg-white rounded-full px-4 py-2.5 mt-4">
-        <Text className="text-forest" style={AppTypography.buttonMd}>
-          Open Journal
-        </Text>
-      </View>
-    </PressableScale>
-  );
+  return "Open today's detox guidance and keep moving.";
 }
 
 function FreeTierHomeScreen() {
   const { profile } = useProfile();
+  const freeDetoxProgress = useFreeDetoxProgress(profile?.id, Boolean(profile?.id));
   const onboardingQuery = useOnboardingResponse();
   const onboardingResponse = onboardingQuery.data ?? null;
+  const { program: detoxProgram } = useProgram(FREE_DETOX_PROGRAM_SLUG);
   const { programs, isLoading: isProgramsLoading } = usePrograms();
   const recommendedProgram = profile?.recommended_program ?? null;
   const explorePrograms = useMemo(
-    () => orderProgramsForRecommendation(programs.filter((program) => isPublicCatalogProgram(program.slug)), recommendedProgram),
-    [programs, recommendedProgram]
+    () => programs.filter((program) => isPublicCatalogProgram(program.slug)),
+    [programs]
   );
+  const detoxDayNumber = getNextFreeDetoxDay(freeDetoxProgress.progress);
+  const detoxDay = detoxProgram?.days.find((day) => day.dayNumber === detoxDayNumber) ?? null;
+  const detoxCompleted = Boolean(
+    freeDetoxProgress.progress?.completedAt ||
+    freeDetoxProgress.progress?.completedDays.includes(detoxProgram?.totalDays ?? 6)
+  );
+  const detoxStarted = Boolean((freeDetoxProgress.progress?.completedDays.length ?? 0) > 0);
   const profileIdentity = resolveProfileIdentity({
     displayName: profile?.display_name,
     fullName: onboardingResponse?.full_name,
@@ -129,26 +113,27 @@ function FreeTierHomeScreen() {
           style={{ minHeight: 600 }}
         >
           <StaggeredItem index={0}>
-            <FreeCalmCard />
+            <ActionCard
+              dayTitle={
+                detoxDay?.dayTitle ? (
+                  detoxDay.dayTitle.split(' ').map((word, i, arr) =>
+                    i === arr.length - 1 ? <Text key={i} className="font-erode-medium-italic">{word}</Text> : `${word} `
+                  )
+                ) : (
+                  <><Text>6-Day Detox</Text> <Text className="font-erode-medium-italic">Program</Text></>
+                )
+              }
+              dayPreview={detoxDay ? getFreeDetoxDayPreview(detoxDay) : 'Start with the free 6-day reset.'}
+              estimatedMinutes={detoxDay?.estimatedMinutes ?? 10}
+              activeProgram={FREE_DETOX_PROGRAM_SLUG}
+              resolvedDayNumber={detoxDayNumber}
+              ctaLabel={detoxCompleted ? 'Review' : detoxStarted ? 'Continue' : 'Start'}
+            />
           </StaggeredItem>
 
           <StaggeredItem index={1}>
-            <View className="bg-white rounded-[24px] px-5 py-5 shadow-sm shadow-forest/5">
-              <Text className="uppercase text-forest/38" style={[AppTypography.eyebrow, { letterSpacing: 1.5 }]}>
-                Recommendation saved
-              </Text>
-              <Text className="text-forest mt-1" style={AppTypography.displayCardSm}>
-                Your onboarding answers are stored.
-              </Text>
-              <Text className="text-forest/55 mt-2" style={AppTypography.body}>
-                You will not need to repeat the questionnaire just to browse or buy a program.
-              </Text>
-            </View>
-          </StaggeredItem>
-
-          <StaggeredItem index={2}>
             <ExplorePrograms
-              title="Choose a Program"
+              title="Explore Programs"
               programs={explorePrograms}
               isLoading={isProgramsLoading}
               recommendedProgramSlug={recommendedProgram}
@@ -173,6 +158,7 @@ function HomeScreenContent({ activeProgram }: { activeProgram: ProgramSlug }) {
   const queryClient = useQueryClient();
   const now = useMinuteClock();
   const userId = profile?.id ?? access.ownerUserId ?? null;
+  const freeDetoxProgress = useFreeDetoxProgress(userId, Boolean(userId));
   const finalizedDayStatesQuery = useFinalizedDayStates(userId, activeProgram);
   const finalizedDayStates = finalizedDayStatesQuery.data ?? EMPTY_FINALIZED_DAY_STATES;
   const dayStateSummary = useMemo(
@@ -375,12 +361,16 @@ function HomeScreenContent({ activeProgram }: { activeProgram: ProgramSlug }) {
           </StaggeredItem>
           
           <StaggeredItem index={3}>
+            <FreeDetoxJourneyCard progress={freeDetoxProgress.progress} variant="bonus" />
+          </StaggeredItem>
+
+          <StaggeredItem index={4}>
             <MyPrograms
               activeCount={ownedProgramSlugSet.size}
             />
           </StaggeredItem>
 
-          <StaggeredItem index={4}>
+          <StaggeredItem index={5}>
             <ExplorePrograms
               programs={explorePrograms}
               isLoading={isOwnedProgramsLoading}

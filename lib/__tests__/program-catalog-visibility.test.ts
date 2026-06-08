@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  FREE_PROGRAM_SLUGS,
   LEGACY_REPLACED_PROGRAM_SLUGS,
+  isFreeProgram,
   isPublicCatalogProgram,
 } from '@/content/programs/metadata';
 import type { ProgramSlug } from '@/types/content';
@@ -29,5 +31,11 @@ describe('program catalog visibility', () => {
     visiblePrograms.forEach((programSlug) => {
       expect(isPublicCatalogProgram(programSlug)).toBe(true);
     });
+  });
+
+  it('keeps free bonus programs out of public paid catalog surfaces', () => {
+    expect(FREE_PROGRAM_SLUGS).toEqual(['free_detox_reset']);
+    expect(isFreeProgram('free_detox_reset')).toBe(true);
+    expect(isPublicCatalogProgram('free_detox_reset')).toBe(false);
   });
 });

@@ -25,6 +25,7 @@ import { MotionDurations, MotionEasing } from '@/lib/motion/tokens';
 import { useDay, useProgram } from '@/content';
 import { programDayQueryKey, programQueryKey } from '@/hooks/contentQueryUtils';
 import { finalizedDayStatesQueryKey, useFinalizedDayStates } from '@/hooks/useFinalizedDayStates';
+import { useFreeDetoxProgress } from '@/hooks/useFreeDetoxProgress';
 import { useOwnedPrograms } from '@/hooks/useOwnedPrograms';
 import { useMinuteClock } from '@/hooks/useMinuteClock';
 import { logEvent } from '@/lib/analytics';
@@ -46,8 +47,10 @@ import {
 } from '@/lib/programs/lifecycle';
 import { parseRoutineProgress } from '@/lib/routine-progress';
 import {
+  HOME_ROUTE,
   PAYWALL_ROUTE,
   PROGRAM_TAB_ROUTE,
+  buildDayDetailRoute,
   buildProgramCompleteRoute,
   buildProgramReviewRoute,
 } from '@/lib/navigation/routes';
@@ -59,6 +62,13 @@ import type { DayContent, ProgramSlug } from '@/types/content';
 import { TIME_SLOT_WINDOWS, type CardState, type DayState, type TimeSlot } from '@/types/resolver';
 import type { AnalyticsEventData } from '@/lib/analytics';
 import { PROGRAM_METADATA } from '@/content/programs/metadata';
+import {
+  FREE_DETOX_PROGRAM_SLUG,
+  buildFreeDetoxProgressAfterDayState,
+  canAccessFreeDetoxProgram,
+  getFreeDetoxUnlockedThroughDay,
+  getNextFreeDetoxDay,
+} from '@/lib/free-program-progress';
 
 const PROGRAM_SLUGS = Object.keys(PROGRAM_METADATA) as ProgramSlug[];
 
@@ -592,7 +602,7 @@ export default function DayDetailScreen() {
   const queryClient = useQueryClient();
   const pagerRef = useRef<PagerView>(null);
   const { user } = useAuth();
-  const { access, progress, completeProgramDay, isLoading: isProfileLoading, savePartialProgramDay } = useProfile();
+  const { access, profile, progress, completeProgramDay, isLoading: isProfileLoading, savePartialProgramDay } = useProfile();
   const params = useLocalSearchParams<{ dayNumber?: string | string[]; programSlug?: string | string[]; mode?: string | string[] }>();
 
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -651,11 +661,25 @@ export default function DayDetailScreen() {
   const rawMode = normalizeRouteParam(params.mode);
   const dayNumber = rawDayNumber ? Number(rawDayNumber) : Number.NaN;
   const programSlug = isProgramSlug(rawProgramSlug) ? rawProgramSlug : null;
+  const isFreeDetoxProgram = programSlug === FREE_DETOX_PROGRAM_SLUG;
   const normalizedDayNumber = Number.isInteger(dayNumber) && dayNumber >= 1 ? dayNumber : null;
   useScopedPrivacyProtection(Boolean(programSlug && normalizedDayNumber), 'day-detail');
   const { ownedPrograms, isLoading: isOwnedProgramsLoading } = useOwnedPrograms();
+  const freeDetoxUserId = user?.id ?? profile?.id ?? null;
   const activeAccessDecision = canAccessProgramContent(access, programSlug);
   const completedReviewAccessDecision = canReviewCompletedProgram(ownedPrograms, programSlug);
+  const canAccessFreeDetoxDay = Boolean(
+    isFreeDetoxProgram &&
+      canAccessFreeDetoxProgram({
+        access,
+        freeTierActivatedAt: profile?.free_tier_activated_at ?? null,
+        userId: freeDetoxUserId,
+      })
+  );
+  const freeDetoxProgressQuery = useFreeDetoxProgress(
+    freeDetoxUserId,
+    Boolean(isFreeDetoxProgram && canAccessFreeDetoxDay)
+  );
   const isFinishedActiveAccess = Boolean(
     programSlug &&
       access.ownedProgram === programSlug &&
@@ -665,8 +689,12 @@ export default function DayDetailScreen() {
     (rawMode === 'review' && completedReviewAccessDecision.allowed) ||
     isFinishedActiveAccess;
   const canAccessRequestedProgramDay =
-    activeAccessDecision.allowed || completedReviewAccessDecision.allowed;
-  const finalizedDayStatesQuery = useFinalizedDayStates(user?.id ?? access.ownerUserId ?? null, programSlug);
+    activeAccessDecision.allowed || completedReviewAccessDecision.allowed || canAccessFreeDetoxDay;
+  const paidDayStateProgramSlug = isFreeDetoxProgram ? null : programSlug;
+  const finalizedDayStatesQuery = useFinalizedDayStates(
+    user?.id ?? access.ownerUserId ?? null,
+    paidDayStateProgramSlug
+  );
   const finalizedDayStates = useMemo(
     () => finalizedDayStatesQuery.data ?? [],
     [finalizedDayStatesQuery.data]
@@ -697,10 +725,12 @@ export default function DayDetailScreen() {
       void queryClient.invalidateQueries({
         queryKey: programDayQueryKey(programSlug, normalizedDayNumber),
       });
-      void queryClient.invalidateQueries({
-        queryKey: finalizedDayStatesQueryKey(user?.id ?? access.ownerUserId ?? null, programSlug),
-      });
-    }, [access.ownerUserId, normalizedDayNumber, programSlug, queryClient, user?.id])
+      if (!isFreeDetoxProgram) {
+        void queryClient.invalidateQueries({
+          queryKey: finalizedDayStatesQueryKey(user?.id ?? access.ownerUserId ?? null, programSlug),
+        });
+      }
+    }, [access.ownerUserId, isFreeDetoxProgram, normalizedDayNumber, programSlug, queryClient, user?.id])
   );
 
   useEffect(() => {
@@ -771,17 +801,19 @@ export default function DayDetailScreen() {
           console.error('Failed to save day card progress', error);
         }
 
-        const widgetPayload = buildWidgetPayload({
-          access,
-          progress,
-          cardIndex: nextIndex,
-          totalCards: dayContent?.cards.length ?? 1,
-          steps: 0,
-        });
-        if (widgetPayload) void syncWidgetData(widgetPayload);
+        if (!isFreeDetoxProgram) {
+          const widgetPayload = buildWidgetPayload({
+            access,
+            progress,
+            cardIndex: nextIndex,
+            totalCards: dayContent?.cards.length ?? 1,
+            steps: 0,
+          });
+          if (widgetPayload) void syncWidgetData(widgetPayload);
+        }
       })();
     });
-  }, [access, dayContent?.cards.length, isCompletedProgramReview, progress, storageKey]);
+  }, [access, dayContent?.cards.length, isCompletedProgramReview, isFreeDetoxProgram, progress, storageKey]);
 
   const handleContinueFromCard = useCallback(() => {
     if (!dayContent) return;
@@ -794,17 +826,35 @@ export default function DayDetailScreen() {
 
   const completedDays = useMemo(
     () =>
-      isCompletedProgramReview && finalizedDayStates.length > 0
+      isFreeDetoxProgram
+        ? freeDetoxProgressQuery.progress?.completedDays ?? []
+        : isCompletedProgramReview && finalizedDayStates.length > 0
         ? finalizedProgressSummary.completedDays
         : progress?.completedDays ?? [],
-    [finalizedDayStates.length, finalizedProgressSummary.completedDays, isCompletedProgramReview, progress?.completedDays]
+    [
+      finalizedDayStates.length,
+      finalizedProgressSummary.completedDays,
+      freeDetoxProgressQuery.progress?.completedDays,
+      isCompletedProgramReview,
+      isFreeDetoxProgram,
+      progress?.completedDays,
+    ]
   );
   const partialDays = useMemo(
     () =>
-      isCompletedProgramReview && finalizedDayStates.length > 0
+      isFreeDetoxProgram
+        ? freeDetoxProgressQuery.progress?.partialDays ?? []
+        : isCompletedProgramReview && finalizedDayStates.length > 0
         ? finalizedProgressSummary.partialDays
         : progress?.partialDays ?? [],
-    [finalizedDayStates.length, finalizedProgressSummary.partialDays, isCompletedProgramReview, progress?.partialDays]
+    [
+      finalizedDayStates.length,
+      finalizedProgressSummary.partialDays,
+      freeDetoxProgressQuery.progress?.partialDays,
+      isCompletedProgramReview,
+      isFreeDetoxProgram,
+      progress?.partialDays,
+    ]
   );
   const isDayCompleted = normalizedDayNumber
     ? finalizedDayState?.dayState === 'completed' || completedDays.includes(normalizedDayNumber)
@@ -817,6 +867,10 @@ export default function DayDetailScreen() {
   const unlockedThroughDay = useMemo(() => {
     if (!program) {
       return access.currentDay ?? 1;
+    }
+
+    if (isFreeDetoxProgram) {
+      return getFreeDetoxUnlockedThroughDay(freeDetoxProgressQuery.progress);
     }
 
     if (isCompletedProgramReview) {
@@ -843,9 +897,21 @@ export default function DayDetailScreen() {
       program.totalDays,
       Math.max(derivedScheduledDay, highestTouchedDay || 1)
     );
-  }, [access.completionState, access.currentDay, completedDays, currentTime, isCompletedProgramReview, isScheduledStartPending, partialDays, program, scheduleStartSource]);
+  }, [access.completionState, access.currentDay, completedDays, currentTime, freeDetoxProgressQuery.progress, isCompletedProgramReview, isFreeDetoxProgram, isScheduledStartPending, partialDays, program, scheduleStartSource]);
   const activeDayNumber = useMemo(() => {
-    if (!program || isCompletedProgramReview || access.completionState === 'completed') {
+    if (!program || isCompletedProgramReview) {
+      return null;
+    }
+
+    if (isFreeDetoxProgram) {
+      if (freeDetoxProgressQuery.progress?.completedAt) {
+        return null;
+      }
+
+      return getNextFreeDetoxDay(freeDetoxProgressQuery.progress);
+    }
+
+    if (access.completionState === 'completed') {
       return null;
     }
 
@@ -856,9 +922,13 @@ export default function DayDetailScreen() {
     return scheduleStartSource
       ? getProgramActiveDay(scheduleStartSource, program.totalDays, currentTime)
       : unlockedThroughDay;
-  }, [access.completionState, access.programState, currentTime, isCompletedProgramReview, isScheduledStartPending, program, scheduleStartSource, unlockedThroughDay]);
+  }, [access.completionState, access.programState, currentTime, freeDetoxProgressQuery.progress, isCompletedProgramReview, isFreeDetoxProgram, isScheduledStartPending, program, scheduleStartSource, unlockedThroughDay]);
   const lastFinalizedDay = useMemo(() => {
     if (!program) {
+      return Math.max(0, ...completedDays, ...partialDays);
+    }
+
+    if (isFreeDetoxProgram) {
       return Math.max(0, ...completedDays, ...partialDays);
     }
 
@@ -870,7 +940,7 @@ export default function DayDetailScreen() {
     return scheduleStartSource && !isScheduledStartPending && access.programState !== 'paused'
       ? getProgramLastFinalizedDay(scheduleStartSource, program.totalDays, currentTime)
       : Math.max(0, ...completedDays, ...partialDays);
-  }, [access.programState, completedDays, currentTime, finalizedDayStates, isCompletedProgramReview, isScheduledStartPending, partialDays, program, scheduleStartSource]);
+  }, [access.programState, completedDays, currentTime, finalizedDayStates, isCompletedProgramReview, isFreeDetoxProgram, isScheduledStartPending, partialDays, program, scheduleStartSource]);
   const historicalDayState = useMemo<DayState | null>(() => {
     if (!normalizedDayNumber || normalizedDayNumber > lastFinalizedDay) {
       return null;
@@ -892,24 +962,34 @@ export default function DayDetailScreen() {
       return 'partial';
     }
 
+    if (isFreeDetoxProgram) {
+      return null;
+    }
+
     return 'skipped';
-  }, [finalizedDayState, isCompletedProgramReview, isDayCompleted, isDayPartial, lastFinalizedDay, normalizedDayNumber]);
+  }, [finalizedDayState, isCompletedProgramReview, isDayCompleted, isDayPartial, isFreeDetoxProgram, lastFinalizedDay, normalizedDayNumber]);
   const isHistoricalReadOnlyDay = Boolean(historicalDayState);
-  const isPausedProgram = !isCompletedProgramReview && access.programState === 'paused';
+  const isPausedProgram = !isFreeDetoxProgram && !isCompletedProgramReview && access.programState === 'paused';
 
   const isFutureLocked = Boolean(
     normalizedDayNumber &&
     !isCompletedProgramReview &&
     !isDayCompleted &&
-    (isPausedProgram ||
-      ((isScheduledStartPending || normalizedDayNumber > unlockedThroughDay) && !isDayPartial))
+    (isFreeDetoxProgram
+      ? normalizedDayNumber > unlockedThroughDay && !isDayPartial
+      : isPausedProgram ||
+        ((isScheduledStartPending || normalizedDayNumber > unlockedThroughDay) && !isDayPartial))
   );
   const hasCloseCard = dayContent?.cards.some((card) => card.type === 'close') ?? false;
   const isLastCard = Boolean(dayContent && currentIndex === dayContent.cards.length - 1);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const shouldShowCompletionBar = !hasCloseCard && (isDayCompleted || isDayPartial || isLastCard);
   const nextUnlockLabel = useMemo(() => {
-    if (!program || isCompletedProgramReview || access.completionState === 'completed') return null;
+    if (!program || isCompletedProgramReview) return null;
+    if (isFreeDetoxProgram) {
+      return 'Complete the previous Detox day to unlock this one.';
+    }
+    if (access.completionState === 'completed') return null;
     if (isPausedProgram) {
       return 'Paused. Resume from the Program tab when you are ready.';
     }
@@ -917,7 +997,7 @@ export default function DayDetailScreen() {
       return formatScheduledProgramStartLabel(access.scheduledStartDate, currentTime);
     }
     return formatUnlockLabel(getProgramNextUnlockAt(scheduleStartSource, program.totalDays, currentTime), currentTime);
-  }, [access.completionState, access.scheduledStartDate, currentTime, isCompletedProgramReview, isPausedProgram, isScheduledStartPending, program, scheduleStartSource]);
+  }, [access.completionState, access.scheduledStartDate, currentTime, isCompletedProgramReview, isFreeDetoxProgram, isPausedProgram, isScheduledStartPending, program, scheduleStartSource]);
   const areTimeSlotsEnabled = program?.timeSlotsEnabled ?? false;
   const runtimeCards = useMemo(
     () => dayContent?.cards.map((card) => ({ card, meta: getCardTimeMeta(card) })) ?? [],
@@ -1197,6 +1277,10 @@ export default function DayDetailScreen() {
 
   const persistFinalizedDayState = useCallback(
     async (requestedDayState: Extract<DayState, 'completed' | 'partial' | 'skipped'>) => {
+      if (isFreeDetoxProgram) {
+        return null;
+      }
+
       if (!user?.id || !dayContent) {
         return null;
       }
@@ -1217,7 +1301,7 @@ export default function DayDetailScreen() {
       });
       return record;
     },
-    [cardStates, currentIndex, dayContent, queryClient, user?.id]
+    [cardStates, currentIndex, dayContent, isFreeDetoxProgram, queryClient, user?.id]
   );
   const logDayFinalized = useCallback(
     (
@@ -1263,6 +1347,56 @@ export default function DayDetailScreen() {
 
     try {
       setIsCompletingDay(true);
+      if (isFreeDetoxProgram) {
+        if (!freeDetoxUserId) {
+          throw new Error('A signed-in user is required to complete Detox progress.');
+        }
+
+        const nextFreeProgress = buildFreeDetoxProgressAfterDayState({
+          dayNumber: dayContent.dayNumber,
+          progress: freeDetoxProgressQuery.progress,
+          requestedDayState: 'completed',
+          userId: freeDetoxUserId,
+        });
+        const savedFreeProgress = await freeDetoxProgressQuery.saveDayState({
+          dayNumber: dayContent.dayNumber,
+          progress: freeDetoxProgressQuery.progress,
+          requestedDayState: 'completed',
+        });
+
+        logCardCompleted(currentIndex, {
+          completionSource: 'free_detox_day_completion',
+        });
+        logDayFinalized('completed', null, {
+          isFinalProgramDay: Boolean(program && dayContent.dayNumber >= program.totalDays),
+        });
+
+        if (program && dayContent.dayNumber >= program.totalDays) {
+          if (analyticsUserId) {
+            void logEvent({
+              dayNumber: dayContent.dayNumber,
+              eventData: {
+                completedDays: savedFreeProgress.completedDays,
+                completionRate: 100,
+                totalDays: program.totalDays,
+              },
+              eventType: 'program_completed',
+              programSlug,
+              userId: analyticsUserId,
+            });
+          }
+          router.replace(HOME_ROUTE);
+        } else if (nextFreeProgress.currentDay > dayContent.dayNumber) {
+          router.replace(
+            buildDayDetailRoute({
+              programSlug: FREE_DETOX_PROGRAM_SLUG,
+              dayNumber: nextFreeProgress.currentDay,
+            })
+          );
+        }
+        return;
+      }
+
       await completeProgramDay(programSlug, dayContent.dayNumber);
       let finalizedRecord: UserDayStateUpsert | null = null;
       try {
@@ -1308,6 +1442,22 @@ export default function DayDetailScreen() {
 
     try {
       setIsCompletingDay(true);
+      if (isFreeDetoxProgram) {
+        if (!freeDetoxUserId) {
+          throw new Error('A signed-in user is required to save Detox progress.');
+        }
+
+        await freeDetoxProgressQuery.saveDayState({
+          dayNumber: dayContent.dayNumber,
+          progress: freeDetoxProgressQuery.progress,
+          requestedDayState: 'partial',
+        });
+        logDayFinalized('partial', null, {
+          hasIncompleteRequiredRoutines: routineSummary.hasRequiredRoutines && !routineSummary.allRequiredRoutinesComplete,
+        });
+        return;
+      }
+
       await savePartialProgramDay(programSlug, dayContent.dayNumber);
       let finalizedRecord: UserDayStateUpsert | null = null;
       try {
@@ -1344,7 +1494,11 @@ export default function DayDetailScreen() {
     return <ErrorState message="The requested day detail route is missing a valid program slug or day number." />;
   }
 
-  if (isProfileLoading || (rawMode === 'review' && isOwnedProgramsLoading)) {
+  if (
+    isProfileLoading ||
+    (rawMode === 'review' && isOwnedProgramsLoading) ||
+    (isFreeDetoxProgram && canAccessFreeDetoxDay && freeDetoxProgressQuery.isLoading)
+  ) {
     return <LoadingState />;
   }
 
@@ -1375,7 +1529,9 @@ export default function DayDetailScreen() {
   if (isFutureLocked) {
     return (
       <ErrorState
-        message={isPausedProgram
+        message={isFreeDetoxProgram
+          ? 'Complete the previous Detox day to unlock this one.'
+          : isPausedProgram
           ? 'This journey is paused. Resume it from the Program tab to continue today’s cards.'
           : nextUnlockLabel
           ? `This day has not unlocked yet. ${nextUnlockLabel}.`
@@ -1389,6 +1545,7 @@ export default function DayDetailScreen() {
   const hasIncompleteRequiredRoutines =
     routineSummary.hasRequiredRoutines && !routineSummary.allRequiredRoutinesComplete;
   const finalizedSummaryText = finalizedDayState ? formatFinalizedDaySummary(finalizedDayState) : null;
+  const dayExitRoute = isFreeDetoxProgram ? HOME_ROUTE : PROGRAM_TAB_ROUTE;
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const completionTitle = isDayCompleted
     ? isFinalProgramDay
@@ -1450,12 +1607,12 @@ export default function DayDetailScreen() {
       (isCurrentCardActionLocked || (isDayPartial && hasIncompleteRequiredRoutines)),
     onCompleteDay: () => {
       if (isHistoricalReadOnlyDay) {
-        router.replace(PROGRAM_TAB_ROUTE);
+        router.replace(dayExitRoute);
         return;
       }
       void handlePrimaryDayAction();
     },
-    onBackToProgram: () => router.replace(PROGRAM_TAB_ROUTE),
+    onBackToProgram: () => router.replace(dayExitRoute),
   };
 
   return (
@@ -1471,7 +1628,9 @@ export default function DayDetailScreen() {
             style={styles.backButton}
             onPress={() =>
               router.replace(
-                isCompletedProgramReview && programSlug
+                isFreeDetoxProgram
+                  ? HOME_ROUTE
+                  : isCompletedProgramReview && programSlug
                   ? buildProgramReviewRoute(programSlug)
                   : PROGRAM_TAB_ROUTE
               )

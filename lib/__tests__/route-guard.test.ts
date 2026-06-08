@@ -139,6 +139,39 @@ describe('navigation guard target', () => {
     ).toBeNull();
   });
 
+  it('allows free-tier users to reach day detail for free journeys', () => {
+    expect(
+      guardTarget({
+        freeTierActivatedAt: '2026-05-21T00:00:00.000Z',
+        segments: ['day-detail'],
+      })
+    ).toBeNull();
+  });
+
+  it('allows onboarding-complete, signed-in, non-paid user with free_tier_activated_at to reopen into tabs and day detail without Paywall redirection', () => {
+    // Reopen into tabs index
+    expect(
+      guardTarget({
+        freeTierActivatedAt: '2026-05-21T00:00:00.000Z',
+        hasSession: true,
+        isSubscribed: false,
+        onboardingComplete: true,
+        segments: ['(tabs)', 'index'],
+      })
+    ).toBeNull();
+
+    // Reopen into day detail
+    expect(
+      guardTarget({
+        freeTierActivatedAt: '2026-05-21T00:00:00.000Z',
+        hasSession: true,
+        isSubscribed: false,
+        onboardingComplete: true,
+        segments: ['day-detail'],
+      })
+    ).toBeNull();
+  });
+
   it('allows realignment personalization without redirecting away', () => {
     expect(
       guardTarget({

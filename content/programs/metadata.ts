@@ -105,6 +105,19 @@ export const PROGRAM_METADATA: Record<ProgramSlug, ProgramCatalogEntry> = {
     dailyMinutesLabel: '10–15',
     phaseCount: 3,
   },
+  free_detox_reset: {
+    slug: 'free_detox_reset',
+    name: '6-Day Free Detox Program',
+    description: 'A free six-day starter journey for nervous-system, hydration, movement, gut, mind, and daily-rhythm reset practices.',
+    totalDays: 6,
+    category: 'detox',
+    hasAudio: false,
+    timeSlotsEnabled: false,
+    contentStatus: 'ready',
+    priceString: 'Free',
+    dailyMinutesLabel: '10-15',
+    phaseCount: 1,
+  },
 };
 
 export const LEGACY_REPLACED_PROGRAM_SLUGS = [
@@ -116,6 +129,14 @@ export function isLegacyReplacedProgram(programSlug: ProgramSlug) {
   return LEGACY_REPLACED_PROGRAM_SLUGS.includes(programSlug as (typeof LEGACY_REPLACED_PROGRAM_SLUGS)[number]);
 }
 
+export const FREE_PROGRAM_SLUGS = [
+  'free_detox_reset',
+] as const satisfies readonly ProgramSlug[];
+
+export function isFreeProgram(programSlug: ProgramSlug) {
+  return FREE_PROGRAM_SLUGS.includes(programSlug as (typeof FREE_PROGRAM_SLUGS)[number]);
+}
+
 export function isPublicCatalogProgram(programSlug: ProgramSlug) {
-  return !isLegacyReplacedProgram(programSlug);
+  return !isLegacyReplacedProgram(programSlug) && !isFreeProgram(programSlug);
 }

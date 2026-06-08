@@ -316,10 +316,12 @@ function getQuestionnaireMetricSpecs(programSlug: ProgramSlug): MetricSpec[] {
             getQuestionnaireAnswer(questionnaireAnswers, 'male_trigger'),
         },
       ];
+    case 'free_detox_reset':
+      return [];
   }
 }
 
-function getFallbackStatItems(args: {
+export function getFallbackStatItems(args: {
   completedDays: number[];
   partialDays: number[];
   currentStreak?: number;

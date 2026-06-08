@@ -12,6 +12,8 @@ import { useOwnedPrograms } from '@/hooks/useOwnedPrograms';
 import { useAuth } from '@/providers/auth';
 import { useProfile } from '@/providers/profile';
 import { ExplorePrograms, ProgramIcon } from '@/components/dashboard/ExplorePrograms';
+import { FreeDetoxJourneyCard } from '@/components/dashboard/FreeDetoxJourneyCard';
+import { useFreeDetoxProgress } from '@/hooks/useFreeDetoxProgress';
 import { isPublicCatalogProgram } from '@/content/programs/metadata';
 import { isFinishedProgramAccess } from '@/lib/access/entitlements';
 import { SkeletonCircle, SkeletonLine, SkeletonTitle } from '@/components/ui/Skeleton';
@@ -365,6 +367,7 @@ export default function ProgramsLibraryScreen() {
     access.programState !== 'purchased'
   );
   const userId = profile?.id ?? null;
+  const freeDetoxProgress = useFreeDetoxProgress(userId, Boolean(userId));
   const canPersistQueuePriority = Boolean(user?.id && userId && user.id === userId);
   const isActiveProgramPaused = access.programState === 'paused';
   const activeProgramDayLabel = access.currentDay ? `Day ${access.currentDay}` : 'your current day';
@@ -783,28 +786,22 @@ export default function ProgramsLibraryScreen() {
               />
             ) : null}
 
-            <View className="pt-1">
-              <SectionHeader
-                title={hasBlockingActiveProgram ? 'Up next' : 'Ready to start'}
-                body={
-                  hasBlockingActiveProgram && otherOwnedPrograms.length > 1 && !canPersistQueuePriority
-                    ? 'Sign in again to change queue priority. Your waiting programs remain saved.'
-                    : undefined
-                }
-              />
-              {hasBlockingActiveProgram && otherOwnedPrograms.length > 1 && canPersistQueuePriority ? (
-                <Text className="text-forest/48 -mt-1 mb-3" style={AppTypography.meta}>
-                  Drag queued programs to choose what appears first after the current journey ends.
-                </Text>
-              ) : null}
-
-              {otherOwnedPrograms.length === 0 ? (
-                <View className="bg-white rounded-[24px] border border-forest/5 p-5 shadow-sm shadow-forest/5">
-                  <Text className="text-forest/55" style={AppTypography.label}>
-                    Additional unlocked programs will appear here as you add them to your library.
+            {otherOwnedPrograms.length > 0 && (
+              <View className="pt-1">
+                <SectionHeader
+                  title={hasBlockingActiveProgram ? 'Up next' : 'Ready to start'}
+                  body={
+                    hasBlockingActiveProgram && otherOwnedPrograms.length > 1 && !canPersistQueuePriority
+                      ? 'Sign in again to change queue priority. Your waiting programs remain saved.'
+                      : undefined
+                  }
+                />
+                {hasBlockingActiveProgram && otherOwnedPrograms.length > 1 && canPersistQueuePriority ? (
+                  <Text className="text-forest/48 -mt-1 mb-3" style={AppTypography.meta}>
+                    Drag queued programs to choose what appears first after the current journey ends.
                   </Text>
-                </View>
-              ) : (
+                ) : null}
+
                 <View
                   ref={queueListRef}
                   className="gap-3"
@@ -871,7 +868,15 @@ export default function ProgramsLibraryScreen() {
                     );
                   })}
                 </View>
-              )}
+              </View>
+            )}
+
+            <View className="pt-5">
+              <SectionHeader
+                title="Free bonus"
+                body="Your included Detox journey. It does not replace or affect your active program."
+              />
+              <FreeDetoxJourneyCard progress={freeDetoxProgress.progress} variant="bonus" />
             </View>
 
             {completedPrograms.length > 0 ? (

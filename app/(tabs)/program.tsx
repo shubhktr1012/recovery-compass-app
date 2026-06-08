@@ -9,7 +9,7 @@ import * as Haptics from 'expo-haptics';
 
 import Svg, { Path } from 'react-native-svg';
 
-import { useProgram, usePrograms } from '@/content';
+import { useProgram } from '@/content';
 import { useProfile } from '@/providers/profile';
 import { useMinuteClock } from '@/hooks/useMinuteClock';
 import { EMPTY_FINALIZED_DAY_STATES, useFinalizedDayStates } from '@/hooks/useFinalizedDayStates';
@@ -32,14 +32,18 @@ import { useScopedPrivacyProtection } from '@/lib/privacy-protection';
 import { PAYWALL_ROUTE, buildDayDetailRoute } from '@/lib/navigation/routes';
 import { TimelineItem } from '@/components/program/TimelineItem';
 import { ProgramCard } from '@/components/program/ProgramCard';
-import { ExplorePrograms } from '@/components/dashboard/ExplorePrograms';
 import { StaggeredItem } from '@/components/motion/StaggeredItem';
 import { PaperGrain } from '@/components/ui/PaperGrain';
 import { ProgramWatermark } from '@/components/ui/TabWatermarks';
 import { DayContent, ProgramSlug } from '@/types/content';
 import { programQueryKey } from '@/hooks/contentQueryUtils';
+import { useFreeDetoxProgress } from '@/hooks/useFreeDetoxProgress';
 import { AppTypography } from '@/constants/typography';
-import { isPublicCatalogProgram } from '@/content/programs/metadata';
+import {
+  FREE_DETOX_PROGRAM_SLUG,
+  getFreeDetoxUnlockedThroughDay,
+  getNextFreeDetoxDay,
+} from '@/lib/free-program-progress';
 
 function getDayPreview(day: DayContent) {
   const introCard = day.cards.find((card) => card.type === 'intro');
@@ -110,21 +114,23 @@ ProgramTimelineNode.displayName = 'ProgramTimelineNode';
 
 function FreeProgramDiscoveryScreen() {
   const { profile } = useProfile();
-  const { programs, isLoading } = usePrograms();
-  const recommendedProgram = profile?.recommended_program ?? null;
-  const sortedPrograms = useMemo(() => {
-    const publicPrograms = programs.filter((program) => isPublicCatalogProgram(program.slug));
+  const freeDetoxProgress = useFreeDetoxProgress(profile?.id, Boolean(profile?.id));
+  const router = useRouter();
+  const { program } = useProgram(FREE_DETOX_PROGRAM_SLUG);
+  const completedDays = freeDetoxProgress.progress?.completedDays ?? [];
+  const partialDays = freeDetoxProgress.progress?.partialDays ?? [];
+  const nextDay = getNextFreeDetoxDay(freeDetoxProgress.progress);
+  const unlockedThroughDay = getFreeDetoxUnlockedThroughDay(freeDetoxProgress.progress);
+  const isComplete = Boolean(
+    freeDetoxProgress.progress?.completedAt ||
+    completedDays.includes(program?.totalDays ?? 6)
+  );
 
-    if (!recommendedProgram) {
-      return publicPrograms;
-    }
+  const progressPercent = Math.max(0, Math.min(100, Math.round((completedDays.length / (program?.totalDays ?? 6)) * 100)));
 
-    return [...publicPrograms].sort((left, right) => {
-      const leftRecommended = left.slug === recommendedProgram ? 1 : 0;
-      const rightRecommended = right.slug === recommendedProgram ? 1 : 0;
-      return rightRecommended - leftRecommended;
-    });
-  }, [programs, recommendedProgram]);
+  if (!program) {
+    return null;
+  }
 
   return (
     <View className="flex-1 bg-surface">
@@ -138,38 +144,78 @@ function FreeProgramDiscoveryScreen() {
             style={{ position: 'absolute', right: -20, top: 28 }}
           />
 
-          <Text className="uppercase text-sage/55" style={[AppTypography.metaMedium, { letterSpacing: 2 }]}>
-            Program Library
+          <Text className="uppercase" style={[AppTypography.metaMedium, { letterSpacing: 2, color: 'rgba(227, 243, 229, 0.55)' }]}>
+            Free Access
           </Text>
           <Text className="text-white mt-2" style={AppTypography.displayHeroTight}>
-            Choose your <Text className="italic">journey.</Text>
+            Your Detox <Text className="italic">schedule.</Text>
           </Text>
-          <Text className="text-sage/62 mt-3 max-w-[300px]" style={AppTypography.bodyCompact}>
-            Your onboarding recommendation is saved. Unlock the program that fits now, or keep using free access until you are ready.
+          <Text className="mt-3 max-w-[300px]" style={[AppTypography.bodyCompact, { color: 'rgba(227, 243, 229, 0.62)' }]}>
+            Follow the 6-day free reset one day at a time. Completed days stay open for review.
           </Text>
+
+          {/* Progress Section */}
+          <View className="mt-5 relative z-10">
+            <View className="flex-row justify-between items-baseline mb-2">
+              <Text className="text-white tracking-[-0.4px]" style={AppTypography.displayMetric}>
+                {completedDays.length} <Text className="tracking-normal" style={[AppTypography.label, { color: 'rgba(227, 243, 229, 0.55)' }]}>of {program.totalDays} days</Text>
+              </Text>
+              <Text style={[AppTypography.metaMedium, { letterSpacing: 0.3, color: 'rgba(227, 243, 229, 0.60)' }]}>
+                {progressPercent}% complete
+              </Text>
+            </View>
+
+            <View className="h-[3px] w-full bg-sage/[0.18] rounded-full overflow-hidden">
+              <View
+                className="h-full bg-sage rounded-full"
+                style={{ width: `${progressPercent}%`, backgroundColor: isComplete ? 'rgba(93,207,122,0.7)' : '#E3F3E5' }}
+              />
+            </View>
+          </View>
         </View>
 
         <View className="bg-surface rounded-t-[28px] -mt-7 px-5 pt-6 pb-[170px] relative z-20 flex-1">
           <PaperGrain />
-          <View className="bg-white rounded-[24px] px-5 py-5 shadow-sm shadow-forest/5 mb-5">
-            <Text className="uppercase text-forest/38" style={[AppTypography.eyebrow, { letterSpacing: 1.5 }]}>
-              No active program yet
-            </Text>
-            <Text className="text-forest mt-1" style={AppTypography.displayCardSm}>
-              Browse before you commit.
-            </Text>
-            <Text className="text-forest/55 mt-2" style={AppTypography.body}>
-              Buying a program will unlock the daily timeline. Buying more later will add it to your program library.
-            </Text>
-          </View>
+          <Text className="uppercase text-forest/35 px-6 mb-4" style={[AppTypography.eyebrow, { letterSpacing: 1.6 }]}>
+            {isComplete ? 'All 6 Days - Revisit Anytime' : 'Day Timeline'}
+          </Text>
 
-          <ExplorePrograms
-            title="Available Programs"
-            programs={sortedPrograms}
-            isLoading={isLoading}
-            recommendedProgramSlug={recommendedProgram}
-            emptyMessage="Programs are still syncing. Please check again shortly."
-          />
+          <View className="px-5">
+            {program.days.map((day, index) => {
+              const isCompleted = completedDays.includes(day.dayNumber);
+              const isPartial = partialDays.includes(day.dayNumber) && !isCompleted;
+              const isLocked = !isComplete && !isCompleted && !isPartial && day.dayNumber > unlockedThroughDay;
+              const isCurrent = !isComplete && day.dayNumber === nextDay && !isCompleted && !isPartial;
+              const nextLockedDayNumber = isComplete ? null : Math.min(program.totalDays, unlockedThroughDay + 1);
+
+              return (
+                <StaggeredItem key={`${FREE_DETOX_PROGRAM_SLUG}-${day.dayNumber}`} index={index}>
+                  <ProgramTimelineNode
+                    day={day}
+                    isFirst={index === 0}
+                    isLast={index === program.days.length - 1}
+                    isLocked={isLocked}
+                    isCompleted={isCompleted}
+                    isPartial={isPartial}
+                    isSkipped={false}
+                    isCurrent={isCurrent}
+                    isReturningUser={completedDays.length > 0 || partialDays.length > 0}
+                    activeProgram={FREE_DETOX_PROGRAM_SLUG}
+                    nextLockedDayNumber={nextLockedDayNumber}
+                    availabilityLabel={isLocked && day.dayNumber === nextLockedDayNumber ? `Complete Day ${Math.max(1, day.dayNumber - 1)} first` : null}
+                    onPress={() =>
+                      router.push(
+                        buildDayDetailRoute({
+                          programSlug: FREE_DETOX_PROGRAM_SLUG,
+                          dayNumber: day.dayNumber,
+                        })
+                      )
+                    }
+                  />
+                </StaggeredItem>
+              );
+            })}
+          </View>
         </View>
       </ScrollView>
     </View>
@@ -427,7 +473,7 @@ function ProgramScreenContent({
           />
 
           <View className="mb-[18px] relative z-10 mt-8">
-            <Text className="uppercase text-sage/55" style={[AppTypography.metaMedium, { letterSpacing: 2 }]}>
+            <Text className="uppercase" style={[AppTypography.metaMedium, { letterSpacing: 2, color: 'rgba(227, 243, 229, 0.55)' }]}>
               {isCompletedTimeline ? 'Completed Journey' : 'Current Journey'}
             </Text>
           </View>
@@ -437,8 +483,8 @@ function ProgramScreenContent({
           </Text>
           
           <Text
-            className="text-sage/60 pr-8 mt-2 relative z-10 max-w-[280px]"
-            style={AppTypography.bodyCompact}
+            className="pr-8 mt-2 relative z-10 max-w-[280px]"
+            style={[AppTypography.bodyCompact, { color: 'rgba(227, 243, 229, 0.60)' }]}
           >
             {isCompletedTimeline
               ? `You completed this reset. All ${totalDays} days are now available to revisit.` 
@@ -448,9 +494,9 @@ function ProgramScreenContent({
           <View className="mt-4 relative z-10">
             <View className="flex-row justify-between items-baseline mb-2">
               <Text className="text-white tracking-[-0.4px]" style={AppTypography.displayMetric}>
-                {isCompletedTimeline ? totalDays : Math.min(unlockedThroughDay, program.totalDays)} <Text className="text-sage/55 tracking-normal" style={AppTypography.label}>of {totalDays} days</Text>
+                {isCompletedTimeline ? totalDays : Math.min(unlockedThroughDay, program.totalDays)} <Text className="tracking-normal" style={[AppTypography.label, { color: 'rgba(227, 243, 229, 0.55)' }]}>of {totalDays} days</Text>
               </Text>
-              <Text className="text-sage/60" style={[AppTypography.metaMedium, { letterSpacing: 0.3 }]}>
+              <Text style={[AppTypography.metaMedium, { letterSpacing: 0.3, color: 'rgba(227, 243, 229, 0.60)' }]}>
                 {progressPercent}% complete
               </Text>
             </View>
@@ -463,7 +509,7 @@ function ProgramScreenContent({
             </View>
             
             {nextUnlockLabel && !isCompletedTimeline ? (
-              <Text className="text-sage/40 mt-[6px]" style={[AppTypography.meta, { letterSpacing: 0.2 }]}>
+              <Text className="mt-[6px]" style={[AppTypography.meta, { letterSpacing: 0.2, color: 'rgba(227, 243, 229, 0.40)' }]}>
                 {nextUnlockLabel}
               </Text>
             ) : null}
@@ -483,7 +529,7 @@ function ProgramScreenContent({
               </Pressable>
             ) : null}
             {showAutomaticPauseNotice && isPausedJourney ? (
-              <Text className="text-sage/45 mt-2" style={AppTypography.meta}>
+              <Text className="mt-2" style={[AppTypography.meta, { color: 'rgba(227, 243, 229, 0.45)' }]}>
                 Paused automatically after missed days. Resume when you are ready.
               </Text>
             ) : null}

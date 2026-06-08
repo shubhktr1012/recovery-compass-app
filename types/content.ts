@@ -6,7 +6,8 @@ export type ProgramSlug =
   | 'energy_vitality'
   | 'age_reversal'
   | 'male_sexual_health'
-  | 'gut_health_reset';
+  | 'gut_health_reset'
+  | 'free_detox_reset';
 
 export type ProgramCategory =
   | 'smoking'
@@ -14,7 +15,8 @@ export type ProgramCategory =
   | 'energy'
   | 'aging'
   | 'sexual_health'
-  | 'gut_health';
+  | 'gut_health'
+  | 'detox';
 
 export type ProgramContentStatus = 'sample' | 'ready' | 'placeholder';
 

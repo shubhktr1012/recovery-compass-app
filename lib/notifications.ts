@@ -23,6 +23,7 @@ const PROGRAM_SLUGS: ProgramSlug[] = [
   'age_reversal',
   'male_sexual_health',
   'gut_health_reset',
+  'free_detox_reset',
 ];
 
 interface NotificationServiceOptions {
