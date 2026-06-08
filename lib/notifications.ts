@@ -52,6 +52,13 @@ function shouldSkipNotificationsModule(): boolean {
   return Platform.OS === 'ios' && !Device.isDevice;
 }
 
+function isNotificationQaLoggingEnabled() {
+  return (
+    (typeof __DEV__ !== 'undefined' && __DEV__) ||
+    process.env.EXPO_PUBLIC_ENABLE_NOTIFICATION_QA_LOGS === 'true'
+  );
+}
+
 async function getNotificationsModule(): Promise<NotificationsModule | null> {
   if (shouldSkipNotificationsModule()) {
     return null;
@@ -205,6 +212,15 @@ function getPlanTrigger(plan: NotificationPlan, notificationsModule: Notificatio
   };
 }
 
+async function getPermissionStatusForQaLog(notificationsModule: NotificationsModule) {
+  try {
+    const permission = await notificationsModule.getPermissionsAsync();
+    return permission.status;
+  } catch {
+    return 'unavailable';
+  }
+}
+
 export const NotificationService = {
   async addProgramNotificationResponseListener(
     onTarget: (target: ProgramNotificationTarget) => void,
@@ -257,6 +273,19 @@ export const NotificationService = {
   ): Promise<ScheduleProgramNotificationsResult> {
     const notificationsModule = await getNotificationsModuleForService(options);
     if (!notificationsModule) {
+      if (isNotificationQaLoggingEnabled()) {
+        console.info('[NotificationQA]', {
+          cancelledCount: 0,
+          cancelledIds: [],
+          moduleAvailable: false,
+          permissionStatus: 'unavailable',
+          plannedCount: plans.length,
+          plannedIds: plans.map((plan) => plan.id),
+          scheduledCount: 0,
+          scheduledIds: [],
+        });
+      }
+
       return {
         cancelledIds: [],
         scheduledIds: [],
@@ -265,6 +294,7 @@ export const NotificationService = {
 
     const now = options?.now ?? new Date();
     await configureProgramNotificationChannel(notificationsModule);
+    const permissionStatus = await getPermissionStatusForQaLog(notificationsModule);
 
     const cancelledIds = await this.cancelProgramNotifications({ notificationsModule });
     const scheduledIds: string[] = [];
@@ -293,14 +323,14 @@ export const NotificationService = {
       scheduledIds.push(scheduledId);
     }
 
-    if (
-      (typeof __DEV__ !== 'undefined' && __DEV__) ||
-      process.env.EXPO_PUBLIC_ENABLE_NOTIFICATION_QA_LOGS === 'true'
-    ) {
+    if (isNotificationQaLoggingEnabled()) {
       console.info('[NotificationQA]', {
         cancelledCount: cancelledIds.length,
         cancelledIds,
+        moduleAvailable: true,
+        permissionStatus,
         plannedCount: plans.length,
+        plannedIds: plans.map((plan) => plan.id),
         scheduledCount: scheduledIds.length,
         scheduledIds,
       });

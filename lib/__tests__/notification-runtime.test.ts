@@ -41,37 +41,41 @@ const activeAccess: Pick<
   completedAt: null,
 };
 
-const dayContent = {
-  programSlug: 'energy_vitality',
-  dayNumber: 2,
-  dayTitle: 'Energy Activation Upgrade',
-  cards: [
-    {
-      type: 'intro',
-      dayNumber: 2,
-      dayTitle: 'Energy Activation Upgrade',
-      goal: 'Start steady.',
-      timeSlot: 'anytime',
-      isTimeSensitive: false,
-      hasEffortCheck: false,
-    },
-    {
-      type: 'action_step',
-      title: 'Sunlight walk',
-      instructions: ['Walk outside.'],
-      timeSlot: 'morning',
-      isTimeSensitive: false,
-      hasEffortCheck: false,
-    },
-    {
-      type: 'journal',
-      prompt: 'What helped you most today?',
-      timeSlot: 'evening',
-      isTimeSensitive: false,
-      hasEffortCheck: false,
-    },
-  ],
-} as unknown as DayContent;
+function createDayContent(dayNumber: number): DayContent {
+  return {
+    programSlug: 'energy_vitality',
+    dayNumber,
+    dayTitle: `Energy Activation Upgrade ${dayNumber}`,
+    cards: [
+      {
+        type: 'intro',
+        dayNumber,
+        dayTitle: `Energy Activation Upgrade ${dayNumber}`,
+        goal: 'Start steady.',
+        timeSlot: 'anytime',
+        isTimeSensitive: false,
+        hasEffortCheck: false,
+      },
+      {
+        type: 'action_step',
+        title: 'Sunlight walk',
+        instructions: ['Walk outside.'],
+        timeSlot: 'morning',
+        isTimeSensitive: false,
+        hasEffortCheck: false,
+      },
+      {
+        type: 'journal',
+        prompt: 'What helped you most today?',
+        timeSlot: 'evening',
+        isTimeSensitive: false,
+        hasEffortCheck: false,
+      },
+    ],
+  } as unknown as DayContent;
+}
+
+const dayContent = createDayContent(2);
 
 function createNotificationService() {
   return {
@@ -107,12 +111,15 @@ describe('rescheduleProgramNotificationsForAccess', () => {
     mockNotificationTemplateTables();
   });
 
-  it('builds and schedules plans for the active program day', async () => {
+  it('builds and schedules a rolling seven-day plan from the active program day', async () => {
     const notificationService = createNotificationService();
+    const loadDayContent = vi.fn(async (_programSlug: string, requestedDayNumber: number) =>
+      createDayContent(requestedDayNumber)
+    );
 
     const result = await rescheduleProgramNotificationsForAccess({
       access: activeAccess,
-      loadDayContent: vi.fn(async () => dayContent),
+      loadDayContent,
       loadDayStates: vi.fn(async () => []),
       notificationService,
       now: new Date(2026, 4, 19, 5, 30),
@@ -120,14 +127,22 @@ describe('rescheduleProgramNotificationsForAccess', () => {
       userId: 'user-1',
     });
 
-    expect(result.scheduledIds).toEqual([
-      'program:energy_vitality:day:2:morning_session_ready',
-      'program:energy_vitality:day:2:evening_routine',
-    ]);
+    expect(loadDayContent).toHaveBeenCalledTimes(7);
+    expect(result.scheduledIds).toHaveLength(14);
+    expect(result.scheduledIds).toContain('program:energy_vitality:day:2:morning_session_ready');
+    expect(result.scheduledIds).toContain('program:energy_vitality:day:8:morning_session_ready');
     expect(notificationService.scheduleProgramNotificationPlans).toHaveBeenCalledWith(
       expect.arrayContaining([
-        expect.objectContaining({ type: 'morning_session_ready' }),
-        expect.objectContaining({ type: 'evening_routine' }),
+        expect.objectContaining({
+          id: 'program:energy_vitality:day:2:morning_session_ready',
+          triggerAt: new Date(2026, 4, 19, 6, 30),
+          type: 'morning_session_ready',
+        }),
+        expect.objectContaining({
+          id: 'program:energy_vitality:day:8:morning_session_ready',
+          triggerAt: new Date(2026, 4, 25, 6, 30),
+          type: 'morning_session_ready',
+        }),
       ]),
       { now: new Date(2026, 4, 19, 5, 30) }
     );
@@ -150,7 +165,9 @@ describe('rescheduleProgramNotificationsForAccess', () => {
 
     await rescheduleProgramNotificationsForAccess({
       access: activeAccess,
-      loadDayContent: vi.fn(async () => dayContent),
+      loadDayContent: vi.fn(async (_programSlug: string, requestedDayNumber: number) =>
+        createDayContent(requestedDayNumber)
+      ),
       loadDayStates: vi.fn(async () => []),
       notificationService,
       now: new Date(2026, 4, 19, 5, 30),
@@ -196,7 +213,9 @@ describe('rescheduleProgramNotificationsForAccess', () => {
 
     const scheduleArgs = {
       access: activeAccess,
-      loadDayContent: vi.fn(async () => dayContent),
+      loadDayContent: vi.fn(async (_programSlug: string, requestedDayNumber: number) =>
+        createDayContent(requestedDayNumber)
+      ),
       loadDayStates: vi.fn(async () => []),
       now: new Date(2026, 4, 19, 5, 30),
       profile: { notifications_enabled: true },

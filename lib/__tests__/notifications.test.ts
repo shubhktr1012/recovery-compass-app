@@ -45,6 +45,7 @@ function createNotificationsModule() {
     cancelScheduledNotificationAsync: vi.fn(async () => undefined),
     getAllScheduledNotificationsAsync: vi.fn<() => Promise<ScheduledNotificationMock[]>>(async () => []),
     getLastNotificationResponseAsync: vi.fn(async () => null),
+    getPermissionsAsync: vi.fn(async () => ({ status: 'granted' })),
     addNotificationResponseReceivedListener: vi.fn((listener: NotificationResponseListenerMock) => ({ remove: vi.fn() })),
     scheduleNotificationAsync: vi.fn(async (request: { identifier?: string }) => request.identifier ?? 'scheduled-id'),
     setNotificationChannelAsync: vi.fn(async () => undefined),

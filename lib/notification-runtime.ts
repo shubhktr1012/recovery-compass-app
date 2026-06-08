@@ -16,6 +16,7 @@ import {
 } from '@/lib/notification-scheduler';
 import { NotificationService, type ScheduleProgramNotificationsResult } from '@/lib/notifications';
 import { getLatestConsecutiveSkippedDayCount } from '@/lib/programs/absence';
+import { getEffectiveScheduleDate } from '@/lib/programs/schedule';
 import type { ProgramAccessSnapshot } from '@/lib/programs/types';
 import { supabase } from '@/lib/supabase';
 import type { DayContent, ProgramSlug } from '@/types/content';
@@ -82,6 +83,7 @@ const EMPTY_RESULT: ScheduleProgramNotificationsResult = {
   cancelledIds: [],
   scheduledIds: [],
 };
+const ROLLING_NOTIFICATION_DAYS = 7;
 
 export async function rescheduleProgramNotificationsForAccess(
   args: RescheduleProgramNotificationsArgs
@@ -104,34 +106,63 @@ export async function rescheduleProgramNotificationsForAccess(
   }
 
   try {
-    const dayContent = await (args.loadDayContent ?? loadNotificationDayContent)(programSlug, dayNumber);
-    if (!dayContent) {
-      return notificationService.scheduleProgramNotificationPlans([], { now });
-    }
-
-    const day = resolveDay({
-      contentMode: 'unique',
-      dayContent,
-      dayNumber,
-      programSlug,
-    });
     const dayStates = await (args.loadDayStates ?? loadNotificationDayStates)(args.userId, programSlug);
     const consecutiveAbsentDays = getLatestConsecutiveSkippedDayCount(dayStates);
-    const notificationTemplates = await loadNotificationTemplates({
-      dayNumber,
-      programSlug,
-      userId: args.userId,
-    });
-    const plans = buildProgramNotificationPlan({
-      access: args.access,
-      consecutiveAbsentDays,
-      day,
-      notificationsEnabled,
-      notificationTemplates,
-      now,
-      openedToday: args.openedToday ?? true,
-      programName: PROGRAM_METADATA[programSlug].name,
-    });
+    const plans = [];
+    let hadContentLoadFailure = false;
+
+    for (const scheduleDay of getRollingScheduleDays(args.access, now)) {
+      try {
+        const dayContent = await (args.loadDayContent ?? loadNotificationDayContent)(
+          programSlug,
+          scheduleDay.dayNumber
+        );
+        if (!dayContent) {
+          continue;
+        }
+
+        const day = resolveDay({
+          contentMode: 'unique',
+          dayContent,
+          dayNumber: scheduleDay.dayNumber,
+          programSlug,
+        });
+        const notificationTemplates = await loadNotificationTemplates({
+          dayNumber: scheduleDay.dayNumber,
+          programSlug,
+          userId: args.userId,
+        });
+
+        plans.push(
+          ...buildProgramNotificationPlan({
+            access: {
+              ...args.access,
+              currentDay: scheduleDay.dayNumber,
+            },
+            consecutiveAbsentDays: scheduleDay.dayNumber === dayNumber ? consecutiveAbsentDays : null,
+            day,
+            notificationsEnabled,
+            notificationTemplates,
+            now,
+            openedToday: scheduleDay.dayNumber === dayNumber ? args.openedToday ?? true : true,
+            programName: PROGRAM_METADATA[programSlug].name,
+            scheduleDate: scheduleDay.scheduleDate,
+          })
+        );
+      } catch (dayError) {
+        hadContentLoadFailure = true;
+        console.warn('Skipping notification plan for day with unavailable content', {
+          dayNumber: scheduleDay.dayNumber,
+          error: dayError,
+          programSlug,
+          userId: args.userId,
+        });
+      }
+    }
+
+    if (plans.length === 0 && hadContentLoadFailure) {
+      return EMPTY_RESULT;
+    }
 
     return notificationService.scheduleProgramNotificationPlans(plans, { now });
   } catch (error) {
@@ -142,6 +173,55 @@ export async function rescheduleProgramNotificationsForAccess(
     });
     return EMPTY_RESULT;
   }
+}
+
+function getRollingScheduleDays(access: NotificationRuntimeAccess, now: Date) {
+  if (access.programState === 'paused') {
+    return [
+      {
+        dayNumber: access.currentDay ?? 1,
+        scheduleDate: getScheduleBaseDate(access, now),
+      },
+    ];
+  }
+
+  const programSlug = access.ownedProgram;
+  const currentDay = access.currentDay ?? 1;
+  const totalDays = programSlug ? PROGRAM_METADATA[programSlug].totalDays : currentDay;
+  const baseDate = getScheduleBaseDate(access, now);
+  const finalDay = Math.min(totalDays, currentDay + ROLLING_NOTIFICATION_DAYS - 1);
+
+  return Array.from({ length: finalDay - currentDay + 1 }, (_, index) => ({
+    dayNumber: currentDay + index,
+    scheduleDate: addLocalDays(baseDate, index),
+  }));
+}
+
+function getScheduleBaseDate(access: NotificationRuntimeAccess, now: Date) {
+  if (access.programState === 'scheduled' && access.scheduledStartDate) {
+    return parseLocalDate(access.scheduledStartDate, now);
+  }
+
+  return getEffectiveScheduleDate(now);
+}
+
+function addLocalDays(date: Date, days: number) {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate() + days);
+}
+
+function parseLocalDate(value: string, fallback: Date) {
+  const match = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (match) {
+    const [, year, month, day] = match;
+    return new Date(Number(year), Number(month) - 1, Number(day));
+  }
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return getEffectiveScheduleDate(fallback);
+  }
+
+  return new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate());
 }
 
 async function loadNotificationTemplates(args: {
