@@ -129,7 +129,7 @@ function parseSixDay(content) {
 
   return {
     slug: 'six_day_reset',
-    title: '6-Day Control',
+    title: 'Control',
     description: 'A focused six-day reset that interrupts autopilot and builds immediate control.',
     accentLabel: 'Directive Reset',
     totalDays: days.length,
@@ -306,7 +306,7 @@ function buildNinetyDay(content, transcriptContent) {
 
   return {
     slug: 'ninety_day_transform',
-    title: '90-Day Smoking Reset',
+    title: 'Smoking Reset',
     description: 'A long-form guided path with daily reflection and audio support for lasting change.',
     accentLabel: 'Guided Stability',
     totalDays: 90,

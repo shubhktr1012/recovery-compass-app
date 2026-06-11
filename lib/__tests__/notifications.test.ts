@@ -58,8 +58,8 @@ function createPlan(overrides: Partial<NotificationPlan> = {}): NotificationPlan
     id: 'program:energy_vitality:day:2:morning_session_ready',
     tier: 'card_reminder',
     type: 'morning_session_ready',
-    title: '14-Day Energy Restore is ready',
-    body: 'Good morning. Your 14-Day Energy Restore session is ready. 5 steps today.',
+    title: 'Energy Restore is ready',
+    body: 'Good morning. Your Energy Restore session is ready. 5 steps today.',
     triggerAt: new Date(2026, 4, 19, 6, 30),
     data: {
       notificationTier: 'card_reminder',

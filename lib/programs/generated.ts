@@ -2,7 +2,7 @@
 export const GENERATED_PROGRAMS = {
   "six_day_reset": {
     "slug": "six_day_reset",
-    "title": "6-Day Control",
+    "title": "Control",
     "description": "A focused six-day reset that interrupts autopilot and builds immediate control.",
     "accentLabel": "Directive Reset",
     "totalDays": 6,
@@ -408,7 +408,7 @@ export const GENERATED_PROGRAMS = {
   },
   "ninety_day_transform": {
     "slug": "ninety_day_transform",
-    "title": "90-Day Smoking Reset",
+    "title": "Smoking Reset",
     "description": "A long-form guided path with daily reflection and audio support for lasting change.",
     "accentLabel": "Guided Stability",
     "totalDays": 90,

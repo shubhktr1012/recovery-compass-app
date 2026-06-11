@@ -626,7 +626,7 @@ export default function Paywall() {
     if (!programSlug || !isPublicCatalogProgram(programSlug)) {
       Alert.alert(
         'Program unavailable',
-        'This older program is no longer available for new purchases. Please choose the 21-Day Smoking & Alcohol Quit program instead.'
+        'This older program is no longer available for new purchases. Please choose the Smoking & Alcohol Quit program instead.'
       );
       return;
     }
@@ -1083,7 +1083,7 @@ export default function Paywall() {
                 lineHeight: 16,
               }}
             >
-              Every program includes the 6-Day Free Detox Program as a bonus.
+              Every program includes the Free Detox Program as a bonus.
             </Text>
 
             {/* ── Free-access path (below recommended card) ── */}
@@ -1103,7 +1103,7 @@ export default function Paywall() {
                   opacity: loading ? 0.58 : 1,
                 }}
                 accessibilityRole="button"
-                accessibilityLabel="Try the free 6-day Detox Program"
+                accessibilityLabel="Try the Free Detox Program"
               >
                 <Text
                   numberOfLines={1}
@@ -1115,7 +1115,7 @@ export default function Paywall() {
                     textDecorationColor: 'rgba(6,41,12,0.18)',
                   }}
                 >
-                  Try the free 6-day Detox
+                  Try the Free Detox Program
                 </Text>
               </Pressable>
             )}

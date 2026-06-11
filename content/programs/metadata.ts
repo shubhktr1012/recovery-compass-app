@@ -3,7 +3,7 @@ import type { ProgramCatalogEntry, ProgramSlug } from '@/types/content';
 export const PROGRAM_METADATA: Record<ProgramSlug, ProgramCatalogEntry> = {
   smoking_alcohol_quit: {
     slug: 'smoking_alcohol_quit',
-    name: '21-Day Smoking & Alcohol Quit',
+    name: 'Smoking & Alcohol Quit',
     description: 'A guided quit path for smoking, alcohol, or both, with trigger mapping, urge tools, and slip recovery.',
     totalDays: 21,
     category: 'smoking',
@@ -16,7 +16,7 @@ export const PROGRAM_METADATA: Record<ProgramSlug, ProgramCatalogEntry> = {
   },
   six_day_reset: {
     slug: 'six_day_reset',
-    name: '6-Day Control',
+    name: 'Control',
     description: 'A focused six-day reset that interrupts autopilot and builds immediate control.',
     totalDays: 6,
     category: 'smoking',
@@ -29,7 +29,7 @@ export const PROGRAM_METADATA: Record<ProgramSlug, ProgramCatalogEntry> = {
   },
   ninety_day_transform: {
     slug: 'ninety_day_transform',
-    name: '90-Day Smoking Reset',
+    name: 'Smoking Reset',
     description: 'A long-form smoking recovery path with daily reflection and guided audio.',
     totalDays: 90,
     category: 'smoking',
@@ -42,7 +42,7 @@ export const PROGRAM_METADATA: Record<ProgramSlug, ProgramCatalogEntry> = {
   },
   sleep_disorder_reset: {
     slug: 'sleep_disorder_reset',
-    name: '21-Day Deep Sleep Reset',
+    name: 'Deep Sleep Reset',
     description: 'A structured sleep-support program with daily text and guided sleep audio.',
     totalDays: 21,
     category: 'sleep',
@@ -55,7 +55,7 @@ export const PROGRAM_METADATA: Record<ProgramSlug, ProgramCatalogEntry> = {
   },
   energy_vitality: {
     slug: 'energy_vitality',
-    name: '14-Day Energy Restore',
+    name: 'Energy Restore',
     description: 'A program focused on restoring energy, rhythm, and daily momentum.',
     totalDays: 14,
     category: 'energy',
@@ -68,7 +68,7 @@ export const PROGRAM_METADATA: Record<ProgramSlug, ProgramCatalogEntry> = {
   },
   age_reversal: {
     slug: 'age_reversal',
-    name: '90-Day Biohacking Reset',
+    name: 'Age Well',
     description: 'A longevity-focused program with daily facial exercises, circulation walks, and calm recovery.',
     totalDays: 90,
     category: 'aging',
@@ -81,7 +81,7 @@ export const PROGRAM_METADATA: Record<ProgramSlug, ProgramCatalogEntry> = {
   },
   male_sexual_health: {
     slug: 'male_sexual_health',
-    name: "30-Day Men's Vitality Reset",
+    name: "Men’s Vitality Reset",
     description: 'A confidence and regulation program with shared CALM support.',
     totalDays: 30,
     category: 'sexual_health',
@@ -94,7 +94,7 @@ export const PROGRAM_METADATA: Record<ProgramSlug, ProgramCatalogEntry> = {
   },
   gut_health_reset: {
     slug: 'gut_health_reset',
-    name: '21-Day Gut Reset',
+    name: 'Gut Reset',
     description: 'A structured gut-health reset with daily hydration, nervous-system, movement, and eating-rhythm practices.',
     totalDays: 21,
     category: 'gut_health',
@@ -107,7 +107,7 @@ export const PROGRAM_METADATA: Record<ProgramSlug, ProgramCatalogEntry> = {
   },
   free_detox_reset: {
     slug: 'free_detox_reset',
-    name: '6-Day Free Detox Program',
+    name: 'Free Detox Program',
     description: 'A free six-day starter journey for nervous-system, hydration, movement, gut, mind, and daily-rhythm reset practices.',
     totalDays: 6,
     category: 'detox',

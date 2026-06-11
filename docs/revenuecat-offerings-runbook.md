@@ -27,12 +27,12 @@ The expected long-term state is:
 
 | Program | Entitlement lookup key | Store product identifier |
 | --- | --- | --- |
-| 6-Day Control | `six_day_control` | `six_day_control` |
-| 90-Day Smoking Reset | `ninety_day_quit` | `ninety_day_quit` |
-| 21-Day Deep Sleep Reset | `sleep_disorder_reset` | `sleep_disorder_reset` |
-| 30-Day Men's Vitality Reset | `male_sexual_health` | `male_sexual_health` |
-| 90-Day Biohacking Reset | `age_reversal` | `age_reversal` |
-| 14-Day Energy Restore | `energy_vitality` | `energy_vitality` |
+| Control | `six_day_control` | `six_day_control` |
+| Smoking Reset | `ninety_day_quit` | `ninety_day_quit` |
+| Deep Sleep Reset | `sleep_disorder_reset` | `sleep_disorder_reset` |
+| Men’s Vitality Reset | `male_sexual_health` | `male_sexual_health` |
+| Age Well | `age_reversal` | `age_reversal` |
+| Energy Restore | `energy_vitality` | `energy_vitality` |
 
 Each `main_production` package should contain two products:
 

@@ -657,10 +657,10 @@
           "type": "lesson",
           "title": "Your next full program",
           "paragraphs": [
-            "Better Sleep: continue with the 21-Day Deep Sleep Reset.",
-            "More Energy: continue with the 14-Day Energy Restore.",
-            "Gut Health: continue with the 21-Day Gut Reset.",
-            "Quit Smoking or Alcohol: continue with the 21-Day Smoking and Alcohol Quit program.",
+            "Better Sleep: continue with Deep Sleep Reset.",
+            "More Energy: continue with Energy Restore.",
+            "Gut Health: continue with Gut Reset.",
+            "Quit Smoking or Alcohol: continue with Smoking & Alcohol Quit.",
             "Stress Relief or General Wellness: continue with the full Recovery Compass long-form reset when available."
           ],
           "highlight": "These 6 days address root causes. The full programs add deeper tools and daily structure."
@@ -704,7 +704,7 @@
         },
         {
           "type": "close",
-          "message": "Your 6-Day Free Detox Program is complete.",
+          "message": "Your Free Detox Program is complete.",
           "secondaryMessage": "Return to Home when you are ready and choose the full journey that matches your focus."
         }
       ]

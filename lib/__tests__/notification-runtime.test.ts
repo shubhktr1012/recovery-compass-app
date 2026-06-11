@@ -178,8 +178,8 @@ describe('rescheduleProgramNotificationsForAccess', () => {
     expect(notificationService.scheduleProgramNotificationPlans).toHaveBeenCalledWith(
       expect.arrayContaining([
         expect.objectContaining({
-          body: 'Variant copy for Day 2 in 14-Day Energy Restore.',
-          title: 'Variant 14-Day Energy Restore title',
+          body: 'Variant copy for Day 2 in Energy Restore.',
+          title: 'Variant Energy Restore title',
           type: 'morning_session_ready',
         }),
       ]),

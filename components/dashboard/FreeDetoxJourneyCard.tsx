@@ -71,7 +71,7 @@ export function FreeDetoxJourneyCard({ progress, variant = 'free-tier' }: FreeDe
 
           <View className="flex-1">
             <Text className="text-forest mt-0.5" style={AppTypography.displayCardSm}>
-              6-Day Detox Program
+              Free Detox Program
             </Text>
           </View>
         </View>

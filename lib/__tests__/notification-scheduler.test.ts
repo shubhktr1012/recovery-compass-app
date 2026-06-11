@@ -52,7 +52,7 @@ function buildPlan(
   return buildProgramNotificationPlan({
     access: activeAccess,
     day: baseDay,
-    programName: '14-Day Energy Restore',
+    programName: 'Energy Restore',
     notificationsEnabled: true,
     now: new Date(2026, 4, 19, 5, 30),
     openedToday: true,
@@ -110,7 +110,7 @@ describe('buildProgramNotificationPlan', () => {
     expect(plan[0].triggerAt).toEqual(new Date(2026, 4, 19, 6, 30));
     expect(plan[1].triggerAt).toEqual(new Date(2026, 4, 19, 12, 0));
     expect(plan[2].triggerAt).toEqual(new Date(2026, 4, 19, 19, 0));
-    expect(plan[0].body).toContain('14-Day Energy Restore session is ready');
+    expect(plan[0].body).toContain('Energy Restore session is ready');
     expect(plan[1].body).toContain('Midday Reset is waiting');
   });
 
@@ -290,7 +290,7 @@ describe('buildProgramNotificationPlan', () => {
       },
     });
 
-    expect(first.title).toBe('14-Day Energy Restore starts now');
+    expect(first.title).toBe('Energy Restore starts now');
     expect(first.body).toBe('Day 2 has 5 cards.');
     expect(first.triggerAt).toEqual(new Date(2026, 4, 19, 7, 5));
   });

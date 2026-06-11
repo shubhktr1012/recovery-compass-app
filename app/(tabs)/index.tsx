@@ -120,7 +120,7 @@ function FreeTierHomeScreen() {
                     i === arr.length - 1 ? <Text key={i} className="font-erode-medium-italic">{word}</Text> : `${word} `
                   )
                 ) : (
-                  <><Text>6-Day Detox</Text> <Text className="font-erode-medium-italic">Program</Text></>
+                  <><Text>Free Detox </Text><Text className="font-erode-medium-italic">Program</Text></>
                 )
               }
               dayPreview={detoxDay ? getFreeDetoxDayPreview(detoxDay) : 'Start with the free 6-day reset.'}

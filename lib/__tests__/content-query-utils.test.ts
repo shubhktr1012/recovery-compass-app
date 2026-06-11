@@ -13,7 +13,7 @@ import {
 const programRow: ProgramRow = {
   id: 'prog-energy',
   slug: 'energy_vitality',
-  title: '14-Day Energy Restore',
+  title: 'Energy Restore',
   description: 'A program focused on restoring energy.',
   total_days: 14,
   category: 'energy',
@@ -127,7 +127,7 @@ describe('content query utils template support', () => {
         ...programRow,
         id: 'prog-gut',
         slug: 'gut_health_reset',
-        title: '21-Day Gut Reset',
+        title: 'Gut Reset',
         category: 'gut_health',
         content_mode: 'unique',
         time_slots_enabled: false,

@@ -36,11 +36,11 @@ Before shipping any Android billing build, verify this exact mapping in RevenueC
 
 | Program | App slug | Expected Google Play product ID |
 | --- | --- | --- |
-| 6-Day Control | `six_day_reset` | `six_day_control` |
+| Control | `six_day_reset` | `six_day_control` |
 | 90-Day Quit Smoking | `ninety_day_transform` | `ninety_day_quit` |
 | Sleep Reset | `sleep_disorder_reset` | `sleep_disorder_reset` |
 | Energy / Vitality | `energy_vitality` | `energy_vitality` |
-| Age Reversal / Biohacking | `age_reversal` | `age_reversal` |
+| Age Well | `age_reversal` | `age_reversal` |
 | Men's Vitality | `male_sexual_health` | `male_sexual_health` |
 
 If the Google Play drawer says "already own this item" while testing a new app

@@ -53,7 +53,7 @@ export function createRevenueCatCatalog(input: RevenueCatCatalogInput = {}): Rev
   return [
     {
       programSlug: 'smoking_alcohol_quit',
-      displayName: '21-Day Smoking & Alcohol Quit',
+      displayName: 'Smoking & Alcohol Quit',
       entitlementId:
         input.smokingAlcoholQuitEntitlementId?.trim() ||
         DEFAULT_SMOKING_ALCOHOL_QUIT_REVENUECAT_ID,
@@ -75,7 +75,7 @@ export function createRevenueCatCatalog(input: RevenueCatCatalogInput = {}): Rev
     },
     {
       programSlug: 'ninety_day_transform',
-      displayName: '90-Day Smoking Reset',
+      displayName: 'Smoking Reset',
       entitlementId: input.ninetyDayEntitlementId?.trim() || DEFAULT_NINETY_DAY_REVENUECAT_ID,
       productIds: normalizeList(input.ninetyDayProductIds ?? [DEFAULT_NINETY_DAY_REVENUECAT_ID]),
       aliases: normalizeList([...NINETY_DAY_REVENUECAT_ALIASES]),
@@ -93,7 +93,7 @@ export function createRevenueCatCatalog(input: RevenueCatCatalogInput = {}): Rev
     },
     {
       programSlug: 'six_day_reset',
-      displayName: '6-Day Control',
+      displayName: 'Control',
       entitlementId: input.sixDayEntitlementId?.trim() || DEFAULT_SIX_DAY_REVENUECAT_ID,
       productIds: normalizeList(input.sixDayProductIds ?? [DEFAULT_SIX_DAY_REVENUECAT_ID]),
       aliases: normalizeList([...SIX_DAY_REVENUECAT_ALIASES]),
@@ -102,7 +102,7 @@ export function createRevenueCatCatalog(input: RevenueCatCatalogInput = {}): Rev
     },
     {
       programSlug: 'age_reversal',
-      displayName: '90-Day Biohacking Reset',
+      displayName: 'Age Well',
       entitlementId: input.ageReversalEntitlementId?.trim() || 'age_reversal',
       productIds: normalizeList(input.ageReversalProductIds ?? ['age_reversal']),
       aliases: normalizeList(['age_reversal', 'age-reversal', 'agereversal', '90_day_reversal', 'biohacking_reset']),
@@ -111,7 +111,7 @@ export function createRevenueCatCatalog(input: RevenueCatCatalogInput = {}): Rev
     },
     {
       programSlug: 'sleep_disorder_reset',
-      displayName: '21-Day Deep Sleep Reset',
+      displayName: 'Deep Sleep Reset',
       entitlementId: input.sleepResetEntitlementId?.trim() || 'sleep_disorder_reset',
       productIds: normalizeList(input.sleepResetProductIds ?? ['sleep_disorder_reset']),
       aliases: normalizeList(['sleep_disorder_reset', 'sleep-reset', 'sleep_reset', 'sleepdisorderreset']),
@@ -120,7 +120,7 @@ export function createRevenueCatCatalog(input: RevenueCatCatalogInput = {}): Rev
     },
     {
       programSlug: 'energy_vitality',
-      displayName: '14-Day Energy Restore',
+      displayName: 'Energy Restore',
       entitlementId: input.energyVitalityEntitlementId?.trim() || 'energy_vitality',
       productIds: normalizeList(input.energyVitalityProductIds ?? ['energy_vitality']),
       aliases: normalizeList(['energy_vitality', 'energy-reset', 'energy_reset', 'energyvitality']),
@@ -129,7 +129,7 @@ export function createRevenueCatCatalog(input: RevenueCatCatalogInput = {}): Rev
     },
     {
       programSlug: 'male_sexual_health',
-      displayName: "30-Day Men's Vitality Reset",
+      displayName: "Men’s Vitality Reset",
       entitlementId: input.maleVitalityEntitlementId?.trim() || 'male_sexual_health',
       productIds: normalizeList(input.maleVitalityProductIds ?? ['male_sexual_health']),
       aliases: normalizeList(['male_sexual_health', 'male-vitality', 'male_vitality', 'malesexualhealth']),
@@ -138,7 +138,7 @@ export function createRevenueCatCatalog(input: RevenueCatCatalogInput = {}): Rev
     },
     {
       programSlug: 'gut_health_reset',
-      displayName: '21-Day Gut Reset',
+      displayName: 'Gut Reset',
       entitlementId:
         input.gutHealthResetEntitlementId?.trim() ||
         DEFAULT_GUT_HEALTH_RESET_REVENUECAT_ID,

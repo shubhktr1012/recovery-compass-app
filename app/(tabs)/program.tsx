@@ -449,7 +449,7 @@ function ProgramScreenContent({
     return null;
   }
 
-  // Determine split Program Name (e.g. "6-Day Control" -> "6-Day" normal, "Control" italic)
+  // Determine split Program Name (e.g. "Gut Reset" -> "Gut" normal, "Reset" italic)
   const nameParts = program.name.split(' ');
   const namePrefix = nameParts.slice(0, -1).join(' ');
   const nameItalic = nameParts[nameParts.length - 1];

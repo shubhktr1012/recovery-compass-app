@@ -73,7 +73,7 @@ Status notes:
 - [x] Final program naming aligned across onboarding, paywall, and program screens
 - [x] Duration refresh shipped for Energy (14d) and Men's Health (30d)
 - [x] iOS StoreKit simulator purchase flow verified end-to-end (offering fetch, purchase, receipt post, unlock path)
-- [x] Biohacking price updated to INR 6,999 in App Store Connect and Google Play
+- [x] Age Well price updated to INR 6,999 in App Store Connect and Google Play
 - [x] Profile with access status + restore purchases
 - [x] SOS modal (basic breathing)
 - [x] Content seed generator script
@@ -82,7 +82,7 @@ Status notes:
 - [x] Profile picture upload (gallery only) + edit-profile bottom sheet
 - [x] Statistics page + featured stat card preview on Account screen
 - [x] Clean Account/auth/profile stabilization commit created (`9fe2751`)
-- [x] 90-Day Smoking Reset content refresh applied live (clean cards re-seeded)
+- [x] Smoking Reset content refresh applied live (clean cards re-seeded)
 - [x] Sleep content refresh applied live for Days 2, 14, and 18
 - [x] Test-cards route hidden from tab bar (`href: null` already configured)
 - [x] Xcode + Android Studio installed and configured
@@ -198,7 +198,7 @@ Launch → V4 Splash → Onboarding Carousel → Sign Up / Sign In
 - [x] StoreKit transaction reset + smoking purchase QA confirms `six_day_control` and `ninety_day_quit` unlock independently
 - [x] Post-reopen active program and restore flow stay correct after smoking purchase
 - [x] iOS native Account QA verified: edit name, clear name, settings, statistics, avatar upload
-- [x] 90-Day Smoking Reset live content refresh spot-checked clean at Days 1, 7, 45, and 90
+- [x] Smoking Reset live content refresh spot-checked clean at Days 1, 7, 45, and 90
 - [x] Sleep live content refresh applied for Days 2, 14, and 18; Day 14 in-app spot-check looks good
 - [x] Energy program in-app QA passed
 - [x] Men's Health program content refresh applied live and day view now reflects the DB-backed content correctly

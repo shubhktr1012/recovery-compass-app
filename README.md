@@ -16,7 +16,7 @@ Current repo state as of March 29, 2026:
 
 | Program | Slug | Days | Current state |
 | --- | --- | ---: | --- |
-| 6-Day Control | `six_day_reset` | 6 | Available in app, local fallback content present |
+| Control | `six_day_reset` | 6 | Available in app, local fallback content present |
 | 90-Day Quit Smoking | `ninety_day_transform` | 90 | Available in app, local fallback content present |
 | Sleep Disorder Reset | `sleep_disorder_reset` | 21 | Seeded in Supabase, final content/pricing still pending |
 | Energy & Vitality | `energy_vitality` | 42 | Seeded in Supabase, final content/pricing still pending |
