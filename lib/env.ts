@@ -34,6 +34,8 @@ export interface PublicEnv {
   googleAndroidClientId: string | null;
   easProjectId: string | null;
   programAudioBucket: string;
+  recoveryCompassWebUrl: string;
+  enableAppWebHandoff: boolean;
 }
 
 export interface PublicEnvState {
@@ -50,6 +52,10 @@ function parseCsvEnv(value: string | null | undefined) {
     .split(',')
     .map((entry) => entry.trim())
     .filter(Boolean);
+}
+
+function parseBooleanEnv(value: string | null | undefined) {
+  return value?.trim().toLowerCase() === 'true';
 }
 
 function buildPublicEnvState(): PublicEnvState {
@@ -112,6 +118,8 @@ function buildPublicEnvState(): PublicEnvState {
       googleAndroidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID ?? null,
       easProjectId: process.env.EXPO_PUBLIC_EAS_PROJECT_ID ?? null,
       programAudioBucket: process.env.EXPO_PUBLIC_SUPABASE_PROGRAM_AUDIO_BUCKET ?? 'program-audio',
+      recoveryCompassWebUrl: process.env.EXPO_PUBLIC_RECOVERY_COMPASS_WEB_URL ?? 'https://recoverycompass.co',
+      enableAppWebHandoff: parseBooleanEnv(process.env.EXPO_PUBLIC_ENABLE_APP_WEB_HANDOFF),
     },
     errorMessage:
       missingKeys.length > 0

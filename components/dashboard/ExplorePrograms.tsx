@@ -6,8 +6,9 @@ import { LinearGradient } from 'expo-linear-gradient';
 import type { ProgramContent } from '@/types/content';
 import { SkeletonCircle, SkeletonLine, SkeletonTitle } from '@/components/ui/Skeleton';
 import { AppTypography } from '@/constants/typography';
+import { getAppWebHandoffUrl } from '@/lib/app-web-handoff';
 
-const DIET_PLAN_WEBSITE_URL = 'https://recoverycompass.co/diet-plan';
+const DIET_PLAN_WEBSITE_PATH = '/diet-plan';
 
 interface ExploreProgramsProps {
   programs: ProgramContent[];
@@ -74,7 +75,8 @@ function getStatusTagProps(program: ProgramContent) {
 
 async function openDietPlanWebsite() {
   try {
-    await openBrowserAsync(DIET_PLAN_WEBSITE_URL, {
+    const url = await getAppWebHandoffUrl(DIET_PLAN_WEBSITE_PATH);
+    await openBrowserAsync(url, {
       presentationStyle: WebBrowserPresentationStyle.AUTOMATIC,
     });
   } catch (error: any) {
