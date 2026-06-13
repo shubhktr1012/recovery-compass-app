@@ -228,7 +228,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     (notificationPermissionGranted ||
       profileQuery.data?.push_opt_in ||
       profileQuery.data?.notifications_enabled) &&
-    Platform.OS === 'ios'
+    Platform.OS !== 'web'
   );
   const { expoPushToken, permissionStatus, error: pushError } = usePushNotifications({
     enabled: shouldRegisterPush,

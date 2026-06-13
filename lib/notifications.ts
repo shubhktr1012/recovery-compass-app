@@ -316,7 +316,7 @@ export const NotificationService = {
             ...plan.data,
           },
           sound: true,
-          priority: notificationsModule.AndroidNotificationPriority.DEFAULT,
+          priority: notificationsModule.AndroidNotificationPriority.HIGH,
         },
         trigger: getPlanTrigger(plan, notificationsModule, now),
       });

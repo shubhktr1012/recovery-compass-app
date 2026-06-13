@@ -136,7 +136,7 @@ describe('NotificationService', () => {
           timeSlot: 'morning',
         },
         sound: true,
-        priority: 'default',
+        priority: 'high',
       },
       trigger: {
         type: 'date',
