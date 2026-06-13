@@ -49,7 +49,7 @@ export const PROGRAM_METADATA: Record<ProgramSlug, ProgramCatalogEntry> = {
     hasAudio: true,
     timeSlotsEnabled: true,
     contentStatus: 'ready',
-    priceString: '₹4,999',
+    priceString: '₹2,599',
     dailyMinutesLabel: '10–15',
     phaseCount: 3,
   },
