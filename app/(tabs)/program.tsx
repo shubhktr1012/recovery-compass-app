@@ -35,6 +35,7 @@ import { ProgramCard } from '@/components/program/ProgramCard';
 import { StaggeredItem } from '@/components/motion/StaggeredItem';
 import { PaperGrain } from '@/components/ui/PaperGrain';
 import { ProgramWatermark } from '@/components/ui/TabWatermarks';
+import { RouteErrorState, RouteLoadingState } from '@/components/navigation/RouteStateScreen';
 import { DayContent, ProgramSlug } from '@/types/content';
 import { programQueryKey } from '@/hooks/contentQueryUtils';
 import { useFreeDetoxProgress } from '@/hooks/useFreeDetoxProgress';
@@ -116,7 +117,7 @@ function FreeProgramDiscoveryScreen() {
   const { profile } = useProfile();
   const freeDetoxProgress = useFreeDetoxProgress(profile?.id, Boolean(profile?.id));
   const router = useRouter();
-  const { program } = useProgram(FREE_DETOX_PROGRAM_SLUG);
+  const { program, isLoading: isProgramLoading } = useProgram(FREE_DETOX_PROGRAM_SLUG);
   const completedDays = freeDetoxProgress.progress?.completedDays ?? [];
   const partialDays = freeDetoxProgress.progress?.partialDays ?? [];
   const nextDay = getNextFreeDetoxDay(freeDetoxProgress.progress);
@@ -129,7 +130,21 @@ function FreeProgramDiscoveryScreen() {
   const progressPercent = Math.max(0, Math.min(100, Math.round((completedDays.length / (program?.totalDays ?? 6)) * 100)));
 
   if (!program) {
-    return null;
+    if (isProgramLoading) {
+      return (
+        <RouteLoadingState
+          title="Loading Detox"
+          message="Your free Detox timeline is syncing."
+        />
+      );
+    }
+
+    return (
+      <RouteErrorState
+        title="Detox unavailable"
+        message="The free Detox timeline is not available on this build. Go Home and try again after syncing."
+      />
+    );
   }
 
   return (
@@ -232,7 +247,7 @@ function ProgramScreenContent({
   const router = useRouter();
   const { access, pauseProgramManually, profile, progress, resumeProgramFromPause } = useProfile();
   const queryClient = useQueryClient();
-  const { program } = useProgram(activeProgram);
+  const { program, isLoading: isProgramLoading } = useProgram(activeProgram);
   const now = useMinuteClock();
   const totalDays = program?.totalDays ?? 1;
   const isCompletedTimeline = isCompletedReview || isFinishedProgramAccess(access);
@@ -446,7 +461,23 @@ function ProgramScreenContent({
   }, []);
 
   if (!program) {
-    return null;
+    if (isProgramLoading) {
+      return (
+        <RouteLoadingState
+          title="Loading Program"
+          message="Your timeline is syncing."
+        />
+      );
+    }
+
+    return (
+      <RouteErrorState
+        title="Program unavailable"
+        message="This program is unlocked, but its timeline is not available on this build. Open My Programs or try again after syncing."
+        actionLabel="Open My Programs"
+        actionHref="/account/programs"
+      />
+    );
   }
 
   // Determine split Program Name (e.g. "Gut Reset" -> "Gut" normal, "Reset" italic)
@@ -664,7 +695,12 @@ export default function ProgramScreen() {
   );
 
   if (isLoading || (requestedReviewProgram && isOwnedProgramsLoading)) {
-    return null;
+    return (
+      <RouteLoadingState
+        title="Loading Program"
+        message="Checking your program access and timeline."
+      />
+    );
   }
 
   if (completedReviewProgram) {

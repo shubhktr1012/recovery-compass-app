@@ -1,7 +1,8 @@
 import { Pressable, View } from 'react-native';
-import { Href, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { AppColors } from '@/constants/theme';
+import { PROGRAM_TAB_ROUTE } from '@/lib/navigation/routes';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing } from 'react-native-reanimated';
 
 export function PanicButton() {
@@ -24,7 +25,7 @@ export function PanicButton() {
             <Pressable
                 onPressIn={handlePressIn}
                 onPressOut={handlePressOut}
-                onPress={() => router.push('/modal' as Href)}
+                onPress={() => router.push(PROGRAM_TAB_ROUTE)}
             >
                 <Animated.View
                     style={[

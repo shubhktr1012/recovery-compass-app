@@ -45,6 +45,7 @@ import { StepPermissionPrompt } from '@/components/steps/StepPermissionPrompt';
 import { isPublicCatalogProgram } from '@/content/programs/metadata';
 import { useFreeDetoxProgress } from '@/hooks/useFreeDetoxProgress';
 import { FREE_DETOX_PROGRAM_SLUG, getNextFreeDetoxDay } from '@/lib/free-program-progress';
+import { RouteErrorState, RouteLoadingState } from '@/components/navigation/RouteStateScreen';
 
 const EMPTY_DAY_NUMBERS: number[] = [];
 
@@ -151,7 +152,7 @@ function HomeScreenContent({ activeProgram }: { activeProgram: ProgramSlug }) {
   const router = useRouter();
   const onboardingQuery = useOnboardingResponse();
   const onboardingResponse = onboardingQuery.data ?? null;
-  const { program } = useProgram(activeProgram);
+  const { program, isLoading: isProgramLoading } = useProgram(activeProgram);
   const { programs } = usePrograms();
   const { ownedPrograms, isLoading: isOwnedProgramsLoading } = useOwnedPrograms();
   const dailySteps = useDailySteps();
@@ -288,7 +289,23 @@ function HomeScreenContent({ activeProgram }: { activeProgram: ProgramSlug }) {
   );
 
   if (!program) {
-    return null;
+    if (isProgramLoading) {
+      return (
+        <RouteLoadingState
+          title="Loading your program"
+          message="Your active journey is syncing."
+        />
+      );
+    }
+
+    return (
+      <RouteErrorState
+        title="Program unavailable"
+        message="Your program access is saved, but this program timeline is not available on this build. Open My Programs or try again after syncing."
+        actionLabel="Open My Programs"
+        actionHref="/account/programs"
+      />
+    );
   }
 
   const ownedProgramSlugSet = new Set([
@@ -394,7 +411,12 @@ export default function HomeScreen() {
   const { access, isLoading, profile } = useProfile();
 
   if (isLoading) {
-    return null;
+    return (
+      <RouteLoadingState
+        title="Loading Home"
+        message="Checking your access and latest program progress."
+      />
+    );
   }
 
   if (!hasAnyProgramEntitlement(access)) {
