@@ -71,6 +71,7 @@
       }
     },
     "production": {
+      "environment": "production",
       "autoIncrement": true,
       "buildArtifactPaths": [
         "android/app/build/outputs/mapping/release/mapping.txt"
