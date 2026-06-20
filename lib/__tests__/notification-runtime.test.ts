@@ -320,6 +320,73 @@ describe('rescheduleProgramNotificationsForAccess', () => {
     );
   });
 
+  it('uses Free Detox-specific notification templates when available', async () => {
+    const notificationService = createNotificationService();
+    mockNotificationTemplateTables({
+      templates: [
+        {
+          body_template: 'Global copy for {{programName}}.',
+          notification_type: 'morning_session_ready',
+          program_slug: 'global',
+          title_template: 'Global title',
+          trigger_hour: 6,
+          trigger_minute: 30,
+        },
+        {
+          body_template: 'Detox Day {{dayNumber}} is ready.',
+          notification_type: 'morning_session_ready',
+          program_slug: 'free_detox_reset',
+          title_template: 'Free Detox is ready',
+          trigger_hour: 6,
+          trigger_minute: 30,
+        },
+      ],
+    });
+
+    await rescheduleProgramNotificationsForAccess({
+      access: {
+        ...activeAccess,
+        completedAt: null,
+        completionState: 'not_started',
+        currentDay: null,
+        ownedProgram: null,
+        programState: 'not_owned',
+        purchaseState: 'not_owned',
+      },
+      loadDayContent: vi.fn(async (_programSlug: string, requestedDayNumber: number) =>
+        createDayContent(requestedDayNumber, 'free_detox_reset')
+      ),
+      loadFreeDetoxProgress: vi.fn(async () => ({
+        completedAt: null,
+        completedDays: [1],
+        currentDay: 2,
+        partialDays: [],
+        programSlug: 'free_detox_reset' as const,
+        updatedAt: '2026-05-19T00:00:00.000Z',
+        userId: 'user-1',
+      })),
+      loadHasPaidProgramAccess: vi.fn(async () => false),
+      notificationService,
+      now: new Date(2026, 4, 19, 5, 30),
+      profile: {
+        free_tier_activated_at: '2026-05-18T10:00:00.000Z',
+        notifications_enabled: true,
+      },
+      userId: 'user-1',
+    });
+
+    expect(notificationService.scheduleProgramNotificationPlans).toHaveBeenCalledWith(
+      expect.arrayContaining([
+        expect.objectContaining({
+          body: 'Detox Day 2 is ready.',
+          id: 'program:free_detox_reset:day:2:morning_session_ready',
+          title: 'Free Detox is ready',
+        }),
+      ]),
+      { now: new Date(2026, 4, 19, 5, 30) }
+    );
+  });
+
   it('suppresses Free Detox reminders when the user owns any paid program', async () => {
     const notificationService = createNotificationService();
     const loadDayContent = vi.fn(async (_programSlug: string, requestedDayNumber: number) =>
