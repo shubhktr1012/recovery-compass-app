@@ -12,7 +12,9 @@ import Purchases, { LOG_LEVEL } from 'react-native-purchases';
 import { LogBox, Platform, Text, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { AppErrorBoundary } from '@/components/AppErrorBoundary';
+import { MandatoryUpdateSheet } from '@/components/runtime/MandatoryUpdateSheet';
 import { AppPreloader } from '@/components/ui/AppPreloader';
+import { useMandatoryAppUpdate } from '@/hooks/useMandatoryAppUpdate';
 import { useNotificationPermissionReviewStatus } from '@/hooks/useNotificationPermissionReviewStatus';
 import { useProgramQueueReviewStatus } from '@/hooks/useProgramQueueReviewStatus';
 import { getPublicEnvState } from '@/lib/env';
@@ -54,6 +56,7 @@ const publicEnvState = getPublicEnvState();
 const publicEnv = publicEnvState.env;
 const uninstallGlobalErrorHandler = installGlobalErrorHandler();
 const enablePurchaseQaLogs = process.env.EXPO_PUBLIC_ENABLE_PURCHASE_QA_LOGS === 'true';
+const MANDATORY_UPDATE_DELAY_AFTER_PRELOADER_MS = 1200;
 
 function ProgramNotificationTapRouter({
   access,
@@ -255,6 +258,9 @@ function NavigationGate({
 function RootLayoutContent() {
   const { session, isLoading: isAuthLoading, isRecoveringPassword } = useAuth();
   const { access, profile, isSubscribed, isLoading: isProfileLoading } = useProfile();
+  const mandatoryUpdate = useMandatoryAppUpdate();
+  const [hasPreloaderHidden, setHasPreloaderHidden] = useState(false);
+  const [showMandatoryUpdateSheet, setShowMandatoryUpdateSheet] = useState(false);
   const { isLoading: isQueueReviewLoading, shouldReviewQueue } = useProgramQueueReviewStatus();
   const isFreeTierActive = Boolean(profile?.free_tier_activated_at);
   const {
@@ -286,7 +292,7 @@ function RootLayoutContent() {
     'Satoshi-Bold': SatoshiBold,
   });
 
-  const isLoading = isAuthLoading || (
+  const isLoading = mandatoryUpdate.isLoading || isAuthLoading || (
     session ? isProfileLoading || isQueueReviewLoading || isNotificationReviewLoading : false
   );
   const needsOnboardingRealignment = hasOnboardingContextMismatch({
@@ -302,6 +308,32 @@ function RootLayoutContent() {
   const hasConfiguredPurchasesRef = useRef(false);
   const revenueCatLoginInFlightRef = useRef<string | null>(null);
   const lastRevenueCatUserIdRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!isNavigationReady || hasPreloaderHidden) return;
+
+    const timeout = setTimeout(() => {
+      setHasPreloaderHidden(true);
+    }, 100);
+
+    return () => clearTimeout(timeout);
+  }, [hasPreloaderHidden, isNavigationReady]);
+
+  useEffect(() => {
+    if (!mandatoryUpdate.visible || !isNavigationReady || !hasPreloaderHidden) {
+      setShowMandatoryUpdateSheet(false);
+      return;
+    }
+
+    const timeout = setTimeout(() => {
+      if (__DEV__) {
+        console.info('Showing mandatory update sheet.');
+      }
+      setShowMandatoryUpdateSheet(true);
+    }, MANDATORY_UPDATE_DELAY_AFTER_PRELOADER_MS);
+
+    return () => clearTimeout(timeout);
+  }, [hasPreloaderHidden, isNavigationReady, mandatoryUpdate.visible]);
 
   useEffect(() => {
     if (!isNavigationReady) return;
@@ -393,7 +425,12 @@ function RootLayoutContent() {
         profile={profile}
         userId={session?.user?.id ?? null}
       />
-      <AppPreloader isNavigationReady={isNavigationReady} isAuthenticated={!!session} />
+      <AppPreloader
+        isNavigationReady={isNavigationReady}
+        isAuthenticated={!!session}
+        onHidden={() => setHasPreloaderHidden(true)}
+      />
+      <MandatoryUpdateSheet {...mandatoryUpdate} visible={showMandatoryUpdateSheet} />
     </>
   );
 }

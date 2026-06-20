@@ -27,11 +27,13 @@ let hasPreloaderRun = false;
 interface AppPreloaderProps {
   isNavigationReady: boolean;
   isAuthenticated: boolean;
+  onHidden?: () => void;
 }
 
-export function AppPreloader({ isNavigationReady, isAuthenticated }: AppPreloaderProps) {
+export function AppPreloader({ isNavigationReady, isAuthenticated, onHidden }: AppPreloaderProps) {
   const [isVisible, setIsVisible] = useState(!hasPreloaderRun);
   const animationStarted = useRef(false);
+  const hasReportedHidden = useRef(false);
 
   // Shared values — always declared unconditionally (Rules of Hooks).
   const opacity = useSharedValue(1);
@@ -46,6 +48,12 @@ export function AppPreloader({ isNavigationReady, isAuthenticated }: AppPreloade
     if (hasPreloaderRun) return;
     void SplashScreen.hideAsync();
   }, []);
+
+  useEffect(() => {
+    if (isVisible || hasReportedHidden.current) return;
+    hasReportedHidden.current = true;
+    onHidden?.();
+  }, [isVisible, onHidden]);
 
   // ─── Step 2: Start the animation once fonts + auth are ready ─────────────
   useEffect(() => {
