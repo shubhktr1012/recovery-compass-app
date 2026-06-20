@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { rescheduleProgramNotificationsForAccess } from '@/lib/notification-runtime';
-import type { ProgramAccessSnapshot } from '@/lib/programs/types';
+import type { ProgramAccessSnapshot, ProgramSlug } from '@/lib/programs/types';
 import type { DayContent } from '@/types/content';
 
 vi.mock('react-native', () => ({
@@ -41,9 +41,9 @@ const activeAccess: Pick<
   completedAt: null,
 };
 
-function createDayContent(dayNumber: number): DayContent {
+function createDayContent(dayNumber: number, programSlug: ProgramSlug = 'energy_vitality'): DayContent {
   return {
-    programSlug: 'energy_vitality',
+    programSlug,
     dayNumber,
     dayTitle: `Energy Activation Upgrade ${dayNumber}`,
     cards: [
@@ -178,8 +178,8 @@ describe('rescheduleProgramNotificationsForAccess', () => {
     expect(notificationService.scheduleProgramNotificationPlans).toHaveBeenCalledWith(
       expect.arrayContaining([
         expect.objectContaining({
-          body: 'Variant copy for Day 2 in Energy Restore.',
-          title: 'Variant Energy Restore title',
+          body: 'Variant copy for Day 2 in Energy Restore Program.',
+          title: 'Variant Energy Restore Program title',
           type: 'morning_session_ready',
         }),
       ]),
@@ -253,6 +253,101 @@ describe('rescheduleProgramNotificationsForAccess', () => {
       userId: 'user-1',
     });
 
+    expect(loadDayContent).not.toHaveBeenCalled();
+    expect(notificationService.scheduleProgramNotificationPlans).toHaveBeenCalledWith(
+      [],
+      expect.objectContaining({ now: expect.any(Date) })
+    );
+  });
+
+  it('schedules Free Detox reminders for free-tier users with no paid program ownership', async () => {
+    const notificationService = createNotificationService();
+    const loadDayContent = vi.fn(async (_programSlug: string, requestedDayNumber: number) =>
+      createDayContent(requestedDayNumber, 'free_detox_reset')
+    );
+    const loadHasPaidProgramAccess = vi.fn(async () => false);
+    const loadFreeDetoxProgress = vi.fn(async () => ({
+      completedAt: null,
+      completedDays: [1],
+      currentDay: 2,
+      partialDays: [],
+      programSlug: 'free_detox_reset' as const,
+      updatedAt: '2026-05-19T00:00:00.000Z',
+      userId: 'user-1',
+    }));
+
+    const result = await rescheduleProgramNotificationsForAccess({
+      access: {
+        ...activeAccess,
+        completedAt: null,
+        completionState: 'not_started',
+        currentDay: null,
+        ownedProgram: null,
+        programState: 'not_owned',
+        purchaseState: 'not_owned',
+      },
+      loadDayContent,
+      loadFreeDetoxProgress,
+      loadHasPaidProgramAccess,
+      notificationService,
+      now: new Date(2026, 4, 19, 5, 30),
+      profile: {
+        free_tier_activated_at: '2026-05-18T10:00:00.000Z',
+        notifications_enabled: true,
+      },
+      userId: 'user-1',
+    });
+
+    expect(loadHasPaidProgramAccess).toHaveBeenCalledWith('user-1');
+    expect(loadFreeDetoxProgress).toHaveBeenCalledWith('user-1');
+    expect(loadDayContent).toHaveBeenCalledTimes(5);
+    expect(result.scheduledIds).toContain('program:free_detox_reset:day:2:morning_session_ready');
+    expect(result.scheduledIds).toContain('program:free_detox_reset:day:6:morning_session_ready');
+    expect(notificationService.scheduleProgramNotificationPlans).toHaveBeenCalledWith(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: 'program:free_detox_reset:day:2:morning_session_ready',
+          triggerAt: new Date(2026, 4, 19, 6, 30),
+          type: 'morning_session_ready',
+        }),
+        expect.objectContaining({
+          id: 'program:free_detox_reset:day:6:morning_session_ready',
+          triggerAt: new Date(2026, 4, 23, 6, 30),
+          type: 'morning_session_ready',
+        }),
+      ]),
+      { now: new Date(2026, 4, 19, 5, 30) }
+    );
+  });
+
+  it('suppresses Free Detox reminders when the user owns any paid program', async () => {
+    const notificationService = createNotificationService();
+    const loadDayContent = vi.fn(async (_programSlug: string, requestedDayNumber: number) =>
+      createDayContent(requestedDayNumber, 'free_detox_reset')
+    );
+    const loadHasPaidProgramAccess = vi.fn(async () => true);
+
+    await rescheduleProgramNotificationsForAccess({
+      access: {
+        ...activeAccess,
+        completedAt: null,
+        completionState: 'not_started',
+        currentDay: null,
+        ownedProgram: null,
+        programState: 'not_owned',
+        purchaseState: 'not_owned',
+      },
+      loadDayContent,
+      loadHasPaidProgramAccess,
+      notificationService,
+      profile: {
+        free_tier_activated_at: '2026-05-18T10:00:00.000Z',
+        notifications_enabled: true,
+      },
+      userId: 'user-1',
+    });
+
+    expect(loadHasPaidProgramAccess).toHaveBeenCalledWith('user-1');
     expect(loadDayContent).not.toHaveBeenCalled();
     expect(notificationService.scheduleProgramNotificationPlans).toHaveBeenCalledWith(
       [],

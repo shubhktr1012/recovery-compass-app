@@ -520,6 +520,45 @@ export type Database = {
         }
         Relationships: []
       }
+      program_swap_events: {
+        Row: {
+          created_at: string
+          from_program: string
+          id: string
+          metadata: Json
+          new_queue: Json
+          previous_active_day: number | null
+          previous_queue: Json
+          reason: string
+          to_program: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          from_program: string
+          id?: string
+          metadata?: Json
+          new_queue?: Json
+          previous_active_day?: number | null
+          previous_queue?: Json
+          reason: string
+          to_program: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          from_program?: string
+          id?: string
+          metadata?: Json
+          new_queue?: Json
+          previous_active_day?: number | null
+          previous_queue?: Json
+          reason?: string
+          to_program?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       program_days: {
         Row: {
           cards: Json | null
@@ -1403,6 +1442,21 @@ export type Database = {
           paused_at: string
           program_state: string
           started_at: string
+          updated_at: string
+        }[]
+      }
+      swap_active_program: {
+        Args: {
+          p_reason: string
+          p_scheduled_start_date?: string | null
+          p_target_program: string
+        }
+        Returns: {
+          active_program: string
+          active_program_state: string
+          cooldown_until: string
+          previous_program: string
+          previous_program_state: string
           updated_at: string
         }[]
       }

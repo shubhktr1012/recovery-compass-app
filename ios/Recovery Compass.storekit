@@ -51,12 +51,12 @@
       "localizations" : [
         {
           "description" : "A structured sleep-support program with daily text and guided sleep audio.",
-          "displayName" : "Deep Sleep Reset",
+          "displayName" : "Deep Sleep Reset Program",
           "locale" : "en_US"
         }
       ],
       "productID" : "sleep_disorder_reset",
-      "referenceName" : "Deep Sleep Reset",
+      "referenceName" : "Deep Sleep Reset Program",
       "type" : "NonConsumable"
     },
     {
@@ -66,12 +66,12 @@
       "localizations" : [
         {
           "description" : "A confidence and regulation program with shared CALM support.",
-          "displayName" : "Men’s Vitality Reset",
+          "displayName" : "Men’s Vitality Reset Program",
           "locale" : "en_US"
         }
       ],
       "productID" : "male_sexual_health",
-      "referenceName" : "Men’s Vitality Reset",
+      "referenceName" : "Men’s Vitality Reset Program",
       "type" : "NonConsumable"
     },
     {
@@ -81,12 +81,12 @@
       "localizations" : [
         {
           "description" : "A longevity-focused program with daily guidance and shared CALM support.",
-          "displayName" : "Age Well",
+          "displayName" : "Age Reversal Program",
           "locale" : "en_US"
         }
       ],
       "productID" : "age_reversal",
-      "referenceName" : "Age Well",
+      "referenceName" : "Age Reversal Program",
       "type" : "NonConsumable"
     },
     {
@@ -96,12 +96,12 @@
       "localizations" : [
         {
           "description" : "A program focused on restoring energy, rhythm, and daily momentum.",
-          "displayName" : "Energy Restore",
+          "displayName" : "Energy Restore Program",
           "locale" : "en_US"
         }
       ],
       "productID" : "energy_vitality",
-      "referenceName" : "Energy Restore",
+      "referenceName" : "Energy Restore Program",
       "type" : "NonConsumable"
     },
     {
@@ -111,12 +111,12 @@
       "localizations" : [
         {
           "description" : "21-day support to quit smoking and alcohol.",
-          "displayName" : "Smoking & Alcohol Quit",
+          "displayName" : "Smoking & Alcohol Quit Program",
           "locale" : "en_US"
         }
       ],
       "productID" : "smoking_alcohol_quit",
-      "referenceName" : "Smoking & Alcohol Quit",
+      "referenceName" : "Smoking & Alcohol Quit Program",
       "type" : "NonConsumable"
     },
     {
@@ -126,12 +126,12 @@
       "localizations" : [
         {
           "description" : "21 days of gut health habits and routines.",
-          "displayName" : "Gut Reset",
+          "displayName" : "Gut Reset Program",
           "locale" : "en_US"
         }
       ],
       "productID" : "gut_health_reset",
-      "referenceName" : "Gut Reset",
+      "referenceName" : "Gut Reset Program",
       "type" : "NonConsumable"
     }
   ],

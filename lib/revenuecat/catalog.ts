@@ -53,7 +53,7 @@ export function createRevenueCatCatalog(input: RevenueCatCatalogInput = {}): Rev
   return [
     {
       programSlug: 'smoking_alcohol_quit',
-      displayName: 'Smoking & Alcohol Quit',
+      displayName: 'Smoking & Alcohol Quit Program',
       entitlementId:
         input.smokingAlcoholQuitEntitlementId?.trim() ||
         DEFAULT_SMOKING_ALCOHOL_QUIT_REVENUECAT_ID,
@@ -102,7 +102,7 @@ export function createRevenueCatCatalog(input: RevenueCatCatalogInput = {}): Rev
     },
     {
       programSlug: 'age_reversal',
-      displayName: 'Age Well',
+      displayName: 'Age Reversal Program',
       entitlementId: input.ageReversalEntitlementId?.trim() || 'age_reversal',
       productIds: normalizeList(input.ageReversalProductIds ?? ['age_reversal']),
       aliases: normalizeList(['age_reversal', 'age-reversal', 'agereversal', '90_day_reversal', 'biohacking_reset']),
@@ -111,7 +111,7 @@ export function createRevenueCatCatalog(input: RevenueCatCatalogInput = {}): Rev
     },
     {
       programSlug: 'sleep_disorder_reset',
-      displayName: 'Deep Sleep Reset',
+      displayName: 'Deep Sleep Reset Program',
       entitlementId: input.sleepResetEntitlementId?.trim() || 'sleep_disorder_reset',
       productIds: normalizeList(input.sleepResetProductIds ?? ['sleep_disorder_reset']),
       aliases: normalizeList(['sleep_disorder_reset', 'sleep-reset', 'sleep_reset', 'sleepdisorderreset']),
@@ -120,7 +120,7 @@ export function createRevenueCatCatalog(input: RevenueCatCatalogInput = {}): Rev
     },
     {
       programSlug: 'energy_vitality',
-      displayName: 'Energy Restore',
+      displayName: 'Energy Restore Program',
       entitlementId: input.energyVitalityEntitlementId?.trim() || 'energy_vitality',
       productIds: normalizeList(input.energyVitalityProductIds ?? ['energy_vitality']),
       aliases: normalizeList(['energy_vitality', 'energy-reset', 'energy_reset', 'energyvitality']),
@@ -129,7 +129,7 @@ export function createRevenueCatCatalog(input: RevenueCatCatalogInput = {}): Rev
     },
     {
       programSlug: 'male_sexual_health',
-      displayName: "Men’s Vitality Reset",
+      displayName: "Men’s Vitality Reset Program",
       entitlementId: input.maleVitalityEntitlementId?.trim() || 'male_sexual_health',
       productIds: normalizeList(input.maleVitalityProductIds ?? ['male_sexual_health']),
       aliases: normalizeList(['male_sexual_health', 'male-vitality', 'male_vitality', 'malesexualhealth']),
@@ -138,7 +138,7 @@ export function createRevenueCatCatalog(input: RevenueCatCatalogInput = {}): Rev
     },
     {
       programSlug: 'gut_health_reset',
-      displayName: 'Gut Reset',
+      displayName: 'Gut Reset Program',
       entitlementId:
         input.gutHealthResetEntitlementId?.trim() ||
         DEFAULT_GUT_HEALTH_RESET_REVENUECAT_ID,

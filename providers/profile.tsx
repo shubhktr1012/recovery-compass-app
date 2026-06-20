@@ -23,6 +23,7 @@ import { validateDisplayNameInput } from '@/lib/profile-identity';
 import { rescheduleProgramNotificationsForAccess } from '@/lib/notification-runtime';
 import { getCurrentNotificationPermissionStateAsync } from '@/lib/notification-permissions';
 import { isMissingAnyColumnError } from '@/lib/db-compat';
+import { registerExpoPushTokenWithServer } from '@/lib/push-token-registration';
 
 export interface UserProfile {
   id: string;
@@ -215,6 +216,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [notificationRefreshNonce, setNotificationRefreshNonce] = useState(0);
   const userId = user?.id ?? null;
   const previousUserIdRef = useRef<string | null>(null);
+  const lastRegisteredPushTokenRef = useRef<string | null>(null);
   const profileQuery = useQuery({
     queryKey: PROFILE_QUERY_KEY(userId),
     queryFn: () => {
@@ -312,6 +314,34 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     queryClient,
     userId,
   ]);
+
+  useEffect(() => {
+    const token = expoPushToken?.data ?? null;
+    if (!userId || permissionStatus !== 'granted' || !token) {
+      return;
+    }
+
+    const registrationKey = `${userId}:${token}`;
+    if (lastRegisteredPushTokenRef.current === registrationKey) {
+      return;
+    }
+
+    let isCancelled = false;
+
+    void registerExpoPushTokenWithServer(token)
+      .then((result) => {
+        if (isCancelled || !result.registered) return;
+        lastRegisteredPushTokenRef.current = registrationKey;
+      })
+      .catch((registrationError) => {
+        if (isCancelled) return;
+        console.warn('Failed to register Expo push token with server', registrationError);
+      });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [expoPushToken?.data, permissionStatus, userId]);
 
   useEffect(() => {
     if (!userId || !profileQuery.data?.onboarding_complete) {
@@ -1047,6 +1077,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
       },
       openedToday: true,
       profile: {
+        free_tier_activated_at: profileQuery.data?.free_tier_activated_at ?? null,
         notifications_enabled: Boolean(profileQuery.data?.notifications_enabled) || notificationPermissionGranted,
         push_opt_in: Boolean(profileQuery.data?.push_opt_in) || notificationPermissionGranted,
       },
@@ -1070,6 +1101,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     access.scheduledStartDate,
     notificationRefreshNonce,
     notificationPermissionGranted,
+    profileQuery.data?.free_tier_activated_at,
     profileQuery.data?.notifications_enabled,
     profileQuery.data?.push_opt_in,
     profileQuery.isPending,

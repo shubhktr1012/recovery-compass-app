@@ -29,10 +29,10 @@ The expected long-term state is:
 | --- | --- | --- |
 | Control | `six_day_control` | `six_day_control` |
 | Smoking Reset | `ninety_day_quit` | `ninety_day_quit` |
-| Deep Sleep Reset | `sleep_disorder_reset` | `sleep_disorder_reset` |
-| Men’s Vitality Reset | `male_sexual_health` | `male_sexual_health` |
-| Age Well | `age_reversal` | `age_reversal` |
-| Energy Restore | `energy_vitality` | `energy_vitality` |
+| Deep Sleep Reset Program | `sleep_disorder_reset` | `sleep_disorder_reset` |
+| Men’s Vitality Reset Program | `male_sexual_health` | `male_sexual_health` |
+| Age Reversal Program | `age_reversal` | `age_reversal` |
+| Energy Restore Program | `energy_vitality` | `energy_vitality` |
 
 Each `main_production` package should contain two products:
 

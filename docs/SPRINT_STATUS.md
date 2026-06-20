@@ -1,6 +1,6 @@
 # Sprint Status — Recovery Compass
 
-> Last updated: June 5, 2026
+> Last updated: June 16, 2026
 > Branch: `feature/motion-system-pass`
 > Questionnaire foundation: ready
 > Sellable catalog: 6 products configured in RevenueCat, final INR pricing entered in App Store Connect and Google Play, unified `main_production` offering live
@@ -30,10 +30,12 @@ Status notes:
 - 2026-06-05: Steps 1-2 committed in `2c0ef8a` (`fix(app): harden launch program and pause flows`).
 - 2026-06-05: App checks passed after the release-scope commit: `npm run typecheck`, `npm run lint:strict`, and `npm run test`.
 - 2026-06-05: Step 3 is blocked locally because Supabase Postgres on `127.0.0.1:54322` is not running; `supabase start` hung and was stopped. Start Docker/Supabase locally, then rerun `supabase migration list --local` and local migration testing.
-- 2026-06-05: RevenueCat MCP verification found the two new Android products active but not attached to `main_production` packages or entitlements. Attached `prode1975f34d9` to Smoking & Alcohol Quit and `prod6fc264497d` to Gut Reset, then re-verified both packages and entitlements contain iOS + Android + test-store products. No local env overrides are currently set for these two products; the app uses the built-in fallback store identifiers.
+- 2026-06-05: RevenueCat MCP verification found the two new Android products active but not attached to `main_production` packages or entitlements. Attached `prode1975f34d9` to Smoking & Alcohol Quit Program and `prod6fc264497d` to Gut Reset Program, then re-verified both packages and entitlements contain iOS + Android + test-store products. No local env overrides are currently set for these two products; the app uses the built-in fallback store identifiers.
 - 2026-06-05: Full store setup remains blocked: RevenueCat store-state lookup reports the two new iOS App Store products as `not_found`, and the Android Play store-state endpoint is returning a retryable RevenueCat server error. Do not cut the next production binary until App Store Connect / Play Console product readiness is confirmed.
 - 2026-06-05: RevenueCat product push created App Store Connect products `6776996729` (`smoking_alcohol_quit`) and `6776996638` (`gut_health_reset`). RevenueCat store-state still reports `not_found` immediately after creation, so App Store Connect metadata, pricing, screenshots/review info, and readiness still need manual confirmation.
 - 2026-06-05: Production Edge Function audit found deployed `verify-revenuecat-purchase` v2 and `revenuecat-webhook` v16 do not yet include `smoking_alcohol_quit` or `gut_health_reset`. Local function source includes both new programs and bundle expansion, but the Supabase CLI deploy stalled in the deploy HTTP request and further escalation was blocked by the environment usage limit. Deploy both functions before purchase QA and before exposing the new products in a binary.
+- 2026-06-16: Android notification QA passed for both local and server paths. Local 15-second notification test delivered and routed correctly, paused programs scheduled only `paused_daily_reminder`, and after manual resume the app scheduled normal rolling reminders such as `morning_session_ready` and `evening_routine`. Expo Push Service token registration, direct Expo delivery, Supabase sender delivery, and `push_notification_deliveries.ticket_status='ok'` were verified on Android. iOS still needs real iPhone/TestFlight APNs QA before notification reliability is considered release-safe on iOS.
+- 2026-06-16: Fixed repeat auto-pause after manual resume. Resumed programs now get a short grace window so old skipped-day history cannot immediately pause the program again on the next app open.
 
 ## Launch Blockers (must fix before ANY submission)
 
@@ -73,7 +75,7 @@ Status notes:
 - [x] Final program naming aligned across onboarding, paywall, and program screens
 - [x] Duration refresh shipped for Energy (14d) and Men's Health (30d)
 - [x] iOS StoreKit simulator purchase flow verified end-to-end (offering fetch, purchase, receipt post, unlock path)
-- [x] Age Well price updated to INR 6,999 in App Store Connect and Google Play
+- [x] Age Reversal Program price updated to INR 6,999 in App Store Connect and Google Play
 - [x] Profile with access status + restore purchases
 - [x] SOS modal (basic breathing)
 - [x] Content seed generator script
@@ -209,7 +211,11 @@ Launch → V4 Splash → Onboarding Carousel → Sign Up / Sign In
 - [x] `sync_program_progress` correctness hardening: preserve earliest per-day `completed_at` timestamps (avoids rewriting historical completion times on subsequent syncs)
 - [x] `program_progress` cleanup audit complete: app flow is RPC-only, hydration aligns with `program_access`, and remaining work is post-launch concurrency hardening plus schema type regeneration
 - [ ] Real-device iPhone sandbox purchase verification still pending (borrowed device / TestFlight)
+- [ ] Real-device iPhone notification verification still pending: APNs token registration, local scheduled reminders, remote `admin_test_push`, tap routing, and Expo receipt check
 - [x] Android internal-track Google Play purchase verification complete (Play install, tester account, Google Play purchase success, unlock path, restore path)
+- [x] Android local notification delivery and tap routing verified with the in-app 15-second notification test
+- [x] Android active-program notification planning verified after resume: normal rolling reminders scheduled instead of only `paused_daily_reminder`
+- [x] Android Expo Push Service delivery verified: token registration, direct Expo push, Supabase sender push, and delivery ticket logging
 - [x] Redesigned 4-tab bar routes verified on device (Home / Program / My Journal / Account)
 - [x] Redesigned 4-tab bar shows no clipping near the home indicator on device
 - [ ] Redesigned 4-tab bar keyboard-hide behavior still needs explicit on-device confirmation

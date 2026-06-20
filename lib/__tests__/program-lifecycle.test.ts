@@ -4,6 +4,7 @@ import {
   getLatestConsecutiveSkippedDayCount,
   getPauseDayNumberForAbsence,
   getResumeStartedAtForDay,
+  shouldSuppressAbsencePauseAfterRecentResume,
 } from '@/lib/programs/absence';
 import {
   formatScheduledProgramStartLabel,
@@ -142,6 +143,56 @@ describe('program lifecycle helpers', () => {
     expect(startedAt.getMonth()).toBe(4);
     expect(startedAt.getDate()).toBe(15);
     expect(startedAt.getHours()).toBe(5);
+  });
+
+  it('suppresses immediate absence pause after a recent manual resume', () => {
+    expect(
+      shouldSuppressAbsencePauseAfterRecentResume(
+        {
+          archivedAt: null,
+          completedAt: null,
+          completionState: 'in_progress',
+          currentDay: 28,
+          eligibleProducts: [],
+          ownedProgram: 'ninety_day_transform',
+          ownerUserId: 'user-1',
+          pausedAt: null,
+          programState: 'active',
+          purchaseState: 'owned_active',
+          scheduledStartDate: '2026-05-15',
+          source: 'supabase',
+          startedAt: '2026-05-15T05:00:00.000Z',
+          updatedAt: '2026-06-16T13:00:00.000Z',
+        },
+        28,
+        new Date('2026-06-16T13:10:00.000Z')
+      )
+    ).toBe(true);
+  });
+
+  it('allows absence pause after the resume grace window expires', () => {
+    expect(
+      shouldSuppressAbsencePauseAfterRecentResume(
+        {
+          archivedAt: null,
+          completedAt: null,
+          completionState: 'in_progress',
+          currentDay: 28,
+          eligibleProducts: [],
+          ownedProgram: 'ninety_day_transform',
+          ownerUserId: 'user-1',
+          pausedAt: null,
+          programState: 'active',
+          purchaseState: 'owned_active',
+          scheduledStartDate: '2026-05-15',
+          source: 'supabase',
+          startedAt: '2026-05-15T05:00:00.000Z',
+          updatedAt: '2026-06-15T13:00:00.000Z',
+        },
+        28,
+        new Date('2026-06-16T13:10:00.000Z')
+      )
+    ).toBe(false);
   });
 
   it('treats a program as complete only when completedAt and final day are both present', () => {

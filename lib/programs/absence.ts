@@ -2,6 +2,7 @@ import { PROGRAM_UNLOCK_HOUR } from '@/lib/programs/schedule';
 import type { ProgramAccessSnapshot } from '@/lib/programs/types';
 
 export const ABSENCE_PAUSE_THRESHOLD_DAYS = 3;
+export const ABSENCE_PAUSE_RECENT_RESUME_GRACE_MS = 24 * 60 * 60 * 1000;
 
 type FinalizedDayStateLike = {
   dayNumber: number;
@@ -57,6 +58,29 @@ export function shouldEvaluateAbsencePause(access: ProgramAccessSnapshot) {
     access.programState !== 'paused' &&
     access.startedAt
   );
+}
+
+export function shouldSuppressAbsencePauseAfterRecentResume(
+  access: ProgramAccessSnapshot,
+  pauseDayNumber: number,
+  now = new Date()
+) {
+  if (
+    access.programState !== 'active' ||
+    access.pausedAt ||
+    typeof access.currentDay !== 'number' ||
+    pauseDayNumber !== access.currentDay ||
+    !access.updatedAt
+  ) {
+    return false;
+  }
+
+  const updatedAt = new Date(access.updatedAt);
+  if (Number.isNaN(updatedAt.getTime())) {
+    return false;
+  }
+
+  return now.getTime() - updatedAt.getTime() < ABSENCE_PAUSE_RECENT_RESUME_GRACE_MS;
 }
 
 export function getResumeStartedAtForDay(dayNumber: number, now = new Date()) {

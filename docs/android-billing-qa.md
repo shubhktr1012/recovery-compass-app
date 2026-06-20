@@ -40,7 +40,7 @@ Before shipping any Android billing build, verify this exact mapping in RevenueC
 | 90-Day Quit Smoking | `ninety_day_transform` | `ninety_day_quit` |
 | Sleep Reset | `sleep_disorder_reset` | `sleep_disorder_reset` |
 | Energy / Vitality | `energy_vitality` | `energy_vitality` |
-| Age Well | `age_reversal` | `age_reversal` |
+| Age Reversal Program | `age_reversal` | `age_reversal` |
 | Men's Vitality | `male_sexual_health` | `male_sexual_health` |
 
 If the Google Play drawer says "already own this item" while testing a new app

@@ -313,7 +313,7 @@ async function getDayRoutineCompletionSummary(day: DayContent) {
     const progressRecord = parseRoutineProgress(rawValues[index] ?? null);
     const completedItems = new Set(progressRecord.completedItems);
 
-    // Age Reversal format uses a single exercise at the card level (card.name)
+    // Age Reversal Program format uses a single exercise at the card level (card.name)
     // Legacy format uses card.exercises[] — both need completion tracking
     const requiredItems = card.name && Array.isArray(card.steps)
       ? [card.name]  // Single-exercise: item id is the card name

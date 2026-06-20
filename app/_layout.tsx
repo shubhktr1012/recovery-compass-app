@@ -20,6 +20,7 @@ import { installGlobalErrorHandler } from '@/lib/monitoring';
 import { hasOnboardingContextMismatch } from '@/lib/onboarding.realignment';
 import { logEvent } from '@/lib/analytics';
 import { canAccessProgramContent } from '@/lib/access/entitlements';
+import { canAccessFreeDetoxProgram, FREE_DETOX_PROGRAM_SLUG } from '@/lib/free-program-progress';
 import { getNavigationGuardTarget } from '@/lib/navigation/route-guard';
 import { PAYWALL_ROUTE, buildDayDetailRoute } from '@/lib/navigation/routes';
 import { NotificationService, type ProgramNotificationTarget } from '@/lib/notifications';
@@ -57,10 +58,12 @@ const enablePurchaseQaLogs = process.env.EXPO_PUBLIC_ENABLE_PURCHASE_QA_LOGS ===
 function ProgramNotificationTapRouter({
   access,
   enabled,
+  profile,
   userId,
 }: {
   access: ProgramAccessSnapshot;
   enabled: boolean;
+  profile?: UserProfile | null;
   userId?: string | null;
 }) {
   const router = useRouter();
@@ -82,7 +85,16 @@ function ProgramNotificationTapRouter({
       }
 
       lastHandledTargetRef.current = targetKey;
-      const accessDecision = canAccessProgramContent(access, target.programSlug);
+      const hasFreeDetoxAccess =
+        target.programSlug === FREE_DETOX_PROGRAM_SLUG &&
+        canAccessFreeDetoxProgram({
+          access,
+          freeTierActivatedAt: profile?.free_tier_activated_at ?? null,
+          userId,
+        });
+      const accessDecision = hasFreeDetoxAccess
+        ? { allowed: true as const }
+        : canAccessProgramContent(access, target.programSlug);
 
       if (!accessDecision.allowed) {
         void logEvent({
@@ -152,7 +164,7 @@ function ProgramNotificationTapRouter({
       isMounted = false;
       subscription?.remove();
     };
-  }, [access, enabled, rootNavigationState?.key, router, userId]);
+  }, [access, enabled, profile?.free_tier_activated_at, rootNavigationState?.key, router, userId]);
 
   return null;
 }
@@ -244,11 +256,12 @@ function RootLayoutContent() {
   const { session, isLoading: isAuthLoading, isRecoveringPassword } = useAuth();
   const { access, profile, isSubscribed, isLoading: isProfileLoading } = useProfile();
   const { isLoading: isQueueReviewLoading, shouldReviewQueue } = useProgramQueueReviewStatus();
+  const isFreeTierActive = Boolean(profile?.free_tier_activated_at);
   const {
     isLoading: isNotificationReviewLoading,
     shouldReviewNotifications,
   } = useNotificationPermissionReviewStatus({
-    enabled: Boolean(session && isSubscribed),
+    enabled: Boolean(session && (isSubscribed || isFreeTierActive)),
     notificationsEnabled: Boolean(profile?.notifications_enabled || profile?.push_opt_in),
     userId: session?.user?.id ?? null,
   });
@@ -377,6 +390,7 @@ function RootLayoutContent() {
       <ProgramNotificationTapRouter
         access={access}
         enabled={isNavigationReady && Boolean(session)}
+        profile={profile}
         userId={session?.user?.id ?? null}
       />
       <AppPreloader isNavigationReady={isNavigationReady} isAuthenticated={!!session} />

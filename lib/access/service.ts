@@ -5,6 +5,7 @@ import { PROGRAM_METADATA } from '@/content/programs/metadata';
 import {
   getPauseDayNumberForAbsence,
   getResumeStartedAtForDay,
+  shouldSuppressAbsencePauseAfterRecentResume,
   shouldEvaluateAbsencePause,
 } from '@/lib/programs/absence';
 import {
@@ -50,6 +51,7 @@ const DEFAULT_ACCESS_SNAPSHOT: ProgramAccessSnapshot = {
   pausedAt: null,
   completedAt: null,
   archivedAt: null,
+  updatedAt: null,
   eligibleProducts: DEFAULT_ELIGIBLE_PRODUCTS,
   source: 'local',
 };
@@ -256,6 +258,7 @@ function buildSnapshotFromAccessRow(
     pausedAt: selectedRow.paused_at ?? null,
     completedAt: selectedRow.completed_at,
     archivedAt: selectedRow.archived_at,
+    updatedAt: selectedRow.updated_at ?? null,
     eligibleProducts: DEFAULT_ELIGIBLE_PRODUCTS,
     source: 'supabase',
   };
@@ -970,6 +973,10 @@ export class AccessService {
     );
 
     if (!pauseDayNumber) {
+      return null;
+    }
+
+    if (shouldSuppressAbsencePauseAfterRecentResume(snapshot, pauseDayNumber)) {
       return null;
     }
 

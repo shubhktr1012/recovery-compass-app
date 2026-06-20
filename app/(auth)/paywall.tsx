@@ -626,7 +626,7 @@ export default function Paywall() {
     if (!programSlug || !isPublicCatalogProgram(programSlug)) {
       Alert.alert(
         'Program unavailable',
-        'This older program is no longer available for new purchases. Please choose the Smoking & Alcohol Quit program instead.'
+        'This older program is no longer available for new purchases. Please choose the Smoking & Alcohol Quit Program instead.'
       );
       return;
     }

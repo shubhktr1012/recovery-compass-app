@@ -447,7 +447,7 @@ function IntroCardView({ card, programName, totalCards }: { card: IntroCard; pro
   // Format day number with leading zero for the ghost watermark
   const dayFormatted = String(card.dayNumber).padStart(2, '0');
 
-  // Convert new `parameters` object (Age Reversal format) → { value, label }[]
+  // Convert new `parameters` object (Age Reversal Program format) → { value, label }[]
   const paramsFromObject: { value: string; label: string }[] = [];
   if (card.parameters) {
     const p = card.parameters;
@@ -562,7 +562,7 @@ function LessonCardView({ card, cardIndex: _cardIndex }: { card: LessonCard; car
             </View>
           ) : null}
 
-          {/* Pull quote — Age Reversal editorial callout */}
+          {/* Pull quote — Age Reversal Program editorial callout */}
           {card.pullQuote ? (
             <View style={styles.lessonPullQuoteItem}>
               <Text style={styles.lessonPullQuoteText}>{card.pullQuote}</Text>
@@ -714,7 +714,7 @@ function ActionStepCardView({
       title={card.title}
     >
       <View style={styles.actionBody}>
-        {/* Age Reversal subtitle */}
+        {/* Age Reversal Program subtitle */}
         {card.subtitle ? (
           <Text style={styles.actionSubtitle}>{card.subtitle}</Text>
         ) : null}
@@ -769,7 +769,7 @@ function ActionStepCardView({
           <DotList items={card.instructions ?? []} textStyle={{ color: '#374151', fontSize: 16, lineHeight: 26 }} />
         )}
 
-        {/* Age Reversal purpose callout */}
+        {/* Age Reversal Program purpose callout */}
         {card.purpose ? (
           <View style={styles.actionPurposeContainer}>
             <Text style={styles.actionPurposeLabel}>Why this step</Text>
@@ -1022,12 +1022,12 @@ function MindfulExerciseCardView({
       title={card.title}
       scrollable
     >
-      {/* Age Reversal subtitle */}
+      {/* Age Reversal Program subtitle */}
       {subtitle ? (
         <Text style={styles.mindfulSubtitle}>{subtitle}</Text>
       ) : null}
 
-      {/* Age Reversal benefit pills */}
+      {/* Age Reversal Program benefit pills */}
       {benefits && benefits.length > 0 ? (
         <View style={styles.mindfulBenefitsRow}>
           {benefits.map((benefit, i) => (
@@ -1175,7 +1175,7 @@ function ExerciseRoutineCardView({
   const { registerConfig } = useContext(TransportContext);
 
   // ── Detect format ──────────────────────────────────────────────────────────
-  // Age Reversal format: single exercise with `name` + `steps` at top level
+  // Age Reversal Program format: single exercise with `name` + `steps` at top level
   const isAgeReversalFormat = Boolean(card.name && Array.isArray(card.steps));
   const routineItems = isAgeReversalFormat ? [] : (card.exercises ?? []);
 
@@ -1242,7 +1242,7 @@ function ExerciseRoutineCardView({
     totalItems,
   ]);
 
-  // For Age Reversal, the single item id is the card name
+  // For Age Reversal Program, the single item id is the card name
   const singleItemId = card.name ?? 'exercise';
 
   React.useEffect(() => {
@@ -1397,7 +1397,7 @@ function ExerciseRoutineCardView({
     );
   };
 
-  // ── Age Reversal single-exercise render ────────────────────────────────────
+  // ── Age Reversal Program single-exercise render ────────────────────────────
   if (isAgeReversalFormat) {
     const isCompleted = completedItems.has(singleItemId);
     const steps = card.steps ?? [];
@@ -3386,7 +3386,7 @@ const styles = StyleSheet.create({
     color: 'rgba(6, 41, 12, 0.52)',
   },
 
-  // ── Action Step — Age Reversal additions ───────────────────────────────────
+  // ── Action Step — Age Reversal Program additions ───────────────────────────
   actionSubtitle: {
     fontFamily: 'Satoshi',
     fontSize: 15,
@@ -3434,7 +3434,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
 
-  // ── Mindfulness — Age Reversal additions ───────────────────────────────────
+  // ── Mindfulness — Age Reversal Program additions ───────────────────────────
   mindfulSubtitle: {
     fontFamily: 'Satoshi',
     fontSize: 14,
@@ -3461,7 +3461,7 @@ const styles = StyleSheet.create({
     color: 'rgba(6, 41, 12, 0.7)',
   },
 
-  // ── Exercise — Age Reversal single-exercise layout ─────────────────────────
+  // ── Exercise — Age Reversal Program single-exercise layout ─────────────────
   exerciseAgeReversalBody: {
     marginTop: 8,
     gap: 16,

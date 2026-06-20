@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "679168892430",
+    "project_id": "recovery-compass-app",
+    "storage_bucket": "recovery-compass-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:679168892430:android:6567d1848e9da157c7e65f",
+        "android_client_info": {
+          "package_name": "com.recoverycompass.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC2OM01m3bk6-U4ADIwjReEYDkz0_EGX5I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

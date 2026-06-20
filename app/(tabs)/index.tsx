@@ -27,7 +27,6 @@ import { StatsRow } from '@/components/dashboard/StatsRow';
 import { JournalCheckIn } from '@/components/dashboard/JournalCheckIn';
 import { MyPrograms } from '@/components/dashboard/MyPrograms';
 import { ExplorePrograms } from '@/components/dashboard/ExplorePrograms';
-import { FreeDetoxJourneyCard } from '@/components/dashboard/FreeDetoxJourneyCard';
 import { StaggeredItem } from '@/components/motion/StaggeredItem';
 import type { DayContent, ProgramSlug } from '@/types/content';
 import { programDayQueryKey, programQueryKey } from '@/hooks/contentQueryUtils';
@@ -159,7 +158,6 @@ function HomeScreenContent({ activeProgram }: { activeProgram: ProgramSlug }) {
   const queryClient = useQueryClient();
   const now = useMinuteClock();
   const userId = profile?.id ?? access.ownerUserId ?? null;
-  const freeDetoxProgress = useFreeDetoxProgress(userId, Boolean(userId));
   const finalizedDayStatesQuery = useFinalizedDayStates(userId, activeProgram);
   const finalizedDayStates = finalizedDayStatesQuery.data ?? EMPTY_FINALIZED_DAY_STATES;
   const dayStateSummary = useMemo(
@@ -378,16 +376,12 @@ function HomeScreenContent({ activeProgram }: { activeProgram: ProgramSlug }) {
           </StaggeredItem>
           
           <StaggeredItem index={3}>
-            <FreeDetoxJourneyCard progress={freeDetoxProgress.progress} variant="bonus" />
-          </StaggeredItem>
-
-          <StaggeredItem index={4}>
             <MyPrograms
               activeCount={ownedProgramSlugSet.size}
             />
           </StaggeredItem>
 
-          <StaggeredItem index={5}>
+          <StaggeredItem index={4}>
             <ExplorePrograms
               programs={explorePrograms}
               isLoading={isOwnedProgramsLoading}

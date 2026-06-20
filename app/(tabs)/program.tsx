@@ -480,7 +480,7 @@ function ProgramScreenContent({
     );
   }
 
-  // Determine split Program Name (e.g. "Gut Reset" -> "Gut" normal, "Reset" italic)
+  // Determine split Program Name so the final "Program" word can be styled separately.
   const nameParts = program.name.split(' ');
   const namePrefix = nameParts.slice(0, -1).join(' ');
   const nameItalic = nameParts[nameParts.length - 1];
@@ -584,7 +584,7 @@ function ProgramScreenContent({
                   className="text-forest/60 mt-1"
                   style={AppTypography.bodyCompact}
                 >
-                  {`You've completed the original reset. The new Smoking & Alcohol Quit journey is the current replacement path.`}
+                  {`You've completed the original reset. The new Smoking & Alcohol Quit Program journey is the current replacement path.`}
                 </Text>
                 <Pressable
                   accessibilityRole="button"

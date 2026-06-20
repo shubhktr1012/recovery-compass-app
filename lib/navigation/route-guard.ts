@@ -80,10 +80,11 @@ function isAllowedFreeTierRoute(segments: RouteSegments) {
   const inTabsGroup = segments[0] === '(tabs)';
   const inAccountStack = segments[0] === 'account';
   const inDayDetail = segments[0] === 'day-detail';
+  const inNotificationPermissionReview = segments[0] === 'notification-permission-review';
   const inPaywall = isAuthScreen(segments, 'paywall');
   const inPersonalization = isAuthScreen(segments, 'personalization');
 
-  return inTabsGroup || inAccountStack || inDayDetail || inPaywall || inPersonalization;
+  return inTabsGroup || inAccountStack || inDayDetail || inNotificationPermissionReview || inPaywall || inPersonalization;
 }
 
 export function getNavigationGuardTarget(state: NavigationGuardState): Href | null {
@@ -141,6 +142,10 @@ export function getNavigationGuardTarget(state: NavigationGuardState): Href | nu
   }
 
   if (freeTierActivatedAt) {
+    if (needsNotificationPermissionReview) {
+      return segments[0] === 'notification-permission-review' ? null : NOTIFICATION_PERMISSION_REVIEW_ROUTE;
+    }
+
     return isAllowedFreeTierRoute(segments) ? null : HOME_ROUTE;
   }
 

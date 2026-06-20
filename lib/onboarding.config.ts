@@ -110,11 +110,11 @@ function createStartReasonQuestion(idPrefix: string) {
 
 const JOURNEY_CONFIG: Record<JourneyKey, JourneyConfig> = {
   smoking: {
-    selectionLabel: 'Smoking & Alcohol Quit',
+    selectionLabel: 'Smoking & Alcohol Quit Program',
     selectionDescription: 'Interrupt the smoking, alcohol, or combined craving loop with a structured 21-day path.',
     primaryGoal: 'Break the craving loop and rebuild calmer, more reliable control over smoking or drinking triggers.',
     recommendation: {
-      title: 'Smoking & Alcohol Quit fits your current pattern.',
+      title: 'Smoking & Alcohol Quit Program fits your current pattern.',
       subtitle: 'We recommend the 21-day quit program that maps your triggers, builds urge tools, and supports slip recovery.',
       whyFits:
         'Your main issue points to a substance loop driven by stress, habit timing, emotional cues, and environment, not just motivation.',
@@ -218,11 +218,11 @@ const JOURNEY_CONFIG: Record<JourneyKey, JourneyConfig> = {
     },
   },
   sleep_disorder_reset: {
-    selectionLabel: 'Deep Sleep Reset',
+    selectionLabel: 'Deep Sleep Reset Program',
     selectionDescription: 'Reset the body clock and nervous system so sleep starts feeling natural again.',
     primaryGoal: 'Restore consistent, deeper sleep by calming the nervous system and resetting the body clock.',
     recommendation: {
-      title: 'Deep Sleep Reset fits your current pattern.',
+      title: 'Deep Sleep Reset Program fits your current pattern.',
       subtitle: 'Your answers point to a sleep rhythm problem, not just a bad bedtime routine.',
       whyFits:
         'What you described is consistent with a body that is not getting the right cues for rest, recovery, and nighttime downshift.',
@@ -328,11 +328,11 @@ const JOURNEY_CONFIG: Record<JourneyKey, JourneyConfig> = {
     },
   },
   energy_vitality: {
-    selectionLabel: 'Energy Restore',
+    selectionLabel: 'Energy Restore Program',
     selectionDescription: 'Rebuild daily energy, rhythm, and focus instead of living on caffeine and force.',
     primaryGoal: 'Restore steady daily energy by improving rhythm, recovery, and nervous-system load.',
     recommendation: {
-      title: 'Energy Restore is the best fit here.',
+      title: 'Energy Restore Program is the best fit here.',
       subtitle: 'Your answers point to an energy system that needs rhythm, recovery, and consistency.',
       whyFits:
         'The core problem you described is not just tiredness. It is a daily rhythm problem that keeps draining energy faster than you can recover it.',
@@ -438,11 +438,11 @@ const JOURNEY_CONFIG: Record<JourneyKey, JourneyConfig> = {
     },
   },
   age_reversal: {
-    selectionLabel: 'Age Well',
+    selectionLabel: 'Age Reversal Program',
     selectionDescription: 'Restore energy, resilience, and recovery when your body feels older than it should.',
     primaryGoal: 'Reduce hidden stress load and rebuild steadier energy, clarity, and biological resilience.',
     recommendation: {
-      title: 'Age Well is the strongest fit.',
+      title: 'Age Reversal Program is the strongest fit.',
       subtitle: 'Your answers point to stress-driven wear and tear, not just a temporary rough patch.',
       whyFits:
         'The combination of stress load, brain fog, and slowed recovery suggests a system that needs calmer rhythms and better recovery signals.',
@@ -536,11 +536,11 @@ const JOURNEY_CONFIG: Record<JourneyKey, JourneyConfig> = {
     },
   },
   male_sexual_health: {
-    selectionLabel: "Men’s Vitality Reset",
+    selectionLabel: "Men’s Vitality Reset Program",
     selectionDescription: 'Support confidence, control, and physical vitality with steady, body-based routines.',
     primaryGoal: 'Restore confidence and physical vitality through steadier routines, lower stress, and better regulation.',
     recommendation: {
-      title: "Men’s Vitality Reset is the best fit.",
+      title: "Men’s Vitality Reset Program is the best fit.",
       subtitle: 'Your answers point to a confidence and regulation problem, not something that will improve through avoidance.',
       whyFits:
         'The pattern you described suggests a need for calmer stress responses, stronger body awareness, and steadier daily habits.',
@@ -634,11 +634,11 @@ const JOURNEY_CONFIG: Record<JourneyKey, JourneyConfig> = {
     },
   },
   gut_health_reset: {
-    selectionLabel: 'Gut Reset',
+    selectionLabel: 'Gut Reset Program',
     selectionDescription: 'Reset bloating, heaviness, and eating rhythm with a structured daily gut-health path.',
     primaryGoal: 'Rebuild gut comfort and daily digestive rhythm through hydration, food timing, movement, and calm regulation.',
     recommendation: {
-      title: 'Gut Reset fits your current pattern.',
+      title: 'Gut Reset Program fits your current pattern.',
       subtitle: 'Your answers point to a gut rhythm problem that needs consistency, not random food rules.',
       whyFits:
         'Bloating, heaviness, irregularity, and food sensitivity often get worse when meals, stress, hydration, and movement are inconsistent.',

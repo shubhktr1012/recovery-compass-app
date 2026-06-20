@@ -71,6 +71,7 @@ export interface ProgramAccessSnapshot {
   pausedAt?: string | null;
   completedAt: string | null;
   archivedAt: string | null;
+  updatedAt?: string | null;
   eligibleProducts: EligibleProduct[];
   source: 'local' | 'supabase' | 'revenuecat';
 }

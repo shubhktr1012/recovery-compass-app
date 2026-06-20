@@ -703,7 +703,7 @@ private struct RCWidgetBackground: View {
 
 private let darkSampleData = WidgetData(
     programSlug: "age_reversal",
-    programName: "Age Well",
+    programName: "Age Reversal Program",
     currentDay: 14,
     totalDays: 90,
     cardIndex: 2,
@@ -735,7 +735,7 @@ private let lightSampleData = WidgetData(
 
 private let completedSampleData = WidgetData(
     programSlug: "age_reversal",
-    programName: "Age Well",
+    programName: "Age Reversal Program",
     currentDay: 14,
     totalDays: 90,
     cardIndex: 7,

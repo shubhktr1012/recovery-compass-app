@@ -3,7 +3,7 @@ import path from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-describe('Gut Reset checklist content', () => {
+describe('Gut Reset Program checklist content', () => {
   it('uses real checklist items without done suffixes', () => {
     const filePath = path.join(process.cwd(), 'content/canonical/gut_health_reset.json');
     const program = JSON.parse(readFileSync(filePath, 'utf8')) as {

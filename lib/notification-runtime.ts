@@ -15,6 +15,14 @@ import {
   type NotificationTemplateOverrides,
 } from '@/lib/notification-scheduler';
 import { NotificationService, type ScheduleProgramNotificationsResult } from '@/lib/notifications';
+import {
+  createEmptyFreeDetoxProgress,
+  FREE_DETOX_PROGRAM_SLUG,
+  FREE_DETOX_TOTAL_DAYS,
+  getNextFreeDetoxDay,
+  loadFreeDetoxProgress,
+  type FreeProgramProgressRecord,
+} from '@/lib/free-program-progress';
 import { getLatestConsecutiveSkippedDayCount } from '@/lib/programs/absence';
 import { getEffectiveScheduleDate } from '@/lib/programs/schedule';
 import type { ProgramAccessSnapshot } from '@/lib/programs/types';
@@ -24,6 +32,7 @@ import type { DayState } from '@/types/resolver';
 import { resolveDay } from '@/lib/card-resolver';
 
 type NotificationRuntimeProfile = {
+  free_tier_activated_at?: string | null;
   notifications_enabled?: boolean | null;
   push_opt_in?: boolean | null;
 };
@@ -76,6 +85,8 @@ interface RescheduleProgramNotificationsArgs {
   openedToday?: boolean;
   loadDayContent?: (programSlug: ProgramSlug, dayNumber: number) => Promise<DayContent | null>;
   loadDayStates?: (userId: string, programSlug: ProgramSlug) => Promise<NotificationRuntimeDayState[]>;
+  loadFreeDetoxProgress?: (userId: string) => Promise<FreeProgramProgressRecord | null>;
+  loadHasPaidProgramAccess?: (userId: string) => Promise<boolean>;
   notificationService?: NotificationRuntimeService;
 }
 
@@ -94,15 +105,42 @@ export async function rescheduleProgramNotificationsForAccess(
     args.profile?.notifications_enabled || args.profile?.push_opt_in
   );
 
-  if (!notificationsEnabled || !args.userId || !isSchedulableAccess(args.access)) {
+  if (!notificationsEnabled || !args.userId) {
     return notificationService.scheduleProgramNotificationPlans([], { now });
   }
 
+  if (isSchedulableAccess(args.access)) {
+    return scheduleAccessNotifications({
+      ...args,
+      access: args.access,
+      notificationsEnabled,
+      now,
+      notificationService,
+      userId: args.userId,
+    });
+  }
+
+  return scheduleFreeDetoxNotifications({
+    ...args,
+    notificationsEnabled,
+    now,
+    notificationService,
+    userId: args.userId,
+  });
+}
+
+async function scheduleAccessNotifications(args: RescheduleProgramNotificationsArgs & {
+  access: NotificationRuntimeAccess;
+  notificationsEnabled: boolean;
+  now: Date;
+  notificationService: NotificationRuntimeService;
+  userId: string;
+}): Promise<ScheduleProgramNotificationsResult> {
   const programSlug = args.access.ownedProgram;
   const dayNumber = args.access.currentDay;
 
   if (!programSlug || !dayNumber) {
-    return notificationService.scheduleProgramNotificationPlans([], { now });
+    return args.notificationService.scheduleProgramNotificationPlans([], { now: args.now });
   }
 
   try {
@@ -111,7 +149,7 @@ export async function rescheduleProgramNotificationsForAccess(
     const plans = [];
     let hadContentLoadFailure = false;
 
-    for (const scheduleDay of getRollingScheduleDays(args.access, now)) {
+    for (const scheduleDay of getRollingScheduleDays(args.access, args.now)) {
       try {
         const dayContent = await (args.loadDayContent ?? loadNotificationDayContent)(
           programSlug,
@@ -141,9 +179,9 @@ export async function rescheduleProgramNotificationsForAccess(
             },
             consecutiveAbsentDays: scheduleDay.dayNumber === dayNumber ? consecutiveAbsentDays : null,
             day,
-            notificationsEnabled,
+            notificationsEnabled: args.notificationsEnabled,
             notificationTemplates,
-            now,
+            now: args.now,
             openedToday: scheduleDay.dayNumber === dayNumber ? args.openedToday ?? true : true,
             programName: PROGRAM_METADATA[programSlug].name,
             scheduleDate: scheduleDay.scheduleDate,
@@ -164,11 +202,113 @@ export async function rescheduleProgramNotificationsForAccess(
       return EMPTY_RESULT;
     }
 
-    return notificationService.scheduleProgramNotificationPlans(plans, { now });
+    return args.notificationService.scheduleProgramNotificationPlans(plans, { now: args.now });
   } catch (error) {
     console.warn('Failed to reschedule program notifications', {
       error,
       programSlug,
+      userId: args.userId,
+    });
+    return EMPTY_RESULT;
+  }
+}
+
+async function scheduleFreeDetoxNotifications(args: RescheduleProgramNotificationsArgs & {
+  notificationsEnabled: boolean;
+  now: Date;
+  notificationService: NotificationRuntimeService;
+  userId: string;
+}): Promise<ScheduleProgramNotificationsResult> {
+  if (!args.profile?.free_tier_activated_at) {
+    return args.notificationService.scheduleProgramNotificationPlans([], { now: args.now });
+  }
+
+  try {
+    const hasPaidAccess = await (args.loadHasPaidProgramAccess ?? loadHasPaidProgramAccess)(args.userId);
+    if (hasPaidAccess) {
+      return args.notificationService.scheduleProgramNotificationPlans([], { now: args.now });
+    }
+
+    const progress =
+      (await (args.loadFreeDetoxProgress ?? loadFreeDetoxProgress)(args.userId)) ??
+      createEmptyFreeDetoxProgress(args.userId);
+
+    if (progress.completedAt || progress.completedDays.includes(FREE_DETOX_TOTAL_DAYS)) {
+      return args.notificationService.scheduleProgramNotificationPlans([], { now: args.now });
+    }
+
+    const currentDay = getNextFreeDetoxDay(progress);
+    const access: NotificationRuntimeAccess = {
+      ownedProgram: FREE_DETOX_PROGRAM_SLUG,
+      purchaseState: 'owned_active',
+      completionState: 'in_progress',
+      programState: 'active',
+      currentDay,
+      scheduledStartDate: null,
+      pausedAt: null,
+      completedAt: null,
+    };
+    const plans = [];
+    let hadContentLoadFailure = false;
+
+    for (const scheduleDay of getRollingScheduleDays(access, args.now)) {
+      try {
+        const dayContent = await (args.loadDayContent ?? loadNotificationDayContent)(
+          FREE_DETOX_PROGRAM_SLUG,
+          scheduleDay.dayNumber
+        );
+        if (!dayContent) {
+          continue;
+        }
+
+        const day = resolveDay({
+          contentMode: 'unique',
+          dayContent,
+          dayNumber: scheduleDay.dayNumber,
+          programSlug: FREE_DETOX_PROGRAM_SLUG,
+        });
+        const notificationTemplates = await loadNotificationTemplates({
+          dayNumber: scheduleDay.dayNumber,
+          programSlug: FREE_DETOX_PROGRAM_SLUG,
+          userId: args.userId,
+        });
+
+        plans.push(
+          ...buildProgramNotificationPlan({
+            access: {
+              ...access,
+              currentDay: scheduleDay.dayNumber,
+            },
+            consecutiveAbsentDays: null,
+            day,
+            notificationsEnabled: args.notificationsEnabled,
+            notificationTemplates,
+            now: args.now,
+            openedToday: scheduleDay.dayNumber === currentDay ? args.openedToday ?? true : true,
+            programName: PROGRAM_METADATA[FREE_DETOX_PROGRAM_SLUG].name,
+            scheduleDate: scheduleDay.scheduleDate,
+          })
+        );
+      } catch (dayError) {
+        hadContentLoadFailure = true;
+        console.warn('Skipping Free Detox notification plan for day with unavailable content', {
+          dayNumber: scheduleDay.dayNumber,
+          error: dayError,
+          programSlug: FREE_DETOX_PROGRAM_SLUG,
+          userId: args.userId,
+        });
+      }
+    }
+
+    if (plans.length === 0 && hadContentLoadFailure) {
+      return EMPTY_RESULT;
+    }
+
+    return args.notificationService.scheduleProgramNotificationPlans(plans, { now: args.now });
+  } catch (error) {
+    console.warn('Failed to reschedule Free Detox notifications', {
+      error,
+      programSlug: FREE_DETOX_PROGRAM_SLUG,
       userId: args.userId,
     });
     return EMPTY_RESULT;
@@ -475,4 +615,20 @@ async function loadNotificationDayStates(
     dayNumber: row.day_number,
     dayState: row.day_state === 'completed' || row.day_state === 'partial' ? row.day_state : 'skipped',
   }));
+}
+
+async function loadHasPaidProgramAccess(userId: string) {
+  const { data, error } = await supabase
+    .from('program_access')
+    .select('id')
+    .eq('user_id', userId)
+    .neq('owned_program', FREE_DETOX_PROGRAM_SLUG)
+    .neq('purchase_state', 'not_owned')
+    .limit(1);
+
+  if (error) {
+    throw error;
+  }
+
+  return Boolean(data?.length);
 }

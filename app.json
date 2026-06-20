@@ -22,6 +22,7 @@
     },
     "android": {
       "package": "com.recoverycompass.app",
+      "googleServicesFile": "./google-services.json",
       "icon": "./assets/images/icon.png",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/android-icon-foreground.png",

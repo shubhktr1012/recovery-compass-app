@@ -3,7 +3,7 @@ import type { ProgramCatalogEntry, ProgramSlug } from '@/types/content';
 export const PROGRAM_METADATA: Record<ProgramSlug, ProgramCatalogEntry> = {
   smoking_alcohol_quit: {
     slug: 'smoking_alcohol_quit',
-    name: 'Smoking & Alcohol Quit',
+    name: 'Smoking & Alcohol Quit Program',
     description: 'A guided quit path for smoking, alcohol, or both, with trigger mapping, urge tools, and slip recovery.',
     totalDays: 21,
     category: 'smoking',
@@ -42,7 +42,7 @@ export const PROGRAM_METADATA: Record<ProgramSlug, ProgramCatalogEntry> = {
   },
   sleep_disorder_reset: {
     slug: 'sleep_disorder_reset',
-    name: 'Deep Sleep Reset',
+    name: 'Deep Sleep Reset Program',
     description: 'A structured sleep-support program with daily text and guided sleep audio.',
     totalDays: 21,
     category: 'sleep',
@@ -55,7 +55,7 @@ export const PROGRAM_METADATA: Record<ProgramSlug, ProgramCatalogEntry> = {
   },
   energy_vitality: {
     slug: 'energy_vitality',
-    name: 'Energy Restore',
+    name: 'Energy Restore Program',
     description: 'A program focused on restoring energy, rhythm, and daily momentum.',
     totalDays: 14,
     category: 'energy',
@@ -68,7 +68,7 @@ export const PROGRAM_METADATA: Record<ProgramSlug, ProgramCatalogEntry> = {
   },
   age_reversal: {
     slug: 'age_reversal',
-    name: 'Age Well',
+    name: 'Age Reversal Program',
     description: 'A longevity-focused program with daily facial exercises, circulation walks, and calm recovery.',
     totalDays: 90,
     category: 'aging',
@@ -81,7 +81,7 @@ export const PROGRAM_METADATA: Record<ProgramSlug, ProgramCatalogEntry> = {
   },
   male_sexual_health: {
     slug: 'male_sexual_health',
-    name: "Men’s Vitality Reset",
+    name: "Men’s Vitality Reset Program",
     description: 'A confidence and regulation program with shared CALM support.',
     totalDays: 30,
     category: 'sexual_health',
@@ -94,7 +94,7 @@ export const PROGRAM_METADATA: Record<ProgramSlug, ProgramCatalogEntry> = {
   },
   gut_health_reset: {
     slug: 'gut_health_reset',
-    name: 'Gut Reset',
+    name: 'Gut Reset Program',
     description: 'A structured gut-health reset with daily hydration, nervous-system, movement, and eating-rhythm practices.',
     totalDays: 21,
     category: 'gut_health',

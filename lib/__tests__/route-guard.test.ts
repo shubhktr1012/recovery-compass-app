@@ -139,11 +139,39 @@ describe('navigation guard target', () => {
     ).toBeNull();
   });
 
+  it('keeps unpaid completed-onboarding routing pointed at paywall', () => {
+    expect(
+      guardTarget({
+        isSubscribed: false,
+        onboardingComplete: true,
+        segments: ['(tabs)', 'index'],
+      })
+    ).toBe(PAYWALL_ROUTE);
+  });
+
   it('allows free-tier users to reach day detail for free journeys', () => {
     expect(
       guardTarget({
         freeTierActivatedAt: '2026-05-21T00:00:00.000Z',
         segments: ['day-detail'],
+      })
+    ).toBeNull();
+  });
+
+  it('sends free-tier users with pending notification review to the reminder prompt', () => {
+    expect(
+      guardTarget({
+        freeTierActivatedAt: '2026-05-21T00:00:00.000Z',
+        needsNotificationPermissionReview: true,
+        segments: ['(tabs)', 'index'],
+      })
+    ).toBe(NOTIFICATION_PERMISSION_REVIEW_ROUTE);
+
+    expect(
+      guardTarget({
+        freeTierActivatedAt: '2026-05-21T00:00:00.000Z',
+        needsNotificationPermissionReview: true,
+        segments: ['notification-permission-review'],
       })
     ).toBeNull();
   });
