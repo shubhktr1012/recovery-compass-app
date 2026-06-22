@@ -96,8 +96,19 @@ async function main() {
 
     try {
       const bytes = await readFile(localFilePath);
+      
+      // 1. Upload to 21-day program path
       await upload(storagePath, bytes);
-      console.log(`[Success] Uploaded ${filename} -> ${storagePath} (${(bytes.length / 1024 / 1024).toFixed(2)} MB)`);
+
+      // 2. Also upload to 90-day program canonical path (first 21 days)
+      const canonical90DayPath = `ninety_day_transform/${filename}`;
+      await upload(canonical90DayPath, bytes);
+
+      // 3. Also upload to 90-day program legacy path (first 21 days)
+      const legacy90DayPath = `ninety-day/day-${String(day).padStart(3, '0')}.mp3`;
+      await upload(legacy90DayPath, bytes);
+
+      console.log(`[Success] Uploaded ${filename} -> 3 paths (${(bytes.length / 1024 / 1024).toFixed(2)} MB)`);
       successCount += 1;
     } catch (err) {
       console.error(`[Error] Failed uploading ${filename}:`, err.message);

@@ -17,12 +17,12 @@ if (!fs.existsSync(outputDir)) {
 function compressFile(inputPath, outputPath) {
   return new Promise((resolve, reject) => {
     // -ac 1 converts stereo to mono, which halves file size for voice
-    // -b:a 64k sets it to 64kbps, very lightweight and high quality for speech
+    // -b:a 32k sets it to 32kbps, extremely lightweight and perfect for voice
     const process = spawn(ffmpegPath, [
       '-y',
       '-i', inputPath,
       '-codec:a', 'libmp3lame',
-      '-b:a', '64k',
+      '-b:a', '32k',
       '-ac', '1',
       outputPath
     ]);
