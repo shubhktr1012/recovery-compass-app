@@ -14,21 +14,26 @@
         "EXPO_PUBLIC_REVENUECAT_GOOGLE_KEY": "goog_QOsYjvVVIQnUXjsXFxcVmHHOQvS",
         "EXPO_PUBLIC_RC_6_DAY_ENTITLEMENT_ID": "six_day_control",
         "EXPO_PUBLIC_RC_90_DAY_ENTITLEMENT_ID": "ninety_day_quit",
+        "EXPO_PUBLIC_RC_SMOKING_ALCOHOL_QUIT_ENTITLEMENT_ID": "smoking_alcohol_quit",
         "EXPO_PUBLIC_RC_AGE_REVERSAL_ENTITLEMENT_ID": "age_reversal",
         "EXPO_PUBLIC_RC_SLEEP_RESET_ENTITLEMENT_ID": "sleep_disorder_reset",
         "EXPO_PUBLIC_RC_ENERGY_VITALITY_ENTITLEMENT_ID": "energy_vitality",
         "EXPO_PUBLIC_RC_MALE_VITALITY_ENTITLEMENT_ID": "male_sexual_health",
+        "EXPO_PUBLIC_RC_GUT_HEALTH_RESET_ENTITLEMENT_ID": "gut_health_reset",
         "EXPO_PUBLIC_RC_6_DAY_PRODUCT_IDS": "six_day_control",
         "EXPO_PUBLIC_RC_90_DAY_PRODUCT_IDS": "ninety_day_quit",
+        "EXPO_PUBLIC_RC_SMOKING_ALCOHOL_QUIT_PRODUCT_IDS": "smoking_alcohol_quit",
         "EXPO_PUBLIC_RC_AGE_REVERSAL_PRODUCT_IDS": "age_reversal",
         "EXPO_PUBLIC_RC_SLEEP_RESET_PRODUCT_IDS": "sleep_disorder_reset",
         "EXPO_PUBLIC_RC_ENERGY_VITALITY_PRODUCT_IDS": "energy_vitality",
         "EXPO_PUBLIC_RC_MALE_VITALITY_PRODUCT_IDS": "male_sexual_health",
+        "EXPO_PUBLIC_RC_GUT_HEALTH_RESET_PRODUCT_IDS": "gut_health_reset",
         "EXPO_PUBLIC_ENABLE_PURCHASE_QA_LOGS": "true",
         "EXPO_PUBLIC_EAS_PROJECT_ID": "aaa4fd59-057e-489b-aa97-8885e00d8394",
         "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "955627803414-409kv283i6s0rm5dbr89k0bnm4kf5r45.apps.googleusercontent.com",
         "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "955627803414-7l9f9rt1shp0cndcmfa637plgri6d5dm.apps.googleusercontent.com",
-        "EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID": "955627803414-jd1a0u09ak4gk8kb64jur99e3qrr96p3.apps.googleusercontent.com"
+        "EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID": "955627803414-jd1a0u09ak4gk8kb64jur99e3qrr96p3.apps.googleusercontent.com",
+        "EXPO_PUBLIC_ENABLE_FREE_TIER_ENTRY": "true"
       }
     },
     "preview": {
@@ -43,24 +48,30 @@
         "EXPO_PUBLIC_REVENUECAT_GOOGLE_KEY": "goog_QOsYjvVVIQnUXjsXFxcVmHHOQvS",
         "EXPO_PUBLIC_RC_6_DAY_ENTITLEMENT_ID": "six_day_control",
         "EXPO_PUBLIC_RC_90_DAY_ENTITLEMENT_ID": "ninety_day_quit",
+        "EXPO_PUBLIC_RC_SMOKING_ALCOHOL_QUIT_ENTITLEMENT_ID": "smoking_alcohol_quit",
         "EXPO_PUBLIC_RC_AGE_REVERSAL_ENTITLEMENT_ID": "age_reversal",
         "EXPO_PUBLIC_RC_SLEEP_RESET_ENTITLEMENT_ID": "sleep_disorder_reset",
         "EXPO_PUBLIC_RC_ENERGY_VITALITY_ENTITLEMENT_ID": "energy_vitality",
         "EXPO_PUBLIC_RC_MALE_VITALITY_ENTITLEMENT_ID": "male_sexual_health",
+        "EXPO_PUBLIC_RC_GUT_HEALTH_RESET_ENTITLEMENT_ID": "gut_health_reset",
         "EXPO_PUBLIC_RC_6_DAY_PRODUCT_IDS": "six_day_control",
         "EXPO_PUBLIC_RC_90_DAY_PRODUCT_IDS": "ninety_day_quit",
+        "EXPO_PUBLIC_RC_SMOKING_ALCOHOL_QUIT_PRODUCT_IDS": "smoking_alcohol_quit",
         "EXPO_PUBLIC_RC_AGE_REVERSAL_PRODUCT_IDS": "age_reversal",
         "EXPO_PUBLIC_RC_SLEEP_RESET_PRODUCT_IDS": "sleep_disorder_reset",
         "EXPO_PUBLIC_RC_ENERGY_VITALITY_PRODUCT_IDS": "energy_vitality",
         "EXPO_PUBLIC_RC_MALE_VITALITY_PRODUCT_IDS": "male_sexual_health",
+        "EXPO_PUBLIC_RC_GUT_HEALTH_RESET_PRODUCT_IDS": "gut_health_reset",
         "EXPO_PUBLIC_ENABLE_PURCHASE_QA_LOGS": "true",
         "EXPO_PUBLIC_EAS_PROJECT_ID": "aaa4fd59-057e-489b-aa97-8885e00d8394",
         "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "955627803414-409kv283i6s0rm5dbr89k0bnm4kf5r45.apps.googleusercontent.com",
         "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "955627803414-7l9f9rt1shp0cndcmfa637plgri6d5dm.apps.googleusercontent.com",
-        "EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID": "955627803414-jd1a0u09ak4gk8kb64jur99e3qrr96p3.apps.googleusercontent.com"
+        "EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID": "955627803414-jd1a0u09ak4gk8kb64jur99e3qrr96p3.apps.googleusercontent.com",
+        "EXPO_PUBLIC_ENABLE_FREE_TIER_ENTRY": "true"
       }
     },
     "production": {
+      "environment": "production",
       "autoIncrement": true,
       "buildArtifactPaths": [
         "android/app/build/outputs/mapping/release/mapping.txt"
@@ -72,21 +83,26 @@
         "EXPO_PUBLIC_REVENUECAT_GOOGLE_KEY": "goog_QOsYjvVVIQnUXjsXFxcVmHHOQvS",
         "EXPO_PUBLIC_RC_6_DAY_ENTITLEMENT_ID": "six_day_control",
         "EXPO_PUBLIC_RC_90_DAY_ENTITLEMENT_ID": "ninety_day_quit",
+        "EXPO_PUBLIC_RC_SMOKING_ALCOHOL_QUIT_ENTITLEMENT_ID": "smoking_alcohol_quit",
         "EXPO_PUBLIC_RC_AGE_REVERSAL_ENTITLEMENT_ID": "age_reversal",
         "EXPO_PUBLIC_RC_SLEEP_RESET_ENTITLEMENT_ID": "sleep_disorder_reset",
         "EXPO_PUBLIC_RC_ENERGY_VITALITY_ENTITLEMENT_ID": "energy_vitality",
         "EXPO_PUBLIC_RC_MALE_VITALITY_ENTITLEMENT_ID": "male_sexual_health",
+        "EXPO_PUBLIC_RC_GUT_HEALTH_RESET_ENTITLEMENT_ID": "gut_health_reset",
         "EXPO_PUBLIC_RC_6_DAY_PRODUCT_IDS": "six_day_control",
         "EXPO_PUBLIC_RC_90_DAY_PRODUCT_IDS": "ninety_day_quit",
+        "EXPO_PUBLIC_RC_SMOKING_ALCOHOL_QUIT_PRODUCT_IDS": "smoking_alcohol_quit",
         "EXPO_PUBLIC_RC_AGE_REVERSAL_PRODUCT_IDS": "age_reversal",
         "EXPO_PUBLIC_RC_SLEEP_RESET_PRODUCT_IDS": "sleep_disorder_reset",
         "EXPO_PUBLIC_RC_ENERGY_VITALITY_PRODUCT_IDS": "energy_vitality",
         "EXPO_PUBLIC_RC_MALE_VITALITY_PRODUCT_IDS": "male_sexual_health",
+        "EXPO_PUBLIC_RC_GUT_HEALTH_RESET_PRODUCT_IDS": "gut_health_reset",
         "EXPO_PUBLIC_ENABLE_PURCHASE_QA_LOGS": "false",
         "EXPO_PUBLIC_EAS_PROJECT_ID": "aaa4fd59-057e-489b-aa97-8885e00d8394",
         "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "955627803414-409kv283i6s0rm5dbr89k0bnm4kf5r45.apps.googleusercontent.com",
         "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "955627803414-7l9f9rt1shp0cndcmfa637plgri6d5dm.apps.googleusercontent.com",
-        "EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID": "955627803414-jd1a0u09ak4gk8kb64jur99e3qrr96p3.apps.googleusercontent.com"
+        "EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID": "955627803414-jd1a0u09ak4gk8kb64jur99e3qrr96p3.apps.googleusercontent.com",
+        "EXPO_PUBLIC_ENABLE_FREE_TIER_ENTRY": "true"
       }
     }
   },

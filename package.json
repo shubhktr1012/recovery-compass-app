@@ -10,18 +10,25 @@
     "web": "expo start --web",
     "lint": "expo lint",
     "lint:strict": "./node_modules/.bin/eslint app components providers hooks lib constants --no-cache",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "typecheck": "./node_modules/.bin/tsc --noEmit",
+    "version:sync": "node ./scripts/sync-app-version.mjs",
+    "version:check": "node ./scripts/sync-app-version.mjs --check",
     "generate:program-content": "node ./scripts/generate-program-content.mjs",
     "canonical:normalize": "node ./scripts/normalize-program-content.mjs",
     "canonical:validate": "node ./scripts/validate-canonical-content.mjs",
     "canonical:qa": "node ./scripts/canonical-quality-check.mjs --exclude ninety_day_transform",
     "canonical:qa:all": "node ./scripts/canonical-quality-check.mjs",
     "canonical:seed": "node ./scripts/generate-program-seeds-from-canonical.mjs",
+    "audio:sync:ninety-day": "node ./scripts/sync-ninety-day-audio-storage.mjs",
+    "template-sql:validate": "node ./scripts/validate-template-program-sql.mjs",
     "supabase:types:gen": "supabase gen types --linked --lang typescript --schema public > types/database.types.ts",
     "supabase:functions:list": "supabase functions list --workdir .",
     "supabase:functions:deploy:delete-account": "supabase functions deploy delete-account --no-verify-jwt --use-api --import-map ./supabase/functions/deno.json --workdir .",
     "supabase:functions:deploy:revenuecat-webhook": "supabase functions deploy revenuecat-webhook --no-verify-jwt --use-api --import-map ./supabase/functions/deno.json --workdir .",
-    "supabase:functions:deploy:commerce": "npm run supabase:functions:deploy:revenuecat-webhook"
+    "supabase:functions:deploy:verify-revenuecat-purchase": "supabase functions deploy verify-revenuecat-purchase --no-verify-jwt --use-api --import-map ./supabase/functions/deno.json --workdir .",
+    "supabase:functions:deploy:commerce": "npm run supabase:functions:deploy:revenuecat-webhook && npm run supabase:functions:deploy:verify-revenuecat-purchase"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
@@ -95,7 +102,22 @@
     "@types/react": "~19.1.0",
     "eslint": "^9.25.0",
     "eslint-config-expo": "~10.0.0",
-    "typescript": "~5.9.2"
+    "typescript": "~5.9.2",
+    "vitest": "^4.1.6"
+  },
+  "overrides": {
+    "@expo/fingerprint": {
+      "brace-expansion": "5.0.6"
+    },
+    "fast-uri": "3.1.2",
+    "glob": {
+      "brace-expansion": "5.0.6"
+    },
+    "minimatch@3.1.5": {
+      "brace-expansion": "1.1.13"
+    },
+    "postcss": "8.5.15",
+    "ws": "8.20.1"
   },
   "private": true
 }

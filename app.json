@@ -2,7 +2,7 @@
   "expo": {
     "name": "Recovery Compass",
     "slug": "recovery-compass-app",
-    "version": "1.2.0",
+    "version": "1.1.4",
     "orientation": "default",
     "icon": "./assets/images/icon.png",
     "scheme": [
@@ -22,7 +22,13 @@
     },
     "android": {
       "package": "com.recoverycompass.app",
+      "googleServicesFile": "./google-services.json",
       "icon": "./assets/images/icon.png",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/android-icon-foreground.png",
+        "monochromeImage": "./assets/images/android-icon-monochrome.png",
+        "backgroundColor": "#06290C"
+      },
       "intentFilters": [
         {
           "action": "VIEW",
@@ -63,6 +69,7 @@
       ],
       "permissions": [
         "com.android.vending.BILLING",
+        "android.permission.POST_NOTIFICATIONS",
         "android.permission.ACTIVITY_RECOGNITION",
         "android.permission.health.READ_STEPS"
       ],
@@ -81,8 +88,8 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/android-icon-foreground-recovery-white.png",
-          "imageWidth": 40,
+          "image": "./assets/images/android-icon-foreground-recovery.png",
+          "imageWidth": 64,
           "resizeMode": "contain",
           "backgroundColor": "#06290C"
         }
@@ -99,7 +106,14 @@
       "expo-asset",
       "expo-apple-authentication",
       "expo-web-browser",
-      "expo-notifications",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/android-icon-foreground-recovery.png",
+          "color": "#FFFFFF",
+          "defaultChannel": "program-reminders"
+        }
+      ],
       "@react-native-community/datetimepicker",
       [
         "expo-sensors",

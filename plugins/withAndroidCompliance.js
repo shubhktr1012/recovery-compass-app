@@ -1,9 +1,18 @@
-const { withAndroidManifest, withAndroidStyles } = require('expo/config-plugins');
+const { withAndroidManifest, withAndroidStyles, withMainActivity } = require('expo/config-plugins');
 
 const NOTIFICATIONS_BOOT_RECEIVER = 'expo.modules.notifications.service.NotificationsService';
 const AUDIO_RECORDING_SERVICE = 'expo.modules.audio.service.AudioRecordingService';
 const BARCODE_SCANNER_DELEGATE_ACTIVITY =
   'com.google.mlkit.vision.codescanner.internal.GmsBarcodeScanningDelegateActivity';
+const FLAG_SECURE_IMPORT = 'import android.view.WindowManager';
+const FLAG_SECURE_BLOCK = `    // Recovery content is private. Block screenshots, screen recording,
+    // and recent-app previews on Android.
+    window.setFlags(
+      WindowManager.LayoutParams.FLAG_SECURE,
+      WindowManager.LayoutParams.FLAG_SECURE
+    )
+
+`;
 
 function asArray(value) {
   if (!value) return [];
@@ -11,6 +20,28 @@ function asArray(value) {
 }
 
 module.exports = function withAndroidCompliance(config) {
+  config = withMainActivity(config, (modConfig) => {
+    if (modConfig.modResults.language !== 'kt') {
+      return modConfig;
+    }
+
+    let contents = modConfig.modResults.contents;
+
+    if (!contents.includes(FLAG_SECURE_IMPORT)) {
+      contents = contents.replace('import android.os.Bundle', `import android.os.Bundle\n${FLAG_SECURE_IMPORT}`);
+    }
+
+    if (!contents.includes('WindowManager.LayoutParams.FLAG_SECURE')) {
+      contents = contents.replace(
+        /(override fun onCreate\(savedInstanceState: Bundle\?\) \{\n)/,
+        `$1${FLAG_SECURE_BLOCK}`
+      );
+    }
+
+    modConfig.modResults.contents = contents;
+    return modConfig;
+  });
+
   config = withAndroidManifest(config, (modConfig) => {
     const manifestRoot = modConfig.modResults;
     const applications = asArray(manifestRoot.manifest.application);
