@@ -1097,6 +1097,8 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
             notifications_enabled: Boolean(profileQuery.data?.notifications_enabled) || notificationPermissionGranted,
             push_opt_in: Boolean(profileQuery.data?.push_opt_in) || notificationPermissionGranted,
           },
+          shouldAbort: () =>
+            isCancelled || generation !== notificationRescheduleGenerationRef.current,
           userId,
         });
 

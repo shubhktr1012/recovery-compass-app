@@ -6,6 +6,7 @@ type MonitoringSource =
   | 'audio'
   | 'error_boundary'
   | 'global_js'
+  | 'mandatory_update'
   | 'notifications'
   | 'paywall'
   | 'profile'
@@ -42,9 +43,27 @@ function toSerializableMetadata(metadata?: Record<string, unknown> | null) {
   }
 }
 
+function shouldReportNotificationScheduleHealth(snapshot: NotificationScheduleHealthSnapshot) {
+  const scheduleGap = snapshot.plannedCount - snapshot.scheduledCount;
+
+  if (!snapshot.moduleAvailable) {
+    return true;
+  }
+
+  if (snapshot.permissionStatus !== 'granted') {
+    return true;
+  }
+
+  return scheduleGap > 0;
+}
+
 export async function captureNotificationScheduleHealth(
   snapshot: NotificationScheduleHealthSnapshot
 ) {
+  if (!shouldReportNotificationScheduleHealth(snapshot)) {
+    return;
+  }
+
   try {
     const {
       data: { user },

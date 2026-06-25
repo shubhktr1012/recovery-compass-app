@@ -31,6 +31,8 @@ interface NotificationServiceOptions {
   notificationsModule?: NotificationsModule | null;
   now?: Date;
   programState?: string | null;
+  /** When true, abort before mutating scheduled notifications. */
+  shouldAbort?: () => boolean;
 }
 
 export interface ScheduleProgramNotificationsResult {
@@ -224,6 +226,17 @@ async function getPermissionStatusForQaLog(notificationsModule: NotificationsMod
   }
 }
 
+function canScheduleLocalNotifications(permissionStatus: string) {
+  return permissionStatus === 'granted';
+}
+
+async function getExistingProgramNotificationIds(notificationsModule: NotificationsModule) {
+  const scheduled = await notificationsModule.getAllScheduledNotificationsAsync();
+  return scheduled
+    .filter(isRecoveryCompassProgramNotification)
+    .map((notification) => notification.identifier);
+}
+
 function reportNotificationScheduleHealth(args: {
   cancelledCount: number;
   moduleAvailable: boolean;
@@ -327,34 +340,150 @@ export const NotificationService = {
     }
 
     const now = options?.now ?? new Date();
+    const shouldAbort = options?.shouldAbort;
+
+    if (shouldAbort?.()) {
+      return {
+        cancelledIds: [],
+        scheduledIds: [],
+      };
+    }
+
     await configureProgramNotificationChannel(notificationsModule);
     const permissionStatus = await getPermissionStatusForQaLog(notificationsModule);
 
-    const cancelledIds = await this.cancelProgramNotifications({ notificationsModule });
+    if (plans.length === 0) {
+      const cancelledIds = await this.cancelProgramNotifications({ notificationsModule });
+
+      if (isNotificationQaLoggingEnabled()) {
+        console.info('[NotificationQA]', {
+          cancelledCount: cancelledIds.length,
+          cancelledIds,
+          moduleAvailable: true,
+          permissionStatus,
+          plannedCount: 0,
+          plannedIds: [],
+          scheduledCount: 0,
+          scheduledIds: [],
+        });
+      }
+
+      reportNotificationScheduleHealth({
+        cancelledCount: cancelledIds.length,
+        moduleAvailable: true,
+        permissionStatus,
+        plans,
+        programState: options?.programState,
+        scheduledCount: 0,
+      });
+
+      return {
+        cancelledIds,
+        scheduledIds: [],
+      };
+    }
+
+    if (!canScheduleLocalNotifications(permissionStatus)) {
+      if (isNotificationQaLoggingEnabled()) {
+        console.info('[NotificationQA]', {
+          cancelledCount: 0,
+          cancelledIds: [],
+          moduleAvailable: true,
+          permissionStatus,
+          plannedCount: plans.length,
+          plannedIds: plans.map((plan) => plan.id),
+          scheduledCount: 0,
+          scheduledIds: [],
+          skippedReason: 'permission_not_granted',
+        });
+      }
+
+      reportNotificationScheduleHealth({
+        cancelledCount: 0,
+        moduleAvailable: true,
+        permissionStatus,
+        plans,
+        programState: options?.programState,
+        scheduledCount: 0,
+      });
+
+      return {
+        cancelledIds: [],
+        scheduledIds: [],
+      };
+    }
+
+    const existingIds = await getExistingProgramNotificationIds(notificationsModule);
+
+    if (shouldAbort?.()) {
+      return {
+        cancelledIds: [],
+        scheduledIds: [],
+      };
+    }
+
     const scheduledIds: string[] = [];
 
     for (const plan of plans) {
+      if (shouldAbort?.()) {
+        return {
+          cancelledIds: [],
+          scheduledIds,
+        };
+      }
+
       if (!shouldSchedulePlan(plan, now)) {
         continue;
       }
 
-      const scheduledId = await notificationsModule.scheduleNotificationAsync({
-        identifier: plan.id,
-        content: {
-          title: plan.title,
-          body: plan.body,
-          data: {
-            source: PROGRAM_NOTIFICATION_SOURCE,
-            planId: plan.id,
-            ...plan.data,
-          },
-          sound: true,
-          priority: notificationsModule.AndroidNotificationPriority.HIGH,
-        },
-        trigger: getPlanTrigger(plan, notificationsModule, now),
-      });
+      const trigger = getPlanTrigger(plan, notificationsModule, now);
+      if (trigger === null && plan.type !== 'day_completed') {
+        continue;
+      }
 
-      scheduledIds.push(scheduledId);
+      try {
+        const scheduledId = await notificationsModule.scheduleNotificationAsync({
+          identifier: plan.id,
+          content: {
+            title: plan.title,
+            body: plan.body,
+            data: {
+              source: PROGRAM_NOTIFICATION_SOURCE,
+              planId: plan.id,
+              ...plan.data,
+            },
+            sound: true,
+            priority: notificationsModule.AndroidNotificationPriority.HIGH,
+          },
+          trigger,
+        });
+
+        scheduledIds.push(scheduledId);
+      } catch (error) {
+        console.warn('[NotificationService] Failed to schedule notification plan', {
+          error,
+          planId: plan.id,
+        });
+      }
+    }
+
+    if (shouldAbort?.()) {
+      return {
+        cancelledIds: [],
+        scheduledIds,
+      };
+    }
+
+    const scheduledIdSet = new Set(scheduledIds);
+    const cancelledIds: string[] = [];
+
+    for (const id of existingIds) {
+      if (scheduledIdSet.has(id)) {
+        continue;
+      }
+
+      await notificationsModule.cancelScheduledNotificationAsync(id);
+      cancelledIds.push(id);
     }
 
     if (isNotificationQaLoggingEnabled()) {

@@ -150,7 +150,7 @@ describe('NotificationService', () => {
     });
   });
 
-  it('cancels stale program reminders before scheduling the next plan set', async () => {
+  it('schedules replacements before pruning stale program reminders', async () => {
     const notificationsModule = createNotificationsModule();
     notificationsModule.getAllScheduledNotificationsAsync.mockResolvedValueOnce([
       {
@@ -164,9 +164,46 @@ describe('NotificationService', () => {
       now: new Date(2026, 4, 19, 5, 30),
     });
 
-    expect(notificationsModule.cancelScheduledNotificationAsync).toHaveBeenCalledBefore(
-      notificationsModule.scheduleNotificationAsync
+    expect(notificationsModule.scheduleNotificationAsync).toHaveBeenCalledBefore(
+      notificationsModule.cancelScheduledNotificationAsync
     );
+    expect(notificationsModule.cancelScheduledNotificationAsync).toHaveBeenCalledWith(
+      'program:energy_vitality:day:1:morning_session_ready'
+    );
+  });
+
+  it('preserves existing reminders when notification permission is denied', async () => {
+    const notificationsModule = createNotificationsModule();
+    notificationsModule.getPermissionsAsync.mockResolvedValueOnce({ status: 'denied' });
+
+    const result = await NotificationService.scheduleProgramNotificationPlans([createPlan()], {
+      notificationsModule: notificationsModule as never,
+      now: new Date(2026, 4, 19, 5, 30),
+    });
+
+    expect(result).toEqual({
+      cancelledIds: [],
+      scheduledIds: [],
+    });
+    expect(notificationsModule.scheduleNotificationAsync).not.toHaveBeenCalled();
+    expect(notificationsModule.cancelScheduledNotificationAsync).not.toHaveBeenCalled();
+  });
+
+  it('aborts before mutating scheduled notifications when shouldAbort returns true', async () => {
+    const notificationsModule = createNotificationsModule();
+
+    const result = await NotificationService.scheduleProgramNotificationPlans([createPlan()], {
+      notificationsModule: notificationsModule as never,
+      now: new Date(2026, 4, 19, 5, 30),
+      shouldAbort: () => true,
+    });
+
+    expect(result).toEqual({
+      cancelledIds: [],
+      scheduledIds: [],
+    });
+    expect(notificationsModule.scheduleNotificationAsync).not.toHaveBeenCalled();
+    expect(notificationsModule.cancelScheduledNotificationAsync).not.toHaveBeenCalled();
   });
 
   it('uses an immediate trigger only for completion notifications that are due now', async () => {

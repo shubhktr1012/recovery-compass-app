@@ -90,6 +90,7 @@ interface RescheduleProgramNotificationsArgs {
   profile?: NotificationRuntimeProfile | null;
   now?: Date;
   openedToday?: boolean;
+  shouldAbort?: () => boolean;
   loadDayContent?: (programSlug: ProgramSlug, dayNumber: number) => Promise<DayContent | null>;
   loadDayStates?: (userId: string, programSlug: ProgramSlug) => Promise<NotificationRuntimeDayState[]>;
   loadFreeDetoxProgress?: (userId: string) => Promise<FreeProgramProgressRecord | null>;
@@ -103,10 +104,15 @@ const EMPTY_RESULT: ScheduleProgramNotificationsResult = {
 };
 const ROLLING_NOTIFICATION_DAYS = 7;
 
-function buildNotificationScheduleOptions(now: Date, access?: NotificationRuntimeAccess) {
+function buildNotificationScheduleOptions(
+  now: Date,
+  access?: NotificationRuntimeAccess,
+  shouldAbort?: () => boolean
+) {
   return {
     now,
     programState: access?.programState ?? null,
+    shouldAbort,
   };
 }
 
@@ -122,7 +128,7 @@ export async function rescheduleProgramNotificationsForAccess(
   if (!notificationsEnabled || !args.userId) {
     return notificationService.scheduleProgramNotificationPlans(
       [],
-      buildNotificationScheduleOptions(now, args.access)
+      buildNotificationScheduleOptions(now, args.access, args.shouldAbort)
     );
   }
 
@@ -159,7 +165,7 @@ async function scheduleAccessNotifications(args: RescheduleProgramNotificationsA
   if (!programSlug || !dayNumber) {
     return args.notificationService.scheduleProgramNotificationPlans(
       [],
-      buildNotificationScheduleOptions(args.now, args.access)
+      buildNotificationScheduleOptions(args.now, args.access, args.shouldAbort)
     );
   }
 
@@ -240,9 +246,13 @@ async function scheduleAccessNotifications(args: RescheduleProgramNotificationsA
       return EMPTY_RESULT;
     }
 
+    if (args.shouldAbort?.()) {
+      return EMPTY_RESULT;
+    }
+
     return args.notificationService.scheduleProgramNotificationPlans(
       plans,
-      buildNotificationScheduleOptions(args.now, args.access)
+      buildNotificationScheduleOptions(args.now, args.access, args.shouldAbort)
     );
   } catch (error) {
     console.warn('Failed to reschedule program notifications', {
@@ -267,7 +277,7 @@ async function scheduleFreeDetoxNotifications(args: RescheduleProgramNotificatio
 
     return args.notificationService.scheduleProgramNotificationPlans(
       [],
-      buildNotificationScheduleOptions(args.now, args.access)
+      buildNotificationScheduleOptions(args.now, args.access, args.shouldAbort)
     );
   }
 
@@ -280,7 +290,7 @@ async function scheduleFreeDetoxNotifications(args: RescheduleProgramNotificatio
 
       return args.notificationService.scheduleProgramNotificationPlans(
         [],
-        buildNotificationScheduleOptions(args.now, args.access)
+        buildNotificationScheduleOptions(args.now, args.access, args.shouldAbort)
       );
     }
 
@@ -291,7 +301,7 @@ async function scheduleFreeDetoxNotifications(args: RescheduleProgramNotificatio
     if (progress.completedAt || progress.completedDays.includes(FREE_DETOX_TOTAL_DAYS)) {
       return args.notificationService.scheduleProgramNotificationPlans(
         [],
-        buildNotificationScheduleOptions(args.now, args.access)
+        buildNotificationScheduleOptions(args.now, args.access, args.shouldAbort)
       );
     }
 
@@ -331,6 +341,8 @@ async function scheduleFreeDetoxNotifications(args: RescheduleProgramNotificatio
           userId: args.userId,
         });
 
+        const isCurrentProgramDay = scheduleDay.dayNumber === currentDay;
+
         plans.push(
           ...buildProgramNotificationPlan({
             access: {
@@ -342,7 +354,10 @@ async function scheduleFreeDetoxNotifications(args: RescheduleProgramNotificatio
             notificationsEnabled: args.notificationsEnabled,
             notificationTemplates,
             now: args.now,
-            openedToday: scheduleDay.dayNumber === currentDay ? args.openedToday ?? true : true,
+            openedToday: resolveOpenedTodayForScheduleDay({
+              openedToday: args.openedToday,
+              isCurrentProgramDay,
+            }),
             programName: PROGRAM_METADATA[FREE_DETOX_PROGRAM_SLUG].name,
             scheduleDate: scheduleDay.scheduleDate,
           })
@@ -362,9 +377,13 @@ async function scheduleFreeDetoxNotifications(args: RescheduleProgramNotificatio
       return EMPTY_RESULT;
     }
 
+    if (args.shouldAbort?.()) {
+      return EMPTY_RESULT;
+    }
+
     return args.notificationService.scheduleProgramNotificationPlans(
       plans,
-      buildNotificationScheduleOptions(args.now, access)
+      buildNotificationScheduleOptions(args.now, access, args.shouldAbort)
     );
   } catch (error) {
     console.warn('Failed to reschedule Free Detox notifications', {
@@ -431,7 +450,7 @@ async function loadNotificationTemplates(args: {
   userId: string;
 }): Promise<NotificationTemplateOverrides | undefined> {
   try {
-    const { data: templateData, error: templateError } = await (supabase as any)
+    const { data: templateData, error: templateError } = await supabase
       .from('notification_templates')
       .select('notification_type, program_slug, title_template, body_template, trigger_hour, trigger_minute')
       .eq('is_enabled', true)
@@ -441,7 +460,7 @@ async function loadNotificationTemplates(args: {
       throw templateError;
     }
 
-    const { data: variantData, error: variantError } = await (supabase as any)
+    const { data: variantData, error: variantError } = await supabase
       .from('notification_template_variants')
       .select('notification_type, program_slug, variant_key, title_template, body_template, weight')
       .eq('is_enabled', true)
