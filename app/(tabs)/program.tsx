@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState, memo } from 'react';
-import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Pressable, ScrollView, Text, View } from 'react-native';
 
 import { StatusBar } from 'expo-status-bar';
+import { Ionicons } from '@expo/vector-icons';
 import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { useQueryClient } from '@tanstack/react-query';
@@ -129,13 +130,17 @@ function FreeProgramDiscoveryScreen() {
 
   const progressPercent = Math.max(0, Math.min(100, Math.round((completedDays.length / (program?.totalDays ?? 6)) * 100)));
   const activeDayNumber = isComplete ? null : nextDay;
+  const anchorDayIndex =
+    program?.days.findIndex((day) => day.dayNumber === activeDayNumber) ?? -1;
   const {
+    handleContentSizeChange,
     handleCurrentDayLayout,
     handleDaysContainerLayout,
     handleScroll,
+    handleScrollViewLayout,
     handleTimelineListLayout,
     scrollRef,
-  } = useTimelineAutoScroll(activeDayNumber, nextDay);
+  } = useTimelineAutoScroll(activeDayNumber, nextDay, anchorDayIndex);
 
   if (!program) {
     if (isProgramLoading) {
@@ -159,7 +164,7 @@ function FreeProgramDiscoveryScreen() {
     <View className="flex-1 bg-forest">
       <StatusBar style="light" />
 
-      <View className="bg-forest px-6 pt-16 pb-8 relative z-10 overflow-hidden">
+      <View className="bg-forest px-6 pt-16 pb-10 relative z-10 overflow-hidden">
         <ProgramWatermark
           width={280}
           height={170}
@@ -204,6 +209,8 @@ function FreeProgramDiscoveryScreen() {
           ref={scrollRef}
           className="flex-1"
           contentContainerClassName="pt-6 pb-[170px]"
+          onContentSizeChange={handleContentSizeChange}
+          onLayout={handleScrollViewLayout}
           onScroll={handleScroll}
           scrollEventThrottle={16}
           showsVerticalScrollIndicator={false}
@@ -241,7 +248,7 @@ function FreeProgramDiscoveryScreen() {
                           ? `Complete Day ${Math.max(1, day.dayNumber - 1)} first`
                           : null
                       }
-                      onLayout={isCurrent ? handleCurrentDayLayout : undefined}
+                      onLayout={day.dayNumber === activeDayNumber ? handleCurrentDayLayout : undefined}
                       onPress={() =>
                         router.push(
                           buildDayDetailRoute({
@@ -458,13 +465,39 @@ function ProgramScreenContent({
     return hoursSinceUpdate >= 72;
   }, [progress?.updatedAt]);
 
+  const scrollTargetDayNumber = useMemo(() => {
+    if (isCompletedTimeline) {
+      return null;
+    }
+
+    if (activeDayNumber != null) {
+      return activeDayNumber;
+    }
+
+    if (isPausedJourney) {
+      return access.currentDay ?? 1;
+    }
+
+    return unlockedThroughDay || access.currentDay || 1;
+  }, [activeDayNumber, access.currentDay, isCompletedTimeline, isPausedJourney, unlockedThroughDay]);
+
+  const scrollTargetDayIndex = useMemo(() => {
+    if (scrollTargetDayNumber == null || !program?.days?.length) {
+      return -1;
+    }
+
+    return program.days.findIndex((day) => day.dayNumber === scrollTargetDayNumber);
+  }, [program?.days, scrollTargetDayNumber]);
+
   const {
+    handleContentSizeChange,
     handleCurrentDayLayout,
     handleDaysContainerLayout,
     handleScroll,
+    handleScrollViewLayout,
     handleTimelineListLayout,
     scrollRef,
-  } = useTimelineAutoScroll(activeDayNumber, activeProgram);
+  } = useTimelineAutoScroll(scrollTargetDayNumber, activeProgram, scrollTargetDayIndex);
 
   if (!program) {
     if (isProgramLoading) {
@@ -490,7 +523,7 @@ function ProgramScreenContent({
     <View className="flex-1 bg-forest">
       <StatusBar style="light" />
 
-      <View className="bg-forest px-6 pt-16 pb-8 overflow-hidden relative z-10">
+      <View className="bg-forest px-6 pt-16 pb-10 overflow-hidden relative z-10">
         <ProgramWatermark
           width={280}
           height={170}
@@ -549,16 +582,41 @@ function ProgramScreenContent({
               disabled={isManualPausePending}
               accessibilityRole="button"
               accessibilityLabel={isManualPausePending ? 'Pausing journey' : isPausedJourney ? 'Resume journey' : 'Pause journey'}
-              className="self-start mt-3 rounded-full border border-sage/18 bg-white/8 px-4 py-2"
-              style={{ opacity: isManualPausePending ? 0.62 : 1 }}
+              className="mt-4 self-start flex-row items-center gap-2 rounded-full px-4 py-2.5"
+              style={{
+                backgroundColor: isPausedJourney ? '#FFFFFF' : '#E3F3E5',
+                elevation: 3,
+                opacity: isManualPausePending ? 0.72 : 1,
+                shadowColor: '#06290C',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.18,
+                shadowRadius: 8,
+              }}
             >
-              <Text className="text-sage" style={AppTypography.metaMedium}>
+              {isManualPausePending ? (
+                <ActivityIndicator color="#06290C" size="small" />
+              ) : (
+                <Ionicons
+                  color="#06290C"
+                  name={isPausedJourney ? 'play' : 'pause'}
+                  size={15}
+                />
+              )}
+              <Text
+                style={[
+                  AppTypography.metaMedium,
+                  {
+                    color: '#06290C',
+                    letterSpacing: 0.25,
+                  },
+                ]}
+              >
                 {isManualPausePending ? 'Pausing...' : isPausedJourney ? 'Resume journey' : 'Pause journey'}
               </Text>
             </Pressable>
           ) : null}
           {showAutomaticPauseNotice && isPausedJourney ? (
-            <Text className="mt-2" style={[AppTypography.meta, { color: 'rgba(227, 243, 229, 0.45)' }]}>
+            <Text className="mt-2.5" style={[AppTypography.meta, { color: 'rgba(227, 243, 229, 0.62)' }]}>
               Paused automatically after missed days. Resume when you are ready.
             </Text>
           ) : null}
@@ -570,6 +628,8 @@ function ProgramScreenContent({
           ref={scrollRef}
           className="flex-1"
           contentContainerClassName="pt-6 pb-[170px]"
+          onContentSizeChange={handleContentSizeChange}
+          onLayout={handleScrollViewLayout}
           onScroll={handleScroll}
           scrollEventThrottle={16}
           showsVerticalScrollIndicator={false}
@@ -663,7 +723,7 @@ function ProgramScreenContent({
                             : buildDayDetailRoute({ programSlug: activeProgram, dayNumber: day.dayNumber })
                         )
                       }
-                      onLayout={isCurrent ? handleCurrentDayLayout : undefined}
+                      onLayout={day.dayNumber === scrollTargetDayNumber ? handleCurrentDayLayout : undefined}
                     />
                   );
 

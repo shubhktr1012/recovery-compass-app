@@ -1,70 +1,108 @@
 import { useCallback, useEffect, useRef } from 'react';
 import type { LayoutChangeEvent, NativeScrollEvent, NativeSyntheticEvent, ScrollView } from 'react-native';
+import { InteractionManager } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
 
 const TIMELINE_TOP_INSET = 20;
+const ESTIMATED_ROW_HEIGHT = 132;
+const SCROLL_RETRY_DELAYS_MS = [0, 50, 150, 300, 500];
 
-export function useTimelineAutoScroll(activeDayNumber: number | null, resetKey?: string | number) {
+export function useTimelineAutoScroll(
+  anchorDayNumber: number | null,
+  resetKey?: string | number,
+  anchorDayIndex = -1
+) {
   const scrollRef = useRef<ScrollView>(null);
   const daysContainerY = useRef(0);
   const timelineListY = useRef(0);
   const currentDayRelativeY = useRef<number | null>(null);
   const currentDayHeight = useRef<number | null>(null);
   const hasFiredHaptic = useRef(false);
-  const hasAutoScrolledRef = useRef(false);
+  const anchorDayNumberRef = useRef(anchorDayNumber);
+  const anchorDayIndexRef = useRef(anchorDayIndex);
+  const pendingScrollTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
 
-  const getCurrentDayScrollY = useCallback(() => {
-    if (currentDayRelativeY.current === null) {
+  anchorDayNumberRef.current = anchorDayNumber;
+  anchorDayIndexRef.current = anchorDayIndex;
+
+  const clearPendingScrollTimers = useCallback(() => {
+    pendingScrollTimers.current.forEach(clearTimeout);
+    pendingScrollTimers.current = [];
+  }, []);
+
+  const getScrollY = useCallback(() => {
+    if (anchorDayNumberRef.current == null) {
       return null;
     }
 
-    return Math.max(
-      0,
-      daysContainerY.current +
-        timelineListY.current +
-        currentDayRelativeY.current -
-        TIMELINE_TOP_INSET
-    );
+    const baseOffset = daysContainerY.current + timelineListY.current - TIMELINE_TOP_INSET;
+
+    if (currentDayRelativeY.current !== null) {
+      return Math.max(0, baseOffset + currentDayRelativeY.current);
+    }
+
+    if (anchorDayIndexRef.current >= 0) {
+      return Math.max(0, baseOffset + anchorDayIndexRef.current * ESTIMATED_ROW_HEIGHT);
+    }
+
+    return null;
   }, []);
 
-  const scrollToCurrentDay = useCallback(
+  const scrollToAnchor = useCallback(
     (animated = false) => {
-      const targetY = getCurrentDayScrollY();
-      if (targetY === null || activeDayNumber == null) {
+      const targetY = getScrollY();
+      if (targetY === null || anchorDayNumberRef.current == null || !scrollRef.current) {
         return false;
       }
 
-      scrollRef.current?.scrollTo({ animated, y: targetY });
+      scrollRef.current.scrollTo({ animated, y: targetY });
       return true;
     },
-    [activeDayNumber, getCurrentDayScrollY]
+    [getScrollY]
   );
 
-  const tryAutoScrollToCurrentDay = useCallback(() => {
-    if (hasAutoScrolledRef.current || activeDayNumber == null) {
+  const scheduleScrollAttempts = useCallback(() => {
+    clearPendingScrollTimers();
+
+    if (anchorDayNumberRef.current == null) {
       return;
     }
 
-    const didScroll = scrollToCurrentDay(false);
-    if (didScroll) {
-      hasAutoScrolledRef.current = true;
+    const attemptScroll = () => {
+      scrollToAnchor(false);
+    };
+
+    attemptScroll();
+    requestAnimationFrame(attemptScroll);
+    requestAnimationFrame(() => requestAnimationFrame(attemptScroll));
+
+    for (const delay of SCROLL_RETRY_DELAYS_MS) {
+      pendingScrollTimers.current.push(setTimeout(attemptScroll, delay));
     }
-  }, [activeDayNumber, scrollToCurrentDay]);
+  }, [clearPendingScrollTimers, scrollToAnchor]);
 
   useEffect(() => {
-    hasAutoScrolledRef.current = false;
     currentDayRelativeY.current = null;
     currentDayHeight.current = null;
-  }, [activeDayNumber, resetKey]);
+    scheduleScrollAttempts();
+
+    return () => {
+      clearPendingScrollTimers();
+    };
+  }, [anchorDayNumber, anchorDayIndex, resetKey, clearPendingScrollTimers, scheduleScrollAttempts]);
 
   useFocusEffect(
     useCallback(() => {
-      hasAutoScrolledRef.current = false;
-      requestAnimationFrame(() => {
-        tryAutoScrollToCurrentDay();
+      const interactionTask = InteractionManager.runAfterInteractions(() => {
+        scheduleScrollAttempts();
       });
-    }, [tryAutoScrollToCurrentDay])
+
+      return () => {
+        interactionTask.cancel();
+        clearPendingScrollTimers();
+      };
+    }, [clearPendingScrollTimers, scheduleScrollAttempts])
   );
 
   const handleScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -89,29 +127,45 @@ export function useTimelineAutoScroll(activeDayNumber: number | null, resetKey?:
     }
   }, []);
 
-  const handleDaysContainerLayout = useCallback((event: LayoutChangeEvent) => {
-    daysContainerY.current = event.nativeEvent.layout.y;
-  }, []);
+  const handleDaysContainerLayout = useCallback(
+    (event: LayoutChangeEvent) => {
+      daysContainerY.current = event.nativeEvent.layout.y;
+      scheduleScrollAttempts();
+    },
+    [scheduleScrollAttempts]
+  );
 
-  const handleTimelineListLayout = useCallback((event: LayoutChangeEvent) => {
-    timelineListY.current = event.nativeEvent.layout.y;
-  }, []);
+  const handleTimelineListLayout = useCallback(
+    (event: LayoutChangeEvent) => {
+      timelineListY.current = event.nativeEvent.layout.y;
+      scheduleScrollAttempts();
+    },
+    [scheduleScrollAttempts]
+  );
 
   const handleCurrentDayLayout = useCallback(
     (event: LayoutChangeEvent) => {
       currentDayRelativeY.current = event.nativeEvent.layout.y;
       currentDayHeight.current = event.nativeEvent.layout.height;
-      requestAnimationFrame(() => {
-        tryAutoScrollToCurrentDay();
-      });
+      scrollToAnchor(false);
     },
-    [tryAutoScrollToCurrentDay]
+    [scrollToAnchor]
   );
 
+  const handleScrollViewLayout = useCallback(() => {
+    scheduleScrollAttempts();
+  }, [scheduleScrollAttempts]);
+
+  const handleContentSizeChange = useCallback(() => {
+    scheduleScrollAttempts();
+  }, [scheduleScrollAttempts]);
+
   return {
+    handleContentSizeChange,
     handleCurrentDayLayout,
     handleDaysContainerLayout,
     handleScroll,
+    handleScrollViewLayout,
     handleTimelineListLayout,
     scrollRef,
   };
