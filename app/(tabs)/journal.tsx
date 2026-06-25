@@ -9,13 +9,13 @@ import { useAuth } from '@/providers/auth';
 import { Svg, Path } from 'react-native-svg';
 import { CravingsDragger } from '@/components/journal/CravingsDragger';
 import { MoodChips } from '@/components/journal/MoodChips';
-import { PaperGrain } from '@/components/ui/PaperGrain';
+import { SegmentedPillControl } from '@/components/ui/SegmentedPillControl';
 import { listProgramReflections } from '@/lib/api/program-reflections';
 import { AppColors } from '@/constants/theme';
 import { AppTypography } from '@/constants/typography';
 import { buildDayDetailRoute } from '@/lib/navigation/routes';
+import { useKeyboardAwareTabBarScrollPadding } from '@/components/navigation/TabBarMetricsProvider';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing } from 'react-native-reanimated';
-import { JournalWatermark } from '@/components/ui/TabWatermarks';
 
 interface JournalEntry {
   id: string;
@@ -240,22 +240,21 @@ export default function JournalScreen() {
   const reflections = reflectionsQuery.data || [];
   const journalEntries = entries;
   const todayFormatted = new Date().toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' });
+  const tabBarScrollPadding = useKeyboardAwareTabBarScrollPadding();
 
   return (
     <View className="flex-1 bg-forest">
       <StatusBar style="light" />
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} className="flex-1">
-        <ScrollView contentContainerClassName="flex-grow" showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+        <ScrollView
+          style={{ flex: 1, backgroundColor: AppColors.canvas }}
+          contentContainerStyle={{ flexGrow: 1, paddingBottom: tabBarScrollPadding }}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
           {/* ─── Forest Header ─── */}
           <SafeAreaView edges={['top']} className="bg-forest">
             <View className="bg-forest px-6 pt-3 pb-[56px] overflow-hidden relative">
-              <JournalWatermark
-                width={280}
-                height={170}
-                opacity={0.06}
-                style={{ position: 'absolute', right: -20, top: 10}}
-              />
-
               <Text className="uppercase text-sage/55 relative z-10 mt-8" style={[AppTypography.metaMedium, { letterSpacing: 2 }]}>
                 Your reflections
               </Text>
@@ -291,8 +290,7 @@ export default function JournalScreen() {
           </SafeAreaView>
 
           {/* ─── Content Overlay ─── */}
-          <View className="bg-surface rounded-t-[28px] -mt-7 pt-6 px-5 pb-40 relative z-20">
-            <PaperGrain />
+          <View className="bg-canvas rounded-t-[28px] -mt-7 pt-6 px-5 relative z-20 flex-1">
 
             {/* Today section eyebrow */}
             <Text style={{ fontFamily: 'Satoshi-Bold', fontSize: 9, letterSpacing: 4, textTransform: 'uppercase', color: 'rgba(6,41,12,0.35)', marginBottom: 14, paddingLeft: 2 }}>
@@ -376,31 +374,15 @@ export default function JournalScreen() {
               Past entries
             </Text>
 
-            {/* Segmented Tabs */}
-            <View style={{ flexDirection: 'row', backgroundColor: AppColors.surface, borderRadius: 999, padding: 3, marginBottom: 18 }}>
-              <Pressable onPress={() => setActiveArchiveTab('journal')} style={{ flex: 1 }}>
-                <View style={{
-                  paddingVertical: 9, paddingHorizontal: 12, borderRadius: 999, alignItems: 'center',
-                  backgroundColor: activeArchiveTab === 'journal' ? '#FFFFFF' : 'transparent',
-                  ...(activeArchiveTab === 'journal' ? { shadowColor: '#06290C', shadowOpacity: 0.06, shadowRadius: 4, shadowOffset: { width: 0, height: 1 }, elevation: 2 } : {}),
-                }}>
-                  <Text style={{ fontFamily: 'Satoshi-SemiBold', fontSize: 11, letterSpacing: 0.7, textTransform: 'uppercase', color: activeArchiveTab === 'journal' ? AppColors.forest : 'rgba(6,41,12,0.45)' }}>
-                    Journal
-                  </Text>
-                </View>
-              </Pressable>
-              <Pressable onPress={() => setActiveArchiveTab('reflections')} style={{ flex: 1 }}>
-                <View style={{
-                  paddingVertical: 9, paddingHorizontal: 12, borderRadius: 999, alignItems: 'center',
-                  backgroundColor: activeArchiveTab === 'reflections' ? '#FFFFFF' : 'transparent',
-                  ...(activeArchiveTab === 'reflections' ? { shadowColor: '#06290C', shadowOpacity: 0.06, shadowRadius: 4, shadowOffset: { width: 0, height: 1 }, elevation: 2 } : {}),
-                }}>
-                  <Text style={{ fontFamily: 'Satoshi-SemiBold', fontSize: 11, letterSpacing: 0.7, textTransform: 'uppercase', color: activeArchiveTab === 'reflections' ? AppColors.forest : 'rgba(6,41,12,0.45)' }}>
-                    Reflections
-                  </Text>
-                </View>
-              </Pressable>
-            </View>
+            <SegmentedPillControl
+              value={activeArchiveTab}
+              onChange={setActiveArchiveTab}
+              options={[
+                { value: 'journal', label: 'Journal' },
+                { value: 'reflections', label: 'Reflections' },
+              ]}
+              style={{ marginBottom: 18 }}
+            />
 
             {/* ─── Archive Content ─── */}
             {activeArchiveTab === 'journal' ? (
