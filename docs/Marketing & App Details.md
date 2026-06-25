@@ -435,7 +435,7 @@ FAQ Section
 
 **Slide 15 (The Solution Reveal):** "Modern neuroscience is finally validating what ancient Indian sages knew centuries ago. Specific, targeted protocols, like evening light fasting, Yoga Nidra (Non-Sleep Deep Rest), and autonomic breathwork, can instantly flush toxic cortisol and naturally force your brain into a deep sleep state."
 
-**Slide 16 (The Ultimate Micro-Commitment):** "We are building your custom 21-Day Sleep Reset plan right now. If we give you a simple, science-backed ancient evening protocol that takes just 15 minutes... are you ready to commit to taking your baseline back?" *(Button: "Yes, I am fully committed.")*
+**Slide 16 (The Ultimate Micro-Commitment):** "We are building your custom Deep Sleep Reset plan right now. If we give you a simple, science-backed ancient evening protocol that takes just 15 minutes... are you ready to commit to taking your baseline back?" *(Button: "Yes, I am fully committed.")*
 
 **Slide 17 (The Analysis Engine):** *Visual animation.* "Analyzing your sleep architecture... Calculating circadian offset... Matching with ancient nervous-system down-regulation protocols..."
 
@@ -449,7 +449,7 @@ FAQ Section
 
 ---
 
-“Analysis Complete. Your custom 21-Day Sleep Reset protocol is ready.”
+“Analysis Complete. Your custom Deep Sleep Reset protocol is ready.”
 
 ⭐⭐⭐⭐⭐
 
@@ -575,11 +575,11 @@ FAQ Section \-
 
 ---
 
-Here is the complete, high-converting text-based sales page perfectly pivoted for the **14-Day Energy Reset**. It utilizes the exact psychological pacing, formatting, and consultative B.I.O.S. framework from your document, targeting the deep exhaustion and reliance on stimulants that metro professionals face.
+Here is the complete, high-converting text-based sales page perfectly pivoted for the **Energy Restore**. It utilizes the exact psychological pacing, formatting, and consultative B.I.O.S. framework from your document, targeting the deep exhaustion and reliance on stimulants that metro professionals face.
 
 ---
 
-“Analysis Complete. Your custom 14-Day Energy Reset protocol is ready.”
+“Analysis Complete. Your custom Energy Restore protocol is ready.”
 
 ⭐⭐⭐⭐⭐
 

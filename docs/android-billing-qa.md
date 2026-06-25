@@ -26,8 +26,8 @@ Before running Android billing QA, confirm all of the following:
 - The device is logged into Play Store with that same tester account
 - The installed app comes from Google Play internal testing, not from Android Studio or `adb install`
 - The tester has accepted the internal testing opt-in link
-- RevenueCat `main_android` is preferred for Android if present; otherwise `main_production` is used as fallback
-- Every Android package in the selected RevenueCat offering is attached to the intended Google Play product ID
+- RevenueCat `main_production` is the only canonical offering the app should use
+- Every Android product attached to the selected `main_production` package maps to the intended Google Play product ID
 - The tester account has not already purchased the same non-consumable Google Play product unless you are specifically testing restore
 
 ## Product mapping gate
@@ -36,11 +36,11 @@ Before shipping any Android billing build, verify this exact mapping in RevenueC
 
 | Program | App slug | Expected Google Play product ID |
 | --- | --- | --- |
-| 6-Day Control | `six_day_reset` | `six_day_control` |
+| Control | `six_day_reset` | `six_day_control` |
 | 90-Day Quit Smoking | `ninety_day_transform` | `ninety_day_quit` |
 | Sleep Reset | `sleep_disorder_reset` | `sleep_disorder_reset` |
 | Energy / Vitality | `energy_vitality` | `energy_vitality` |
-| Age Reversal / Biohacking | `age_reversal` | `age_reversal` |
+| Age Reversal Program | `age_reversal` | `age_reversal` |
 | Men's Vitality | `male_sexual_health` | `male_sexual_health` |
 
 If the Google Play drawer says "already own this item" while testing a new app

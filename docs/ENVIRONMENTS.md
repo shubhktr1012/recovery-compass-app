@@ -69,6 +69,12 @@ Runtime variables used by the Expo app:
 - `SUPABASE_URL`
 - `SUPABASE_SERVICE_ROLE_KEY`
 
+Push-notification admin functions currently require:
+
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `PUSH_FUNCTION_ADMIN_TOKEN`
+
 ### EAS build profiles
 
 Current profiles:
@@ -156,6 +162,7 @@ Create staging values for:
 - `EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID`
 - `SUPABASE_URL`
 - `SUPABASE_SERVICE_ROLE_KEY`
+- `PUSH_FUNCTION_ADMIN_TOKEN`
 - `REVENUECAT_WEBHOOK_AUTH`
 - `APP_PURCHASE_EMAIL_ENDPOINT`
 - `APP_PURCHASE_EMAIL_SECRET`
