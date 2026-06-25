@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState, memo } from 'react';
 import { ActivityIndicator, Alert, Pressable, ScrollView, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
@@ -30,10 +31,10 @@ import {
 } from '@/lib/programs/lifecycle';
 import { useScopedPrivacyProtection } from '@/lib/privacy-protection';
 import { PAYWALL_ROUTE, buildDayDetailRoute } from '@/lib/navigation/routes';
+import { useProgramTabBarScrollPadding } from '@/components/navigation/TabBarMetricsProvider';
 import { TimelineItem } from '@/components/program/TimelineItem';
 import { ProgramCard } from '@/components/program/ProgramCard';
 import { StaggeredItem } from '@/components/motion/StaggeredItem';
-import { PaperGrain } from '@/components/ui/PaperGrain';
 import { ProgramWatermark } from '@/components/ui/TabWatermarks';
 import { RouteErrorState, RouteLoadingState } from '@/components/navigation/RouteStateScreen';
 import { DayContent, ProgramSlug } from '@/types/content';
@@ -129,6 +130,7 @@ function FreeProgramDiscoveryScreen() {
   );
 
   const progressPercent = Math.max(0, Math.min(100, Math.round((completedDays.length / (program?.totalDays ?? 6)) * 100)));
+  const tabBarScrollPadding = useProgramTabBarScrollPadding();
   const activeDayNumber = isComplete ? null : nextDay;
   const anchorDayIndex =
     program?.days.findIndex((day) => day.dayNumber === activeDayNumber) ?? -1;
@@ -164,58 +166,59 @@ function FreeProgramDiscoveryScreen() {
     <View className="flex-1 bg-forest">
       <StatusBar style="light" />
 
-      <View className="bg-forest px-6 pt-16 pb-10 relative z-10 overflow-hidden">
-        <ProgramWatermark
-          width={280}
-          height={170}
-          opacity={0.08}
-          style={{ position: 'absolute', right: -20, top: 28 }}
-        />
+      <SafeAreaView edges={['top']} className="bg-forest">
+        <View className="px-6 pb-10 relative z-10 overflow-hidden">
+          <ProgramWatermark
+            width={280}
+            height={170}
+            opacity={0.08}
+            style={{ position: 'absolute', right: -20, top: 28 }}
+          />
 
-        <Text className="uppercase" style={[AppTypography.metaMedium, { letterSpacing: 2, color: 'rgba(227, 243, 229, 0.55)' }]}>
-          Free Access
-        </Text>
-        <Text className="text-white mt-2" style={AppTypography.displayHeroTight}>
-          Your Detox schedule.
-        </Text>
-        <Text className="mt-3 max-w-[300px]" style={[AppTypography.bodyCompact, { color: 'rgba(227, 243, 229, 0.62)' }]}>
-          Follow the 6-day free reset one day at a time. Completed days stay open for review.
-        </Text>
+          <Text className="uppercase" style={[AppTypography.metaMedium, { letterSpacing: 2, color: 'rgba(227, 243, 229, 0.55)' }]}>
+            Free Access
+          </Text>
+          <Text className="text-white mt-2" style={AppTypography.displayHeroTight}>
+            Your Detox schedule.
+          </Text>
+          <Text className="mt-3 max-w-[300px]" style={[AppTypography.bodyCompact, { color: 'rgba(227, 243, 229, 0.62)' }]}>
+            Follow the 6-day free reset one day at a time. Completed days stay open for review.
+          </Text>
 
-        <View className="mt-5 relative z-10">
-          <View className="flex-row justify-between items-baseline mb-2">
-            <Text className="text-white tracking-[-0.4px]" style={AppTypography.displayMetric}>
-              {completedDays.length}{' '}
-              <Text className="tracking-normal" style={[AppTypography.label, { color: 'rgba(227, 243, 229, 0.55)' }]}>
-                of {program.totalDays} days
+          <View className="mt-5 relative z-10">
+            <View className="flex-row justify-between items-baseline mb-2">
+              <Text className="text-white tracking-[-0.4px]" style={AppTypography.displayMetric}>
+                {completedDays.length}{' '}
+                <Text className="tracking-normal" style={[AppTypography.label, { color: 'rgba(227, 243, 229, 0.55)' }]}>
+                  of {program.totalDays} days
+                </Text>
               </Text>
-            </Text>
-            <Text style={[AppTypography.metaMedium, { letterSpacing: 0.3, color: 'rgba(227, 243, 229, 0.60)' }]}>
-              {progressPercent}% complete
-            </Text>
-          </View>
+              <Text style={[AppTypography.metaMedium, { letterSpacing: 0.3, color: 'rgba(227, 243, 229, 0.60)' }]}>
+                {progressPercent}% complete
+              </Text>
+            </View>
 
-          <View className="h-[3px] w-full bg-sage/[0.18] rounded-full overflow-hidden">
-            <View
-              className="h-full bg-sage rounded-full"
-              style={{ width: `${progressPercent}%`, backgroundColor: isComplete ? 'rgba(93,207,122,0.7)' : '#E3F3E5' }}
-            />
+            <View className="h-[3px] w-full bg-sage/[0.18] rounded-full overflow-hidden">
+              <View
+                className="h-full bg-sage rounded-full"
+                style={{ width: `${progressPercent}%`, backgroundColor: isComplete ? 'rgba(93,207,122,0.7)' : '#E3F3E5' }}
+              />
+            </View>
           </View>
         </View>
-      </View>
+      </SafeAreaView>
 
-      <View className="flex-1 -mt-7 bg-surface rounded-t-[28px] relative z-20 overflow-hidden">
+      <View className="flex-1 -mt-7 bg-canvas rounded-t-[28px] relative z-20 overflow-hidden">
         <ScrollView
           ref={scrollRef}
           className="flex-1"
-          contentContainerClassName="pt-6 pb-[170px]"
+          contentContainerStyle={{ paddingTop: 24, paddingBottom: tabBarScrollPadding }}
           onContentSizeChange={handleContentSizeChange}
           onLayout={handleScrollViewLayout}
           onScroll={handleScroll}
           scrollEventThrottle={16}
           showsVerticalScrollIndicator={false}
         >
-          <PaperGrain />
           <View onLayout={handleDaysContainerLayout}>
             <Text className="uppercase text-forest/35 px-6 mb-4" style={[AppTypography.eyebrow, { letterSpacing: 1.6 }]}>
               {isComplete ? 'All 6 Days - Revisit Anytime' : 'Day Timeline'}
@@ -277,6 +280,7 @@ function ProgramScreenContent({
   isCompletedReview?: boolean;
 }) {
   const router = useRouter();
+  const tabBarScrollPadding = useProgramTabBarScrollPadding();
   const { access, pauseProgramManually, profile, progress, resumeProgramFromPause } = useProfile();
   const queryClient = useQueryClient();
   const { program, isLoading: isProgramLoading } = useProgram(activeProgram);
@@ -523,69 +527,70 @@ function ProgramScreenContent({
     <View className="flex-1 bg-forest">
       <StatusBar style="light" />
 
-      <View className="bg-forest px-6 pt-16 pb-10 overflow-hidden relative z-10">
-        <ProgramWatermark
-          width={280}
-          height={170}
-          opacity={0.06}
-          style={{ position: 'absolute', right: -20, top: 50 }}
-        />
+      <SafeAreaView edges={['top']} className="bg-forest">
+        <View className="px-6 pb-10 overflow-hidden relative z-10">
+          <ProgramWatermark
+            width={280}
+            height={170}
+            opacity={0.06}
+            style={{ position: 'absolute', right: -20, top: 50 }}
+          />
 
-        <View className="mb-[18px] relative z-10 mt-8">
-          <Text className="uppercase" style={[AppTypography.metaMedium, { letterSpacing: 2, color: 'rgba(227, 243, 229, 0.55)' }]}>
-            {isCompletedTimeline ? 'Completed Journey' : 'Current Journey'}
+          <View className="mb-[18px] relative z-10">
+            <Text className="uppercase" style={[AppTypography.metaMedium, { letterSpacing: 2, color: 'rgba(227, 243, 229, 0.55)' }]}>
+              {isCompletedTimeline ? 'Completed Journey' : 'Current Journey'}
+            </Text>
+          </View>
+
+          <Text className="tracking-[-0.6px] text-white relative z-10 pr-4" style={AppTypography.displayHeroTight}>
+            {program.name}
           </Text>
-        </View>
 
-        <Text className="tracking-[-0.6px] text-white relative z-10 pr-4" style={AppTypography.displayHeroTight}>
-          {program.name}
-        </Text>
+          <Text
+            className="pr-8 mt-2 relative z-10 max-w-[280px]"
+            style={[AppTypography.bodyCompact, { color: 'rgba(227, 243, 229, 0.60)' }]}
+          >
+            {isCompletedTimeline
+              ? `You completed this reset. All ${totalDays} days are now available to revisit.`
+              : program.description}
+          </Text>
 
-        <Text
-          className="pr-8 mt-2 relative z-10 max-w-[280px]"
-          style={[AppTypography.bodyCompact, { color: 'rgba(227, 243, 229, 0.60)' }]}
-        >
-          {isCompletedTimeline
-            ? `You completed this reset. All ${totalDays} days are now available to revisit.`
-            : program.description}
-        </Text>
-
-        <View className="mt-4 relative z-10">
-          <View className="flex-row justify-between items-baseline mb-2">
-            <Text className="text-white tracking-[-0.4px]" style={AppTypography.displayMetric}>
-              {isCompletedTimeline ? totalDays : Math.min(unlockedThroughDay, program.totalDays)}{' '}
-              <Text className="tracking-normal" style={[AppTypography.label, { color: 'rgba(227, 243, 229, 0.55)' }]}>
-                of {totalDays} days
+          <View className="mt-4 relative z-10">
+            <View className="flex-row justify-between items-baseline mb-2">
+              <Text className="text-white tracking-[-0.4px]" style={AppTypography.displayMetric}>
+                {isCompletedTimeline ? totalDays : Math.min(unlockedThroughDay, program.totalDays)}{' '}
+                <Text className="tracking-normal" style={[AppTypography.label, { color: 'rgba(227, 243, 229, 0.55)' }]}>
+                  of {totalDays} days
+                </Text>
               </Text>
-            </Text>
-            <Text style={[AppTypography.metaMedium, { letterSpacing: 0.3, color: 'rgba(227, 243, 229, 0.60)' }]}>
-              {progressPercent}% complete
-            </Text>
-          </View>
+              <Text style={[AppTypography.metaMedium, { letterSpacing: 0.3, color: 'rgba(227, 243, 229, 0.60)' }]}>
+                {progressPercent}% complete
+              </Text>
+            </View>
 
-          <View className="h-[3px] w-full bg-sage/[0.18] rounded-full overflow-hidden">
-            <View
-              className="h-full bg-sage rounded-full"
-              style={{ width: `${progressPercent}%`, backgroundColor: isCompletedTimeline ? 'rgba(93,207,122,0.7)' : '#E3F3E5' }}
-            />
-          </View>
+            <View className="h-[3px] w-full bg-sage/[0.18] rounded-full overflow-hidden">
+              <View
+                className="h-full bg-sage rounded-full"
+                style={{ width: `${progressPercent}%`, backgroundColor: isCompletedTimeline ? 'rgba(93,207,122,0.7)' : '#E3F3E5' }}
+              />
+            </View>
 
-          {nextUnlockLabel && !isCompletedTimeline ? (
-            <Text className="mt-[6px]" style={[AppTypography.meta, { letterSpacing: 0.2, color: 'rgba(227, 243, 229, 0.40)' }]}>
-              {nextUnlockLabel}
-            </Text>
-          ) : null}
+            {nextUnlockLabel && !isCompletedTimeline ? (
+              <Text className="mt-[6px]" style={[AppTypography.meta, { letterSpacing: 0.2, color: 'rgba(227, 243, 229, 0.40)' }]}>
+                {nextUnlockLabel}
+              </Text>
+            ) : null}
 
-          {(canPauseJourney || isPausedJourney) && access.ownedProgram === activeProgram ? (
-            <Pressable
-              onPress={isPausedJourney ? handleResumeJourney : handlePauseJourney}
-              disabled={isManualPausePending}
-              accessibilityRole="button"
-              accessibilityLabel={isManualPausePending ? 'Pausing journey' : isPausedJourney ? 'Resume journey' : 'Pause journey'}
-              className="mt-4 self-start flex-row items-center gap-2 rounded-full px-4 py-2.5"
-              style={{
-                backgroundColor: isPausedJourney ? '#FFFFFF' : '#E3F3E5',
-                elevation: 3,
+            {(canPauseJourney || isPausedJourney) && access.ownedProgram === activeProgram ? (
+              <Pressable
+                onPress={isPausedJourney ? handleResumeJourney : handlePauseJourney}
+                disabled={isManualPausePending}
+                accessibilityRole="button"
+                accessibilityLabel={isManualPausePending ? 'Pausing journey' : isPausedJourney ? 'Resume journey' : 'Pause journey'}
+                className="mt-4 self-start flex-row items-center gap-2 rounded-full px-4 py-2.5"
+                style={{
+                  backgroundColor: isPausedJourney ? '#FFFFFF' : '#E3F3E5',
+                  elevation: 3,
                 opacity: isManualPausePending ? 0.72 : 1,
                 shadowColor: '#06290C',
                 shadowOffset: { width: 0, height: 2 },
@@ -621,20 +626,20 @@ function ProgramScreenContent({
             </Text>
           ) : null}
         </View>
-      </View>
+        </View>
+      </SafeAreaView>
 
-      <View className="flex-1 -mt-7 bg-surface rounded-t-[28px] relative z-20 overflow-hidden">
+      <View className="flex-1 -mt-7 bg-canvas rounded-t-[28px] relative z-20 overflow-hidden">
         <ScrollView
           ref={scrollRef}
           className="flex-1"
-          contentContainerClassName="pt-6 pb-[170px]"
+          contentContainerStyle={{ paddingTop: 24, paddingBottom: tabBarScrollPadding }}
           onContentSizeChange={handleContentSizeChange}
           onLayout={handleScrollViewLayout}
           onScroll={handleScroll}
           scrollEventThrottle={16}
           showsVerticalScrollIndicator={false}
         >
-          <PaperGrain />
           <View onLayout={handleDaysContainerLayout}>
             {isArchivedReset && isCompletedTimeline ? (
               <View className="mx-5 mb-4 bg-white rounded-[20px] px-[18px] py-4 shadow-sm shadow-forest/5" style={{ shadowColor: '#06290C', shadowOpacity: 0.06, shadowRadius: 24, shadowOffset: { width: 0, height: 8 }, borderLeftWidth: 3, borderLeftColor: '#06290C' }}>
