@@ -6,6 +6,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { ActivityIndicator, Modal, Pressable, ScrollView, Text, TextInput, View, StyleSheet, Platform } from 'react-native';
 import Svg, { Path as SvgPath } from 'react-native-svg';
 import Animated, {
+  cancelAnimation,
   Easing,
   FadeInDown,
   FadeOut,
@@ -22,6 +23,22 @@ import {
   getProgramReflection,
   upsertProgramReflection,
 } from '@/lib/api/program-reflections';
+import { getAudioThresholds } from '@/lib/card-resolver';
+import {
+  parseChecklistProgress,
+  serializeChecklistProgress,
+} from '@/lib/checklist-progress';
+import {
+  parseRoutineProgress,
+  serializeRoutineProgress,
+  type RoutineEffortLevel,
+} from '@/lib/routine-progress';
+import {
+  getBreathingPhaseState,
+  getBreathingTotalDuration,
+  type BreathingPhase,
+} from '@/lib/card-timers';
+import { MotionDurations, MotionEasing } from '@/lib/motion/tokens';
 import type { ProgramReflectionIdentity } from '@/lib/api/program-reflections';
 
 import type {
@@ -37,6 +54,7 @@ import type {
   MindfulnessExerciseCard,
   BreathingExerciseCard,
 } from '@/types/content';
+import type { DayState } from '@/types/resolver';
 
 export type TransportConfig = {
   centerIcon?: React.ReactNode;
@@ -100,7 +118,15 @@ function SafetySheet({
   );
 }
 
-function FadingScrollView({ children, contentContainerStyle }: { children: React.ReactNode; contentContainerStyle?: any }) {
+function FadingScrollView({
+  children,
+  contentContainerStyle,
+  fadeColors = ['rgba(255,255,255,0)', 'rgba(255,255,255,1)'],
+}: {
+  children: React.ReactNode;
+  contentContainerStyle?: any;
+  fadeColors?: [string, string];
+}) {
   const [scrollViewHeight, setScrollViewHeight] = useState(0);
   const [contentHeight, setContentHeight] = useState(0);
   const [isAtBottom, setIsAtBottom] = useState(false);
@@ -129,6 +155,10 @@ function FadingScrollView({ children, contentContainerStyle }: { children: React
     <View style={styles.scrollWrapper}>
       <ScrollView
         ref={scrollViewRef}
+        style={styles.scrollView}
+        nestedScrollEnabled
+        keyboardShouldPersistTaps="handled"
+        contentInsetAdjustmentBehavior="never"
         showsVerticalScrollIndicator={true}
         persistentScrollbar={true}
         onScroll={(e) => {
@@ -143,14 +173,14 @@ function FadingScrollView({ children, contentContainerStyle }: { children: React
         scrollEventThrottle={16}
         onLayout={(e) => setScrollViewHeight(e.nativeEvent.layout.height)}
         onContentSizeChange={(_, h) => setContentHeight(h)}
-        contentContainerStyle={[contentContainerStyle, styles.scrollContent]}
+        contentContainerStyle={[styles.scrollContent, contentContainerStyle]}
       >
         {children}
       </ScrollView>
 
       {isScrollable && (
         <LinearGradient
-          colors={['rgba(255,255,255,0)', 'rgba(255,255,255,1)']}
+          colors={fadeColors}
           pointerEvents="none"
           style={styles.fadeMask}
         />
@@ -162,7 +192,7 @@ function FadingScrollView({ children, contentContainerStyle }: { children: React
           style={styles.fabContainer}
         >
           <Animated.View
-            entering={FadeInDown.delay(600).springify().damping(16).stiffness(150)}
+            entering={FadeInDown.delay(220).duration(MotionDurations.screen).easing(MotionEasing.standard)}
           >
             <Animated.View style={!isAtBottom ? bounceStyle : undefined}>
               <Pressable
@@ -241,15 +271,17 @@ function AccentCardShell({
   children,
   eyebrow,
   title,
+  scrollable = false,
   showGrain = false,
 }: {
   children: React.ReactNode;
   eyebrow?: string;
   title?: string;
+  scrollable?: boolean;
   showGrain?: boolean;
 }) {
-  return (
-    <View style={[styles.accentCardShell, styles.cardShellContinuous, styles.cardShadow]}>
+  const content = (
+    <>
       {eyebrow ? (
         <Text style={styles.eyebrowLight}>
           {eyebrow}
@@ -261,6 +293,21 @@ function AccentCardShell({
         </Text>
       ) : null}
       {children}
+    </>
+  );
+
+  return (
+    <View style={[styles.accentCardShell, styles.cardShellContinuous, styles.cardShadow]}>
+      {scrollable ? (
+        <FadingScrollView
+          contentContainerStyle={{ flexGrow: 1 }}
+          fadeColors={['rgba(227,242,229,0)', '#E3F2E5']}
+        >
+          {content}
+        </FadingScrollView>
+      ) : (
+        content
+      )}
     </View>
   );
 }
@@ -295,7 +342,10 @@ function DarkCardShell({
   return (
     <View style={[styles.darkCardShell, styles.cardShellContinuous, styles.cardShadow]}>
       {scrollable ? (
-        <FadingScrollView contentContainerStyle={{ flexGrow: 1 }}>
+        <FadingScrollView
+          contentContainerStyle={{ flexGrow: 1 }}
+          fadeColors={['rgba(6,41,12,0)', '#06290C']}
+        >
           {content}
         </FadingScrollView>
       ) : (
@@ -309,14 +359,19 @@ function PrimaryVisualButton({
   label,
   inverted = false,
   onPress,
+  disabled = false,
 }: {
   label: string;
   inverted?: boolean;
   onPress?: () => void;
+  disabled?: boolean;
 }) {
   const content = (
     <View
-      style={inverted ? styles.primaryButtonLight : styles.primaryButtonDark}
+      style={[
+        inverted ? styles.primaryButtonLight : styles.primaryButtonDark,
+        disabled && styles.primaryButtonDisabled,
+      ]}
     >
       <Text
         style={inverted ? styles.primaryButtonTextLight : styles.primaryButtonTextDark}
@@ -326,7 +381,7 @@ function PrimaryVisualButton({
     </View>
   );
 
-  if (!onPress) {
+  if (!onPress || disabled) {
     return content;
   }
 
@@ -392,7 +447,7 @@ function IntroCardView({ card, programName, totalCards }: { card: IntroCard; pro
   // Format day number with leading zero for the ghost watermark
   const dayFormatted = String(card.dayNumber).padStart(2, '0');
 
-  // Convert new `parameters` object (Age Reversal format) → { value, label }[]
+  // Convert new `parameters` object (Age Reversal Program format) → { value, label }[]
   const paramsFromObject: { value: string; label: string }[] = [];
   if (card.parameters) {
     const p = card.parameters;
@@ -422,42 +477,44 @@ function IntroCardView({ card, programName, totalCards }: { card: IntroCard; pro
         style={styles.introAccentBar}
       />
 
-      {/* ── Top row: phase pill + duration ── */}
-      <View style={styles.introTopRow}>
-        <View style={styles.introPhasePill}>
-          <View style={styles.introPhaseDot} />
-          <Text style={styles.introPhasePillText}>
-            {card.phase ?? programName ?? 'Today'}
-          </Text>
-        </View>
-        {card.estimatedMinutes ? (
-          <Text style={styles.introDurationText}>~{card.estimatedMinutes} min</Text>
-        ) : null}
-      </View>
-
-      {/* ── Hero zone ── */}
-      <View style={styles.introHero}>
-        {/* Ghost day number — huge, nearly invisible watermark */}
-        <Text style={styles.introGhostDay}>{dayFormatted}</Text>
-
-        {/* Serif title — overlaps the ghost number */}
-        <Text style={styles.introTitle}>{card.dayTitle}</Text>
-
-        {/* Goal text — muted, flexible */}
-        <Text style={styles.introGoal}>{card.goal}</Text>
-
-        {/* ── Parameter boxes ── */}
-        {params.length > 0 ? (
-          <View style={styles.introParamsRow}>
-            {params.map((p, i) => (
-              <View key={`${p.label}-${i}`} style={styles.introParamBox}>
-                <Text style={styles.introParamValue}>{p.value}</Text>
-                <Text style={styles.introParamLabel}>{p.label}</Text>
-              </View>
-            ))}
+      <FadingScrollView contentContainerStyle={styles.introScrollContent}>
+        {/* ── Top row: phase pill + duration ── */}
+        <View style={styles.introTopRow}>
+          <View style={styles.introPhasePill}>
+            <View style={styles.introPhaseDot} />
+            <Text style={styles.introPhasePillText}>
+              {card.phase ?? programName ?? 'Today'}
+            </Text>
           </View>
-        ) : null}
-      </View>
+          {card.estimatedMinutes ? (
+            <Text style={styles.introDurationText}>~{card.estimatedMinutes} min</Text>
+          ) : null}
+        </View>
+
+        {/* ── Hero zone ── */}
+        <View style={styles.introHero}>
+          {/* Ghost day number — huge, nearly invisible watermark */}
+          <Text style={styles.introGhostDay}>{dayFormatted}</Text>
+
+          {/* Serif title — overlaps the ghost number */}
+          <Text style={styles.introTitle}>{card.dayTitle}</Text>
+
+          {/* Goal text — muted, flexible */}
+          <Text style={styles.introGoal}>{card.goal}</Text>
+
+          {/* ── Parameter boxes ── */}
+          {params.length > 0 ? (
+            <View style={styles.introParamsRow}>
+              {params.map((p, i) => (
+                <View key={`${p.label}-${i}`} style={styles.introParamBox}>
+                  <Text style={styles.introParamValue}>{p.value}</Text>
+                  <Text style={styles.introParamLabel}>{p.label}</Text>
+                </View>
+              ))}
+            </View>
+          ) : null}
+        </View>
+      </FadingScrollView>
     </View>
   );
 }
@@ -505,7 +562,7 @@ function LessonCardView({ card, cardIndex: _cardIndex }: { card: LessonCard; car
             </View>
           ) : null}
 
-          {/* Pull quote — Age Reversal editorial callout */}
+          {/* Pull quote — Age Reversal Program editorial callout */}
           {card.pullQuote ? (
             <View style={styles.lessonPullQuoteItem}>
               <Text style={styles.lessonPullQuoteText}>{card.pullQuote}</Text>
@@ -517,12 +574,32 @@ function LessonCardView({ card, cardIndex: _cardIndex }: { card: LessonCard; car
   );
 }
 
-function ActionStepCardView({ card, cardIndex, onContinue }: { card: ActionStepCard; cardIndex?: number; onContinue?: () => void; }) {
+function getChecklistItemKey(label: string, index: number) {
+  return `${label}-${index}`;
+}
+
+function ActionStepCardView({
+  card,
+  cardIndex,
+  checklistStorageKey,
+  isReadOnly = false,
+  onContinue,
+}: {
+  card: ActionStepCard;
+  cardIndex?: number;
+  checklistStorageKey?: string;
+  isReadOnly?: boolean;
+  onContinue?: () => void;
+}) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isDone, setIsDone] = useState(false);
+  const [checkedChecklistItems, setCheckedChecklistItems] = useState<Set<string>>(new Set());
+  const [hasChecklistRestored, setHasChecklistRestored] = useState(false);
   const { registerConfig } = useContext(TransportContext);
+  const checklistItems = card.checklistItems ?? [];
+  const isChecklist = card.variant === 'checklist' || checklistItems.length > 0;
 
-  // Register transport config: "MARK DONE" → marks complete → auto-advances
+  // Checklist cards are reflective: ticking items is optional and never blocks progress.
   useEffect(() => {
     if (cardIndex == null) return;
 
@@ -534,7 +611,7 @@ function ActionStepCardView({ card, cardIndex, onContinue }: { card: ActionStepC
           color={isDone ? '#16a34a' : '#06290C'}
         />
       ),
-      centerLabel: isDone ? 'DONE ✓' : 'MARK DONE',
+      centerLabel: isDone ? 'DONE ✓' : isChecklist ? 'CONTINUE' : 'MARK DONE',
       onCenterPress: () => {
         if (isDone) {
           onContinue?.();
@@ -547,7 +624,85 @@ function ActionStepCardView({ card, cardIndex, onContinue }: { card: ActionStepC
         }, 600);
       },
     });
-  }, [cardIndex, isDone, onContinue, registerConfig]);
+  }, [cardIndex, isChecklist, isDone, onContinue, registerConfig]);
+
+  useEffect(() => {
+    if (!isChecklist) {
+      return;
+    }
+
+    let isCancelled = false;
+
+    const restoreProgress = async () => {
+      if (!checklistStorageKey) {
+        if (!isCancelled) {
+          setCheckedChecklistItems(new Set());
+          setHasChecklistRestored(true);
+        }
+        return;
+      }
+
+      try {
+        const rawValue = await AsyncStorage.getItem(checklistStorageKey);
+        if (isCancelled) return;
+
+        const progressRecord = parseChecklistProgress(rawValue);
+        setCheckedChecklistItems(new Set(progressRecord.checkedItems));
+      } catch (error) {
+        console.error('Failed to restore checklist progress', error);
+        if (!isCancelled) {
+          setCheckedChecklistItems(new Set());
+        }
+      } finally {
+        if (!isCancelled) {
+          setHasChecklistRestored(true);
+        }
+      }
+    };
+
+    void restoreProgress();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [checklistStorageKey, isChecklist]);
+
+  useEffect(() => {
+    if (!isChecklist || !hasChecklistRestored || !checklistStorageKey || isReadOnly) {
+      return;
+    }
+
+    const persistProgress = async () => {
+      try {
+        await AsyncStorage.setItem(
+          checklistStorageKey,
+          serializeChecklistProgress({
+            checkedItems: Array.from(checkedChecklistItems),
+          })
+        );
+      } catch (error) {
+        console.error('Failed to persist checklist progress', error);
+      }
+    };
+
+    void persistProgress();
+  }, [checkedChecklistItems, checklistStorageKey, hasChecklistRestored, isChecklist, isReadOnly]);
+
+  const toggleChecklistItem = (id: string) => {
+    if (isReadOnly) {
+      return;
+    }
+
+    setCheckedChecklistItems((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
 
   // Support both legacy stepNumber and new stepLabel format
   const eyebrowText = card.stepLabel ?? (card.stepNumber != null ? `Action Step ${card.stepNumber}` : 'Action Step');
@@ -559,7 +714,7 @@ function ActionStepCardView({ card, cardIndex, onContinue }: { card: ActionStepC
       title={card.title}
     >
       <View style={styles.actionBody}>
-        {/* Age Reversal subtitle */}
+        {/* Age Reversal Program subtitle */}
         {card.subtitle ? (
           <Text style={styles.actionSubtitle}>{card.subtitle}</Text>
         ) : null}
@@ -571,9 +726,50 @@ function ActionStepCardView({ card, cardIndex, onContinue }: { card: ActionStepC
           </View>
         ) : null}
 
-        <DotList items={card.instructions} textStyle={{ color: '#374151', fontSize: 16, lineHeight: 26 }} />
+        {isChecklist ? (
+          <View style={styles.routineList}>
+            {checklistItems.map((item, index) => {
+              const itemId = getChecklistItemKey(item, index);
+              const isChecked = checkedChecklistItems.has(itemId);
 
-        {/* Age Reversal purpose callout */}
+              return (
+                <Pressable
+                  key={itemId}
+                  onPress={() => toggleChecklistItem(itemId)}
+                  disabled={isReadOnly}
+                  style={[
+                    styles.checklistItem,
+                    index < checklistItems.length - 1 && styles.routineItemBorder,
+                    isReadOnly && { opacity: isChecked ? 0.55 : 1 },
+                  ]}
+                >
+                  <View style={[
+                    styles.routineItemCheckbox,
+                    isChecked && styles.routineItemCheckboxChecked,
+                  ]}>
+                    {isChecked ? <Ionicons name="checkmark" size={10} color="white" /> : null}
+                  </View>
+                  <Text style={[
+                    styles.checklistItemText,
+                    isChecked && styles.routineItemTitleCompleted,
+                  ]}>
+                    {item}
+                  </Text>
+                </Pressable>
+              );
+            })}
+
+            {card.checklistQuote ? (
+              <View style={styles.checklistQuoteContainer}>
+                <Text style={styles.checklistQuoteText}>{card.checklistQuote}</Text>
+              </View>
+            ) : null}
+          </View>
+        ) : (
+          <DotList items={card.instructions ?? []} textStyle={{ color: '#374151', fontSize: 16, lineHeight: 26 }} />
+        )}
+
+        {/* Age Reversal Program purpose callout */}
         {card.purpose ? (
           <View style={styles.actionPurposeContainer}>
             <Text style={styles.actionPurposeLabel}>Why this step</Text>
@@ -583,7 +779,7 @@ function ActionStepCardView({ card, cardIndex, onContinue }: { card: ActionStepC
 
         {card.whyThisWorks ? (
           <Animated.View
-            layout={LinearTransition.springify().damping(18).stiffness(130)}
+            layout={LinearTransition.duration(MotionDurations.fast).easing(MotionEasing.standard)}
           >
             <View style={styles.whyWorksContainer}>
               <Pressable
@@ -600,7 +796,7 @@ function ActionStepCardView({ card, cardIndex, onContinue }: { card: ActionStepC
 
               {isExpanded ? (
                 <Animated.View
-                  entering={FadeInDown.springify().damping(18).stiffness(130)}
+                  entering={FadeInDown.duration(MotionDurations.base).easing(MotionEasing.standard)}
                   exiting={FadeOut.duration(140)}
                   style={styles.whyWorksBody}
                 >
@@ -624,74 +820,214 @@ function ActionStepCardView({ card, cardIndex, onContinue }: { card: ActionStepC
   );
 }
 
-function MindfulExerciseCardView({ card, cardIndex, onContinue }: { card: MindfulnessExerciseCard | BreathingExerciseCard; cardIndex?: number; onContinue?: () => void; }) {
-  const [isActive, setIsActive] = useState(false);
+function MindfulExerciseCardView({
+  card,
+  cardIndex,
+  onContinue,
+  isReadOnly = false,
+}: {
+  card: MindfulnessExerciseCard | BreathingExerciseCard;
+  cardIndex?: number;
+  onContinue?: () => void;
+  isReadOnly?: boolean;
+}) {
+  const [isMindfulBegun, setIsMindfulBegun] = useState(false);
+  const [breathingState, setBreathingState] = useState<'idle' | 'running' | 'completed'>('idle');
+  const [, setBreathingCompletionMode] = useState<'manual' | 'timer' | null>(null);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const scale = useSharedValue(1);
   const opacity = useSharedValue(0.15);
   const { registerConfig } = useContext(TransportContext);
+  const isBreathing = card.type === 'breathing_exercise';
   const breathingPattern = card.type === 'breathing_exercise' ? card.pattern : undefined;
   const cycles = card.type === 'breathing_exercise' ? card.cycles : undefined;
+  const breathingInstructions = card.type === 'breathing_exercise' ? card.instructions : undefined;
   const duration = card.type === 'mindfulness_exercise' ? card.duration : undefined;
   const steps = card.type === 'mindfulness_exercise' ? card.steps : undefined;
   const subtitle = card.type === 'mindfulness_exercise' ? card.subtitle : undefined;
   const benefits = card.type === 'mindfulness_exercise' ? card.benefits : undefined;
+  const totalBreathingSeconds = useMemo(
+    () =>
+      isBreathing && breathingPattern
+        ? getBreathingTotalDuration(breathingPattern, cycles ?? 0)
+        : 0,
+    [breathingPattern, cycles, isBreathing]
+  );
+  const breathingPhaseState = useMemo(
+    () =>
+      isBreathing && breathingPattern
+        ? getBreathingPhaseState(breathingPattern, cycles ?? 0, elapsedSeconds)
+        : null,
+    [breathingPattern, cycles, elapsedSeconds, isBreathing]
+  );
+  const breathingPatternLabel = useMemo(
+    () => (breathingPattern ? describeBreathingPattern(breathingPattern) : null),
+    [breathingPattern]
+  );
 
   const animatedCircleStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
     opacity: opacity.value,
   }));
 
-  const startBreathing = () => {
-    setIsActive(true);
+  const settleBreathingAnimation = useCallback((completed: boolean) => {
+    cancelAnimation(scale);
+    cancelAnimation(opacity);
+    scale.value = withTiming(1, { duration: 220 });
+    opacity.value = withTiming(completed ? 0.26 : 0.15, { duration: 220 });
+  }, [opacity, scale]);
+
+  const resetBreathing = useCallback(() => {
+    setElapsedSeconds(0);
+    setBreathingCompletionMode(null);
+    setBreathingState('idle');
+    settleBreathingAnimation(false);
+  }, [settleBreathingAnimation]);
+
+  const startBreathing = useCallback(() => {
+    if (!isBreathing || !breathingPattern || totalBreathingSeconds <= 0) {
+      return;
+    }
+
+    setElapsedSeconds(0);
+    setBreathingCompletionMode(null);
+    setBreathingState('running');
     scale.value = withRepeat(
       withSequence(
-        withTiming(1.6, { duration: (breathingPattern?.inhaleSeconds ?? 4) * 1000, easing: Easing.inOut(Easing.quad) }),
-        withTiming(1.6, { duration: (breathingPattern?.holdSeconds ?? 0) * 1000 }),
-        withTiming(1, { duration: (breathingPattern?.exhaleSeconds ?? 6) * 1000, easing: Easing.inOut(Easing.quad) })
+        withTiming(1.6, { duration: breathingPattern.inhaleSeconds * 1000, easing: Easing.inOut(Easing.quad) }),
+        withTiming(1.6, { duration: (breathingPattern.holdSeconds ?? 0) * 1000 }),
+        withTiming(1, { duration: breathingPattern.exhaleSeconds * 1000, easing: Easing.inOut(Easing.quad) })
       ),
-      cycles ?? -1,
+      cycles ?? 1,
       false
     );
     opacity.value = withTiming(0.4, { duration: 1000 });
-  };
+  }, [breathingPattern, cycles, isBreathing, opacity, scale, totalBreathingSeconds]);
 
-  // Register transport config: BEGIN → starts exercise, DONE → advances
+  const completeBreathing = useCallback((mode: 'manual' | 'timer') => {
+    setElapsedSeconds(totalBreathingSeconds);
+    setBreathingCompletionMode(mode);
+    setBreathingState('completed');
+    settleBreathingAnimation(true);
+  }, [settleBreathingAnimation, totalBreathingSeconds]);
+
+  useEffect(() => {
+    if (!isBreathing || breathingState !== 'running') {
+      return;
+    }
+
+    const startedAt = Date.now();
+    const intervalId = setInterval(() => {
+      const nextElapsedSeconds = Math.min(
+        (Date.now() - startedAt) / 1000,
+        totalBreathingSeconds
+      );
+
+      setElapsedSeconds(nextElapsedSeconds);
+
+      if (nextElapsedSeconds >= totalBreathingSeconds) {
+        clearInterval(intervalId);
+        completeBreathing('timer');
+      }
+    }, 250);
+
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [breathingState, completeBreathing, isBreathing, totalBreathingSeconds]);
+
   useEffect(() => {
     if (cardIndex == null) return;
+
+    if (isReadOnly) {
+      registerConfig(cardIndex, {
+        centerIcon: <Ionicons name="eye-outline" size={28} color="#06290C" />,
+        centerLabel: 'REVIEW',
+        disabled: true,
+      });
+      return;
+    }
+
+    if (isBreathing) {
+      registerConfig(cardIndex, {
+        centerIcon: (
+          <Ionicons
+            name={
+              breathingState === 'idle'
+                ? 'leaf-outline'
+                : breathingState === 'running'
+                  ? 'checkmark'
+                  : 'refresh'
+            }
+            size={28}
+            color="#06290C"
+          />
+        ),
+        centerLabel:
+          breathingState === 'idle'
+            ? 'BEGIN'
+            : breathingState === 'running'
+              ? 'MARK DONE'
+              : 'START AGAIN',
+        onCenterPress: () => {
+          if (breathingState === 'idle') {
+            startBreathing();
+            return;
+          }
+
+          if (breathingState === 'running') {
+            completeBreathing('manual');
+            return;
+          }
+
+          resetBreathing();
+        },
+      });
+      return;
+    }
 
     registerConfig(cardIndex, {
       centerIcon: (
         <Ionicons
-          name={isActive ? 'checkmark' : 'leaf-outline'}
+          name={isMindfulBegun ? 'checkmark' : 'leaf-outline'}
           size={28}
           color="#06290C"
         />
       ),
-      centerLabel: isActive ? 'DONE' : 'BEGIN',
+      centerLabel: isMindfulBegun ? 'CONTINUE' : 'BEGIN',
       onCenterPress: () => {
-        if (isActive) {
+        if (isMindfulBegun) {
           onContinue?.();
         } else {
-          startBreathing();
+          setIsMindfulBegun(true);
         }
       },
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cardIndex, isActive, onContinue, registerConfig]);
-
-  const isBreathing = card.type === 'breathing_exercise';
+  }, [
+    breathingState,
+    cardIndex,
+    completeBreathing,
+    isReadOnly,
+    isBreathing,
+    isMindfulBegun,
+    onContinue,
+    registerConfig,
+    resetBreathing,
+    startBreathing,
+  ]);
 
   return (
     <AccentCardShell
-      eyebrow={duration ? `Mindful · ${duration}` : 'Grounding'}
+      eyebrow={isBreathing ? 'Breathwork' : duration ? `Mindful · ${duration}` : 'Grounding'}
       title={card.title}
+      scrollable
     >
-      {/* Age Reversal subtitle */}
+      {/* Age Reversal Program subtitle */}
       {subtitle ? (
         <Text style={styles.mindfulSubtitle}>{subtitle}</Text>
       ) : null}
 
-      {/* Age Reversal benefit pills */}
+      {/* Age Reversal Program benefit pills */}
       {benefits && benefits.length > 0 ? (
         <View style={styles.mindfulBenefitsRow}>
           {benefits.map((benefit, i) => (
@@ -709,7 +1045,7 @@ function MindfulExerciseCardView({ card, cardIndex, onContinue }: { card: Mindfu
               <Animated.View style={[styles.breathingCircle, animatedCircleStyle]} />
               <View style={styles.breathingCore}>
                 <Ionicons
-                  name={isActive ? "medical-outline" : "water-outline"}
+                  name={breathingState === 'idle' ? 'water-outline' : 'medical-outline'}
                   size={32}
                   color="rgba(6, 41, 12, 0.4)"
                   style={{ marginBottom: 4 }}
@@ -717,24 +1053,77 @@ function MindfulExerciseCardView({ card, cardIndex, onContinue }: { card: Mindfu
               </View>
             </View>
 
-            {!isActive ? (
-              <Pressable
-                onPress={startBreathing}
-                style={({ pressed }) => [
-                  styles.startExerciseButton,
-                  pressed && { opacity: 0.8 }
-                ]}
-              >
-                <Text style={styles.startExerciseButtonText}>Begin Focus</Text>
-              </Pressable>
-            ) : (
-              <View style={{ alignItems: 'center' }}>
-                <Text style={styles.breathingStatusText}>Focus on your breath</Text>
+            {breathingState === 'idle' ? (
+              <>
+                <Text style={styles.breathingStatusText}>Begin guided breathing</Text>
                 <Text style={styles.breathingSubtext}>
-                  Inhale as it expands, exhale as it contracts
+                  Press begin when you are ready. Follow the pattern for the full set of cycles.
                 </Text>
+                <View style={styles.breathingMetaRow}>
+                  {cycles != null ? (
+                    <View style={styles.breathingMetaPill}>
+                      <Text style={styles.breathingMetaPillText}>{cycles} cycles</Text>
+                    </View>
+                  ) : null}
+                </View>
+                {breathingPatternLabel ? (
+                  <Text style={styles.breathingPatternText}>{breathingPatternLabel}</Text>
+                ) : null}
+              </>
+            ) : breathingState === 'running' && breathingPhaseState ? (
+              <>
+                <Text style={styles.breathingStatusText}>
+                  {getBreathingPhaseLabel(breathingPhaseState.phase)}
+                </Text>
+                <Text style={styles.breathingSubtext}>
+                  Cycle {breathingPhaseState.cycleNumber} of {cycles ?? 1}
+                </Text>
+                <View style={styles.breathingMetaRow}>
+                  {breathingPattern ? (
+                    <>
+                      <View style={styles.breathingMetaPill}>
+                        <Text style={styles.breathingMetaPillText}>{breathingPattern.inhaleSeconds}s inhale</Text>
+                      </View>
+                      {breathingPattern.holdSeconds ? (
+                        <View style={styles.breathingMetaPill}>
+                          <Text style={styles.breathingMetaPillText}>{breathingPattern.holdSeconds}s hold</Text>
+                        </View>
+                      ) : null}
+                      <View style={styles.breathingMetaPill}>
+                        <Text style={styles.breathingMetaPillText}>{breathingPattern.exhaleSeconds}s exhale</Text>
+                      </View>
+                    </>
+                  ) : null}
+                  <View style={styles.breathingMetaPill}>
+                    <Text style={styles.breathingMetaPillText}>{getBreathingPhaseLabel(breathingPhaseState.phase)}</Text>
+                  </View>
+                </View>
+              </>
+            ) : (
+              <View style={styles.breathingCompleteBlock}>
+                <Text style={styles.breathingStatusText}>Round complete</Text>
+                <Text style={styles.breathingSubtext}>Repeat it or continue.</Text>
+                <View style={styles.breathingMetaRow}>
+                  {cycles != null ? (
+                    <View style={styles.breathingMetaPill}>
+                      <Text style={styles.breathingMetaPillText}>{cycles} cycles</Text>
+                    </View>
+                  ) : null}
+                </View>
+                {isReadOnly ? (
+                  <Text style={styles.breathingInstructions}>This past day is now in review mode.</Text>
+                ) : (
+                  <View style={styles.breathingActionRow}>
+                    <GhostVisualButton label="Repeat" onPress={resetBreathing} />
+                    <PrimaryVisualButton label="Continue" onPress={onContinue} />
+                  </View>
+                )}
               </View>
             )}
+
+            {breathingInstructions ? (
+              <Text style={styles.breathingInstructions}>{breathingInstructions}</Text>
+            ) : null}
           </View>
         ) : (
           <View style={{ width: '100%' }}>
@@ -767,21 +1156,26 @@ function ExerciseRoutineCardView({
   cardIndex,
   onContinue,
   routineStorageKey,
+  hasEffortCheck = false,
+  isReadOnly = false,
   onProgressChange,
 }: {
   card: ExerciseRoutineCard;
   cardIndex?: number;
   onContinue?: () => void;
   routineStorageKey?: string;
+  hasEffortCheck?: boolean;
+  isReadOnly?: boolean;
   onProgressChange?: () => void;
 }) {
   const [completedItems, setCompletedItems] = useState<Set<string>>(new Set());
+  const [effortLevel, setEffortLevel] = useState<RoutineEffortLevel | null>(null);
   const [hasRestored, setHasRestored] = useState(false);
   const [showSafetySheet, setShowSafetySheet] = useState(false);
   const { registerConfig } = useContext(TransportContext);
 
   // ── Detect format ──────────────────────────────────────────────────────────
-  // Age Reversal format: single exercise with `name` + `steps` at top level
+  // Age Reversal Program format: single exercise with `name` + `steps` at top level
   const isAgeReversalFormat = Boolean(card.name && Array.isArray(card.steps));
   const routineItems = isAgeReversalFormat ? [] : (card.exercises ?? []);
 
@@ -789,35 +1183,66 @@ function ExerciseRoutineCardView({
   const totalItems = isAgeReversalFormat ? 1 : routineItems.length;
   const completedCount = completedItems.size;
   const allDone = completedCount >= totalItems && totalItems > 0;
+  const effortCheckApplicable = hasEffortCheck && isAgeReversalFormat;
+  const effortSelectionRequired = effortCheckApplicable && allDone;
+  const effortSelectionComplete = !effortSelectionRequired || effortLevel !== null;
 
   // Register transport config: shows completion progress
   useEffect(() => {
     if (cardIndex == null) return;
 
+    if (isReadOnly) {
+      registerConfig(cardIndex, {
+        centerIcon: <Ionicons name="eye-outline" size={28} color="#06290C" />,
+        centerLabel: 'REVIEW',
+        disabled: true,
+      });
+      return;
+    }
+
     registerConfig(cardIndex, {
       centerIcon: (
         <Ionicons
-          name={allDone ? 'checkmark-circle' : 'checkmark'}
+          name={
+            allDone
+              ? effortSelectionComplete
+                ? 'checkmark-circle'
+                : 'help-circle-outline'
+              : 'checkmark'
+          }
           size={28}
-          color={allDone ? '#16a34a' : '#06290C'}
+          color={allDone && effortSelectionComplete ? '#16a34a' : '#06290C'}
         />
       ),
-      centerLabel: allDone
-        ? 'ALL DONE ✓'
-        : totalItems > 1
-          ? `${completedCount}/${totalItems} DONE`
-          : 'MARK DONE',
+      centerLabel:
+        allDone
+          ? effortSelectionRequired && !effortLevel
+            ? 'CHOOSE EFFORT'
+            : 'CONTINUE'
+          : totalItems > 1
+            ? `${completedCount}/${totalItems} DONE`
+            : 'MARK DONE',
       onCenterPress: () => {
-        if (allDone) {
+        if (allDone && effortSelectionComplete) {
           onContinue?.();
         }
-        // If not all done, button does nothing — user needs to check items on the card
       },
-      disabled: !allDone,
+      disabled: !allDone || !effortSelectionComplete,
     });
-  }, [cardIndex, allDone, completedCount, totalItems, onContinue, registerConfig]);
+  }, [
+    allDone,
+    cardIndex,
+    completedCount,
+    effortLevel,
+    effortSelectionComplete,
+    effortSelectionRequired,
+    onContinue,
+    isReadOnly,
+    registerConfig,
+    totalItems,
+  ]);
 
-  // For Age Reversal, the single item id is the card name
+  // For Age Reversal Program, the single item id is the card name
   const singleItemId = card.name ?? 'exercise';
 
   React.useEffect(() => {
@@ -838,20 +1263,20 @@ function ExerciseRoutineCardView({
 
         if (!rawValue) {
           setCompletedItems(new Set());
+          setEffortLevel(null);
           setHasRestored(true);
           return;
         }
 
-        const parsed = JSON.parse(rawValue);
-        const nextItems = Array.isArray(parsed)
-          ? parsed.filter((value): value is string => typeof value === 'string')
-          : [];
+        const progressRecord = parseRoutineProgress(rawValue);
 
-        setCompletedItems(new Set(nextItems));
+        setCompletedItems(new Set(progressRecord.completedItems));
+        setEffortLevel(progressRecord.effortLevel);
       } catch (error) {
         console.error('Failed to restore routine checklist progress', error);
         if (!isCancelled) {
           setCompletedItems(new Set());
+          setEffortLevel(null);
         }
       } finally {
         if (!isCancelled) {
@@ -873,13 +1298,19 @@ function ExerciseRoutineCardView({
     }
 
     const persistProgress = async () => {
-      if (!routineStorageKey) {
+      if (!routineStorageKey || isReadOnly) {
         onProgressChange?.();
         return;
       }
 
       try {
-        await AsyncStorage.setItem(routineStorageKey, JSON.stringify(Array.from(completedItems)));
+        await AsyncStorage.setItem(
+          routineStorageKey,
+          serializeRoutineProgress({
+            completedItems: Array.from(completedItems),
+            effortLevel,
+          })
+        );
       } catch (error) {
         console.error('Failed to persist routine checklist progress', error);
       } finally {
@@ -888,9 +1319,13 @@ function ExerciseRoutineCardView({
     };
 
     void persistProgress();
-  }, [completedItems, hasRestored, onProgressChange, routineStorageKey]);
+  }, [completedItems, effortLevel, hasRestored, isReadOnly, onProgressChange, routineStorageKey]);
 
   const toggleItem = (id: string) => {
+    if (isReadOnly) {
+      return;
+    }
+
     setCompletedItems((prev) => {
       const next = new Set(prev);
       if (next.has(id)) {
@@ -900,9 +1335,69 @@ function ExerciseRoutineCardView({
       }
       return next;
     });
+
+    setEffortLevel(null);
   };
 
-  // ── Age Reversal single-exercise render ────────────────────────────────────
+  const renderEffortCheck = () => {
+    if (!effortCheckApplicable || !allDone) {
+      return null;
+    }
+
+    return (
+      <View style={styles.effortCheckPanel}>
+        <Text style={styles.effortCheckTitle}>How did this routine go?</Text>
+        <Text style={styles.effortCheckHint}>
+          Choose whether you completed the full prescribed volume or a shorter version.
+        </Text>
+        <View style={styles.effortCheckOptions}>
+          <Pressable
+            onPress={() => setEffortLevel('full')}
+            style={[
+              styles.effortCheckOption,
+              effortLevel === 'full' && styles.effortCheckOptionSelected,
+            ]}
+          >
+            <Text
+              style={[
+                styles.effortCheckOptionTitle,
+                effortLevel === 'full' && styles.effortCheckOptionTitleSelected,
+              ]}
+            >
+              Completed full routine
+            </Text>
+          </Pressable>
+          <Pressable
+            onPress={() => setEffortLevel('shorter')}
+            style={[
+              styles.effortCheckOption,
+              effortLevel === 'shorter' && styles.effortCheckOptionSelected,
+            ]}
+          >
+            <Text
+              style={[
+                styles.effortCheckOptionTitle,
+                effortLevel === 'shorter' && styles.effortCheckOptionTitleSelected,
+              ]}
+            >
+              Did a shorter version
+            </Text>
+          </Pressable>
+        </View>
+        {effortLevel ? (
+          <Text style={styles.effortCheckSavedText}>
+            Saved for today&apos;s progress. You can change it before finishing the day.
+          </Text>
+        ) : (
+          <Text style={styles.effortCheckSavedText}>
+            Pick one to count this routine as complete.
+          </Text>
+        )}
+      </View>
+    );
+  };
+
+  // ── Age Reversal Program single-exercise render ────────────────────────────
   if (isAgeReversalFormat) {
     const isCompleted = completedItems.has(singleItemId);
     const steps = card.steps ?? [];
@@ -987,9 +1482,11 @@ function ExerciseRoutineCardView({
           {/* Full-card Done button */}
           <Pressable
             onPress={() => toggleItem(singleItemId)}
+            disabled={isReadOnly}
             style={[
               styles.exerciseDoneButton,
               isCompleted && styles.exerciseDoneButtonCompleted,
+              isReadOnly && styles.exerciseDoneButtonReadOnly,
             ]}
           >
             {isCompleted ? (
@@ -1004,6 +1501,10 @@ function ExerciseRoutineCardView({
               {isCompleted ? 'Done!' : 'Mark as Complete'}
             </Text>
           </Pressable>
+
+          {isReadOnly ? (
+            <Text style={styles.reviewModeHint}>This past day is now in review mode.</Text>
+          ) : renderEffortCheck()}
         </View>
       </CardShell>
     );
@@ -1028,10 +1529,12 @@ function ExerciseRoutineCardView({
             <Pressable
               key={itemId}
               onPress={() => toggleItem(itemId)}
+              disabled={isReadOnly}
               style={[
                 styles.routineItem,
                 index < routineItems.length - 1 && styles.routineItemBorder,
                 isCompleted && { opacity: 0.5 },
+                isReadOnly && { opacity: isCompleted ? 0.5 : 1 },
               ]}
             >
               <View style={styles.routineItemHeader}>
@@ -1068,6 +1571,10 @@ function ExerciseRoutineCardView({
           );
         })}
       </View>
+
+      {isReadOnly ? (
+        <Text style={styles.reviewModeHint}>This past day is now in review mode.</Text>
+      ) : renderEffortCheck()}
     </CardShell>
   );
 }
@@ -1099,11 +1606,54 @@ function formatAudioTime(seconds: number): string {
   return `${mins}:${secs.toString().padStart(2, '0')}`;
 }
 
-function AudioCardView({ card, cardIndex }: { card: AudioCard; cardIndex?: number; }) {
+function getBreathingPhaseLabel(phase: BreathingPhase): string {
+  switch (phase) {
+    case 'inhale':
+      return 'Inhale';
+    case 'hold':
+      return 'Hold';
+    case 'exhale':
+      return 'Exhale';
+    default:
+      return 'Breathe';
+  }
+}
+
+function describeBreathingPattern(pattern: BreathingExerciseCard['pattern']): string {
+  const parts = [`${pattern.inhaleSeconds}s inhale`];
+
+  if (pattern.holdSeconds) {
+    parts.push(`${pattern.holdSeconds}s hold`);
+  }
+
+  parts.push(`${pattern.exhaleSeconds}s exhale`);
+
+  return parts.join(' · ');
+}
+
+function AudioCardView({
+  card,
+  cardIndex,
+  isReadOnly = false,
+  onAudioCompleted,
+}: {
+  card: AudioCard;
+  cardIndex?: number;
+  isReadOnly?: boolean;
+  onAudioCompleted?: (payload: {
+    audioStoragePath: string;
+    cardIndex: number | null;
+    completionMode: 'manual' | 'auto';
+    listenSeconds: number;
+    percentage: number;
+    totalSeconds: number;
+  }) => void;
+}) {
   const { registerConfig } = useContext(TransportContext);
   const playback = useProgramAudioPlayback(card.audioStoragePath, card.durationSeconds, card.title);
   const [progressTrackWidth, setProgressTrackWidth] = useState(0);
   const [scrubProgress, setScrubProgress] = useState<number | null>(null);
+  const [completionMode, setCompletionMode] = useState<'manual' | 'auto' | null>(null);
 
   // Split the title for serif styling: last word italic, rest regular
   const titleParts = useMemo(() => {
@@ -1163,6 +1713,41 @@ function AudioCardView({ card, cardIndex }: { card: AudioCard; cardIndex?: numbe
     scrubProgress != null && playback.duration > 0
       ? playback.duration * scrubProgress
       : playback.currentTime;
+  const thresholds = useMemo(
+    () => (playback.duration > 0 ? getAudioThresholds(playback.duration) : null),
+    [playback.duration]
+  );
+  const isCompleted = completionMode !== null;
+  const canMarkDone = Boolean(
+    thresholds && playback.currentTime >= thresholds.markAsDone
+  );
+  const markDoneUnlockLabel = useMemo(
+    () => (thresholds ? formatAudioTime(thresholds.markAsDone) : null),
+    [thresholds]
+  );
+
+  useEffect(() => {
+    setCompletionMode(null);
+  }, [card.audioStoragePath]);
+
+  const completeAudio = useCallback(
+    (mode: 'manual' | 'auto') => {
+      setCompletionMode(mode);
+      const totalSeconds = playback.duration > 0 ? playback.duration : card.durationSeconds;
+      const listenSeconds = Math.max(0, playback.currentTime);
+      const percentage = totalSeconds > 0 ? Math.min(1, listenSeconds / totalSeconds) : 0;
+
+      onAudioCompleted?.({
+        audioStoragePath: card.audioStoragePath,
+        cardIndex: cardIndex ?? null,
+        completionMode: mode,
+        listenSeconds,
+        percentage,
+        totalSeconds,
+      });
+    },
+    [card.audioStoragePath, card.durationSeconds, cardIndex, onAudioCompleted, playback.currentTime, playback.duration]
+  );
 
   useEffect(() => {
     if (cardIndex == null) return;
@@ -1182,11 +1767,22 @@ function AudioCardView({ card, cardIndex }: { card: AudioCard; cardIndex?: numbe
             color="#06290C"
           />
         ),
-        centerLabel: playback.isPlaying ? 'PAUSE' : 'PLAY',
-        onCenterPress: playback.togglePlayback,
+        centerLabel: isReadOnly ? 'REVIEW' : playback.isPlaying ? 'PAUSE' : 'PLAY',
+        onCenterPress: isReadOnly ? undefined : playback.togglePlayback,
+        disabled: isReadOnly,
       });
     }
-  }, [cardIndex, playback.isPlaying, playback.isLoading, playback.togglePlayback, registerConfig]);
+  }, [cardIndex, isReadOnly, playback.isPlaying, playback.isLoading, playback.togglePlayback, registerConfig]);
+
+  useEffect(() => {
+    if (!thresholds || isCompleted) {
+      return;
+    }
+
+    if (playback.currentTime >= thresholds.autoComplete) {
+      completeAudio('auto');
+    }
+  }, [completeAudio, isCompleted, playback.currentTime, thresholds]);
 
   return (
     <View style={[styles.darkCardShell, styles.cardShellContinuous, styles.cardShadow, audioStyles.container]}>
@@ -1206,6 +1802,11 @@ function AudioCardView({ card, cardIndex }: { card: AudioCard; cardIndex?: numbe
           />
         </Svg>
       </View>
+
+      <FadingScrollView
+        contentContainerStyle={audioStyles.scrollContent}
+        fadeColors={['rgba(6,41,12,0)', '#06290C']}
+      >
 
       {/* Eyebrow */}
       <Text style={audioStyles.eyebrow}>{eyebrowLabel}</Text>
@@ -1242,8 +1843,8 @@ function AudioCardView({ card, cardIndex }: { card: AudioCard; cardIndex?: numbe
         <View
           style={audioStyles.progressTrack}
           onLayout={(event) => setProgressTrackWidth(event.nativeEvent.layout.width)}
-          onStartShouldSetResponder={() => playback.duration > 0}
-          onMoveShouldSetResponder={() => playback.duration > 0}
+          onStartShouldSetResponder={() => !isReadOnly && playback.duration > 0}
+          onMoveShouldSetResponder={() => !isReadOnly && playback.duration > 0}
           onResponderGrant={(event) => previewScrubPosition(event.nativeEvent.locationX)}
           onResponderMove={(event) => previewScrubPosition(event.nativeEvent.locationX)}
           onResponderRelease={(event) => commitScrubPosition(event.nativeEvent.locationX)}
@@ -1270,6 +1871,50 @@ function AudioCardView({ card, cardIndex }: { card: AudioCard; cardIndex?: numbe
         </View>
       </View>
 
+      <View style={audioStyles.completionZone}>
+        {isCompleted ? (
+          <>
+            <View style={audioStyles.completionBadge}>
+              <Ionicons name="checkmark-circle" size={16} color="#E3F3E5" />
+              <Text style={audioStyles.completionBadgeText}>Completed</Text>
+            </View>
+            <Text style={audioStyles.completionHint}>
+              {completionMode === 'auto'
+                ? 'Completed after 75% listened. You can keep listening if you want.'
+                : 'Marked complete. You can keep listening to the rest if you want.'}
+            </Text>
+            <View style={audioStyles.completionButtonWrap}>
+              <PrimaryVisualButton label="Completed" inverted disabled />
+            </View>
+          </>
+        ) : canMarkDone && !isReadOnly ? (
+          <>
+            <View style={audioStyles.completionBadgeMuted}>
+              <Ionicons name="radio-button-on-outline" size={14} color="rgba(227, 243, 229, 0.78)" />
+              <Text style={audioStyles.completionBadgeMutedText}>Completion available</Text>
+            </View>
+            <Text style={audioStyles.completionHint}>
+              You can mark this done now, or keep listening until it completes automatically at 75%.
+            </Text>
+            <View style={audioStyles.completionButtonWrap}>
+              <PrimaryVisualButton
+                label="Mark as done"
+                inverted
+                onPress={() => completeAudio('manual')}
+              />
+            </View>
+          </>
+        ) : markDoneUnlockLabel && !isReadOnly ? (
+          <Text style={audioStyles.completionHint}>
+            Mark as done unlocks after {markDoneUnlockLabel} of listening.
+          </Text>
+        ) : isReadOnly ? (
+          <Text style={audioStyles.completionHint}>
+            This past day is now in review mode.
+          </Text>
+        ) : null}
+      </View>
+
       {/* Error display */}
       {playback.error ? (
         <View style={audioStyles.errorRow}>
@@ -1277,13 +1922,14 @@ function AudioCardView({ card, cardIndex }: { card: AudioCard; cardIndex?: numbe
           <Text style={audioStyles.errorText}>{playback.error}</Text>
         </View>
       ) : null}
+      </FadingScrollView>
     </View>
   );
 }
 
 function CalmTriggerCardView({ card }: { card: CalmTriggerCard; }) {
   return (
-    <AccentCardShell eyebrow="CALM" title="Expanded calm tools are coming soon">
+    <AccentCardShell eyebrow="CALM" title="Expanded calm tools are coming soon" scrollable>
       <Text style={styles.calmContext}>
         We are still finishing this dedicated calm reset. For now, continue with today&apos;s guided sessions and return here in a future update.
       </Text>
@@ -1298,12 +1944,14 @@ function JournalCardView({
   onContinue,
   reflectionStorageKey,
   programReflectionIdentity,
+  isReadOnly = false,
 }: {
   card: JournalCard;
   cardIndex?: number;
   onContinue?: () => void;
   reflectionStorageKey?: string;
   programReflectionIdentity?: ProgramReflectionIdentity;
+  isReadOnly?: boolean;
 }) {
   const [value, setValue] = useState('');
   const [savedValue, setSavedValue] = useState('');
@@ -1392,6 +2040,11 @@ function JournalCardView({
   }, [applySavedReflection, reflectionStorageKey, remoteIdentity]);
 
   const handleSaveAndContinue = async () => {
+    if (isReadOnly) {
+      onContinue?.();
+      return;
+    }
+
     if (!shouldSaveDraft) {
       onContinue?.();
       return;
@@ -1422,6 +2075,10 @@ function JournalCardView({
   };
 
   const handleEditReflection = () => {
+    if (isReadOnly) {
+      return;
+    }
+
     setValue(savedValue);
     setIsEditingSavedReflection(true);
   };
@@ -1434,6 +2091,15 @@ function JournalCardView({
   // Register transport config for journal
   useEffect(() => {
     if (cardIndex == null) return;
+
+    if (isReadOnly) {
+      registerConfig(cardIndex, {
+        centerIcon: <Ionicons name="eye-outline" size={28} color="#06290C" />,
+        centerLabel: 'REVIEW',
+        disabled: true,
+      });
+      return;
+    }
 
     if (hasSavedReflection) {
       // Already saved — center button becomes "CONTINUE"
@@ -1464,24 +2130,28 @@ function JournalCardView({
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cardIndex, hasSavedReflection, canSave, isSaving, onContinue, registerConfig]);
+  }, [cardIndex, hasSavedReflection, canSave, isReadOnly, isSaving, onContinue, registerConfig]);
 
   if (hasSavedReflection) {
     return (
-      <CardShell eyebrow="Reflection · Saved" title={card.prompt}>
+      <CardShell eyebrow="Reflection · Saved" title={card.prompt} scrollable>
         <View style={styles.journalSavedBox}>
           <Text style={styles.journalSavedLabel}>Your reflection</Text>
           <Text style={styles.journalSavedText}>{savedValue}</Text>
         </View>
 
-        <View style={styles.journalButtonRow}>
-          <View style={{ flexShrink: 1 }}>
-            <PrimaryVisualButton label="Continue" onPress={onContinue} />
+        {isReadOnly ? (
+          <Text style={styles.reviewModeHint}>This past day is now in review mode.</Text>
+        ) : (
+          <View style={styles.journalButtonRow}>
+            <View style={{ flexShrink: 1 }}>
+              <PrimaryVisualButton label="Continue" onPress={onContinue} />
+            </View>
+            <View style={{ flexShrink: 1 }}>
+              <GhostVisualButton label="Edit Reflection" onPress={handleEditReflection} />
+            </View>
           </View>
-          <View style={{ flexShrink: 1 }}>
-            <GhostVisualButton label="Edit Reflection" onPress={handleEditReflection} />
-          </View>
-        </View>
+        )}
       </CardShell>
     );
   }
@@ -1490,6 +2160,7 @@ function JournalCardView({
     <CardShell
       eyebrow={isEditingSavedReflection ? 'Reflection · Editing' : 'Reflection · Optional'}
       title={card.prompt}
+      scrollable
     >
       {card.helperText ? (
         <Text style={styles.genericDesc}>{card.helperText}</Text>
@@ -1500,25 +2171,34 @@ function JournalCardView({
         placeholder="Start writing..."
         placeholderTextColor="#9CA39E"
         value={value}
-        onChangeText={setValue}
+        onChangeText={isReadOnly ? undefined : setValue}
         textAlignVertical="top"
         style={styles.journalInput}
+        editable={!isReadOnly}
       />
 
-      <View style={styles.journalButtonRow}>
-        <View style={{ flexShrink: 1 }}>
-          <PrimaryVisualButton
-            label={isSaving ? 'Saving...' : shouldSaveDraft ? (isEditingSavedReflection ? 'Update & Continue' : 'Save & Continue') : 'Continue'}
-            onPress={() => void handleSaveAndContinue()}
-          />
+      {isReadOnly ? (
+        <Text style={styles.reviewModeHint}>
+          {savedValue.trim().length > 0
+            ? 'This past day is now in review mode.'
+            : 'No reflection was saved for this day.'}
+        </Text>
+      ) : (
+        <View style={styles.journalButtonRow}>
+          <View style={{ flexShrink: 1 }}>
+            <PrimaryVisualButton
+              label={isSaving ? 'Saving...' : shouldSaveDraft ? (isEditingSavedReflection ? 'Update & Continue' : 'Save & Continue') : 'Continue'}
+              onPress={() => void handleSaveAndContinue()}
+            />
+          </View>
+          <View style={{ flexShrink: 1 }}>
+            <GhostVisualButton
+              label={isEditingSavedReflection ? 'Cancel Edit' : 'Skip'}
+              onPress={isEditingSavedReflection ? handleCancelEdit : onContinue}
+            />
+          </View>
         </View>
-        <View style={{ flexShrink: 1 }}>
-          <GhostVisualButton
-            label={isEditingSavedReflection ? 'Cancel Edit' : 'Skip'}
-            onPress={isEditingSavedReflection ? handleCancelEdit : onContinue}
-          />
-        </View>
-      </View>
+      )}
 
       {saveError ? (
         <Text style={styles.journalErrorText}>{saveError}</Text>
@@ -1538,45 +2218,68 @@ function CloseCardViewWithState({
   card,
   isCompleted = false,
   isPartial = false,
+  isReadOnly = false,
+  readOnlyState,
   isFinalProgramDay = false,
   completionDescription,
   isCompleting = false,
   primaryActionLabel,
+  primaryActionDisabled = false,
   onCompleteDay,
   onBackToProgram,
 }: {
   card: CloseCard;
   isCompleted?: boolean;
   isPartial?: boolean;
+  isReadOnly?: boolean;
+  readOnlyState?: DayState;
   isFinalProgramDay?: boolean;
   completionDescription?: string | null;
   isCompleting?: boolean;
   primaryActionLabel?: string;
+  primaryActionDisabled?: boolean;
   onCompleteDay?: () => void;
   onBackToProgram?: () => void;
 }) {
   const actionLabel = isCompleted
     ? 'Back to Program'
+    : isReadOnly
+      ? 'Back to Program'
     : primaryActionLabel
       ? primaryActionLabel
     : isPartial
-      ? 'Mark Fully Complete'
+      ? 'Mark Complete'
     : isCompleting
       ? 'Completing...'
       : isFinalProgramDay
         ? 'Complete Program Day'
         : 'Complete Day';
+  const eyebrow = isReadOnly
+    ? readOnlyState === 'skipped'
+      ? 'Day closed'
+      : readOnlyState === 'partial'
+        ? 'Saved as partial'
+        : 'Review mode'
+    : isCompleted
+      ? 'Review mode'
+      : isPartial
+        ? 'Saved as partial'
+        : "Today's close";
 
   return (
-    <DarkCardShell eyebrow={isCompleted ? 'Review mode' : isPartial ? 'Saved as partial' : "Today's close"} title={card.message}>
+    <DarkCardShell eyebrow={eyebrow} title={card.message} scrollable>
       {card.secondaryMessage ? (
         <Text style={styles.closeSub}>{card.secondaryMessage}</Text>
       ) : null}
 
-      {(isCompleted || isPartial) && completionDescription ? (
+      {(isCompleted || isPartial || isReadOnly) && completionDescription ? (
         <View style={styles.closeReviewBox}>
           <Text style={styles.closeReviewLabel}>
-            {isCompleted ? (isFinalProgramDay ? 'Program status' : 'Next unlock') : 'Day status'}
+            {isCompleted
+              ? isFinalProgramDay
+                ? 'Program status'
+                : 'Next unlock'
+              : 'Day status'}
           </Text>
           <Text style={styles.closeReviewText}>{completionDescription}</Text>
         </View>
@@ -1585,7 +2288,8 @@ function CloseCardViewWithState({
       <PrimaryVisualButton
         label={actionLabel}
         inverted
-        onPress={isCompleted ? onBackToProgram : onCompleteDay}
+        onPress={isCompleted || isReadOnly ? onBackToProgram : onCompleteDay}
+        disabled={isReadOnly ? false : primaryActionDisabled}
       />
     </DarkCardShell>
   );
@@ -1603,8 +2307,12 @@ export function CardRenderer({
   onContinue,
   reflectionStorageKey,
   routineStorageKey,
+  checklistStorageKey,
+  hasEffortCheck,
+  isReadOnly = false,
   programReflectionContext,
   onRoutineProgressChange,
+  onAudioCompleted,
   closeCardState,
 }: {
   card: ContentCard;
@@ -1614,6 +2322,9 @@ export function CardRenderer({
   onContinue?: () => void;
   reflectionStorageKey?: string;
   routineStorageKey?: string;
+  checklistStorageKey?: string;
+  hasEffortCheck?: boolean;
+  isReadOnly?: boolean;
   programReflectionContext?: {
     userId?: string;
     programSlug: string;
@@ -1621,13 +2332,24 @@ export function CardRenderer({
     cardIndex: number;
   };
   onRoutineProgressChange?: () => void;
+  onAudioCompleted?: (payload: {
+    audioStoragePath: string;
+    cardIndex: number | null;
+    completionMode: 'manual' | 'auto';
+    listenSeconds: number;
+    percentage: number;
+    totalSeconds: number;
+  }) => void;
   closeCardState?: {
     isCompleted?: boolean;
     isPartial?: boolean;
+    isReadOnly?: boolean;
+    readOnlyState?: DayState;
     isFinalProgramDay?: boolean;
     completionDescription?: string | null;
     isCompleting?: boolean;
     primaryActionLabel?: string;
+    primaryActionDisabled?: boolean;
     onCompleteDay?: () => void;
     onBackToProgram?: () => void;
   };
@@ -1638,10 +2360,25 @@ export function CardRenderer({
     case 'lesson':
       return <LessonCardView card={card} cardIndex={cardIndex} />;
     case 'action_step':
-      return <ActionStepCardView card={card} cardIndex={cardIndex} onContinue={onContinue} />;
+      return (
+        <ActionStepCardView
+          card={card}
+          cardIndex={cardIndex}
+          checklistStorageKey={checklistStorageKey}
+          isReadOnly={isReadOnly}
+          onContinue={onContinue}
+        />
+      );
     case 'mindfulness_exercise':
     case 'breathing_exercise':
-      return <MindfulExerciseCardView card={card} cardIndex={cardIndex} onContinue={onContinue} />;
+      return (
+        <MindfulExerciseCardView
+          card={card}
+          cardIndex={cardIndex}
+          onContinue={onContinue}
+          isReadOnly={isReadOnly}
+        />
+      );
     case 'exercise_routine':
       return (
         <ExerciseRoutineCardView
@@ -1649,11 +2386,20 @@ export function CardRenderer({
           cardIndex={cardIndex}
           onContinue={onContinue}
           routineStorageKey={routineStorageKey}
+          hasEffortCheck={hasEffortCheck}
+          isReadOnly={isReadOnly}
           onProgressChange={onRoutineProgressChange}
         />
       );
     case 'audio':
-      return <AudioCardView card={card} cardIndex={cardIndex} />;
+      return (
+        <AudioCardView
+          card={card}
+          cardIndex={cardIndex}
+          isReadOnly={isReadOnly}
+          onAudioCompleted={onAudioCompleted}
+        />
+      );
     case 'calm_trigger':
       return <CalmTriggerCardView card={card} />;
     case 'journal':
@@ -1663,6 +2409,7 @@ export function CardRenderer({
           cardIndex={cardIndex}
           onContinue={onContinue}
           reflectionStorageKey={reflectionStorageKey}
+          isReadOnly={isReadOnly}
           programReflectionIdentity={
             programReflectionContext?.userId
               ? {
@@ -1691,8 +2438,18 @@ export function CardRenderer({
 
 const styles = StyleSheet.create({
   // FadingScrollView
-  scrollWrapper: { flexShrink: 1 },
-  scrollContent: { paddingBottom: 32 },
+  scrollWrapper: {
+    flex: 1,
+    minHeight: 0,
+    width: '100%',
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: 32,
+  },
   fadeMask: {
     position: 'absolute',
     bottom: -10,
@@ -1736,7 +2493,8 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   cardShell: {
-    flexShrink: 1,
+    flex: 1,
+    minHeight: 0,
     width: '100%',
     borderRadius: 28,
     borderWidth: 1,
@@ -1750,7 +2508,8 @@ const styles = StyleSheet.create({
     borderCurve: 'continuous',
   },
   accentCardShell: {
-    flexShrink: 1,
+    flex: 1,
+    minHeight: 0,
     width: '100%',
     borderRadius: 28,
     borderWidth: 1,
@@ -1761,7 +2520,8 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   darkCardShell: {
-    flexShrink: 1,
+    flex: 1,
+    minHeight: 0,
     width: '100%',
     borderRadius: 28,
     backgroundColor: '#06290C', // forest
@@ -1824,6 +2584,9 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     backgroundColor: '#06290C',
   },
+  primaryButtonDisabled: {
+    opacity: 0.45,
+  },
   primaryButtonTextLight: {
     fontFamily: 'Satoshi-Bold',
     fontSize: 15,
@@ -1877,6 +2640,7 @@ const styles = StyleSheet.create({
   // White canvas, editorial layout — matches rc_day_view_v2_refined.html
   introCard: {
     flex: 1,
+    minHeight: 0,
     width: '100%',
     borderRadius: 24,
     backgroundColor: '#FFFFFF',
@@ -1893,6 +2657,9 @@ const styles = StyleSheet.create({
   introAccentBar: {
     height: 4,
     width: '100%',
+  },
+  introScrollContent: {
+    flexGrow: 1,
   },
   // Top row: phase pill (left) + duration (right)
   introTopRow: {
@@ -1934,7 +2701,7 @@ const styles = StyleSheet.create({
   },
   // Hero section — flexible, fills remaining space
   introHero: {
-    flex: 1,
+    flexGrow: 1,
     paddingHorizontal: 22,
     paddingTop: 20,
     paddingBottom: 16,
@@ -1964,7 +2731,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 21,
     color: 'rgba(6, 41, 12, 0.55)',
-    flex: 1,
   },
   // Params row — horizontal flex of param boxes
   introParamsRow: {
@@ -2000,7 +2766,8 @@ const styles = StyleSheet.create({
 
   // Lesson Card
   lessonCardShell: {
-    flexShrink: 1,
+    flex: 1,
+    minHeight: 0,
     width: '100%',
     borderRadius: 28,
     backgroundColor: '#FFFFFF',
@@ -2073,6 +2840,31 @@ const styles = StyleSheet.create({
   },
   actionBody: {
     marginTop: 8,
+  },
+  checklistItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    paddingVertical: 18,
+  },
+  checklistItemText: {
+    flex: 1,
+    fontFamily: 'Satoshi-Medium',
+    fontSize: 16,
+    lineHeight: 24,
+    color: '#1F2937',
+  },
+  checklistQuoteContainer: {
+    marginTop: 18,
+    borderRadius: 16,
+    backgroundColor: 'rgba(6, 41, 12, 0.04)',
+    paddingHorizontal: 18,
+    paddingVertical: 16,
+  },
+  checklistQuoteText: {
+    fontFamily: 'Erode',
+    fontSize: 19,
+    lineHeight: 27,
+    color: '#06290C',
   },
   whyWorksContainer: {
     marginTop: 32,
@@ -2219,6 +3011,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 28,
     color: '#06290C',
+  },
+  reviewModeHint: {
+    marginTop: 16,
+    fontFamily: 'Satoshi-Medium',
+    fontSize: 13,
+    lineHeight: 20,
+    color: 'rgba(6, 41, 12, 0.52)',
   },
 
   // Close Card
@@ -2374,18 +3173,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(6, 41, 12, 0.05)',
   },
-  startExerciseButton: {
-    backgroundColor: '#06290C',
-    paddingHorizontal: 32,
-    paddingVertical: 16,
-    borderRadius: 20,
-    marginTop: 8,
-  },
-  startExerciseButtonText: {
-    color: '#E3F3E5',
-    fontFamily: 'Satoshi-Bold',
-    fontSize: 15,
-  },
   breathingStatusText: {
     fontFamily: 'Satoshi-Bold',
     fontSize: 18,
@@ -2396,8 +3183,58 @@ const styles = StyleSheet.create({
   breathingSubtext: {
     fontFamily: 'Satoshi',
     fontSize: 14,
+    lineHeight: 21,
     color: 'rgba(6, 41, 12, 0.5)',
     textAlign: 'center',
+  },
+  breathingMetaRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 10,
+    marginTop: 16,
+  },
+  breathingMetaPill: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 999,
+    backgroundColor: 'rgba(6, 41, 12, 0.06)',
+    borderWidth: 1,
+    borderColor: 'rgba(6, 41, 12, 0.08)',
+  },
+  breathingMetaPillText: {
+    fontFamily: 'Satoshi-Bold',
+    fontSize: 12,
+    letterSpacing: 0.2,
+    color: '#06290C',
+  },
+  breathingPatternText: {
+    marginTop: 14,
+    fontFamily: 'Satoshi-Medium',
+    fontSize: 13,
+    lineHeight: 20,
+    color: 'rgba(6, 41, 12, 0.62)',
+    textAlign: 'center',
+  },
+  breathingInstructions: {
+    marginTop: 20,
+    fontFamily: 'Satoshi',
+    fontSize: 13,
+    lineHeight: 21,
+    color: 'rgba(6, 41, 12, 0.72)',
+    textAlign: 'left',
+    width: '100%',
+  },
+  breathingCompleteBlock: {
+    alignItems: 'center',
+    gap: 8,
+  },
+  breathingActionRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 10,
+    marginTop: 16,
   },
   mindfulnessStep: {
     flexDirection: 'row',
@@ -2499,8 +3336,57 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
+  effortCheckPanel: {
+    marginTop: 18,
+    padding: 16,
+    borderRadius: 14,
+    backgroundColor: 'rgba(6, 41, 12, 0.03)',
+    borderWidth: 1,
+    borderColor: 'rgba(6, 41, 12, 0.08)',
+    gap: 10,
+  },
+  effortCheckTitle: {
+    fontFamily: 'Erode',
+    fontSize: 18,
+    color: '#06290C',
+  },
+  effortCheckHint: {
+    fontFamily: 'Satoshi',
+    fontSize: 13,
+    lineHeight: 20,
+    color: 'rgba(6, 41, 12, 0.58)',
+  },
+  effortCheckOptions: {
+    gap: 10,
+  },
+  effortCheckOption: {
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(6, 41, 12, 0.12)',
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+  },
+  effortCheckOptionSelected: {
+    backgroundColor: '#06290C',
+    borderColor: '#06290C',
+  },
+  effortCheckOptionTitle: {
+    fontFamily: 'Satoshi-Bold',
+    fontSize: 14,
+    color: '#06290C',
+  },
+  effortCheckOptionTitleSelected: {
+    color: '#E3F3E5',
+  },
+  effortCheckSavedText: {
+    fontFamily: 'Satoshi',
+    fontSize: 12,
+    lineHeight: 18,
+    color: 'rgba(6, 41, 12, 0.52)',
+  },
 
-  // ── Action Step — Age Reversal additions ───────────────────────────────────
+  // ── Action Step — Age Reversal Program additions ───────────────────────────
   actionSubtitle: {
     fontFamily: 'Satoshi',
     fontSize: 15,
@@ -2548,7 +3434,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
 
-  // ── Mindfulness — Age Reversal additions ───────────────────────────────────
+  // ── Mindfulness — Age Reversal Program additions ───────────────────────────
   mindfulSubtitle: {
     fontFamily: 'Satoshi',
     fontSize: 14,
@@ -2575,7 +3461,7 @@ const styles = StyleSheet.create({
     color: 'rgba(6, 41, 12, 0.7)',
   },
 
-  // ── Exercise — Age Reversal single-exercise layout ─────────────────────────
+  // ── Exercise — Age Reversal Program single-exercise layout ─────────────────
   exerciseAgeReversalBody: {
     marginTop: 8,
     gap: 16,
@@ -2792,6 +3678,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#06290C',
     borderColor: '#06290C',
   },
+  exerciseDoneButtonReadOnly: {
+    opacity: 0.55,
+  },
   exerciseDoneButtonText: {
     fontFamily: 'Satoshi-Bold',
     fontSize: 15,
@@ -2809,6 +3698,9 @@ const audioStyles = StyleSheet.create({
   container: {
     position: 'relative',
     overflow: 'visible',
+  },
+  scrollContent: {
+    flexGrow: 1,
   },
   watermark: {
     position: 'absolute',
@@ -2915,6 +3807,58 @@ const audioStyles = StyleSheet.create({
     fontSize: 9,
     color: 'rgba(227, 243, 229, 0.4)',
     letterSpacing: 0.4,
+  },
+  completionZone: {
+    paddingHorizontal: 4,
+    paddingTop: 8,
+    gap: 10,
+    position: 'relative',
+    zIndex: 2,
+  },
+  completionBadge: {
+    alignSelf: 'flex-start',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: 'rgba(227, 243, 229, 0.16)',
+    borderWidth: 1,
+    borderColor: 'rgba(227, 243, 229, 0.18)',
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  completionBadgeText: {
+    fontFamily: 'Satoshi-Bold',
+    fontSize: 11,
+    letterSpacing: 0.4,
+    color: '#E3F3E5',
+  },
+  completionBadgeMuted: {
+    alignSelf: 'flex-start',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: 'rgba(227, 243, 229, 0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(227, 243, 229, 0.12)',
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  completionBadgeMutedText: {
+    fontFamily: 'Satoshi-Bold',
+    fontSize: 11,
+    letterSpacing: 0.4,
+    color: 'rgba(227, 243, 229, 0.78)',
+  },
+  completionHint: {
+    fontFamily: 'Satoshi',
+    fontSize: 11,
+    lineHeight: 17,
+    color: 'rgba(227, 243, 229, 0.62)',
+  },
+  completionButtonWrap: {
+    alignSelf: 'flex-start',
   },
   errorRow: {
     flexDirection: 'row',

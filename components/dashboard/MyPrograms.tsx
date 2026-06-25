@@ -31,8 +31,8 @@ export function MyPrograms({
             style={AppTypography.body}
           >
             {activeCount > 1
-              ? `Switch your current journey or open ${activeCount} unlocked programs.`
-              : 'Open your current journey or manage unlocked programs.'}
+              ? `${activeCount} unlocked programs.`
+              : 'Open or manage your programs.'}
           </Text>
         </View>
         <View className="pt-1">

@@ -1,4 +1,5 @@
 export const PROGRAM_UNLOCK_HOUR = 5;
+export const PROGRAM_DAY_FINALIZE_HOUR = 1;
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
 function clamp(value: number, min: number, max: number) {
@@ -17,6 +18,14 @@ function startOfLocalDate(date: Date) {
 
 function addLocalDays(date: Date, days: number) {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate() + days);
+}
+
+export function formatProgramClockTime(date: Date) {
+  return date.toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  }).replace(/\b(am|pm)\b/i, (match) => match.toUpperCase());
 }
 
 export function getEffectiveScheduleDate(now: Date = new Date()) {
@@ -44,6 +53,48 @@ export function getProgramScheduledDay(
   const dayDelta = Math.floor((effectiveDate.getTime() - startDate.getTime()) / MS_PER_DAY);
 
   return clamp(dayDelta + 1, 1, totalDays);
+}
+
+export function getProgramLastFinalizedDay(
+  startedAt: string | Date | null | undefined,
+  totalDays: number,
+  now: Date = new Date()
+) {
+  if (totalDays <= 0) return 0;
+
+  const parsedStart = parseDate(startedAt);
+  if (!parsedStart) return 0;
+
+  const startDate = startOfLocalDate(parsedStart);
+  const currentDate = startOfLocalDate(now);
+  const dayDelta = Math.floor((currentDate.getTime() - startDate.getTime()) / MS_PER_DAY);
+  const finalizedDay = now.getHours() >= PROGRAM_DAY_FINALIZE_HOUR ? dayDelta : dayDelta - 1;
+
+  return clamp(finalizedDay, 0, totalDays);
+}
+
+export function getProgramActiveDay(
+  startedAt: string | Date | null | undefined,
+  totalDays: number,
+  now: Date = new Date()
+) {
+  const scheduledDay = getProgramScheduledDay(startedAt, totalDays, now);
+  const lastFinalizedDay = getProgramLastFinalizedDay(startedAt, totalDays, now);
+
+  return lastFinalizedDay >= scheduledDay ? null : scheduledDay;
+}
+
+export function isProgramDayFinalized(
+  startedAt: string | Date | null | undefined,
+  totalDays: number,
+  dayNumber: number,
+  now: Date = new Date()
+) {
+  if (!Number.isInteger(dayNumber) || dayNumber < 1) {
+    return false;
+  }
+
+  return dayNumber <= getProgramLastFinalizedDay(startedAt, totalDays, now);
 }
 
 export function getProgramNextUnlockAt(
@@ -80,10 +131,7 @@ export function formatUnlockLabel(nextUnlockAt: string | null | undefined, now: 
     unlockDate.getMonth() === tomorrow.getMonth() &&
     unlockDate.getDate() === tomorrow.getDate();
 
-  const timeLabel = unlockDate.toLocaleTimeString([], {
-    hour: 'numeric',
-    minute: '2-digit',
-  });
+  const timeLabel = formatProgramClockTime(unlockDate);
 
   if (isTomorrow) {
     return `Your next step unlocks tomorrow at ${timeLabel}`;

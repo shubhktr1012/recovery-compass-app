@@ -39,6 +39,13 @@ function StatIconPaths({ id }: { id: string }) {
           <Path d="M12 6v6l4 2" />
         </>
       );
+    case 'rolling-completion':
+      return (
+        <>
+          <Circle cx="12" cy="12" r="9" />
+          <Path d="M8 12l2.5 2.5L16 9" />
+        </>
+      );
     default:
       return <Path d="M22 12h-4l-3 9L9 3l-3 9H2" />;
   }

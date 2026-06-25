@@ -27,6 +27,7 @@ function getJourneyForProgram(programSlug: ProgramSlug | null | undefined): Jour
   switch (programSlug) {
     case 'six_day_reset':
     case 'ninety_day_transform':
+    case 'smoking_alcohol_quit':
       return 'smoking';
     case 'sleep_disorder_reset':
       return 'sleep_disorder_reset';
@@ -36,6 +37,8 @@ function getJourneyForProgram(programSlug: ProgramSlug | null | undefined): Jour
       return 'age_reversal';
     case 'male_sexual_health':
       return 'male_sexual_health';
+    case 'gut_health_reset':
+      return 'gut_health_reset';
     default:
       return null;
   }
@@ -49,10 +52,12 @@ function isProgramSlug(value: unknown): value is ProgramSlug {
   return (
     value === 'six_day_reset' ||
     value === 'ninety_day_transform' ||
+    value === 'smoking_alcohol_quit' ||
     value === 'sleep_disorder_reset' ||
     value === 'energy_vitality' ||
     value === 'age_reversal' ||
-    value === 'male_sexual_health'
+    value === 'male_sexual_health' ||
+    value === 'gut_health_reset'
   );
 }
 
@@ -82,11 +87,11 @@ function getProgramSlugFromTargetSelection(targetSelection: string | null | unde
   }
 
   if (normalizedTarget.includes('6-day') || normalizedTarget.includes('6 day')) {
-    return 'six_day_reset';
+    return 'smoking_alcohol_quit';
   }
 
-  if (normalizedTarget.includes('smoking')) {
-    return 'ninety_day_transform';
+  if (normalizedTarget.includes('smoking') || normalizedTarget.includes('drinking') || normalizedTarget.includes('alcohol')) {
+    return 'smoking_alcohol_quit';
   }
 
   if (normalizedTarget.includes('sleep')) {
@@ -103,6 +108,10 @@ function getProgramSlugFromTargetSelection(targetSelection: string | null | unde
 
   if (normalizedTarget.includes('men') || normalizedTarget.includes('sexual')) {
     return 'male_sexual_health';
+  }
+
+  if (normalizedTarget.includes('gut') || normalizedTarget.includes('digest')) {
+    return 'gut_health_reset';
   }
 
   return null;
@@ -168,7 +177,7 @@ export function getProgramStatisticsSummary(
       cards: [
         {
           id: 'daily-cigarettes',
-          label: 'Daily cigarettes',
+          label: 'Daily uses',
           value: formatCount(projection.dailyAmount),
         },
         {
@@ -178,7 +187,7 @@ export function getProgramStatisticsSummary(
         },
         {
           id: 'ninety-day-savings',
-          label: '90-day savings',
+          label: '90-day projection',
           value: projection.projectedSavings90Days > 0 ? formatInr(projection.projectedSavings90Days) : 'Not set',
         },
       ],
@@ -249,6 +258,29 @@ export function getProgramStatisticsSummary(
           id: 'age-coping',
           label: 'Current survival habit',
           value: String(getAnswerLabel(scopedQuestionnaireAnswers, questions.coping.id) ?? 'Not set'),
+        },
+      ],
+    };
+  }
+
+  if (journey === 'gut_health_reset') {
+    return {
+      journey,
+      cards: [
+        {
+          id: 'gut-frequency',
+          label: 'Weekly gut impact',
+          value: String(getAnswerLabel(scopedQuestionnaireAnswers, questions.severity.id) ?? 'Not set'),
+        },
+        {
+          id: 'gut-water',
+          label: 'Daily water baseline',
+          value: String(getAnswerLabel(scopedQuestionnaireAnswers, 'gut_water_glasses') ?? 'Not set'),
+        },
+        {
+          id: 'gut-trigger',
+          label: 'Main trigger',
+          value: String(getAnswerLabel(scopedQuestionnaireAnswers, questions.trigger.id) ?? 'Not set'),
         },
       ],
     };

@@ -1,7 +1,7 @@
 import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 
-import { canonicalDir, repoRoot } from './lib/canonical-content.mjs';
+import { canonicalDir, normalizeCanonicalProgramShape, repoRoot } from './lib/canonical-content.mjs';
 
 function hasLetters(value = '') {
   return /[A-Za-z]/.test(value);
@@ -25,9 +25,10 @@ async function loadCanonicalPrograms() {
   const programs = [];
   for (const filePath of jsonFiles) {
     const raw = await readFile(filePath, 'utf8');
+    const fallbackSlug = path.basename(filePath, '.json');
     programs.push({
       filePath,
-      data: JSON.parse(raw),
+      data: normalizeCanonicalProgramShape(JSON.parse(raw), fallbackSlug),
     });
   }
 

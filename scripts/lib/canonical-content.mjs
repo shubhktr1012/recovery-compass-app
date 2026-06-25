@@ -30,14 +30,19 @@ function toError(errors, pathName, message) {
 }
 
 function validateActionStepCard(card, pathName, errors) {
-  if (!isPositiveInteger(card.stepNumber)) {
-    toError(errors, pathName, 'stepNumber must be a positive integer');
+  if (!isPositiveInteger(card.stepNumber) && !isNonEmptyString(card.stepLabel)) {
+    toError(errors, pathName, 'stepNumber or stepLabel is required');
   }
   if (!isNonEmptyString(card.title)) {
     toError(errors, pathName, 'title is required');
   }
-  if (!Array.isArray(card.instructions) || card.instructions.length === 0) {
-    toError(errors, pathName, 'instructions must be a non-empty array');
+  const hasInstructions = Array.isArray(card.instructions) && card.instructions.length > 0;
+  const hasChecklistItems = Array.isArray(card.checklistItems) && card.checklistItems.length > 0;
+  if (!hasInstructions && !hasChecklistItems) {
+    toError(errors, pathName, 'instructions or checklistItems must be a non-empty array');
+  }
+  if (card.variant === 'checklist' && !hasChecklistItems) {
+    toError(errors, pathName, 'checklist variant requires checklistItems');
   }
 }
 
@@ -64,22 +69,32 @@ function validateBreathingExerciseCard(card, pathName, errors) {
 }
 
 function validateExerciseRoutineCard(card, pathName, errors) {
-  if (!isNonEmptyString(card.title)) {
-    toError(errors, pathName, 'title is required');
-  }
-  if (!Array.isArray(card.exercises) || card.exercises.length === 0) {
-    toError(errors, pathName, 'exercises must be a non-empty array');
+  const hasRoutineList = Array.isArray(card.exercises) && card.exercises.length > 0;
+  const hasSingleRoutine = isNonEmptyString(card.name) && Array.isArray(card.steps) && card.steps.length > 0;
+
+  if (!hasRoutineList && !hasSingleRoutine) {
+    toError(errors, pathName, 'exercises or name/steps must be provided');
     return;
   }
-  card.exercises.forEach((exercise, index) => {
-    const exercisePath = `${pathName}.exercises[${index}]`;
-    if (!isNonEmptyString(exercise?.name)) {
-      toError(errors, exercisePath, 'name is required');
+
+  if (hasRoutineList) {
+    if (!isNonEmptyString(card.title)) {
+      toError(errors, pathName, 'title is required when exercises are provided');
     }
-    if (!Array.isArray(exercise?.instructions) || exercise.instructions.length === 0) {
-      toError(errors, exercisePath, 'instructions must be a non-empty array');
-    }
-  });
+    card.exercises.forEach((exercise, index) => {
+      const exercisePath = `${pathName}.exercises[${index}]`;
+      if (!isNonEmptyString(exercise?.name)) {
+        toError(errors, exercisePath, 'name is required');
+      }
+      if (!Array.isArray(exercise?.instructions) || exercise.instructions.length === 0) {
+        toError(errors, exercisePath, 'instructions must be a non-empty array');
+      }
+    });
+  }
+
+  if (hasSingleRoutine && !card.steps.every((step) => isNonEmptyString(step))) {
+    toError(errors, `${pathName}.steps`, 'steps must contain non-empty strings');
+  }
 }
 
 function validateCard(card, pathName, errors) {
@@ -155,6 +170,42 @@ function validateCard(card, pathName, errors) {
     default:
       toError(errors, pathName, `unsupported card type "${card.type}"`);
   }
+}
+
+export function normalizeCanonicalProgramShape(program, fallbackSlug = null) {
+  if (!program || typeof program !== 'object') {
+    return program;
+  }
+
+  if (Array.isArray(program.days)) {
+    return {
+      ...program,
+      slug: program.slug ?? fallbackSlug,
+      totalDays:
+        Number.isInteger(program.totalDays) && program.totalDays > 0
+          ? program.totalDays
+          : program.days.length,
+    };
+  }
+
+  const days = Object.entries(program)
+    .filter(([key, value]) => /^\d+$/.test(key) && value && typeof value === 'object')
+    .sort(([left], [right]) => Number(left) - Number(right))
+    .map(([, value]) => value);
+
+  if (days.length === 0) {
+    return program;
+  }
+
+  return {
+    ...program,
+    slug: program.slug ?? fallbackSlug,
+    totalDays:
+      Number.isInteger(program.totalDays) && program.totalDays > 0
+        ? program.totalDays
+        : days.length,
+    days,
+  };
 }
 
 export function validateCanonicalProgram(program) {
@@ -255,4 +306,3 @@ export function validateCanonicalProgram(program) {
 export function sqlQuote(value) {
   return `'${String(value).replace(/'/g, "''")}'`;
 }
-

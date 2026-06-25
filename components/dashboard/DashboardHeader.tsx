@@ -9,6 +9,7 @@ interface DashboardHeaderProps {
   avatarLetter: string;
   avatarUrl?: string | null;
   activeProgramName: string;
+  programEyebrow?: string;
 }
 
 export function DashboardHeader({
@@ -17,6 +18,7 @@ export function DashboardHeader({
   avatarLetter,
   avatarUrl,
   activeProgramName,
+  programEyebrow = 'Current Journey:',
 }: DashboardHeaderProps) {
   return (
     <SafeAreaView edges={['top']} className="bg-forest">
@@ -76,7 +78,7 @@ export function DashboardHeader({
         <View className="relative z-10 mt-4 flex-row items-center">
           <View className="w-1.5 h-1.5 rounded-full bg-sage/80 mr-2.5" />
           <Text className="uppercase text-sage/70 mr-2" style={[AppTypography.metaMedium, { letterSpacing: 1.44 }]}>
-            Current Journey:
+            {programEyebrow}
           </Text>
           <Text className="text-white" style={AppTypography.displayCardSm}>
             {activeProgramName}

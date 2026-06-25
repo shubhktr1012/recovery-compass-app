@@ -1,5 +1,7 @@
 import { Redirect, useLocalSearchParams } from 'expo-router';
 
+import { buildDayDetailRoute, PROGRAM_TAB_ROUTE } from '@/lib/navigation/routes';
+
 export default function LegacyProgramDayRedirect() {
   const params = useLocalSearchParams<{ programSlug?: string | string[]; dayNumber?: string | string[] }>();
 
@@ -7,8 +9,8 @@ export default function LegacyProgramDayRedirect() {
   const dayNumber = Array.isArray(params.dayNumber) ? params.dayNumber[0] : params.dayNumber;
 
   if (!programSlug || !dayNumber) {
-    return <Redirect href="/program" />;
+    return <Redirect href={PROGRAM_TAB_ROUTE} />;
   }
 
-  return <Redirect href={`/day-detail?programSlug=${programSlug}&dayNumber=${dayNumber}`} />;
+  return <Redirect href={buildDayDetailRoute({ programSlug, dayNumber })} />;
 }

@@ -14,6 +14,14 @@ export type CompletionState =
   | 'completed'
   | 'archived';
 
+export type ProgramLifecycleState =
+  | 'not_owned'
+  | 'purchased'
+  | 'scheduled'
+  | 'active'
+  | 'paused'
+  | 'completed';
+
 export interface ProgramDaySection {
   title: string;
   body: string;
@@ -56,10 +64,14 @@ export interface ProgramAccessSnapshot {
   ownedProgram: ProgramSlug | null;
   purchaseState: PurchaseState;
   completionState: CompletionState;
+  programState?: ProgramLifecycleState | null;
   currentDay: number | null;
   startedAt: string | null;
+  scheduledStartDate?: string | null;
+  pausedAt?: string | null;
   completedAt: string | null;
   archivedAt: string | null;
+  updatedAt?: string | null;
   eligibleProducts: EligibleProduct[];
   source: 'local' | 'supabase' | 'revenuecat';
 }

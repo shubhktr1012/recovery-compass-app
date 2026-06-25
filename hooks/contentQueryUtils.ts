@@ -7,6 +7,8 @@ import type {
   ProgramContentStatus,
   ProgramSlug,
 } from '@/types/content';
+import { resolveDay } from '@/lib/card-resolver';
+import type { ContentMode, ProgressionRow, ProgramTemplate } from '@/types/resolver';
 
 import { PROGRAM_METADATA } from '@/content/programs/metadata';
 import { ContentRepository } from '@/content/repository';
@@ -28,7 +30,7 @@ export class MissingContentError extends Error {
 }
 
 const PROGRAM_SLUGS = Object.keys(PROGRAM_METADATA) as ProgramSlug[];
-const PROGRAM_CATEGORIES = ['smoking', 'sleep', 'energy', 'aging', 'sexual_health'] as const;
+const PROGRAM_CATEGORIES = ['smoking', 'sleep', 'energy', 'aging', 'sexual_health', 'gut_health', 'detox'] as const;
 
 export type ProgramRow = {
   id: string;
@@ -40,6 +42,8 @@ export type ProgramRow = {
   has_audio: boolean | null;
   display_order: number | null;
   is_active: boolean | null;
+  content_mode: string | null;
+  time_slots_enabled: boolean | null;
   created_at: string | null;
   updated_at: string | null;
 };
@@ -57,6 +61,27 @@ export type ProgramDayRow = {
   updated_at: string | null;
 };
 
+export type ProgramTemplateRow = {
+  id?: string;
+  program_slug: string | null;
+  template_slots: unknown;
+  created_at?: string | null;
+  updated_at?: string | null;
+};
+
+export type ProgramProgressionRow = {
+  id?: string;
+  program_slug: string | null;
+  day_number: number;
+  day_title: string;
+  phase?: string | null;
+  day_goal: string;
+  variables: unknown;
+  overrides?: unknown;
+  created_at?: string | null;
+  updated_at?: string | null;
+};
+
 function isProgramSlug(value: string | null | undefined): value is ProgramSlug {
   if (!value) return false;
   return PROGRAM_SLUGS.includes(value as ProgramSlug);
@@ -65,6 +90,10 @@ function isProgramSlug(value: string | null | undefined): value is ProgramSlug {
 function isProgramCategory(value: string | null | undefined): value is ProgramCategory {
   if (!value) return false;
   return PROGRAM_CATEGORIES.includes(value as ProgramCategory);
+}
+
+export function getProgramContentMode(row: Pick<ProgramRow, 'content_mode'> | null | undefined): ContentMode {
+  return row?.content_mode === 'template' ? 'template' : 'unique';
 }
 
 function parseCards(value: unknown): ContentCard[] {
@@ -154,6 +183,69 @@ export function mapProgramDayRowToDayContent(
   };
 }
 
+function normalizeProgramSlug(value: string | null | undefined, fallbackProgramSlug: ProgramSlug): ProgramSlug {
+  return isProgramSlug(value) ? value : fallbackProgramSlug;
+}
+
+export function mapProgramTemplateRow(
+  row: ProgramTemplateRow,
+  fallbackProgramSlug: ProgramSlug
+): ProgramTemplate {
+  return {
+    id: row.id,
+    program_slug: normalizeProgramSlug(row.program_slug, fallbackProgramSlug),
+    template_slots: Array.isArray(row.template_slots) ? row.template_slots : [],
+    created_at: row.created_at ?? undefined,
+    updated_at: row.updated_at ?? undefined,
+  };
+}
+
+export function mapProgramProgressionRow(
+  row: ProgramProgressionRow,
+  fallbackProgramSlug: ProgramSlug
+): ProgressionRow {
+  return {
+    id: row.id,
+    program_slug: normalizeProgramSlug(row.program_slug, fallbackProgramSlug),
+    day_number: row.day_number,
+    day_title: row.day_title,
+    phase: row.phase ?? undefined,
+    day_goal: row.day_goal,
+    variables: row.variables && typeof row.variables === 'object' ? (row.variables as ProgressionRow['variables']) : {},
+    overrides:
+      row.overrides && typeof row.overrides === 'object'
+        ? (row.overrides as ProgressionRow['overrides'])
+        : undefined,
+    created_at: row.created_at ?? undefined,
+    updated_at: row.updated_at ?? undefined,
+  };
+}
+
+export function resolveTemplateDayRow(
+  programSlug: ProgramSlug,
+  templateRow: ProgramTemplateRow,
+  progressionRow: ProgramProgressionRow
+): DayContent {
+  const template = mapProgramTemplateRow(templateRow, programSlug);
+  const progression = mapProgramProgressionRow(progressionRow, programSlug);
+
+  return resolveDay({
+    programSlug,
+    dayNumber: progression.day_number,
+    contentMode: 'template',
+    template,
+    progression,
+  });
+}
+
+export function resolveTemplateDays(
+  programSlug: ProgramSlug,
+  templateRow: ProgramTemplateRow,
+  progressionRows: ProgramProgressionRow[]
+): DayContent[] {
+  return progressionRows.map((progressionRow) => resolveTemplateDayRow(programSlug, templateRow, progressionRow));
+}
+
 export function mapProgramRowToProgramContent(
   row: ProgramRow,
   days: DayContent[]
@@ -172,6 +264,7 @@ export function mapProgramRowToProgramContent(
     totalDays: row.total_days ?? fallbackProgram.totalDays,
     category: isProgramCategory(row.category) ? row.category : fallbackProgram.category,
     hasAudio: row.has_audio ?? fallbackProgram.hasAudio,
+    timeSlotsEnabled: row.time_slots_enabled ?? fallbackProgram.timeSlotsEnabled,
     contentStatus: resolveContentStatus(row.slug, mergedDays),
     priceString: fallbackProgram.priceString,
     dailyMinutesLabel: fallbackProgram.dailyMinutesLabel,

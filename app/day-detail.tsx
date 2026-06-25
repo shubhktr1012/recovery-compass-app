@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { BlurView } from 'expo-blur';
-import { Href, useLocalSearchParams, useRouter } from 'expo-router';
+import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
 import PagerView from 'react-native-pager-view';
 import { useFocusEffect } from '@react-navigation/native';
 import { useQueryClient } from '@tanstack/react-query';
@@ -14,29 +14,63 @@ import Animated, {
   useSharedValue,
 } from 'react-native-reanimated';
 import type { SharedValue } from 'react-native-reanimated';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { InteractionManager, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { CardRenderer, TransportContext, TransportConfig } from '@/components/cards/CardRenderer';
 import { Button } from '@/components/ui/Button';
 import { TransportBar } from '@/components/ui/TransportBar';
+import { MotionDurations, MotionEasing } from '@/lib/motion/tokens';
 import { useDay, useProgram } from '@/content';
 import { programDayQueryKey, programQueryKey } from '@/hooks/contentQueryUtils';
-import { formatUnlockLabel, getProgramNextUnlockAt, getProgramScheduledDay } from '@/lib/programs/schedule';
+import { finalizedDayStatesQueryKey, useFinalizedDayStates } from '@/hooks/useFinalizedDayStates';
+import { useFreeDetoxProgress } from '@/hooks/useFreeDetoxProgress';
+import { useOwnedPrograms } from '@/hooks/useOwnedPrograms';
+import { useMinuteClock } from '@/hooks/useMinuteClock';
+import { logEvent } from '@/lib/analytics';
+import { canAccessProgramContent, canReviewCompletedProgram, isFinishedProgramAccess } from '@/lib/access/entitlements';
+import { getProgramRuntimeCardState } from '@/lib/card-state';
+import { buildUserDayStateRecord, upsertUserDayState, type UserDayStateUpsert } from '@/lib/day-states';
+import { buildDayStateProgressSummary, formatFinalizedDaySummary } from '@/lib/day-state-summary';
+import {
+  formatUnlockLabel,
+  getProgramActiveDay,
+  getProgramLastFinalizedDay,
+  getProgramNextUnlockAt,
+  getProgramScheduledDay,
+} from '@/lib/programs/schedule';
+import {
+  formatScheduledProgramStartLabel,
+  getProgramScheduleStartSource,
+  isProgramStartPending,
+} from '@/lib/programs/lifecycle';
+import { parseRoutineProgress } from '@/lib/routine-progress';
+import {
+  HOME_ROUTE,
+  PAYWALL_ROUTE,
+  PROGRAM_TAB_ROUTE,
+  buildDayDetailRoute,
+  buildProgramCompleteRoute,
+  buildProgramReviewRoute,
+} from '@/lib/navigation/routes';
+import { useScopedPrivacyProtection } from '@/lib/privacy-protection';
 import { buildWidgetPayload, syncWidgetData } from '@/lib/widget-bridge';
 import { useAuth } from '@/providers/auth';
 import { useProfile } from '@/providers/profile';
 import type { DayContent, ProgramSlug } from '@/types/content';
+import { TIME_SLOT_WINDOWS, type CardState, type DayState, type TimeSlot } from '@/types/resolver';
+import type { AnalyticsEventData } from '@/lib/analytics';
+import { PROGRAM_METADATA } from '@/content/programs/metadata';
+import {
+  FREE_DETOX_PROGRAM_SLUG,
+  buildFreeDetoxProgressAfterDayState,
+  canAccessFreeDetoxProgram,
+  getFreeDetoxUnlockedThroughDay,
+  getNextFreeDetoxDay,
+} from '@/lib/free-program-progress';
 
-const PROGRAM_SLUGS: ProgramSlug[] = [
-  'six_day_reset',
-  'ninety_day_transform',
-  'sleep_disorder_reset',
-  'energy_vitality',
-  'age_reversal',
-  'male_sexual_health',
-];
+const PROGRAM_SLUGS = Object.keys(PROGRAM_METADATA) as ProgramSlug[];
 
 function isProgramSlug(value: string | null | undefined): value is ProgramSlug {
   if (!value) return false;
@@ -51,8 +85,163 @@ function getRoutineStorageKey(programSlug: ProgramSlug, dayNumber: number, cardI
   return `day-routine:${programSlug}:${dayNumber}:${cardIndex}`;
 }
 
+function getChecklistStorageKey(programSlug: ProgramSlug, dayNumber: number, cardIndex: number) {
+  return `day-checklist:${programSlug}:${dayNumber}:${cardIndex}`;
+}
+
 function getRoutineItemKey(name: string, index: number) {
   return `${name}-${index}`;
+}
+
+type RuntimeDayCard = DayContent['cards'][number] & {
+  timeSlot?: TimeSlot;
+  isTimeSensitive?: boolean;
+  hasEffortCheck?: boolean;
+};
+
+const DEFAULT_CARD_TIME_META = {
+  timeSlot: 'anytime' as const,
+  isTimeSensitive: false,
+  hasEffortCheck: false,
+};
+
+function getCardTimeMeta(card: DayContent['cards'][number]) {
+  const runtimeCard = card as RuntimeDayCard;
+
+  return {
+    timeSlot: runtimeCard.timeSlot ?? DEFAULT_CARD_TIME_META.timeSlot,
+    isTimeSensitive: runtimeCard.isTimeSensitive ?? DEFAULT_CARD_TIME_META.isTimeSensitive,
+    hasEffortCheck: runtimeCard.hasEffortCheck ?? DEFAULT_CARD_TIME_META.hasEffortCheck,
+  };
+}
+
+function getCardAnalyticsId(day: DayContent, cardIndex: number) {
+  const card = day.cards[cardIndex];
+  return `${day.programSlug}:${day.dayNumber}:${cardIndex}:${card?.type ?? 'unknown'}`;
+}
+
+function getCardAnalyticsTitle(card: DayContent['cards'][number]) {
+  switch (card.type) {
+    case 'intro':
+      return card.dayTitle;
+    case 'lesson':
+      return card.title ?? null;
+    case 'action_step':
+    case 'breathing_exercise':
+    case 'mindfulness_exercise':
+    case 'audio':
+      return card.title ?? null;
+    case 'exercise_routine':
+      return card.title ?? card.name ?? null;
+    case 'journal':
+      return card.prompt;
+    case 'calm_trigger':
+      return card.context;
+    case 'close':
+      return card.message;
+  }
+}
+
+function buildCardAnalyticsData(args: {
+  day: DayContent;
+  cardIndex: number;
+  cardState?: CardState | null;
+  extra?: AnalyticsEventData;
+}): AnalyticsEventData {
+  const card = args.day.cards[args.cardIndex];
+
+  if (!card) {
+    return {
+      ...args.extra,
+      cardIndex: args.cardIndex,
+    };
+  }
+
+  const meta = getCardTimeMeta(card);
+
+  return {
+    ...args.extra,
+    cardIndex: args.cardIndex,
+    cardState: args.cardState ?? null,
+    cardTitle: getCardAnalyticsTitle(card),
+    cardType: card.type,
+    hasEffortCheck: meta.hasEffortCheck,
+    isTimeSensitive: meta.isTimeSensitive,
+    timeSlot: meta.timeSlot,
+  };
+}
+
+function formatSlotLabel(slot: TimeSlot) {
+  switch (slot) {
+    case 'morning':
+      return 'Morning';
+    case 'afternoon':
+      return 'Afternoon';
+    case 'evening':
+      return 'Evening';
+    case 'anytime':
+      return 'Today';
+  }
+}
+
+function formatWindowTime(hhmm: string) {
+  const [hourValue, minuteValue] = hhmm.split(':').map((value) => Number.parseInt(value, 10));
+  const safeHour = Number.isFinite(hourValue) ? hourValue : 0;
+  const safeMinute = Number.isFinite(minuteValue) ? minuteValue : 0;
+  const suffix = safeHour >= 12 ? 'PM' : 'AM';
+  const normalizedHour = safeHour % 12 || 12;
+  return `${normalizedHour}:${String(safeMinute).padStart(2, '0')} ${suffix}`;
+}
+
+function getCardStateNotice(state: CardState, slot: TimeSlot) {
+  switch (state) {
+    case 'locked':
+      return {
+        eyebrow: 'Locked',
+        message:
+          slot === 'anytime'
+            ? `Today's session opens at ${formatWindowTime(TIME_SLOT_WINDOWS.anytime.opens)}.`
+            : `${formatSlotLabel(slot)} unlocks at ${formatWindowTime(TIME_SLOT_WINDOWS[slot].opens)}.`,
+        tone: 'muted' as const,
+      };
+    case 'catch_up':
+      return {
+        eyebrow: 'Catch-up available',
+        message: `You missed the ${formatSlotLabel(slot).toLowerCase()} window, but this card is still available until ${formatWindowTime(TIME_SLOT_WINDOWS.anytime.closes)}.`,
+        tone: 'warm' as const,
+      };
+    case 'blocked':
+      return {
+        eyebrow: 'Window closed',
+        message: `This ${formatSlotLabel(slot).toLowerCase()} card was time-sensitive and closed at ${formatWindowTime(TIME_SLOT_WINDOWS[slot].closes)}.`,
+        tone: 'critical' as const,
+      };
+    default:
+      return null;
+  }
+}
+
+function getHistoricalDayNotice(state: DayState) {
+  switch (state) {
+    case 'completed':
+      return {
+        eyebrow: 'Review mode',
+        message: 'This day is complete and now read-only.',
+        tone: 'muted' as const,
+      };
+    case 'partial':
+      return {
+        eyebrow: 'Partial day',
+        message: 'This day closed as partial and is now read-only.',
+        tone: 'warm' as const,
+      };
+    case 'skipped':
+      return {
+        eyebrow: 'Day closed',
+        message: `This day closed at ${formatWindowTime(TIME_SLOT_WINDOWS.evening.closes)} with no completed cards and is now read-only.`,
+        tone: 'critical' as const,
+      };
+  }
 }
 
 /**
@@ -121,28 +310,44 @@ async function getDayRoutineCompletionSummary(day: DayContent) {
   );
 
   const allRequiredRoutinesComplete = routineCards.every(({ card }, index) => {
-    const parsedValue = rawValues[index];
-    const completedItems = (() => {
-      try {
-        const parsed = parsedValue ? JSON.parse(parsedValue) : [];
-        return new Set(Array.isArray(parsed) ? parsed.filter((value): value is string => typeof value === 'string') : []);
-      } catch {
-        return new Set<string>();
-      }
-    })();
+    const progressRecord = parseRoutineProgress(rawValues[index] ?? null);
+    const completedItems = new Set(progressRecord.completedItems);
 
-    // Age Reversal format uses a single exercise at the card level (card.name)
+    // Age Reversal Program format uses a single exercise at the card level (card.name)
     // Legacy format uses card.exercises[] — both need completion tracking
     const requiredItems = card.name && Array.isArray(card.steps)
       ? [card.name]  // Single-exercise: item id is the card name
       : (card.exercises ?? []).map((item, itemIndex) => getRoutineItemKey(item.name, itemIndex));
-    return requiredItems.every((itemKey) => completedItems.has(itemKey));
+    const effortCheckSatisfied =
+      !(getCardTimeMeta(card).hasEffortCheck && Boolean(card.name && Array.isArray(card.steps)))
+        || progressRecord.effortLevel !== null;
+
+    return requiredItems.every((itemKey) => completedItems.has(itemKey)) && effortCheckSatisfied;
   });
 
   return {
     hasRequiredRoutines: true,
     allRequiredRoutinesComplete,
   };
+}
+
+async function getDayRoutineProgressByIndex(day: DayContent) {
+  const routineEntries = day.cards
+    .map((card, index) => ({ card, index }))
+    .filter((entry) => entry.card.type === 'exercise_routine');
+
+  const rawValues = await Promise.all(
+    routineEntries.map(({ index }) =>
+      AsyncStorage.getItem(getRoutineStorageKey(day.programSlug, day.dayNumber, index))
+    )
+  );
+
+  return Object.fromEntries(
+    routineEntries.map(({ index }, entryIndex) => [
+      index,
+      parseRoutineProgress(rawValues[entryIndex] ?? null),
+    ])
+  );
 }
 
 function normalizeRouteParam(value: string | string[] | undefined) {
@@ -164,7 +369,7 @@ function ErrorState({ message }: { message: string }) {
         <Text style={styles.errorDescription}>{message}</Text>
         <Button
           label="Back to Program"
-          onPress={() => router.navigate('/program' as Href)}
+          onPress={() => router.replace(PROGRAM_TAB_ROUTE)}
         />
       </View>
     </SafeAreaView>
@@ -185,7 +390,7 @@ function LoadingState() {
 function ResumeToast() {
   return (
     <Animated.View
-      entering={FadeInDown.springify().damping(18).stiffness(150)}
+      entering={FadeInDown.duration(MotionDurations.screen).easing(MotionEasing.standard)}
       style={styles.toastWrapper}
       pointerEvents="none"
     >
@@ -198,8 +403,95 @@ function ResumeToast() {
   );
 }
 
+function CardStatePlaceholder({
+  card,
+  state,
+  slot,
+}: {
+  card: DayContent['cards'][number];
+  state: Extract<CardState, 'locked' | 'blocked'>;
+  slot?: TimeSlot;
+}) {
+  if (state === 'locked' && !slot) {
+    return (
+      <View style={styles.placeholderCard}>
+        <View style={styles.placeholderEyebrowRow}>
+          <Text style={styles.placeholderEyebrow}>Coming up</Text>
+        </View>
+
+        <Text style={styles.placeholderTitle}>This day is not open yet</Text>
+        <Text style={styles.placeholderBody}>
+          It will unlock naturally as your journey reaches this day.
+        </Text>
+
+        <View style={styles.placeholderMetaRow}>
+          <Ionicons
+            name="calendar-outline"
+            size={16}
+            color="rgba(6, 41, 12, 0.45)"
+          />
+          <Text style={styles.placeholderMetaText}>
+            Continue with the day that is available now.
+          </Text>
+        </View>
+      </View>
+    );
+  }
+
+  const displaySlot = slot ?? DEFAULT_CARD_TIME_META.timeSlot;
+  const title =
+    state === 'locked'
+      ? displaySlot === 'evening'
+        ? 'All caught up for now'
+        : `${formatSlotLabel(displaySlot)} session coming up`
+      : `${formatSlotLabel(displaySlot)} window closed`;
+
+  const message =
+    state === 'locked'
+      ? displaySlot === 'evening'
+        ? `Evening cards unlock at ${formatWindowTime(TIME_SLOT_WINDOWS.evening.opens)}.`
+        : `Unlocks at ${formatWindowTime(TIME_SLOT_WINDOWS[displaySlot].opens)}.`
+      : `This ${formatSlotLabel(displaySlot).toLowerCase()} card closed at ${formatWindowTime(TIME_SLOT_WINDOWS[displaySlot].closes)}.`;
+
+  return (
+    <View style={styles.placeholderCard}>
+      <View style={styles.placeholderEyebrowRow}>
+        <Text style={styles.placeholderEyebrow}>
+          {state === 'locked' ? 'Locked' : 'Missed'}
+        </Text>
+        <View
+          style={[
+            styles.placeholderSlotPill,
+            state === 'locked' ? styles.placeholderSlotPillLocked : styles.placeholderSlotPillMissed,
+          ]}
+        >
+          <Text style={styles.placeholderSlotPillText}>{formatSlotLabel(displaySlot)}</Text>
+        </View>
+      </View>
+
+      <Text style={styles.placeholderTitle}>{title}</Text>
+      <Text style={styles.placeholderBody}>{message}</Text>
+
+      <View style={styles.placeholderMetaRow}>
+        <Ionicons
+          name={state === 'locked' ? 'time-outline' : 'alert-circle-outline'}
+          size={16}
+          color="rgba(6, 41, 12, 0.45)"
+        />
+        <Text style={styles.placeholderMetaText}>
+          {card.type === 'close'
+            ? 'Closeout will appear here.'
+            : 'Continue with what is available now.'}
+        </Text>
+      </View>
+    </View>
+  );
+}
+
 const SwipeDeckCard = memo(function SwipeDeckCard({
   card,
+  cardState,
+  cardTimeSlot,
   index,
   totalCards,
   progress,
@@ -207,19 +499,27 @@ const SwipeDeckCard = memo(function SwipeDeckCard({
   onContinue,
   reflectionStorageKey,
   routineStorageKey,
+  checklistStorageKey,
+  hasEffortCheck,
+  isReadOnly,
   programReflectionContext,
   onRoutineProgressChange,
+  onAudioCompleted,
   closeCardState,
 }: {
   card: DayContent['cards'][number];
+  cardState?: CardState;
+  cardTimeSlot?: TimeSlot;
   index: number;
   totalCards: number;
   progress: SharedValue<number>;
   programName?: string;
   onContinue?: () => void;
-  onPrevious?: () => void;
   reflectionStorageKey?: string;
   routineStorageKey?: string;
+  checklistStorageKey?: string;
+  hasEffortCheck?: boolean;
+  isReadOnly?: boolean;
   programReflectionContext?: {
     userId?: string;
     programSlug: ProgramSlug;
@@ -227,13 +527,24 @@ const SwipeDeckCard = memo(function SwipeDeckCard({
     cardIndex: number;
   };
   onRoutineProgressChange?: () => void;
+  onAudioCompleted?: (payload: {
+    audioStoragePath: string;
+    cardIndex: number | null;
+    completionMode: 'manual' | 'auto';
+    listenSeconds: number;
+    percentage: number;
+    totalSeconds: number;
+  }) => void;
   closeCardState?: {
     isCompleted?: boolean;
     isPartial?: boolean;
+    isReadOnly?: boolean;
+    readOnlyState?: DayState;
     isFinalProgramDay?: boolean;
     completionDescription?: string | null;
     isCompleting?: boolean;
     primaryActionLabel?: string;
+    primaryActionDisabled?: boolean;
     onCompleteDay?: () => void;
     onBackToProgram?: () => void;
   };
@@ -253,11 +564,14 @@ const SwipeDeckCard = memo(function SwipeDeckCard({
   return (
     <SafeAreaView edges={['bottom']} style={styles.safeAreaCard}>
       <View style={styles.cardInner}>
-        <Animated.View
-          entering={FadeInDown.springify().damping(18).stiffness(140)}
-          style={styles.animatedCardContainer}
-        >
-          <Animated.View style={[styles.animatedCardContainer, animatedStyle]}>
+        <Animated.View style={[styles.animatedCardContainer, animatedStyle]}>
+          {cardState === 'locked' || cardState === 'blocked' ? (
+            <CardStatePlaceholder
+              card={card}
+              state={cardState}
+              slot={cardTimeSlot}
+            />
+          ) : (
             <CardRenderer
               card={card}
               cardIndex={index}
@@ -266,13 +580,17 @@ const SwipeDeckCard = memo(function SwipeDeckCard({
               onContinue={onContinue}
               reflectionStorageKey={reflectionStorageKey}
               routineStorageKey={routineStorageKey}
+              checklistStorageKey={checklistStorageKey}
+              hasEffortCheck={hasEffortCheck}
+              isReadOnly={isReadOnly}
               onRoutineProgressChange={onRoutineProgressChange}
+              onAudioCompleted={onAudioCompleted}
               closeCardState={closeCardState}
               programReflectionContext={
                 card.type === 'journal' ? programReflectionContext : undefined
               }
             />
-          </Animated.View>
+          )}
         </Animated.View>
       </View>
     </SafeAreaView>
@@ -284,8 +602,8 @@ export default function DayDetailScreen() {
   const queryClient = useQueryClient();
   const pagerRef = useRef<PagerView>(null);
   const { user } = useAuth();
-  const { access, progress, completeProgramDay, savePartialProgramDay } = useProfile();
-  const params = useLocalSearchParams<{ dayNumber?: string | string[]; programSlug?: string | string[] }>();
+  const { access, profile, progress, completeProgramDay, isLoading: isProfileLoading, savePartialProgramDay } = useProfile();
+  const params = useLocalSearchParams<{ dayNumber?: string | string[]; programSlug?: string | string[]; mode?: string | string[] }>();
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isRestored, setIsRestored] = useState(false);
@@ -293,10 +611,15 @@ export default function DayDetailScreen() {
   const [isCompletingDay, setIsCompletingDay] = useState(false);
   const [transportConfigs, setTransportConfigs] = useState<Record<number, TransportConfig>>({});
   const transportConfigsRef = useRef<Record<number, TransportConfig>>({});
+  const loggedCardOpenKeysRef = useRef<Set<string>>(new Set());
+  const loggedCardCompletedKeysRef = useRef<Set<string>>(new Set());
+  const loggedAudioCompletionKeysRef = useRef<Set<string>>(new Set());
+  const loggedDayFinalizationKeysRef = useRef<Set<string>>(new Set());
   const [routineSummary, setRoutineSummary] = useState({
     hasRequiredRoutines: false,
     allRequiredRoutinesComplete: true,
   });
+  const currentTime = useMinuteClock();
 
   const registerTransportConfig = useCallback((index: number, config: TransportConfig) => {
     transportConfigsRef.current[index] = config;
@@ -335,9 +658,55 @@ export default function DayDetailScreen() {
 
   const rawProgramSlug = normalizeRouteParam(params.programSlug);
   const rawDayNumber = normalizeRouteParam(params.dayNumber);
+  const rawMode = normalizeRouteParam(params.mode);
   const dayNumber = rawDayNumber ? Number(rawDayNumber) : Number.NaN;
   const programSlug = isProgramSlug(rawProgramSlug) ? rawProgramSlug : null;
+  const isFreeDetoxProgram = programSlug === FREE_DETOX_PROGRAM_SLUG;
   const normalizedDayNumber = Number.isInteger(dayNumber) && dayNumber >= 1 ? dayNumber : null;
+  useScopedPrivacyProtection(Boolean(programSlug && normalizedDayNumber), 'day-detail');
+  const { ownedPrograms, isLoading: isOwnedProgramsLoading } = useOwnedPrograms();
+  const freeDetoxUserId = user?.id ?? profile?.id ?? null;
+  const activeAccessDecision = canAccessProgramContent(access, programSlug);
+  const completedReviewAccessDecision = canReviewCompletedProgram(ownedPrograms, programSlug);
+  const canAccessFreeDetoxDay = Boolean(
+    isFreeDetoxProgram &&
+      canAccessFreeDetoxProgram({
+        access,
+        freeTierActivatedAt: profile?.free_tier_activated_at ?? null,
+        userId: freeDetoxUserId,
+      })
+  );
+  const freeDetoxProgressQuery = useFreeDetoxProgress(
+    freeDetoxUserId,
+    Boolean(isFreeDetoxProgram && canAccessFreeDetoxDay)
+  );
+  const isFinishedActiveAccess = Boolean(
+    programSlug &&
+      access.ownedProgram === programSlug &&
+      isFinishedProgramAccess(access)
+  );
+  const isCompletedProgramReview =
+    (rawMode === 'review' && completedReviewAccessDecision.allowed) ||
+    isFinishedActiveAccess;
+  const canAccessRequestedProgramDay =
+    activeAccessDecision.allowed || completedReviewAccessDecision.allowed || canAccessFreeDetoxDay;
+  const paidDayStateProgramSlug = isFreeDetoxProgram ? null : programSlug;
+  const finalizedDayStatesQuery = useFinalizedDayStates(
+    user?.id ?? access.ownerUserId ?? null,
+    paidDayStateProgramSlug
+  );
+  const finalizedDayStates = useMemo(
+    () => finalizedDayStatesQuery.data ?? [],
+    [finalizedDayStatesQuery.data]
+  );
+  const finalizedProgressSummary = useMemo(
+    () => buildDayStateProgressSummary(finalizedDayStates),
+    [finalizedDayStates]
+  );
+  const finalizedDayState = useMemo(
+    () => finalizedDayStates.find((row) => row.dayNumber === normalizedDayNumber) ?? null,
+    [finalizedDayStates, normalizedDayNumber]
+  );
   const { day: dayContent, isLoading: isDayLoading } = useDay(programSlug, normalizedDayNumber);
   const { program, isLoading: isProgramLoading } = useProgram(programSlug);
 
@@ -356,11 +725,16 @@ export default function DayDetailScreen() {
       void queryClient.invalidateQueries({
         queryKey: programDayQueryKey(programSlug, normalizedDayNumber),
       });
-    }, [normalizedDayNumber, programSlug, queryClient])
+      if (!isFreeDetoxProgram) {
+        void queryClient.invalidateQueries({
+          queryKey: finalizedDayStatesQueryKey(user?.id ?? access.ownerUserId ?? null, programSlug),
+        });
+      }
+    }, [access.ownerUserId, isFreeDetoxProgram, normalizedDayNumber, programSlug, queryClient, user?.id])
   );
 
   useEffect(() => {
-    if (!dayContent || !storageKey) {
+    if (!dayContent || !storageKey || isCompletedProgramReview) {
       setCurrentIndex(0);
       setIsRestored(true);
       return;
@@ -402,7 +776,7 @@ export default function DayDetailScreen() {
     return () => {
       isCancelled = true;
     };
-  }, [dayContent, storageKey]);
+  }, [dayContent, isCompletedProgramReview, storageKey]);
 
   useEffect(() => {
     if (!showResumeToast) return;
@@ -414,52 +788,103 @@ export default function DayDetailScreen() {
     return () => clearTimeout(timer);
   }, [showResumeToast]);
 
-  const handlePageSelected = async (nextIndex: number) => {
+  const handlePageSelected = useCallback((nextIndex: number) => {
     setCurrentIndex(nextIndex);
 
-    if (!storageKey) return;
+    if (!storageKey || isCompletedProgramReview) return;
 
-    try {
-      await AsyncStorage.setItem(storageKey, JSON.stringify({ cardIndex: nextIndex }));
-    } catch (error) {
-      console.error('Failed to save day card progress', error);
-    }
+    InteractionManager.runAfterInteractions(() => {
+      void (async () => {
+        try {
+          await AsyncStorage.setItem(storageKey, JSON.stringify({ cardIndex: nextIndex }));
+        } catch (error) {
+          console.error('Failed to save day card progress', error);
+        }
 
-    // Sync card index to the widget so the home screen reflects current progress
-    const widgetPayload = buildWidgetPayload({
-      access,
-      progress,
-      cardIndex: nextIndex,
-      totalCards: dayContent?.cards.length ?? 1,
-      steps: 0,
+        if (!isFreeDetoxProgram) {
+          const widgetPayload = buildWidgetPayload({
+            access,
+            progress,
+            cardIndex: nextIndex,
+            totalCards: dayContent?.cards.length ?? 1,
+            steps: 0,
+          });
+          if (widgetPayload) void syncWidgetData(widgetPayload);
+        }
+      })();
     });
-    if (widgetPayload) void syncWidgetData(widgetPayload);
-  };
+  }, [access, dayContent?.cards.length, isCompletedProgramReview, isFreeDetoxProgram, progress, storageKey]);
 
-  const handleContinueFromCard = () => {
+  const handleContinueFromCard = useCallback(() => {
     if (!dayContent) return;
 
     const nextIndex = Math.min(currentIndex + 1, dayContent.cards.length - 1);
     if (nextIndex === currentIndex) return;
 
     pagerRef.current?.setPage(nextIndex);
-  };
+  }, [currentIndex, dayContent]);
 
-  const completedDays = useMemo(() => progress?.completedDays ?? [], [progress?.completedDays]);
-  const partialDays = useMemo(() => progress?.partialDays ?? [], [progress?.partialDays]);
-  const isDayCompleted = normalizedDayNumber ? completedDays.includes(normalizedDayNumber) : false;
-  const isDayPartial = normalizedDayNumber ? partialDays.includes(normalizedDayNumber) : false;
-  const scheduledDay = useMemo(() => {
+  const completedDays = useMemo(
+    () =>
+      isFreeDetoxProgram
+        ? freeDetoxProgressQuery.progress?.completedDays ?? []
+        : isCompletedProgramReview && finalizedDayStates.length > 0
+        ? finalizedProgressSummary.completedDays
+        : progress?.completedDays ?? [],
+    [
+      finalizedDayStates.length,
+      finalizedProgressSummary.completedDays,
+      freeDetoxProgressQuery.progress?.completedDays,
+      isCompletedProgramReview,
+      isFreeDetoxProgram,
+      progress?.completedDays,
+    ]
+  );
+  const partialDays = useMemo(
+    () =>
+      isFreeDetoxProgram
+        ? freeDetoxProgressQuery.progress?.partialDays ?? []
+        : isCompletedProgramReview && finalizedDayStates.length > 0
+        ? finalizedProgressSummary.partialDays
+        : progress?.partialDays ?? [],
+    [
+      finalizedDayStates.length,
+      finalizedProgressSummary.partialDays,
+      freeDetoxProgressQuery.progress?.partialDays,
+      isCompletedProgramReview,
+      isFreeDetoxProgram,
+      progress?.partialDays,
+    ]
+  );
+  const isDayCompleted = normalizedDayNumber
+    ? finalizedDayState?.dayState === 'completed' || completedDays.includes(normalizedDayNumber)
+    : false;
+  const isDayPartial = normalizedDayNumber
+    ? finalizedDayState?.dayState === 'partial' || (!isDayCompleted && partialDays.includes(normalizedDayNumber))
+    : false;
+  const scheduleStartSource = getProgramScheduleStartSource(access);
+  const isScheduledStartPending = isProgramStartPending(access, currentTime);
+  const unlockedThroughDay = useMemo(() => {
     if (!program) {
       return access.currentDay ?? 1;
+    }
+
+    if (isFreeDetoxProgram) {
+      return getFreeDetoxUnlockedThroughDay(freeDetoxProgressQuery.progress);
+    }
+
+    if (isCompletedProgramReview) {
+      return program.totalDays;
     }
 
     if (access.completionState === 'completed') {
       return program.totalDays;
     }
 
-    const derivedScheduledDay = access.startedAt
-      ? getProgramScheduledDay(access.startedAt, program.totalDays)
+    const derivedScheduledDay = isScheduledStartPending
+      ? 1
+      : scheduleStartSource
+      ? getProgramScheduledDay(scheduleStartSource, program.totalDays, currentTime)
       : access.currentDay ?? 1;
     const highestTouchedDay = Math.max(
       0,
@@ -472,22 +897,336 @@ export default function DayDetailScreen() {
       program.totalDays,
       Math.max(derivedScheduledDay, highestTouchedDay || 1)
     );
-  }, [access.completionState, access.currentDay, access.startedAt, completedDays, partialDays, program]);
+  }, [access.completionState, access.currentDay, completedDays, currentTime, freeDetoxProgressQuery.progress, isCompletedProgramReview, isFreeDetoxProgram, isScheduledStartPending, partialDays, program, scheduleStartSource]);
+  const activeDayNumber = useMemo(() => {
+    if (!program || isCompletedProgramReview) {
+      return null;
+    }
+
+    if (isFreeDetoxProgram) {
+      if (freeDetoxProgressQuery.progress?.completedAt) {
+        return null;
+      }
+
+      return getNextFreeDetoxDay(freeDetoxProgressQuery.progress);
+    }
+
+    if (access.completionState === 'completed') {
+      return null;
+    }
+
+    if (isScheduledStartPending || access.programState === 'paused') {
+      return null;
+    }
+
+    return scheduleStartSource
+      ? getProgramActiveDay(scheduleStartSource, program.totalDays, currentTime)
+      : unlockedThroughDay;
+  }, [access.completionState, access.programState, currentTime, freeDetoxProgressQuery.progress, isCompletedProgramReview, isFreeDetoxProgram, isScheduledStartPending, program, scheduleStartSource, unlockedThroughDay]);
+  const lastFinalizedDay = useMemo(() => {
+    if (!program) {
+      return Math.max(0, ...completedDays, ...partialDays);
+    }
+
+    if (isFreeDetoxProgram) {
+      return Math.max(0, ...completedDays, ...partialDays);
+    }
+
+    if (isCompletedProgramReview) {
+      const lastReviewDay = Math.max(0, ...finalizedDayStates.map((row) => row.dayNumber));
+      return lastReviewDay > 0 ? Math.min(program.totalDays, lastReviewDay) : program.totalDays;
+    }
+
+    return scheduleStartSource && !isScheduledStartPending && access.programState !== 'paused'
+      ? getProgramLastFinalizedDay(scheduleStartSource, program.totalDays, currentTime)
+      : Math.max(0, ...completedDays, ...partialDays);
+  }, [access.programState, completedDays, currentTime, finalizedDayStates, isCompletedProgramReview, isFreeDetoxProgram, isScheduledStartPending, partialDays, program, scheduleStartSource]);
+  const historicalDayState = useMemo<DayState | null>(() => {
+    if (!normalizedDayNumber || normalizedDayNumber > lastFinalizedDay) {
+      return null;
+    }
+
+    if (isCompletedProgramReview) {
+      return finalizedDayState?.dayState ?? 'completed';
+    }
+
+    if (finalizedDayState) {
+      return finalizedDayState.dayState;
+    }
+
+    if (isDayCompleted) {
+      return 'completed';
+    }
+
+    if (isDayPartial) {
+      return 'partial';
+    }
+
+    if (isFreeDetoxProgram) {
+      return null;
+    }
+
+    return 'skipped';
+  }, [finalizedDayState, isCompletedProgramReview, isDayCompleted, isDayPartial, isFreeDetoxProgram, lastFinalizedDay, normalizedDayNumber]);
+  const isHistoricalReadOnlyDay = Boolean(historicalDayState);
+  const isPausedProgram = !isFreeDetoxProgram && !isCompletedProgramReview && access.programState === 'paused';
 
   const isFutureLocked = Boolean(
     normalizedDayNumber &&
-    normalizedDayNumber > scheduledDay &&
+    !isCompletedProgramReview &&
     !isDayCompleted &&
-    !isDayPartial
+    (isFreeDetoxProgram
+      ? normalizedDayNumber > unlockedThroughDay && !isDayPartial
+      : isPausedProgram ||
+        ((isScheduledStartPending || normalizedDayNumber > unlockedThroughDay) && !isDayPartial))
   );
   const hasCloseCard = dayContent?.cards.some((card) => card.type === 'close') ?? false;
   const isLastCard = Boolean(dayContent && currentIndex === dayContent.cards.length - 1);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const shouldShowCompletionBar = !hasCloseCard && (isDayCompleted || isDayPartial || isLastCard);
   const nextUnlockLabel = useMemo(() => {
-    if (!program || access.completionState === 'completed') return null;
-    return formatUnlockLabel(getProgramNextUnlockAt(access.startedAt, program.totalDays));
-  }, [access.completionState, access.startedAt, program]);
+    if (!program || isCompletedProgramReview) return null;
+    if (isFreeDetoxProgram) {
+      return 'Complete the previous Detox day to unlock this one.';
+    }
+    if (access.completionState === 'completed') return null;
+    if (isPausedProgram) {
+      return 'Paused. Resume from the Program tab when you are ready.';
+    }
+    if (isScheduledStartPending) {
+      return formatScheduledProgramStartLabel(access.scheduledStartDate, currentTime);
+    }
+    return formatUnlockLabel(getProgramNextUnlockAt(scheduleStartSource, program.totalDays, currentTime), currentTime);
+  }, [access.completionState, access.scheduledStartDate, currentTime, isCompletedProgramReview, isFreeDetoxProgram, isPausedProgram, isScheduledStartPending, program, scheduleStartSource]);
+  const areTimeSlotsEnabled = program?.timeSlotsEnabled ?? false;
+  const runtimeCards = useMemo(
+    () => dayContent?.cards.map((card) => ({ card, meta: getCardTimeMeta(card) })) ?? [],
+    [dayContent?.cards]
+  );
+  const cardStates = useMemo(
+    () =>
+      runtimeCards.map(({ meta }) =>
+        getProgramRuntimeCardState({
+          card: meta,
+          currentTime,
+          isDayCompleted,
+          isFutureLocked,
+          isHistoricalReadOnlyDay,
+          timeSlotsEnabled: areTimeSlotsEnabled,
+        })
+      ),
+    [areTimeSlotsEnabled, currentTime, isDayCompleted, isFutureLocked, isHistoricalReadOnlyDay, runtimeCards]
+  );
+  const currentCard = dayContent?.cards[currentIndex];
+  const currentCardMeta = runtimeCards[currentIndex]?.meta ?? DEFAULT_CARD_TIME_META;
+  const currentCardState = cardStates[currentIndex] ?? 'available';
+  const analyticsUserId = user?.id ?? access.ownerUserId ?? null;
+  const logCardOpened = useCallback(
+    (cardIndex: number) => {
+      if (!analyticsUserId || !dayContent) {
+        return;
+      }
+
+      const card = dayContent.cards[cardIndex];
+      if (!card) {
+        return;
+      }
+
+      const cardState = cardStates[cardIndex] ?? 'available';
+      if (cardState === 'locked' || cardState === 'blocked') {
+        return;
+      }
+
+      const cardId = getCardAnalyticsId(dayContent, cardIndex);
+      const eventKey = `${cardId}:opened`;
+      if (loggedCardOpenKeysRef.current.has(eventKey)) {
+        return;
+      }
+
+      loggedCardOpenKeysRef.current.add(eventKey);
+      void logEvent({
+        cardId,
+        dayNumber: dayContent.dayNumber,
+        eventData: buildCardAnalyticsData({
+          cardIndex,
+          cardState,
+          day: dayContent,
+          extra: {
+            source: 'day_detail',
+          },
+        }),
+        eventType: 'card_opened',
+        programSlug: dayContent.programSlug,
+        userId: analyticsUserId,
+      });
+    },
+    [analyticsUserId, cardStates, dayContent]
+  );
+  const logCardCompleted = useCallback(
+    (cardIndex: number, extra?: AnalyticsEventData) => {
+      if (!analyticsUserId || !dayContent) {
+        return;
+      }
+
+      const card = dayContent.cards[cardIndex];
+      if (!card) {
+        return;
+      }
+
+      const cardId = getCardAnalyticsId(dayContent, cardIndex);
+      const eventKey = `${cardId}:completed`;
+      if (loggedCardCompletedKeysRef.current.has(eventKey)) {
+        return;
+      }
+
+      loggedCardCompletedKeysRef.current.add(eventKey);
+      void logEvent({
+        cardId,
+        dayNumber: dayContent.dayNumber,
+        eventData: buildCardAnalyticsData({
+          cardIndex,
+          cardState: cardStates[cardIndex] ?? 'available',
+          day: dayContent,
+          extra,
+        }),
+        eventType: 'card_completed',
+        programSlug: dayContent.programSlug,
+        userId: analyticsUserId,
+      });
+    },
+    [analyticsUserId, cardStates, dayContent]
+  );
+  const currentCardStateNotice = useMemo(
+    () => {
+      if (historicalDayState) {
+        return getHistoricalDayNotice(historicalDayState);
+      }
+
+      if (isDayCompleted || currentCardState === 'locked' || currentCardState === 'blocked') {
+        return null;
+      }
+
+      if (!areTimeSlotsEnabled) {
+        return null;
+      }
+
+      return getCardStateNotice(currentCardState, currentCardMeta.timeSlot);
+    },
+    [areTimeSlotsEnabled, currentCardMeta.timeSlot, currentCardState, historicalDayState, isDayCompleted]
+  );
+  const isCurrentCardActionLocked =
+    isFutureLocked || isHistoricalReadOnlyDay || currentCardState === 'locked' || currentCardState === 'blocked';
+  const canCompleteFromCurrentCard = Boolean(
+    dayContent &&
+      currentIndex === dayContent.cards.length - 1 &&
+      !isCurrentCardActionLocked &&
+      !isDayCompleted &&
+      (!hasCloseCard || currentCard?.type === 'close')
+  );
+  const hasNextAction = Boolean(dayContent && currentIndex < dayContent.cards.length - 1) || canCompleteFromCurrentCard;
+  const handleCompleteCurrentCardAndContinue = useCallback(
+    (completionSource: string = 'continue') => {
+      if (!dayContent || isCurrentCardActionLocked || isHistoricalReadOnlyDay) {
+        return;
+      }
+
+      logCardCompleted(currentIndex, {
+        completionSource,
+      });
+      handleContinueFromCard();
+    },
+    [
+      currentIndex,
+      dayContent,
+      handleContinueFromCard,
+      isCurrentCardActionLocked,
+      isHistoricalReadOnlyDay,
+      logCardCompleted,
+    ]
+  );
+  const handleCompleteCurrentCardAndContinueRef = useRef(handleCompleteCurrentCardAndContinue);
+  useEffect(() => {
+    handleCompleteCurrentCardAndContinueRef.current = handleCompleteCurrentCardAndContinue;
+  }, [handleCompleteCurrentCardAndContinue]);
+  const handleCardContinue = useCallback(() => {
+    handleCompleteCurrentCardAndContinueRef.current('card_continue');
+  }, []);
+  const handleAudioCompleted = useCallback(
+    (payload: {
+      audioStoragePath: string;
+      cardIndex: number | null;
+      completionMode: 'manual' | 'auto';
+      listenSeconds: number;
+      percentage: number;
+      totalSeconds: number;
+    }) => {
+      if (!analyticsUserId || !dayContent) {
+        return;
+      }
+
+      const cardIndex = payload.cardIndex ?? currentIndex;
+      const card = dayContent.cards[cardIndex];
+      if (!card || card.type !== 'audio') {
+        return;
+      }
+
+      const cardId = getCardAnalyticsId(dayContent, cardIndex);
+      const eventKey = `${cardId}:audio:${payload.completionMode}`;
+      if (loggedAudioCompletionKeysRef.current.has(eventKey)) {
+        return;
+      }
+
+      loggedAudioCompletionKeysRef.current.add(eventKey);
+      const roundedListenSeconds = Number(payload.listenSeconds.toFixed(2));
+      const roundedTotalSeconds = Number(payload.totalSeconds.toFixed(2));
+      const roundedPercentage = Number(payload.percentage.toFixed(4));
+      const audioPayload = buildCardAnalyticsData({
+        cardIndex,
+        cardState: cardStates[cardIndex] ?? 'available',
+        day: dayContent,
+        extra: {
+          audioSlug: payload.audioStoragePath,
+          audioStoragePath: payload.audioStoragePath,
+          completionMode: payload.completionMode,
+          listenSeconds: roundedListenSeconds,
+          percentage: roundedPercentage,
+          totalSeconds: roundedTotalSeconds,
+        },
+      });
+
+      void logEvent({
+        cardId,
+        dayNumber: dayContent.dayNumber,
+        eventData: audioPayload,
+        eventType: 'audio_played',
+        programSlug: dayContent.programSlug,
+        userId: analyticsUserId,
+      });
+      logCardCompleted(cardIndex, {
+        completionSource: `audio_${payload.completionMode}`,
+        listenSeconds: roundedListenSeconds,
+        percentage: roundedPercentage,
+        totalSeconds: roundedTotalSeconds,
+      });
+    },
+    [analyticsUserId, cardStates, currentIndex, dayContent, logCardCompleted]
+  );
+
+  useEffect(() => {
+    if (!dayContent || !isRestored || isHistoricalReadOnlyDay || isFutureLocked || isCurrentCardActionLocked) {
+      return;
+    }
+
+    logCardOpened(currentIndex);
+  }, [
+    currentIndex,
+    dayContent,
+    isCurrentCardActionLocked,
+    isFutureLocked,
+    isHistoricalReadOnlyDay,
+    isRestored,
+    logCardOpened,
+  ]);
 
   const refreshRoutineSummary = useCallback(async () => {
     if (!dayContent) {
@@ -536,14 +1275,159 @@ export default function DayDetailScreen() {
     void refreshRoutineSummary();
   }, [refreshRoutineSummary]);
 
+  const persistFinalizedDayState = useCallback(
+    async (requestedDayState: Extract<DayState, 'completed' | 'partial' | 'skipped'>) => {
+      if (isFreeDetoxProgram) {
+        return null;
+      }
+
+      if (!user?.id || !dayContent) {
+        return null;
+      }
+
+      const routineProgressByIndex = await getDayRoutineProgressByIndex(dayContent);
+      const record = buildUserDayStateRecord({
+        userId: user.id,
+        day: dayContent,
+        requestedDayState,
+        currentIndex,
+        cardStates,
+        routineProgressByIndex,
+      });
+
+      await upsertUserDayState(record);
+      await queryClient.invalidateQueries({
+        queryKey: finalizedDayStatesQueryKey(user.id, dayContent.programSlug),
+      });
+      return record;
+    },
+    [cardStates, currentIndex, dayContent, isFreeDetoxProgram, queryClient, user?.id]
+  );
+  const logDayFinalized = useCallback(
+    (
+      requestedDayState: Extract<DayState, 'completed' | 'partial'>,
+      record: UserDayStateUpsert | null,
+      extra?: AnalyticsEventData
+    ) => {
+      if (!analyticsUserId || !dayContent) {
+        return;
+      }
+
+      const effectiveDayState = record?.day_state ?? requestedDayState;
+      const eventKey = `${dayContent.programSlug}:${dayContent.dayNumber}:${effectiveDayState}`;
+      if (loggedDayFinalizationKeysRef.current.has(eventKey)) {
+        return;
+      }
+
+      loggedDayFinalizationKeysRef.current.add(eventKey);
+      void logEvent({
+        dayNumber: dayContent.dayNumber,
+        eventData: {
+          ...extra,
+          cardsCompleted: record?.cards_completed ?? null,
+          cardsOpened: record?.cards_opened ?? null,
+          cardsTotal: record?.cards_total ?? dayContent.cards.length,
+          completionPercentage: record?.completion_percentage ?? null,
+          currentCardIndex: currentIndex,
+          dayState: effectiveDayState,
+          finalizedAt: record?.finalized_at ?? new Date().toISOString(),
+        },
+        eventType: requestedDayState === 'completed' ? 'day_completed' : 'day_saved_partial',
+        programSlug: dayContent.programSlug,
+        userId: analyticsUserId,
+      });
+    },
+    [analyticsUserId, currentIndex, dayContent]
+  );
+
   const handleCompleteCurrentDay = async () => {
-    if (!programSlug || !dayContent || isDayCompleted || isCompletingDay) {
+    if (!programSlug || !dayContent || isDayCompleted || isCompletingDay || isHistoricalReadOnlyDay) {
       return;
     }
 
     try {
       setIsCompletingDay(true);
+      if (isFreeDetoxProgram) {
+        if (!freeDetoxUserId) {
+          throw new Error('A signed-in user is required to complete Detox progress.');
+        }
+
+        const nextFreeProgress = buildFreeDetoxProgressAfterDayState({
+          dayNumber: dayContent.dayNumber,
+          progress: freeDetoxProgressQuery.progress,
+          requestedDayState: 'completed',
+          userId: freeDetoxUserId,
+        });
+        const savedFreeProgress = await freeDetoxProgressQuery.saveDayState({
+          dayNumber: dayContent.dayNumber,
+          progress: freeDetoxProgressQuery.progress,
+          requestedDayState: 'completed',
+        });
+
+        logCardCompleted(currentIndex, {
+          completionSource: 'free_detox_day_completion',
+        });
+        logDayFinalized('completed', null, {
+          isFinalProgramDay: Boolean(program && dayContent.dayNumber >= program.totalDays),
+        });
+
+        if (program && dayContent.dayNumber >= program.totalDays) {
+          if (analyticsUserId) {
+            void logEvent({
+              dayNumber: dayContent.dayNumber,
+              eventData: {
+                completedDays: savedFreeProgress.completedDays,
+                completionRate: 100,
+                totalDays: program.totalDays,
+              },
+              eventType: 'program_completed',
+              programSlug,
+              userId: analyticsUserId,
+            });
+          }
+          router.replace(HOME_ROUTE);
+        } else if (nextFreeProgress.currentDay > dayContent.dayNumber) {
+          router.replace(
+            buildDayDetailRoute({
+              programSlug: FREE_DETOX_PROGRAM_SLUG,
+              dayNumber: nextFreeProgress.currentDay,
+            })
+          );
+        }
+        return;
+      }
+
       await completeProgramDay(programSlug, dayContent.dayNumber);
+      let finalizedRecord: UserDayStateUpsert | null = null;
+      try {
+        finalizedRecord = await persistFinalizedDayState('completed');
+      } catch (dayStateError) {
+        console.warn('Failed to persist completed day state', dayStateError);
+      }
+      logCardCompleted(currentIndex, {
+        completionSource: 'day_completion',
+      });
+      logDayFinalized('completed', finalizedRecord, {
+        isFinalProgramDay: Boolean(program && dayContent.dayNumber >= program.totalDays),
+      });
+
+      if (program && dayContent.dayNumber >= program.totalDays) {
+        if (analyticsUserId) {
+          void logEvent({
+            dayNumber: dayContent.dayNumber,
+            eventData: {
+              cardsCompleted: finalizedRecord?.cards_completed ?? null,
+              cardsTotal: finalizedRecord?.cards_total ?? dayContent.cards.length,
+              completionRate: finalizedRecord?.completion_percentage ?? null,
+              totalDays: program.totalDays,
+            },
+            eventType: 'program_completed',
+            programSlug,
+            userId: analyticsUserId,
+          });
+        }
+        router.replace(buildProgramCompleteRoute(programSlug));
+      }
     } catch (error) {
       console.error('Failed to complete day', error);
     } finally {
@@ -552,13 +1436,38 @@ export default function DayDetailScreen() {
   };
 
   const handleSaveCurrentDayAsPartial = async () => {
-    if (!programSlug || !dayContent || isDayCompleted || isCompletingDay) {
+    if (!programSlug || !dayContent || isDayCompleted || isCompletingDay || isHistoricalReadOnlyDay) {
       return;
     }
 
     try {
       setIsCompletingDay(true);
+      if (isFreeDetoxProgram) {
+        if (!freeDetoxUserId) {
+          throw new Error('A signed-in user is required to save Detox progress.');
+        }
+
+        await freeDetoxProgressQuery.saveDayState({
+          dayNumber: dayContent.dayNumber,
+          progress: freeDetoxProgressQuery.progress,
+          requestedDayState: 'partial',
+        });
+        logDayFinalized('partial', null, {
+          hasIncompleteRequiredRoutines: routineSummary.hasRequiredRoutines && !routineSummary.allRequiredRoutinesComplete,
+        });
+        return;
+      }
+
       await savePartialProgramDay(programSlug, dayContent.dayNumber);
+      let finalizedRecord: UserDayStateUpsert | null = null;
+      try {
+        finalizedRecord = await persistFinalizedDayState('partial');
+      } catch (dayStateError) {
+        console.warn('Failed to persist partial day state', dayStateError);
+      }
+      logDayFinalized('partial', finalizedRecord, {
+        hasIncompleteRequiredRoutines: routineSummary.hasRequiredRoutines && !routineSummary.allRequiredRoutinesComplete,
+      });
     } catch (error) {
       console.error('Failed to save partial day', error);
     } finally {
@@ -567,17 +1476,14 @@ export default function DayDetailScreen() {
   };
 
   const handlePrimaryDayAction = async () => {
-    if (isDayCompleted || isCompletingDay) {
-      return;
-    }
-
-    if (isDayPartial) {
-      await handleCompleteCurrentDay();
+    if (isDayCompleted || isCompletingDay || isHistoricalReadOnlyDay) {
       return;
     }
 
     if (routineSummary.hasRequiredRoutines && !routineSummary.allRequiredRoutinesComplete) {
-      await handleSaveCurrentDayAsPartial();
+      if (!isDayPartial) {
+        await handleSaveCurrentDayAsPartial();
+      }
       return;
     }
 
@@ -586,6 +1492,26 @@ export default function DayDetailScreen() {
 
   if (!programSlug || !Number.isInteger(dayNumber) || dayNumber < 1) {
     return <ErrorState message="The requested day detail route is missing a valid program slug or day number." />;
+  }
+
+  if (
+    isProfileLoading ||
+    (rawMode === 'review' && isOwnedProgramsLoading) ||
+    (isFreeDetoxProgram && canAccessFreeDetoxDay && freeDetoxProgressQuery.isLoading)
+  ) {
+    return <LoadingState />;
+  }
+
+  if (!canAccessRequestedProgramDay) {
+    return <Redirect href={PAYWALL_ROUTE} />;
+  }
+
+  if (rawMode !== 'review' && completedReviewAccessDecision.allowed && !activeAccessDecision.allowed) {
+    return <Redirect href={buildProgramReviewRoute(programSlug)} />;
+  }
+
+  if (rawMode === 'review' && !isCompletedProgramReview) {
+    return <ErrorState message="This completed journey is not available for review." />;
   }
 
   if ((isDayLoading && !dayContent) || (isProgramLoading && !program)) {
@@ -603,15 +1529,23 @@ export default function DayDetailScreen() {
   if (isFutureLocked) {
     return (
       <ErrorState
-        message={nextUnlockLabel
+        message={isFreeDetoxProgram
+          ? 'Complete the previous Detox day to unlock this one.'
+          : isPausedProgram
+          ? 'This journey is paused. Resume it from the Program tab to continue today’s cards.'
+          : nextUnlockLabel
           ? `This day has not unlocked yet. ${nextUnlockLabel}.`
           : 'This day has not unlocked yet. Please return to the Program tab for the next available step.'}
       />
     );
   }
 
-  const isCurrentScheduledDay = dayContent.dayNumber === scheduledDay && !isDayCompleted;
+  const isCurrentScheduledDay = dayContent.dayNumber === activeDayNumber && !isDayCompleted;
   const isFinalProgramDay = dayContent.dayNumber >= program.totalDays;
+  const hasIncompleteRequiredRoutines =
+    routineSummary.hasRequiredRoutines && !routineSummary.allRequiredRoutinesComplete;
+  const finalizedSummaryText = finalizedDayState ? formatFinalizedDaySummary(finalizedDayState) : null;
+  const dayExitRoute = isFreeDetoxProgram ? HOME_ROUTE : PROGRAM_TAB_ROUTE;
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const completionTitle = isDayCompleted
     ? isFinalProgramDay
@@ -628,22 +1562,58 @@ export default function DayDetailScreen() {
       : nextUnlockLabel
         ? `${nextUnlockLabel}. You can revisit this day anytime.`
         : 'You can revisit this day anytime.'
+    : historicalDayState === 'partial'
+      ? `${finalizedSummaryText ?? 'This day closed as partial after the session window ended.'} It now stays available in review mode only.`
+    : historicalDayState === 'skipped'
+      ? `${finalizedSummaryText ?? `This day closed at ${formatWindowTime(TIME_SLOT_WINDOWS.evening.closes)} with no completed cards.`} It now stays available in review mode only.`
     : isDayPartial
-      ? 'This day unlocked your onward schedule, but it does not count as fully completed yet. Revisit it anytime and mark it fully complete when you are ready.'
+      ? hasIncompleteRequiredRoutines
+        ? `${finalizedSummaryText ?? 'This day is saved as partial.'} Finish the required routine steps before marking it fully complete.`
+        : `${finalizedSummaryText ?? 'This day is saved as partial.'} You can mark it fully complete when you are ready.`
     : isCurrentScheduledDay
       ? nextUnlockLabel
         ? `${nextUnlockLabel}. Earlier practices will stay available if you want to revisit them.`
-        : routineSummary.hasRequiredRoutines && !routineSummary.allRequiredRoutinesComplete
+        : hasIncompleteRequiredRoutines
           ? 'Required routine steps are still unfinished. You can save this day as partial and come back later.'
           : 'When you are ready, mark today complete.'
       : 'This earlier practice will stay available even after you complete it.';
-  const primaryCompletionLabel = isDayPartial
-    ? 'Mark fully complete'
-    : routineSummary.hasRequiredRoutines && !routineSummary.allRequiredRoutinesComplete
-      ? 'Save as partial'
-      : isFinalProgramDay
-        ? 'Complete program day'
-        : 'Complete day';
+  const primaryCompletionLabel = currentCard?.type === 'close' && currentCardState === 'locked'
+      ? 'Locked'
+      : currentCard?.type === 'close' && currentCardState === 'blocked'
+        ? 'Missed'
+        : isHistoricalReadOnlyDay
+          ? 'Back to Program'
+        : isDayPartial
+          ? hasIncompleteRequiredRoutines
+            ? 'Finish routines first'
+            : 'Mark fully complete'
+          : hasIncompleteRequiredRoutines
+            ? 'Save as partial'
+            : isFinalProgramDay
+              ? 'Complete program day'
+              : 'Complete day';
+  const closeCardState = {
+    isCompleted: isDayCompleted,
+    isPartial: isDayPartial,
+    isReadOnly: isHistoricalReadOnlyDay,
+    readOnlyState: historicalDayState ?? undefined,
+    isFinalProgramDay,
+    completionDescription,
+    isCompleting: isCompletingDay,
+    primaryActionLabel: primaryCompletionLabel,
+    primaryActionDisabled:
+      currentCard?.type === 'close' &&
+      !isHistoricalReadOnlyDay &&
+      (isCurrentCardActionLocked || (isDayPartial && hasIncompleteRequiredRoutines)),
+    onCompleteDay: () => {
+      if (isHistoricalReadOnlyDay) {
+        router.replace(dayExitRoute);
+        return;
+      }
+      void handlePrimaryDayAction();
+    },
+    onBackToProgram: () => router.replace(dayExitRoute),
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -656,7 +1626,15 @@ export default function DayDetailScreen() {
           <Pressable
             accessibilityLabel="Back to program"
             style={styles.backButton}
-            onPress={() => router.navigate('/program' as Href)}
+            onPress={() =>
+              router.replace(
+                isFreeDetoxProgram
+                  ? HOME_ROUTE
+                  : isCompletedProgramReview && programSlug
+                  ? buildProgramReviewRoute(programSlug)
+                  : PROGRAM_TAB_ROUTE
+              )
+            }
           >
             <Ionicons name="chevron-back" size={20} color="rgba(227,243,229,0.9)" />
           </Pressable>
@@ -698,6 +1676,22 @@ export default function DayDetailScreen() {
         })}
       </View>
 
+      {currentCardStateNotice ? (
+        <View
+          style={[
+            styles.cardStateNotice,
+            currentCardStateNotice.tone === 'warm'
+              ? styles.cardStateNoticeWarm
+              : currentCardStateNotice.tone === 'critical'
+                ? styles.cardStateNoticeCritical
+                : styles.cardStateNoticeMuted,
+          ]}
+        >
+          <Text style={styles.cardStateNoticeEyebrow}>{currentCardStateNotice.eyebrow}</Text>
+          <Text style={styles.cardStateNoticeText}>{currentCardStateNotice.message}</Text>
+        </View>
+      ) : null}
+
       {showResumeToast ? <ResumeToast /> : null}
 
       <TransportContext.Provider value={transportContextValue}>
@@ -705,7 +1699,7 @@ export default function DayDetailScreen() {
           ref={pagerRef}
           style={styles.pager}
           overdrag
-          offscreenPageLimit={2}
+          offscreenPageLimit={1}
           initialPage={currentIndex}
           onPageScroll={(event) => {
             const { position, offset } = event.nativeEvent;
@@ -723,37 +1717,43 @@ export default function DayDetailScreen() {
             >
               <SwipeDeckCard
                 card={card}
+                cardState={cardStates[index]}
+                cardTimeSlot={areTimeSlotsEnabled ? runtimeCards[index]?.meta.timeSlot : undefined}
                 index={index}
                 totalCards={dayContent.cards.length}
                 progress={swipeProgress}
                 programName={program.name}
-                onContinue={handleContinueFromCard}
-                onPrevious={() => {
-                  if (index > 0) {
-                    pagerRef.current?.setPage(index - 1);
-                  }
-                }}
-                reflectionStorageKey={`day-reflection:${dayContent.programSlug}:${dayContent.dayNumber}:${index}`}
-                routineStorageKey={getRoutineStorageKey(dayContent.programSlug, dayContent.dayNumber, index)}
-                onRoutineProgressChange={handleRoutineProgressChange}
-                closeCardState={{
-                  isCompleted: isDayCompleted,
-                  isPartial: isDayPartial,
-                  isFinalProgramDay,
-                  completionDescription,
-                  isCompleting: isCompletingDay,
-                  primaryActionLabel: primaryCompletionLabel,
-                  onCompleteDay: () => {
-                    void handlePrimaryDayAction();
-                  },
-                  onBackToProgram: () => router.navigate('/program' as Href),
-                }}
-                programReflectionContext={{
-                  userId: user?.id,
-                  programSlug: dayContent.programSlug,
-                  dayNumber: dayContent.dayNumber,
-                  cardIndex: index,
-                }}
+                onContinue={handleCardContinue}
+                reflectionStorageKey={
+                  card.type === 'journal'
+                    ? `day-reflection:${dayContent.programSlug}:${dayContent.dayNumber}:${index}`
+                    : undefined
+                }
+                routineStorageKey={
+                  card.type === 'exercise_routine'
+                    ? getRoutineStorageKey(dayContent.programSlug, dayContent.dayNumber, index)
+                    : undefined
+                }
+                checklistStorageKey={
+                  card.type === 'action_step'
+                    ? getChecklistStorageKey(dayContent.programSlug, dayContent.dayNumber, index)
+                    : undefined
+                }
+                hasEffortCheck={runtimeCards[index]?.meta.hasEffortCheck}
+                isReadOnly={isHistoricalReadOnlyDay}
+                onRoutineProgressChange={card.type === 'exercise_routine' ? handleRoutineProgressChange : undefined}
+                onAudioCompleted={card.type === 'audio' ? handleAudioCompleted : undefined}
+                closeCardState={card.type === 'close' ? closeCardState : undefined}
+                programReflectionContext={
+                  card.type === 'journal'
+                    ? {
+                        userId: user?.id,
+                        programSlug: dayContent.programSlug,
+                        dayNumber: dayContent.dayNumber,
+                        cardIndex: index,
+                      }
+                    : undefined
+                }
               />
             </View>
           ))}
@@ -766,14 +1766,23 @@ export default function DayDetailScreen() {
         }}
         onNext={() => {
           if (currentIndex < dayContent.cards.length - 1) {
-            pagerRef.current?.setPage(currentIndex + 1);
-          } else {
+            handleCompleteCurrentCardAndContinue('next_button');
+          } else if (!isCurrentCardActionLocked) {
             void handlePrimaryDayAction();
           }
         }}
         hasPrev={currentIndex > 0}
-        hasNext={currentIndex < dayContent.cards.length}
+        hasNext={hasNextAction}
         centerLabel={(() => {
+          if (isHistoricalReadOnlyDay) {
+            return 'REVIEW';
+          }
+          if (currentCardState === 'locked') {
+            return 'LOCKED';
+          }
+          if (currentCardState === 'blocked') {
+            return 'MISSED';
+          }
           if (transportConfigs[currentIndex]?.centerLabel) {
             return transportConfigs[currentIndex]!.centerLabel;
           }
@@ -782,6 +1791,15 @@ export default function DayDetailScreen() {
           return getDefaultCenterConfig(currentCard?.type ?? '', isLastCard).label;
         })()}
         centerIcon={(() => {
+          if (isHistoricalReadOnlyDay) {
+            return <Ionicons name="eye-outline" size={28} color="#06290C" />;
+          }
+          if (currentCardState === 'locked') {
+            return <Ionicons name="lock-closed-outline" size={28} color="#06290C" />;
+          }
+          if (currentCardState === 'blocked') {
+            return <Ionicons name="time-outline" size={28} color="#06290C" />;
+          }
           if (transportConfigs[currentIndex]?.centerIcon !== undefined) {
             return transportConfigs[currentIndex]!.centerIcon;
           }
@@ -797,18 +1815,22 @@ export default function DayDetailScreen() {
           );
         })()}
         onCenterPress={() => {
+          if (isCurrentCardActionLocked) {
+            return;
+          }
+
           const customAction = transportConfigsRef.current[currentIndex]?.onCenterPress;
           if (customAction) {
             customAction();
           } else {
             if (currentIndex < dayContent.cards.length - 1) {
-              pagerRef.current?.setPage(currentIndex + 1);
+              handleCompleteCurrentCardAndContinue('center_button');
             } else {
               void handlePrimaryDayAction();
             }
           }
         }}
-        disabled={transportConfigs[currentIndex]?.disabled}
+        disabled={transportConfigs[currentIndex]?.disabled || isCurrentCardActionLocked}
       />
     </SafeAreaView>
   );
@@ -891,6 +1913,108 @@ const styles = StyleSheet.create({
   },
   progressSegmentTodo: {
     backgroundColor: 'rgba(227, 243, 229, 0.20)',
+  },
+  cardStateNotice: {
+    marginHorizontal: 20,
+    marginBottom: 8,
+    borderRadius: 18,
+    borderWidth: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    gap: 4,
+  },
+  cardStateNoticeMuted: {
+    backgroundColor: 'rgba(227, 243, 229, 0.08)',
+    borderColor: 'rgba(227, 243, 229, 0.16)',
+  },
+  cardStateNoticeWarm: {
+    backgroundColor: 'rgba(196, 153, 73, 0.16)',
+    borderColor: 'rgba(214, 180, 94, 0.32)',
+  },
+  cardStateNoticeCritical: {
+    backgroundColor: 'rgba(185, 58, 43, 0.16)',
+    borderColor: 'rgba(214, 108, 96, 0.32)',
+  },
+  cardStateNoticeEyebrow: {
+    fontFamily: 'Satoshi-Bold',
+    fontSize: 10,
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
+    color: 'rgba(227, 243, 229, 0.72)',
+  },
+  cardStateNoticeText: {
+    fontFamily: 'Satoshi',
+    fontSize: 13,
+    lineHeight: 20,
+    color: 'rgba(227, 243, 229, 0.88)',
+  },
+  placeholderCard: {
+    flex: 1,
+    borderRadius: 32,
+    backgroundColor: '#F6F5F1',
+    paddingHorizontal: 26,
+    paddingVertical: 28,
+    justifyContent: 'space-between',
+  },
+  placeholderEyebrowRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  placeholderEyebrow: {
+    fontFamily: 'Satoshi-Bold',
+    fontSize: 11,
+    letterSpacing: 1.4,
+    textTransform: 'uppercase',
+    color: 'rgba(6, 41, 12, 0.45)',
+  },
+  placeholderSlotPill: {
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  placeholderSlotPillLocked: {
+    backgroundColor: 'rgba(6, 41, 12, 0.08)',
+  },
+  placeholderSlotPillMissed: {
+    backgroundColor: 'rgba(185, 58, 43, 0.10)',
+  },
+  placeholderSlotPillText: {
+    fontFamily: 'Satoshi-Bold',
+    fontSize: 11,
+    letterSpacing: 0.5,
+    color: 'rgba(6, 41, 12, 0.7)',
+  },
+  placeholderTitle: {
+    marginTop: 16,
+    fontFamily: 'Erode-Medium',
+    fontSize: 34,
+    lineHeight: 38,
+    color: '#06290C',
+  },
+  placeholderBody: {
+    marginTop: 14,
+    fontFamily: 'Satoshi',
+    fontSize: 18,
+    lineHeight: 29,
+    color: 'rgba(6, 41, 12, 0.68)',
+  },
+  placeholderMetaRow: {
+    marginTop: 24,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+    paddingTop: 18,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(6, 41, 12, 0.08)',
+  },
+  placeholderMetaText: {
+    flex: 1,
+    fontFamily: 'Satoshi-Medium',
+    fontSize: 13,
+    lineHeight: 20,
+    color: 'rgba(6, 41, 12, 0.48)',
   },
   pager: {
     flex: 1,

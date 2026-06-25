@@ -1,17 +1,22 @@
 export type ProgramSlug =
   | 'six_day_reset'
   | 'ninety_day_transform'
+  | 'smoking_alcohol_quit'
   | 'sleep_disorder_reset'
   | 'energy_vitality'
   | 'age_reversal'
-  | 'male_sexual_health';
+  | 'male_sexual_health'
+  | 'gut_health_reset'
+  | 'free_detox_reset';
 
 export type ProgramCategory =
   | 'smoking'
   | 'sleep'
   | 'energy'
   | 'aging'
-  | 'sexual_health';
+  | 'sexual_health'
+  | 'gut_health'
+  | 'detox';
 
 export type ProgramContentStatus = 'sample' | 'ready' | 'placeholder';
 
@@ -22,6 +27,7 @@ export interface ProgramCatalogEntry {
   totalDays: number;
   category: ProgramCategory;
   hasAudio: boolean;
+  timeSlotsEnabled: boolean;
   contentStatus: ProgramContentStatus;
   priceString?: string;
   /** Label for the recommendation stats row, e.g. "10–15" */
@@ -66,6 +72,7 @@ export interface LessonCard {
 
 export interface ActionStepCard {
   type: 'action_step';
+  variant?: 'checklist';
   stepNumber?: number;
   /** Age Reversal format: e.g. "Step 1 · Body Circulation" */
   stepLabel?: string;
@@ -73,7 +80,9 @@ export interface ActionStepCard {
   /** Age Reversal format: short subtitle below the title */
   subtitle?: string;
   duration?: string;
-  instructions: string[];
+  instructions?: string[];
+  checklistItems?: string[];
+  checklistQuote?: string;
   whyThisWorks?: string;
   proTip?: string;
   /** Age Reversal format: why this step matters, shown as a callout */

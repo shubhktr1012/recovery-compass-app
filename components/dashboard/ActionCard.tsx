@@ -1,7 +1,10 @@
-import { View, Text, Pressable } from 'react-native';
-import { useRouter, Href } from 'expo-router';
+import { View, Text } from 'react-native';
+import { useRouter } from 'expo-router';
 import { Svg, Path, Circle, Polygon } from 'react-native-svg';
+import { PressableScale } from '@/components/motion/PressableScale';
 import { AppTypography } from '@/constants/typography';
+import { buildDayDetailRoute } from '@/lib/navigation/routes';
+import { MotionScale } from '@/lib/motion/tokens';
 
 interface ActionCardProps {
   dayTitle: React.ReactNode;
@@ -9,6 +12,15 @@ interface ActionCardProps {
   estimatedMinutes: number;
   activeProgram: string;
   resolvedDayNumber: number;
+  availabilityLabel?: string | null;
+  ctaLabel?: string;
+  isLocked?: boolean;
+  onPress?: () => void;
+}
+
+function formatCardAvailabilityLabel(availabilityLabel: string | null) {
+  if (!availabilityLabel) return 'Opens soon';
+  return availabilityLabel.replace(/^Your next step unlocks\s+/i, 'Opens ');
 }
 
 export function ActionCard({
@@ -17,13 +29,24 @@ export function ActionCard({
   estimatedMinutes,
   activeProgram,
   resolvedDayNumber,
+  availabilityLabel = null,
+  ctaLabel = 'Continue',
+  isLocked = false,
+  onPress,
 }: ActionCardProps) {
   const router = useRouter();
+  const compactAvailabilityLabel = formatCardAvailabilityLabel(availabilityLabel);
+  const handlePress =
+    onPress ??
+    (() => router.push(buildDayDetailRoute({ programSlug: activeProgram, dayNumber: resolvedDayNumber })));
 
   return (
-    <Pressable
-      onPress={() => router.push(`/day-detail?programSlug=${activeProgram}&dayNumber=${resolvedDayNumber}` as Href)}
+    <PressableScale
+      onPress={isLocked ? undefined : handlePress}
+      disabled={isLocked}
+      pressScale={MotionScale.pressLarge}
       className="bg-white rounded-3xl overflow-hidden shadow-sm shadow-forest/5"
+      style={isLocked ? { opacity: 0.88 } : undefined}
     >
       <View className="bg-forest px-5 pt-5 pb-4 relative overflow-hidden">
         <Svg 
@@ -51,21 +74,39 @@ export function ActionCard({
         </Text>
       </View>
       <View className="p-4 px-5">
-        <View className="flex-row items-center justify-between">
+        {isLocked ? (
           <View className="flex-row items-center gap-1.5">
             <Svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(6,41,12,0.42)" strokeWidth="1.8" strokeLinecap="round">
               <Circle cx="12" cy="12" r="9" /><Path d="M12 7v5l3 2" />
             </Svg>
-            <Text className="text-forest/45" style={AppTypography.label}>{estimatedMinutes} min session</Text>
+            <Text className="text-forest/45 flex-1" numberOfLines={1} style={AppTypography.label}>
+              {compactAvailabilityLabel}
+            </Text>
           </View>
-          <View className="flex-row items-center gap-2 bg-forest rounded-full px-4 py-2.5 shadow-sm shadow-forest/20">
-            <Svg width="11" height="11" viewBox="0 0 24 24" fill="#fff" stroke="none">
-              <Polygon points="5,3 19,12 5,21" />
-            </Svg>
-            <Text className="text-white" style={[AppTypography.buttonMd, { letterSpacing: -0.075 }]}>Open Today</Text>
+        ) : (
+          <View className="flex-row items-center justify-between gap-3">
+            <View className="flex-row items-center gap-1.5 flex-1 min-w-0">
+              <Svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(6,41,12,0.42)" strokeWidth="1.8" strokeLinecap="round">
+                <Circle cx="12" cy="12" r="9" /><Path d="M12 7v5l3 2" />
+              </Svg>
+              <Text className="text-forest/45 flex-1" numberOfLines={1} style={AppTypography.label}>
+                {`${estimatedMinutes} min session`}
+              </Text>
+            </View>
+            <View className="flex-row items-center gap-2 rounded-full px-4 py-2.5 bg-forest shadow-sm shadow-forest/20">
+              <Svg width="11" height="11" viewBox="0 0 24 24" fill="#fff" stroke="none">
+                <Polygon points="5,3 19,12 5,21" />
+              </Svg>
+              <Text
+                className="text-white"
+                style={[AppTypography.buttonMd, { letterSpacing: -0.075 }]}
+              >
+                {ctaLabel}
+              </Text>
+            </View>
           </View>
-        </View>
+        )}
       </View>
-    </Pressable>
+    </PressableScale>
   );
 }
