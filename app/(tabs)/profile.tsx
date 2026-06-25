@@ -30,6 +30,7 @@ import {
   MY_PROGRAMS_ROUTE,
   PROGRAM_TAB_ROUTE,
 } from '@/lib/navigation/routes';
+import { useTabBarScrollPadding } from '@/components/navigation/TabBarMetricsProvider';
 import { getProgramScheduleStartSource, isProgramStartPending } from '@/lib/programs/lifecycle';
 import { getProgramScheduledDay } from '@/lib/programs/schedule';
 import { useProfile } from '@/providers/profile';
@@ -37,9 +38,8 @@ import { supabase } from '@/lib/supabase';
 import { NotificationService } from '@/lib/notifications';
 import type { NotificationPlan, NotificationPlanType } from '@/lib/notification-scheduler';
 import { EditProfileSheet } from '@/components/account/EditProfileSheet';
-import { AccountWatermark } from '@/components/ui/TabWatermarks';
 import type { ProgramSlug } from '@/types/content';
-import { AppColors } from '@/constants/theme';
+import { AppColors, AppShadows } from '@/constants/theme';
 import { AppTypography } from '@/constants/typography';
 import { resolveProfileIdentity } from '@/lib/profile-identity';
 import { buildWidgetPayload, syncWidgetData } from '@/lib/widget-bridge';
@@ -180,6 +180,7 @@ export default function AccountScreen() {
   const [isSchedulingDevNotification, setIsSchedulingDevNotification] = useState(false);
   const userId = user?.id ?? null;
   const currentTime = useMinuteClock();
+  const tabBarScrollPadding = useTabBarScrollPadding();
   const activeProgramSlug = access.ownedProgram as ProgramSlug | null;
   const activeProgram = activeProgramSlug ? PROGRAM_METADATA[activeProgramSlug] : null;
   const finalizedDayStatesQuery = useFinalizedDayStates(userId, activeProgramSlug);
@@ -581,13 +582,6 @@ export default function AccountScreen() {
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <SafeAreaView edges={['top']} style={styles.headerSafeArea}>
           <View style={styles.headerContainer}>
-            <AccountWatermark 
-              width={280} 
-              height={170} 
-              opacity={0.06} 
-              style={{ position: 'absolute', right: -20, top: -10 }} 
-            />
-
             <View style={styles.headerTopRow}>
               <Text style={styles.headerEyebrow}>Your account</Text>
 
@@ -605,7 +599,7 @@ export default function AccountScreen() {
           </View>
         </SafeAreaView>
 
-        <View style={styles.contentWrap}>
+        <View style={[styles.contentWrap, { paddingBottom: tabBarScrollPadding }]}>
           <View style={styles.identityCard}>
             <TouchableOpacity onPress={() => void handleAvatarTap()} activeOpacity={0.82} style={styles.avatarTouchable}>
               <View style={styles.avatarContainer}>
@@ -930,13 +924,12 @@ const styles = StyleSheet.create({
   // ─── Content ───
   contentWrap: {
     flex: 1,
-    backgroundColor: AppColors.surface,
+    backgroundColor: AppColors.canvas,
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
     marginTop: -28,
     paddingHorizontal: 20,
     paddingTop: 0,
-    paddingBottom: 146,
   },
 
   // ─── Identity ───
@@ -958,13 +951,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 3,
-    borderColor: AppColors.surface,
-    // Spec: box-shadow: 0 4px 20px rgba(6,41,12,0.13)
-    shadowColor: '#06290C',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.13,
-    shadowRadius: 20,
-    elevation: 5,
+    borderColor: AppColors.paper,
+    ...AppShadows.soft,
   },
   avatarImage: {
     width: '100%',
@@ -1026,12 +1014,7 @@ const styles = StyleSheet.create({
     backgroundColor: AppColors.forest,
     borderRadius: 20,
     overflow: 'hidden',
-    // Spec: box-shadow: 0 4px 20px rgba(6,41,12,0.18)
-    shadowColor: '#06290C',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.18,
-    shadowRadius: 20,
-    elevation: 5,
+    ...AppShadows.cta,
     borderWidth: 1,
     borderColor: 'rgba(227,243,229,0.08)',
   },
@@ -1155,11 +1138,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    shadowColor: '#06290C',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 10,
-    elevation: 2,
+    ...AppShadows.soft,
   },
   programLibraryIcon: {
     width: 36,
@@ -1200,6 +1179,7 @@ const styles = StyleSheet.create({
     paddingTop: 18,
     paddingBottom: 16,
     position: 'relative',
+    ...AppShadows.cta,
   },
   statCardForest: {
     backgroundColor: AppColors.forest,
@@ -1312,13 +1292,7 @@ const styles = StyleSheet.create({
     paddingRight: 18,
     paddingLeft: 16,
     overflow: 'hidden',
-    // Spec: --soft-shadow = 0 1px 2px rgba(6,41,12,0.03), 0 8px 24px rgba(6,41,12,0.06)
-    // RN supports single shadow — using dominant layer
-    shadowColor: '#06290C',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.06,
-    shadowRadius: 24,
-    elevation: 2,
+    ...AppShadows.soft,
   },
   intentionEyebrowRow: {
     flexDirection: 'row',
@@ -1357,11 +1331,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 16,
     gap: 12,
-    shadowColor: '#06290C',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 16,
-    elevation: 2,
+    ...AppShadows.soft,
   },
   devCardTitle: {
     fontFamily: 'Satoshi-Bold',

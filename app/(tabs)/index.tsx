@@ -41,6 +41,7 @@ import { PAYWALL_ROUTE, buildDayDetailRoute } from '@/lib/navigation/routes';
 import { resolveProfileIdentity } from '@/lib/profile-identity';
 import type { QuestionnaireAnswersSnapshot } from '@/lib/program-statistics';
 import { StepPermissionPrompt } from '@/components/steps/StepPermissionPrompt';
+import { useTabBarScrollPadding } from '@/components/navigation/TabBarMetricsProvider';
 import { isPublicCatalogProgram } from '@/content/programs/metadata';
 import { useFreeDetoxProgress } from '@/hooks/useFreeDetoxProgress';
 import { FREE_DETOX_PROGRAM_SLUG, getNextFreeDetoxDay } from '@/lib/free-program-progress';
@@ -94,11 +95,16 @@ function FreeTierHomeScreen() {
     email: profile?.email ?? null,
     fallbackLabel: 'Friend',
   });
+  const tabBarScrollPadding = useTabBarScrollPadding();
 
   return (
     <View className="flex-1 bg-surface">
       <StatusBar style="light" />
-      <ScrollView contentContainerClassName="flex-grow pb-32" bounces={false} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={{ flexGrow: 1, paddingBottom: tabBarScrollPadding }}
+        bounces={false}
+        showsVerticalScrollIndicator={false}
+      >
         <DashboardHeader
           greetingLabel={getGreetingLabel()}
           firstName={profileIdentity.displayName}
@@ -109,7 +115,7 @@ function FreeTierHomeScreen() {
         />
 
         <View
-          className="bg-surface rounded-t-[32px] -mt-[24px] px-5 pt-6 pb-28 relative z-10 flex-col gap-5"
+          className="bg-surface rounded-t-[32px] -mt-[24px] px-5 pt-6 relative z-10 flex-col gap-5"
           style={{ minHeight: 600 }}
         >
           <StaggeredItem index={0}>
@@ -157,6 +163,7 @@ function HomeScreenContent({ activeProgram }: { activeProgram: ProgramSlug }) {
   const dailySteps = useDailySteps();
   const queryClient = useQueryClient();
   const now = useMinuteClock();
+  const tabBarScrollPadding = useTabBarScrollPadding();
   const userId = profile?.id ?? access.ownerUserId ?? null;
   const finalizedDayStatesQuery = useFinalizedDayStates(userId, activeProgram);
   const finalizedDayStates = finalizedDayStatesQuery.data ?? EMPTY_FINALIZED_DAY_STATES;
@@ -316,7 +323,11 @@ function HomeScreenContent({ activeProgram }: { activeProgram: ProgramSlug }) {
   return (
     <View className="flex-1 bg-surface">
       <StatusBar style="light" />
-      <ScrollView contentContainerClassName="flex-grow pb-32" bounces={false} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={{ flexGrow: 1, paddingBottom: tabBarScrollPadding }}
+        bounces={false}
+        showsVerticalScrollIndicator={false}
+      >
         
         {/* HEADER */}
         <DashboardHeader
@@ -329,7 +340,7 @@ function HomeScreenContent({ activeProgram }: { activeProgram: ProgramSlug }) {
 
         {/* CONTENT AREA */}
         <View 
-          className="bg-surface rounded-t-[32px] -mt-[24px] px-5 pt-6 pb-28 relative z-10 flex-col gap-5"
+          className="bg-surface rounded-t-[32px] -mt-[24px] px-5 pt-6 relative z-10 flex-col gap-5"
           style={{ minHeight: 600 }}
         >
           
