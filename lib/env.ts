@@ -1,6 +1,8 @@
 import {
+  DEFAULT_GUT_HEALTH_RESET_REVENUECAT_ID,
   DEFAULT_NINETY_DAY_REVENUECAT_ID,
   DEFAULT_SIX_DAY_REVENUECAT_ID,
+  DEFAULT_SMOKING_ALCOHOL_QUIT_REVENUECAT_ID,
 } from '@/lib/revenuecat/identifiers';
 
 const FALLBACK_SUPABASE_URL = 'https://placeholder.invalid';
@@ -13,21 +15,27 @@ export interface PublicEnv {
   revenueCatGoogleKey: string | null;
   revenueCatSixDayEntitlementId: string;
   revenueCatNinetyDayEntitlementId: string;
+  revenueCatSmokingAlcoholQuitEntitlementId: string;
   revenueCatAgeReversalEntitlementId: string;
   revenueCatSleepResetEntitlementId: string;
   revenueCatEnergyVitalityEntitlementId: string;
   revenueCatMaleVitalityEntitlementId: string;
+  revenueCatGutHealthResetEntitlementId: string;
   revenueCatSixDayProductIds: string[];
   revenueCatNinetyDayProductIds: string[];
+  revenueCatSmokingAlcoholQuitProductIds: string[];
   revenueCatAgeReversalProductIds: string[];
   revenueCatSleepResetProductIds: string[];
   revenueCatEnergyVitalityProductIds: string[];
   revenueCatMaleVitalityProductIds: string[];
+  revenueCatGutHealthResetProductIds: string[];
   googleWebClientId: string | null;
   googleIosClientId: string | null;
   googleAndroidClientId: string | null;
   easProjectId: string | null;
   programAudioBucket: string;
+  recoveryCompassWebUrl: string;
+  enableAppWebHandoff: boolean;
 }
 
 export interface PublicEnvState {
@@ -44,6 +52,10 @@ function parseCsvEnv(value: string | null | undefined) {
     .split(',')
     .map((entry) => entry.trim())
     .filter(Boolean);
+}
+
+function parseBooleanEnv(value: string | null | undefined) {
+  return value?.trim().toLowerCase() === 'true';
 }
 
 function buildPublicEnvState(): PublicEnvState {
@@ -64,6 +76,9 @@ function buildPublicEnvState(): PublicEnvState {
         process.env.EXPO_PUBLIC_RC_6_DAY_ENTITLEMENT_ID ?? DEFAULT_SIX_DAY_REVENUECAT_ID,
       revenueCatNinetyDayEntitlementId:
         process.env.EXPO_PUBLIC_RC_90_DAY_ENTITLEMENT_ID ?? DEFAULT_NINETY_DAY_REVENUECAT_ID,
+      revenueCatSmokingAlcoholQuitEntitlementId:
+        process.env.EXPO_PUBLIC_RC_SMOKING_ALCOHOL_QUIT_ENTITLEMENT_ID ??
+        DEFAULT_SMOKING_ALCOHOL_QUIT_REVENUECAT_ID,
       revenueCatAgeReversalEntitlementId: process.env.EXPO_PUBLIC_RC_AGE_REVERSAL_ENTITLEMENT_ID ?? 'age_reversal',
       revenueCatSleepResetEntitlementId:
         process.env.EXPO_PUBLIC_RC_SLEEP_RESET_ENTITLEMENT_ID ?? 'sleep_disorder_reset',
@@ -71,11 +86,17 @@ function buildPublicEnvState(): PublicEnvState {
         process.env.EXPO_PUBLIC_RC_ENERGY_VITALITY_ENTITLEMENT_ID ?? 'energy_vitality',
       revenueCatMaleVitalityEntitlementId:
         process.env.EXPO_PUBLIC_RC_MALE_VITALITY_ENTITLEMENT_ID ?? 'male_sexual_health',
+      revenueCatGutHealthResetEntitlementId:
+        process.env.EXPO_PUBLIC_RC_GUT_HEALTH_RESET_ENTITLEMENT_ID ?? DEFAULT_GUT_HEALTH_RESET_REVENUECAT_ID,
       revenueCatSixDayProductIds: parseCsvEnv(
         process.env.EXPO_PUBLIC_RC_6_DAY_PRODUCT_IDS ?? DEFAULT_SIX_DAY_REVENUECAT_ID
       ),
       revenueCatNinetyDayProductIds: parseCsvEnv(
         process.env.EXPO_PUBLIC_RC_90_DAY_PRODUCT_IDS ?? DEFAULT_NINETY_DAY_REVENUECAT_ID
+      ),
+      revenueCatSmokingAlcoholQuitProductIds: parseCsvEnv(
+        process.env.EXPO_PUBLIC_RC_SMOKING_ALCOHOL_QUIT_PRODUCT_IDS ??
+          DEFAULT_SMOKING_ALCOHOL_QUIT_REVENUECAT_ID
       ),
       revenueCatAgeReversalProductIds: parseCsvEnv(
         process.env.EXPO_PUBLIC_RC_AGE_REVERSAL_PRODUCT_IDS ?? 'age_reversal'
@@ -89,11 +110,16 @@ function buildPublicEnvState(): PublicEnvState {
       revenueCatMaleVitalityProductIds: parseCsvEnv(
         process.env.EXPO_PUBLIC_RC_MALE_VITALITY_PRODUCT_IDS ?? 'male_sexual_health'
       ),
+      revenueCatGutHealthResetProductIds: parseCsvEnv(
+        process.env.EXPO_PUBLIC_RC_GUT_HEALTH_RESET_PRODUCT_IDS ?? DEFAULT_GUT_HEALTH_RESET_REVENUECAT_ID
+      ),
       googleWebClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ?? null,
       googleIosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID ?? null,
       googleAndroidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID ?? null,
       easProjectId: process.env.EXPO_PUBLIC_EAS_PROJECT_ID ?? null,
       programAudioBucket: process.env.EXPO_PUBLIC_SUPABASE_PROGRAM_AUDIO_BUCKET ?? 'program-audio',
+      recoveryCompassWebUrl: process.env.EXPO_PUBLIC_RECOVERY_COMPASS_WEB_URL ?? 'https://recoverycompass.co',
+      enableAppWebHandoff: parseBooleanEnv(process.env.EXPO_PUBLIC_ENABLE_APP_WEB_HANDOFF),
     },
     errorMessage:
       missingKeys.length > 0

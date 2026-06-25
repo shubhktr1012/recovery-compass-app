@@ -6,27 +6,38 @@ import { supabase } from '@/lib/supabase';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { useAuth } from '@/providers/auth';
 import Purchases, { CustomerInfo } from 'react-native-purchases';
+import { finalizedDayStatesQueryKey } from '@/hooks/useFinalizedDayStates';
 import {
   ProgramAccessSnapshot,
   ProgramProgressRecord,
   ProgramSlug,
 } from '@/lib/programs/types';
 import { AccessService } from '@/lib/access/service';
+import { hasAnyProgramEntitlement } from '@/lib/access/entitlements';
+import { repairSkippedDayStatesOnForeground } from '@/lib/day-state-repair';
 import { OWNED_PROGRAMS_QUERY_ROOT } from '@/hooks/useOwnedPrograms';
 import { decode } from 'base64-arraybuffer';
 import * as FileSystem from 'expo-file-system/legacy';
 import { buildWidgetPayload, syncWidgetData } from '@/lib/widget-bridge';
 import { validateDisplayNameInput } from '@/lib/profile-identity';
+import { rescheduleProgramNotificationsForAccess } from '@/lib/notification-runtime';
+import { getCurrentNotificationPermissionStateAsync } from '@/lib/notification-permissions';
+import { isMissingAnyColumnError } from '@/lib/db-compat';
+import { registerExpoPushTokenWithServer } from '@/lib/push-token-registration';
 
 export interface UserProfile {
   id: string;
   email: string | null;
+  phone_number?: string | null;
+  phone_verified_at?: string | null;
   onboarding_complete: boolean;
   questionnaire_answers?: Record<string, unknown> | null;
   recommended_program?: ProgramSlug | null;
   created_at: string;
   updated_at: string;
+  free_tier_activated_at?: string | null;
   expo_push_token?: string | null;
+  notifications_enabled?: boolean;
   push_opt_in?: boolean;
   display_name?: string | null;
   avatar_url?: string | null;
@@ -39,21 +50,31 @@ interface ProfileContextType {
   access: ProgramAccessSnapshot;
   progress: ProgramProgressRecord | null;
   hasProgramAccess: boolean;
-  refreshAccess: () => Promise<ProgramAccessSnapshot>;
+  refreshAccess: (options?: { source?: 'device_store' | 'supabase' }) => Promise<ProgramAccessSnapshot>;
   refreshProfile: () => Promise<void>;
   setProgramAccess: (program: ProgramSlug | null) => Promise<void>;
   selectActiveProgram: (program: ProgramSlug) => Promise<void>;
+  configureProgramStart: (program: ProgramSlug, scheduledStartDate: string) => Promise<void>;
+  pauseProgramManually: (program: ProgramSlug) => Promise<void>;
+  resumeProgramFromPause: (program: ProgramSlug) => Promise<void>;
+  prepareOwnedProgramSetup: (program: ProgramSlug) => Promise<void>;
+  reorderOwnedProgramQueue: (programs: ProgramSlug[]) => Promise<ProgramSlug[]>;
   savePartialProgramDay: (program: ProgramSlug, dayNumber: number) => Promise<void>;
   completeProgramDay: (program: ProgramSlug, dayNumber: number) => Promise<void>;
   updateProfile: (fields: { display_name?: string | null }) => Promise<void>;
+  activateFreeTier: () => Promise<void>;
   uploadAvatar: (imageUri: string) => Promise<string | null>;
 }
 
 const PROFILE_COLUMNS =
-  'id, email, onboarding_complete, questionnaire_answers, recommended_program, created_at, updated_at, expo_push_token, push_opt_in, display_name, avatar_url';
+  'id, email, phone_number, phone_verified_at, onboarding_complete, questionnaire_answers, recommended_program, created_at, updated_at, free_tier_activated_at, expo_push_token, notifications_enabled, push_opt_in, display_name, avatar_url';
+const LEGACY_PROFILE_COLUMNS =
+  'id, email, onboarding_complete, questionnaire_answers, recommended_program, created_at, updated_at, expo_push_token, notifications_enabled, push_opt_in, display_name, avatar_url';
+const OPTIONAL_PROFILE_COLUMNS = ['phone_number', 'phone_verified_at', 'free_tier_activated_at'];
 export const PROFILE_QUERY_KEY = (userId: string | null) => ['profile', userId];
 const PROFILE_IMAGE_BUCKET = 'profile-images';
 const PROFILE_IMAGE_SIGNED_URL_TTL_SECONDS = 60 * 60 * 24 * 7;
+const DEFAULT_ELIGIBLE_PRODUCTS: ProgramSlug[] = ['smoking_alcohol_quit'];
 
 function isAbsoluteUrl(value: string) {
   return /^https?:\/\//i.test(value);
@@ -92,11 +113,14 @@ const ProfileContext = createContext<ProfileContextType>({
     ownedProgram: null,
     purchaseState: 'not_owned',
     completionState: 'not_started',
+    programState: 'not_owned',
     currentDay: null,
     startedAt: null,
+    scheduledStartDate: null,
+    pausedAt: null,
     completedAt: null,
     archivedAt: null,
-    eligibleProducts: ['six_day_reset', 'ninety_day_transform'],
+    eligibleProducts: DEFAULT_ELIGIBLE_PRODUCTS,
     source: 'local',
   },
   progress: null,
@@ -105,28 +129,49 @@ const ProfileContext = createContext<ProfileContextType>({
     ownedProgram: null,
     purchaseState: 'not_owned',
     completionState: 'not_started',
+    programState: 'not_owned',
     currentDay: null,
     startedAt: null,
+    scheduledStartDate: null,
+    pausedAt: null,
     completedAt: null,
     archivedAt: null,
-    eligibleProducts: ['six_day_reset', 'ninety_day_transform'],
+    eligibleProducts: DEFAULT_ELIGIBLE_PRODUCTS,
     source: 'local',
   }),
   refreshProfile: async () => { },
   setProgramAccess: async () => { },
   selectActiveProgram: async () => { },
+  configureProgramStart: async () => { },
+  pauseProgramManually: async () => { },
+  resumeProgramFromPause: async () => { },
+  prepareOwnedProgramSetup: async () => { },
+  reorderOwnedProgramQueue: async () => [],
   savePartialProgramDay: async () => { },
   completeProgramDay: async () => { },
   updateProfile: async () => { },
+  activateFreeTier: async () => { },
   uploadAvatar: async () => null,
 });
 
 const fetchProfileFromApi = async (userId: string) => {
-  const { data, error } = await supabase
+  const supabaseAny = supabase as any;
+  let { data, error } = await supabaseAny
     .from('profiles')
     .select(PROFILE_COLUMNS)
     .eq('id', userId)
     .maybeSingle();
+
+  if (error && isMissingAnyColumnError(error, OPTIONAL_PROFILE_COLUMNS)) {
+    const legacyResult = await supabaseAny
+      .from('profiles')
+      .select(LEGACY_PROFILE_COLUMNS)
+      .eq('id', userId)
+      .maybeSingle();
+
+    data = legacyResult.data;
+    error = legacyResult.error;
+  }
 
   if (error) {
     throw error;
@@ -156,16 +201,22 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     ownedProgram: null,
     purchaseState: 'not_owned',
     completionState: 'not_started',
+    programState: 'not_owned',
     currentDay: null,
     startedAt: null,
+    scheduledStartDate: null,
+    pausedAt: null,
     completedAt: null,
     archivedAt: null,
-    eligibleProducts: ['six_day_reset', 'ninety_day_transform'],
+    eligibleProducts: DEFAULT_ELIGIBLE_PRODUCTS,
     source: 'local',
   });
   const [progress, setProgress] = useState<ProgramProgressRecord | null>(null);
+  const [notificationPermissionGranted, setNotificationPermissionGranted] = useState(false);
+  const [notificationRefreshNonce, setNotificationRefreshNonce] = useState(0);
   const userId = user?.id ?? null;
   const previousUserIdRef = useRef<string | null>(null);
+  const lastRegisteredPushTokenRef = useRef<string | null>(null);
   const profileQuery = useQuery({
     queryKey: PROFILE_QUERY_KEY(userId),
     queryFn: () => {
@@ -176,8 +227,10 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
   });
   const shouldRegisterPush = Boolean(
     userId &&
-    profileQuery.data?.onboarding_complete &&
-    Platform.OS === 'ios'
+    (notificationPermissionGranted ||
+      profileQuery.data?.push_opt_in ||
+      profileQuery.data?.notifications_enabled) &&
+    Platform.OS !== 'web'
   );
   const { expoPushToken, permissionStatus, error: pushError } = usePushNotifications({
     enabled: shouldRegisterPush,
@@ -192,7 +245,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const token = expoPushToken?.data ?? null;
     const shouldClearPush =
       permissionStatus === 'denied' &&
-      Boolean(profile.expo_push_token || profile.push_opt_in);
+      Boolean(profile.expo_push_token || profile.push_opt_in || profile.notifications_enabled);
 
     let nextToken: string | null = null;
     let nextOptIn = false;
@@ -209,7 +262,8 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
     if (
       profile.expo_push_token === nextToken &&
-      Boolean(profile.push_opt_in) === nextOptIn
+      Boolean(profile.push_opt_in) === nextOptIn &&
+      Boolean(profile.notifications_enabled) === nextOptIn
     ) {
       return;
     }
@@ -221,6 +275,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         .from('profiles')
         .update({
           expo_push_token: nextToken,
+          notifications_enabled: nextOptIn,
           push_opt_in: nextOptIn,
         })
         .eq('id', userId);
@@ -238,6 +293,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
               ? {
                   ...currentProfile,
                   expo_push_token: nextToken,
+                  notifications_enabled: nextOptIn,
                   push_opt_in: nextOptIn,
                 }
               : currentProfile
@@ -259,18 +315,198 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     userId,
   ]);
 
-  const refreshAccess = useCallback(async () => {
+  useEffect(() => {
+    const token = expoPushToken?.data ?? null;
+    if (!userId || permissionStatus !== 'granted' || !token) {
+      return;
+    }
+
+    const registrationKey = `${userId}:${token}`;
+    if (lastRegisteredPushTokenRef.current === registrationKey) {
+      return;
+    }
+
+    let isCancelled = false;
+
+    void registerExpoPushTokenWithServer(token)
+      .then((result) => {
+        if (isCancelled || !result.registered) return;
+        lastRegisteredPushTokenRef.current = registrationKey;
+      })
+      .catch((registrationError) => {
+        if (isCancelled) return;
+        console.warn('Failed to register Expo push token with server', registrationError);
+      });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [expoPushToken?.data, permissionStatus, userId]);
+
+  useEffect(() => {
+    if (!userId || !profileQuery.data?.onboarding_complete) {
+      setNotificationPermissionGranted(false);
+      return;
+    }
+
+    let isCancelled = false;
+
+    const reconcileNotificationPermission = async () => {
+      try {
+        const permission = await getCurrentNotificationPermissionStateAsync();
+        if (isCancelled) return;
+
+        const isGranted = permission.status === 'granted';
+        setNotificationPermissionGranted(isGranted);
+
+        const nextToken = permission.expoPushToken ?? profileQuery.data?.expo_push_token ?? null;
+        const shouldUpdateProfile =
+          Boolean(profileQuery.data?.notifications_enabled) !== isGranted ||
+          Boolean(profileQuery.data?.push_opt_in) !== isGranted ||
+          (isGranted && permission.expoPushToken && profileQuery.data?.expo_push_token !== permission.expoPushToken);
+
+        if (!shouldUpdateProfile) {
+          return;
+        }
+
+        const { error } = await supabase
+          .from('profiles')
+          .update({
+            expo_push_token: isGranted ? nextToken : null,
+            notifications_enabled: isGranted,
+            push_opt_in: isGranted,
+          })
+          .eq('id', userId);
+
+        if (error) {
+          throw error;
+        }
+
+        queryClient.setQueryData<UserProfile | null>(
+          PROFILE_QUERY_KEY(userId),
+          (currentProfile) =>
+            currentProfile
+              ? {
+                  ...currentProfile,
+                  expo_push_token: isGranted ? nextToken : null,
+                  notifications_enabled: isGranted,
+                  push_opt_in: isGranted,
+                }
+              : currentProfile
+        );
+      } catch (error) {
+        if (!isCancelled) {
+          console.warn('Failed to reconcile notification permission state', error);
+        }
+      }
+    };
+
+    void reconcileNotificationPermission();
+
+    const appStateSubscription = AppState.addEventListener('change', (nextState: string) => {
+      if (nextState === 'active') {
+        void reconcileNotificationPermission();
+      }
+    });
+
+    return () => {
+      isCancelled = true;
+      appStateSubscription.remove();
+    };
+  }, [
+    profileQuery.data?.expo_push_token,
+    profileQuery.data?.notifications_enabled,
+    profileQuery.data?.onboarding_complete,
+    profileQuery.data?.push_opt_in,
+    queryClient,
+    userId,
+  ]);
+
+  const resolveAccessLifecycle = useCallback(
+    async ({
+      progress: initialProgress,
+      snapshot: initialSnapshot,
+      source,
+    }: {
+      progress: ProgramProgressRecord | null;
+      snapshot: ProgramAccessSnapshot;
+      source: string;
+    }) => {
+      if (!userId) {
+        return {
+          progress: initialProgress,
+          snapshot: initialSnapshot,
+        };
+      }
+
+      let snapshot = initialSnapshot;
+      let progress = initialProgress;
+
+      try {
+        const repairedDays = await repairSkippedDayStatesOnForeground({
+          userId,
+          access: snapshot,
+          progress,
+        });
+        if (__DEV__ && repairedDays.length > 0) {
+          console.log('[ProfileProvider] repaired skipped day states', {
+            userId,
+            programSlug: snapshot.ownedProgram,
+            repairedDays,
+            source,
+          });
+        }
+        if (repairedDays.length > 0) {
+          await queryClient.invalidateQueries({
+            queryKey: finalizedDayStatesQueryKey(userId, snapshot.ownedProgram),
+          });
+        }
+      } catch (repairError) {
+        console.warn(`Failed to repair skipped day states during ${source}`, repairError);
+      }
+
+      try {
+        const pauseResult = await AccessService.pauseProgramForAbsenceIfNeeded(userId, snapshot);
+        if (pauseResult) {
+          snapshot = pauseResult.snapshot;
+          progress = pauseResult.progress;
+          await queryClient.invalidateQueries({ queryKey: OWNED_PROGRAMS_QUERY_ROOT });
+          await queryClient.invalidateQueries({
+            queryKey: finalizedDayStatesQueryKey(userId, snapshot.ownedProgram),
+          });
+          if (__DEV__) {
+            console.log('[ProfileProvider] auto-paused program after absence', {
+              userId,
+              programSlug: snapshot.ownedProgram,
+              currentDay: snapshot.currentDay,
+              source,
+            });
+          }
+        }
+      } catch (pauseError) {
+        console.warn(`Failed to auto-pause program during ${source}`, pauseError);
+      }
+
+      return { progress, snapshot };
+    },
+    [queryClient, userId]
+  );
+
+  const refreshAccess = useCallback(async (options?: { source?: 'device_store' | 'supabase' }) => {
     if (!userId) {
       return {
         ownerUserId: null,
         ownedProgram: null,
         purchaseState: 'not_owned',
         completionState: 'not_started',
+        programState: 'not_owned',
         currentDay: null,
         startedAt: null,
+        scheduledStartDate: null,
+        pausedAt: null,
         completedAt: null,
         archivedAt: null,
-        eligibleProducts: ['six_day_reset', 'ninety_day_transform'],
+        eligibleProducts: DEFAULT_ELIGIBLE_PRODUCTS,
         source: 'local',
       } satisfies ProgramAccessSnapshot;
     }
@@ -278,21 +514,31 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setIsAccessLoading(true);
 
     try {
-      const snapshot = await AccessService.refreshFromDeviceStore(userId);
+      const snapshot =
+        options?.source === 'supabase'
+          ? (await AccessService.hydrateFromSupabase(userId)).snapshot
+          : await AccessService.refreshFromDeviceStore(userId);
       const nextProgress = await AccessService.getProgressRecord(userId, snapshot.ownedProgram);
-      console.log('[ProfileProvider] refreshAccess:resolved', {
-        userId,
-        snapshotOwnerUserId: snapshot.ownerUserId ?? null,
-        snapshotOwnedProgram: snapshot.ownedProgram,
-        snapshotPurchaseState: snapshot.purchaseState,
-        progressUserId: nextProgress?.userId ?? null,
-        progressProgramSlug: nextProgress?.programSlug ?? null,
+      const resolvedLifecycle = await resolveAccessLifecycle({
+        progress: nextProgress,
+        snapshot,
+        source: options?.source === 'supabase' ? 'supabase access refresh' : 'access refresh',
       });
-      setAccess(snapshot);
-      setProgress(nextProgress);
-      const widgetPayload = buildWidgetPayload({ access: snapshot, progress: nextProgress, steps: 0 });
+      if (__DEV__) {
+        console.log('[ProfileProvider] refreshAccess:resolved', {
+          userId,
+          snapshotOwnerUserId: resolvedLifecycle.snapshot.ownerUserId ?? null,
+          snapshotOwnedProgram: resolvedLifecycle.snapshot.ownedProgram,
+          snapshotPurchaseState: resolvedLifecycle.snapshot.purchaseState,
+          progressUserId: resolvedLifecycle.progress?.userId ?? null,
+          progressProgramSlug: resolvedLifecycle.progress?.programSlug ?? null,
+        });
+      }
+      setAccess(resolvedLifecycle.snapshot);
+      setProgress(resolvedLifecycle.progress);
+      const widgetPayload = buildWidgetPayload({ access: resolvedLifecycle.snapshot, progress: resolvedLifecycle.progress, steps: 0 });
       if (widgetPayload) void syncWidgetData(widgetPayload);
-      return snapshot;
+      return resolvedLifecycle.snapshot;
     } catch (error) {
       console.error('Error refreshing access state:', error);
       const fallbackSnapshot = await AccessService.getAccessSnapshot();
@@ -305,7 +551,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     } finally {
       setIsAccessLoading(false);
     }
-  }, [userId]);
+  }, [resolveAccessLifecycle, userId]);
 
   const setProgramAccess = useCallback(
     async (program: ProgramSlug | null) => {
@@ -317,9 +563,12 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         ownerUserId: userId,
         ownedProgram: program,
         purchaseState: 'owned_active',
-        completionState: 'in_progress',
-        currentDay: 1,
-        startedAt: new Date().toISOString(),
+        completionState: 'not_started',
+        programState: 'purchased',
+        currentDay: null,
+        startedAt: null,
+        scheduledStartDate: null,
+        pausedAt: null,
         completedAt: null,
         archivedAt: null,
         eligibleProducts: [],
@@ -327,11 +576,11 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
       } satisfies ProgramAccessSnapshot;
 
       const nextProgress = AccessService.buildProgressRecord(userId, program);
+      await AccessService.recordOwnedProgramPurchase(userId, program);
       await Promise.all([
         AccessService.saveLocalActiveProgramPreference(userId, program),
         AccessService.saveAccessSnapshot(nextSnapshot),
         AccessService.saveProgressRecord(nextProgress),
-        AccessService.syncStateToSupabase(nextProgress),
       ]);
 
       setAccess(nextSnapshot);
@@ -360,6 +609,115 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     [queryClient, userId]
   );
 
+  const configureProgramStart = useCallback(
+    async (program: ProgramSlug, scheduledStartDate: string) => {
+      if (!userId) {
+        return;
+      }
+
+      setIsAccessLoading(true);
+
+      try {
+        const { snapshot, progress: nextProgress } = await AccessService.configureProgramStart(
+          userId,
+          program,
+          scheduledStartDate
+        );
+        setAccess(snapshot);
+        setProgress(nextProgress);
+        setNotificationRefreshNonce((value) => value + 1);
+        await queryClient.invalidateQueries({ queryKey: OWNED_PROGRAMS_QUERY_ROOT });
+      } finally {
+        setIsAccessLoading(false);
+      }
+    },
+    [queryClient, userId]
+  );
+
+  const resumeProgramFromPause = useCallback(
+    async (program: ProgramSlug) => {
+      if (!userId) {
+        return;
+      }
+
+      setIsAccessLoading(true);
+
+      try {
+        const { snapshot, progress: nextProgress } = await AccessService.resumeProgramFromPause(
+          userId,
+          program
+        );
+        setAccess(snapshot);
+        setProgress(nextProgress);
+        setNotificationRefreshNonce((value) => value + 1);
+        await queryClient.invalidateQueries({ queryKey: OWNED_PROGRAMS_QUERY_ROOT });
+      } finally {
+        setIsAccessLoading(false);
+      }
+    },
+    [queryClient, userId]
+  );
+
+  const pauseProgramManually = useCallback(
+    async (program: ProgramSlug) => {
+      if (!userId) {
+        return;
+      }
+
+      setIsAccessLoading(true);
+
+      try {
+        const { snapshot, progress: nextProgress } = await AccessService.pauseProgramManually(
+          userId,
+          program
+        );
+        setAccess(snapshot);
+        setProgress(nextProgress);
+        setNotificationRefreshNonce((value) => value + 1);
+        await queryClient.invalidateQueries({ queryKey: OWNED_PROGRAMS_QUERY_ROOT });
+      } finally {
+        setIsAccessLoading(false);
+      }
+    },
+    [queryClient, userId]
+  );
+
+  const prepareOwnedProgramSetup = useCallback(
+    async (program: ProgramSlug) => {
+      if (!userId) {
+        return;
+      }
+
+      setIsAccessLoading(true);
+
+      try {
+        const { snapshot, progress: nextProgress } = await AccessService.prepareOwnedProgramSetup(
+          userId,
+          program
+        );
+        setAccess(snapshot);
+        setProgress(nextProgress);
+        await queryClient.invalidateQueries({ queryKey: OWNED_PROGRAMS_QUERY_ROOT });
+      } finally {
+        setIsAccessLoading(false);
+      }
+    },
+    [queryClient, userId]
+  );
+
+  const reorderOwnedProgramQueue = useCallback(
+    async (programs: ProgramSlug[]) => {
+      if (!userId) {
+        return [];
+      }
+
+      const reorderedPrograms = await AccessService.reorderOwnedProgramQueue(userId, programs);
+      await queryClient.invalidateQueries({ queryKey: OWNED_PROGRAMS_QUERY_ROOT });
+      return reorderedPrograms.map((program) => program.programSlug);
+    },
+    [queryClient, userId]
+  );
+
   const completeProgramDay = useCallback(
     async (program: ProgramSlug, dayNumber: number) => {
       if (!userId) {
@@ -376,7 +734,6 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
             : [...current.completedDays, dayNumber].sort((a, b) => a - b);
           const partialDays = current.partialDays.filter((existingDay) => existingDay !== dayNumber);
           const hasCompletedProgram = dayNumber >= totalDays;
-          const isSixDayArchive = program === 'six_day_reset' && hasCompletedProgram;
 
           return {
             ...current,
@@ -384,18 +741,28 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
             completedDays,
             partialDays,
             completedAt: hasCompletedProgram ? new Date().toISOString() : current.completedAt,
-            archivedAt: isSixDayArchive ? new Date().toISOString() : current.archivedAt,
+            archivedAt: current.archivedAt,
           };
         }
       );
 
+      await AccessService.syncStateToSupabase(nextProgress);
+
+      if (dayNumber >= PROGRAM_METADATA[program].totalDays) {
+        const completionSnapshot = await AccessService.getAccessSnapshot();
+        const completionProgress = await AccessService.getProgressRecord(userId, program);
+        setProgress(completionProgress ?? nextProgress);
+        setAccess(completionSnapshot.ownedProgram === program ? completionSnapshot : nextSnapshot);
+        setNotificationRefreshNonce((value) => value + 1);
+        await queryClient.invalidateQueries({ queryKey: OWNED_PROGRAMS_QUERY_ROOT });
+        return;
+      }
+
       setProgress(nextProgress);
       setAccess(nextSnapshot);
-      await Promise.all([
-        AccessService.syncStateToSupabase(nextProgress),
-      ]);
+      setNotificationRefreshNonce((value) => value + 1);
     },
-    [userId]
+    [queryClient, userId]
   );
 
   const savePartialProgramDay = useCallback(
@@ -428,6 +795,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
       setProgress(nextProgress);
       setAccess(nextSnapshot);
+      setNotificationRefreshNonce((value) => value + 1);
       await Promise.all([
         AccessService.syncStateToSupabase(nextProgress),
       ]);
@@ -442,11 +810,14 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         ownedProgram: null,
         purchaseState: 'not_owned',
         completionState: 'not_started',
+        programState: 'not_owned',
         currentDay: null,
         startedAt: null,
+        scheduledStartDate: null,
+        pausedAt: null,
         completedAt: null,
         archivedAt: null,
-        eligibleProducts: ['six_day_reset', 'ninety_day_transform'],
+        eligibleProducts: DEFAULT_ELIGIBLE_PRODUCTS,
         source: 'local',
       });
       setProgress(null);
@@ -469,49 +840,61 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
               ownedProgram: null,
               purchaseState: 'not_owned',
               completionState: 'not_started',
+              programState: 'not_owned',
               currentDay: null,
               startedAt: null,
+              scheduledStartDate: null,
+              pausedAt: null,
               completedAt: null,
               archivedAt: null,
-              eligibleProducts: ['six_day_reset', 'ninety_day_transform'],
+              eligibleProducts: DEFAULT_ELIGIBLE_PRODUCTS,
               source: 'local',
             } satisfies ProgramAccessSnapshot;
 
-      console.log('[ProfileProvider] bootstrapAccessState:cached', {
-        userId,
-        cachedSnapshotOwnerUserId: cachedSnapshot.ownerUserId ?? null,
-        cachedSnapshotOwnedProgram: cachedSnapshot.ownedProgram,
-        cachedProgressUserId: cachedProgress?.userId ?? null,
-        cachedProgressProgramSlug: cachedProgress?.programSlug ?? null,
-        safeCachedSnapshotOwnedProgram: safeCachedSnapshot.ownedProgram,
-        safeCachedProgressProgramSlug: safeCachedProgress?.programSlug ?? null,
-      });
+      if (__DEV__) {
+        console.log('[ProfileProvider] bootstrapAccessState:cached', {
+          userId,
+          cachedSnapshotOwnerUserId: cachedSnapshot.ownerUserId ?? null,
+          cachedSnapshotOwnedProgram: cachedSnapshot.ownedProgram,
+          cachedProgressUserId: cachedProgress?.userId ?? null,
+          cachedProgressProgramSlug: cachedProgress?.programSlug ?? null,
+          safeCachedSnapshotOwnedProgram: safeCachedSnapshot.ownedProgram,
+          safeCachedProgressProgramSlug: safeCachedProgress?.programSlug ?? null,
+        });
+      }
 
       setAccess(safeCachedSnapshot);
       setProgress(safeCachedProgress);
 
       const liveSnapshot = await AccessService.refreshFromDeviceStore(userId);
       const liveProgress = await AccessService.getProgressRecord(userId, liveSnapshot.ownedProgram);
-      console.log('[ProfileProvider] bootstrapAccessState:live', {
-        userId,
-        liveSnapshotOwnerUserId: liveSnapshot.ownerUserId ?? null,
-        liveSnapshotOwnedProgram: liveSnapshot.ownedProgram,
-        liveSnapshotPurchaseState: liveSnapshot.purchaseState,
-        liveProgressUserId: liveProgress?.userId ?? null,
-        liveProgressProgramSlug: liveProgress?.programSlug ?? null,
+      const resolvedLifecycle = await resolveAccessLifecycle({
+        progress: liveProgress,
+        snapshot: liveSnapshot,
+        source: 'access bootstrap',
       });
-      setAccess(liveSnapshot);
-      setProgress(liveProgress);
+      if (__DEV__) {
+        console.log('[ProfileProvider] bootstrapAccessState:live', {
+          userId,
+          liveSnapshotOwnerUserId: resolvedLifecycle.snapshot.ownerUserId ?? null,
+          liveSnapshotOwnedProgram: resolvedLifecycle.snapshot.ownedProgram,
+          liveSnapshotPurchaseState: resolvedLifecycle.snapshot.purchaseState,
+          liveProgressUserId: resolvedLifecycle.progress?.userId ?? null,
+          liveProgressProgramSlug: resolvedLifecycle.progress?.programSlug ?? null,
+        });
+      }
+      setAccess(resolvedLifecycle.snapshot);
+      setProgress(resolvedLifecycle.progress);
 
       // Sync widget data whenever live access state is resolved
-      const liveWidgetPayload = buildWidgetPayload({ access: liveSnapshot, progress: liveProgress, steps: 0 });
+      const liveWidgetPayload = buildWidgetPayload({ access: resolvedLifecycle.snapshot, progress: resolvedLifecycle.progress, steps: 0 });
       if (liveWidgetPayload) void syncWidgetData(liveWidgetPayload);
     } catch (error) {
       console.error('Error bootstrapping access state', error);
     } finally {
       setIsAccessLoading(false);
     }
-  }, [userId]);
+  }, [resolveAccessLifecycle, userId]);
 
   useEffect(() => {
     void bootstrapAccessState();
@@ -523,6 +906,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     // Re-sync widget data when app returns to foreground
     const appStateSubscription = AppState.addEventListener('change', (nextState: string) => {
       if (nextState === 'active') {
+        setNotificationRefreshNonce((value) => value + 1);
         void bootstrapAccessState();
       }
     });
@@ -531,16 +915,23 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
       void AccessService.syncFromRevenueCat(customerInfo, userId)
         .then(async (snapshot) => {
           const nextProgress = await AccessService.getProgressRecord(userId, snapshot.ownedProgram);
-          console.log('[ProfileProvider] customerInfoUpdate', {
-            userId,
-            snapshotOwnerUserId: snapshot.ownerUserId ?? null,
-            snapshotOwnedProgram: snapshot.ownedProgram,
-            snapshotPurchaseState: snapshot.purchaseState,
-            progressUserId: nextProgress?.userId ?? null,
-            progressProgramSlug: nextProgress?.programSlug ?? null,
+          const resolvedLifecycle = await resolveAccessLifecycle({
+            progress: nextProgress,
+            snapshot,
+            source: 'customer info update',
           });
-          setAccess(snapshot);
-          setProgress(nextProgress);
+          if (__DEV__) {
+            console.log('[ProfileProvider] customerInfoUpdate', {
+              userId,
+              snapshotOwnerUserId: resolvedLifecycle.snapshot.ownerUserId ?? null,
+              snapshotOwnedProgram: resolvedLifecycle.snapshot.ownedProgram,
+              snapshotPurchaseState: resolvedLifecycle.snapshot.purchaseState,
+              progressUserId: resolvedLifecycle.progress?.userId ?? null,
+              progressProgramSlug: resolvedLifecycle.progress?.programSlug ?? null,
+            });
+          }
+          setAccess(resolvedLifecycle.snapshot);
+          setProgress(resolvedLifecycle.progress);
           await queryClient.invalidateQueries({ queryKey: OWNED_PROGRAMS_QUERY_ROOT });
         })
         .catch((error) => {
@@ -554,7 +945,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
       appStateSubscription.remove();
       Purchases.removeCustomerInfoUpdateListener(updateListener);
     };
-  }, [bootstrapAccessState, queryClient, userId]);
+  }, [bootstrapAccessState, queryClient, resolveAccessLifecycle, userId]);
 
   const refreshProfile = useCallback(
     async () => {
@@ -581,11 +972,14 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
       ownedProgram: null,
       purchaseState: 'not_owned',
       completionState: 'not_started',
+      programState: 'not_owned',
       currentDay: null,
       startedAt: null,
+      scheduledStartDate: null,
+      pausedAt: null,
       completedAt: null,
       archivedAt: null,
-      eligibleProducts: ['six_day_reset', 'ninety_day_transform'],
+      eligibleProducts: DEFAULT_ELIGIBLE_PRODUCTS,
       source: 'local',
     });
     setProgress(null);
@@ -663,6 +1057,57 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   }, [pushError]);
 
+  useEffect(() => {
+    if (!userId || profileQuery.isPending) {
+      return;
+    }
+
+    let isCancelled = false;
+
+    void rescheduleProgramNotificationsForAccess({
+      access: {
+        ownedProgram: access.ownedProgram,
+        purchaseState: access.purchaseState,
+        completionState: access.completionState,
+        programState: access.programState,
+        currentDay: access.currentDay,
+        scheduledStartDate: access.scheduledStartDate,
+        pausedAt: access.pausedAt,
+        completedAt: access.completedAt,
+      },
+      openedToday: true,
+      profile: {
+        free_tier_activated_at: profileQuery.data?.free_tier_activated_at ?? null,
+        notifications_enabled: Boolean(profileQuery.data?.notifications_enabled) || notificationPermissionGranted,
+        push_opt_in: Boolean(profileQuery.data?.push_opt_in) || notificationPermissionGranted,
+      },
+      userId,
+    }).catch((error) => {
+      if (isCancelled) return;
+      console.warn('Failed to refresh program notification schedule', error);
+    });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [
+    access.completedAt,
+    access.completionState,
+    access.currentDay,
+    access.ownedProgram,
+    access.pausedAt,
+    access.programState,
+    access.purchaseState,
+    access.scheduledStartDate,
+    notificationRefreshNonce,
+    notificationPermissionGranted,
+    profileQuery.data?.free_tier_activated_at,
+    profileQuery.data?.notifications_enabled,
+    profileQuery.data?.push_opt_in,
+    profileQuery.isPending,
+    userId,
+  ]);
+
   const updateProfile = useCallback(
     async (fields: { display_name?: string | null }) => {
       if (!userId) return;
@@ -692,6 +1137,36 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
                 ...fields,
                 ...(nextDisplayName !== undefined ? { display_name: nextDisplayName } : {}),
                 updated_at: new Date().toISOString(),
+              }
+            : current
+      );
+    },
+    [queryClient, userId]
+  );
+
+  const activateFreeTier = useCallback(
+    async () => {
+      if (!userId) return;
+
+      const activatedAt = new Date().toISOString();
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          free_tier_activated_at: activatedAt,
+          updated_at: activatedAt,
+        })
+        .eq('id', userId);
+
+      if (error) throw error;
+
+      queryClient.setQueryData<UserProfile | null>(
+        PROFILE_QUERY_KEY(userId),
+        (current) =>
+          current
+            ? {
+                ...current,
+                free_tier_activated_at: activatedAt,
+                updated_at: activatedAt,
               }
             : current
       );
@@ -746,29 +1221,39 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     () => ({
       profile: profileQuery.data ?? null,
       isLoading: Boolean(userId) && (profileQuery.isPending || isAccessLoading),
-      isSubscribed:
-        Boolean(access.ownedProgram) && access.purchaseState !== 'not_owned',
+      isSubscribed: hasAnyProgramEntitlement(access),
       access,
       progress,
-      hasProgramAccess:
-        Boolean(access.ownedProgram) && access.purchaseState !== 'not_owned',
+      hasProgramAccess: hasAnyProgramEntitlement(access),
       refreshAccess,
       refreshProfile,
       setProgramAccess,
       selectActiveProgram,
+      configureProgramStart,
+      pauseProgramManually,
+      resumeProgramFromPause,
+      prepareOwnedProgramSetup,
+      reorderOwnedProgramQueue,
       savePartialProgramDay,
       completeProgramDay,
       updateProfile,
+      activateFreeTier,
       uploadAvatar,
     }),
     [
+      activateFreeTier,
       access,
       completeProgramDay,
+      configureProgramStart,
+      pauseProgramManually,
+      prepareOwnedProgramSetup,
       profileQuery.data,
       profileQuery.isPending,
       progress,
       refreshAccess,
       refreshProfile,
+      reorderOwnedProgramQueue,
+      resumeProgramFromPause,
       selectActiveProgram,
       setProgramAccess,
       savePartialProgramDay,

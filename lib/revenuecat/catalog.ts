@@ -1,9 +1,13 @@
 import { ProgramSlug } from '../programs/types';
 import {
+  DEFAULT_GUT_HEALTH_RESET_REVENUECAT_ID,
   DEFAULT_NINETY_DAY_REVENUECAT_ID,
   DEFAULT_SIX_DAY_REVENUECAT_ID,
+  DEFAULT_SMOKING_ALCOHOL_QUIT_REVENUECAT_ID,
+  GUT_HEALTH_RESET_REVENUECAT_ALIASES,
   NINETY_DAY_REVENUECAT_ALIASES,
   SIX_DAY_REVENUECAT_ALIASES,
+  SMOKING_ALCOHOL_QUIT_REVENUECAT_ALIASES,
 } from './identifiers';
 
 export interface RevenueCatProgramDefinition {
@@ -25,10 +29,14 @@ export interface RevenueCatCatalogInput {
   maleVitalityProductIds?: string[] | null;
   ninetyDayEntitlementId?: string | null;
   ninetyDayProductIds?: string[] | null;
+  smokingAlcoholQuitEntitlementId?: string | null;
+  smokingAlcoholQuitProductIds?: string[] | null;
   sleepResetEntitlementId?: string | null;
   sleepResetProductIds?: string[] | null;
   sixDayEntitlementId?: string | null;
   sixDayProductIds?: string[] | null;
+  gutHealthResetEntitlementId?: string | null;
+  gutHealthResetProductIds?: string[] | null;
 }
 
 function normalize(value: string | null | undefined) {
@@ -44,8 +52,30 @@ function normalizeList(values: (string | null | undefined)[]) {
 export function createRevenueCatCatalog(input: RevenueCatCatalogInput = {}): RevenueCatProgramDefinition[] {
   return [
     {
+      programSlug: 'smoking_alcohol_quit',
+      displayName: 'Smoking & Alcohol Quit Program',
+      entitlementId:
+        input.smokingAlcoholQuitEntitlementId?.trim() ||
+        DEFAULT_SMOKING_ALCOHOL_QUIT_REVENUECAT_ID,
+      productIds: normalizeList(
+        input.smokingAlcoholQuitProductIds ?? [DEFAULT_SMOKING_ALCOHOL_QUIT_REVENUECAT_ID]
+      ),
+      aliases: normalizeList([...SMOKING_ALCOHOL_QUIT_REVENUECAT_ALIASES]),
+      searchTokens: normalizeList([
+        '21_day_smoking_alcohol',
+        '21-day-smoking-alcohol',
+        '21day',
+        'smoking alcohol',
+        'smoking_alcohol',
+        'alcohol quit',
+        'drinking quit',
+        'quit',
+      ]),
+      legacyTier: 'full',
+    },
+    {
       programSlug: 'ninety_day_transform',
-      displayName: '90-Day Smoking Reset',
+      displayName: 'Smoking Reset',
       entitlementId: input.ninetyDayEntitlementId?.trim() || DEFAULT_NINETY_DAY_REVENUECAT_ID,
       productIds: normalizeList(input.ninetyDayProductIds ?? [DEFAULT_NINETY_DAY_REVENUECAT_ID]),
       aliases: normalizeList([...NINETY_DAY_REVENUECAT_ALIASES]),
@@ -63,7 +93,7 @@ export function createRevenueCatCatalog(input: RevenueCatCatalogInput = {}): Rev
     },
     {
       programSlug: 'six_day_reset',
-      displayName: '6-Day Control',
+      displayName: 'Control',
       entitlementId: input.sixDayEntitlementId?.trim() || DEFAULT_SIX_DAY_REVENUECAT_ID,
       productIds: normalizeList(input.sixDayProductIds ?? [DEFAULT_SIX_DAY_REVENUECAT_ID]),
       aliases: normalizeList([...SIX_DAY_REVENUECAT_ALIASES]),
@@ -72,7 +102,7 @@ export function createRevenueCatCatalog(input: RevenueCatCatalogInput = {}): Rev
     },
     {
       programSlug: 'age_reversal',
-      displayName: '90-Day Biohacking Reset',
+      displayName: 'Age Reversal Program',
       entitlementId: input.ageReversalEntitlementId?.trim() || 'age_reversal',
       productIds: normalizeList(input.ageReversalProductIds ?? ['age_reversal']),
       aliases: normalizeList(['age_reversal', 'age-reversal', 'agereversal', '90_day_reversal', 'biohacking_reset']),
@@ -81,7 +111,7 @@ export function createRevenueCatCatalog(input: RevenueCatCatalogInput = {}): Rev
     },
     {
       programSlug: 'sleep_disorder_reset',
-      displayName: '21-Day Deep Sleep Reset',
+      displayName: 'Deep Sleep Reset Program',
       entitlementId: input.sleepResetEntitlementId?.trim() || 'sleep_disorder_reset',
       productIds: normalizeList(input.sleepResetProductIds ?? ['sleep_disorder_reset']),
       aliases: normalizeList(['sleep_disorder_reset', 'sleep-reset', 'sleep_reset', 'sleepdisorderreset']),
@@ -90,7 +120,7 @@ export function createRevenueCatCatalog(input: RevenueCatCatalogInput = {}): Rev
     },
     {
       programSlug: 'energy_vitality',
-      displayName: '14-Day Energy Restore',
+      displayName: 'Energy Restore Program',
       entitlementId: input.energyVitalityEntitlementId?.trim() || 'energy_vitality',
       productIds: normalizeList(input.energyVitalityProductIds ?? ['energy_vitality']),
       aliases: normalizeList(['energy_vitality', 'energy-reset', 'energy_reset', 'energyvitality']),
@@ -99,11 +129,22 @@ export function createRevenueCatCatalog(input: RevenueCatCatalogInput = {}): Rev
     },
     {
       programSlug: 'male_sexual_health',
-      displayName: "30-Day Men's Vitality Reset",
+      displayName: "Men’s Vitality Reset Program",
       entitlementId: input.maleVitalityEntitlementId?.trim() || 'male_sexual_health',
       productIds: normalizeList(input.maleVitalityProductIds ?? ['male_sexual_health']),
       aliases: normalizeList(['male_sexual_health', 'male-vitality', 'male_vitality', 'malesexualhealth']),
       searchTokens: normalizeList(['male', 'vitality', 'sexual health', 'mens vitality', '30-day']),
+      legacyTier: 'full',
+    },
+    {
+      programSlug: 'gut_health_reset',
+      displayName: 'Gut Reset Program',
+      entitlementId:
+        input.gutHealthResetEntitlementId?.trim() ||
+        DEFAULT_GUT_HEALTH_RESET_REVENUECAT_ID,
+      productIds: normalizeList(input.gutHealthResetProductIds ?? [DEFAULT_GUT_HEALTH_RESET_REVENUECAT_ID]),
+      aliases: normalizeList([...GUT_HEALTH_RESET_REVENUECAT_ALIASES]),
+      searchTokens: normalizeList(['gut', 'gut health', 'gut reset', 'digestive', 'digestion', '21-day']),
       legacyTier: 'full',
     },
   ];

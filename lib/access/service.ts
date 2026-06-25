@@ -2,11 +2,24 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Purchases, { CustomerInfo } from 'react-native-purchases';
 
 import { PROGRAM_METADATA } from '@/content/programs/metadata';
+import {
+  getPauseDayNumberForAbsence,
+  getResumeStartedAtForDay,
+  shouldSuppressAbsencePauseAfterRecentResume,
+  shouldEvaluateAbsencePause,
+} from '@/lib/programs/absence';
+import {
+  formatLocalDateForProgramStart,
+  getScheduledProgramUnlockAt,
+  isProgramProgressComplete,
+} from '@/lib/programs/lifecycle';
 import { getProgramScheduledDay } from '@/lib/programs/schedule';
 import { getOwnedProgramsFromCustomerInfo } from '@/lib/revenuecat/config';
 import { supabase } from '@/lib/supabase';
+import { isMissingColumnError, isMissingFunctionError } from '@/lib/db-compat';
 import {
   CompletionState,
+  ProgramLifecycleState,
   ProgramAccessSnapshot,
   ProgramProgressRecord,
   ProgramSlug,
@@ -19,17 +32,27 @@ const PROGRESS_STORAGE_KEY = 'program-progress-record';
 const PROGRESS_STORAGE_KEY_PREFIX = `${PROGRESS_STORAGE_KEY}:`;
 const REFRESH_IN_FLIGHT = new Map<string, Promise<ProgramAccessSnapshot>>();
 const SYNC_FROM_REVENUECAT_IN_FLIGHT = new Map<string, Promise<ProgramAccessSnapshot>>();
+const DEFAULT_ELIGIBLE_PRODUCTS: ProgramSlug[] = ['smoking_alcohol_quit'];
+
+type UserDayStateLifecycleRow = {
+  day_number: number;
+  day_state: string;
+};
 
 const DEFAULT_ACCESS_SNAPSHOT: ProgramAccessSnapshot = {
   ownerUserId: null,
   ownedProgram: null,
   purchaseState: 'not_owned',
   completionState: 'not_started',
+  programState: 'not_owned',
   currentDay: null,
   startedAt: null,
+  scheduledStartDate: null,
+  pausedAt: null,
   completedAt: null,
   archivedAt: null,
-  eligibleProducts: ['six_day_reset', 'ninety_day_transform'],
+  updatedAt: null,
+  eligibleProducts: DEFAULT_ELIGIBLE_PRODUCTS,
   source: 'local',
 };
 
@@ -51,7 +74,8 @@ function getProgramLength(programSlug: ProgramSlug) {
 function getStateForProgress(
   programSlug: ProgramSlug | null,
   progress: ProgramProgressRecord | null,
-  startedAt: string | null | undefined
+  startedAt: string | null | undefined,
+  frozenCurrentDay?: number | null
 ): Pick<ProgramAccessSnapshot, 'currentDay' | 'purchaseState' | 'completionState' | 'completedAt' | 'archivedAt'> {
   if (!programSlug) {
     return {
@@ -91,6 +115,9 @@ function getStateForProgress(
   const effectiveScheduledDay = isProgramComplete
     ? totalDays
     : unlockedThroughDay;
+  const currentDay = frozenCurrentDay
+    ? Math.min(totalDays, Math.max(1, frozenCurrentDay))
+    : effectiveScheduledDay;
 
   let completionState: CompletionState = 'in_progress';
   let purchaseState: PurchaseState = 'owned_active';
@@ -104,7 +131,7 @@ function getStateForProgress(
   }
 
   return {
-    currentDay: effectiveScheduledDay,
+    currentDay,
     purchaseState,
     completionState,
     completedAt: progress.completedAt,
@@ -117,14 +144,14 @@ function deriveEligibleProducts(snapshot: ProgramAccessSnapshot): ProgramSlug[] 
     snapshot.ownedProgram === 'six_day_reset' &&
     (snapshot.purchaseState === 'owned_completed' || snapshot.purchaseState === 'owned_archived')
   ) {
-    return ['ninety_day_transform'];
+    return ['smoking_alcohol_quit'];
   }
 
   if (snapshot.ownedProgram) {
     return [];
   }
 
-  return ['six_day_reset', 'ninety_day_transform'];
+  return DEFAULT_ELIGIBLE_PRODUCTS;
 }
 
 function normalizeProgramSlug(value: string | null | undefined): ProgramSlug | null {
@@ -172,10 +199,87 @@ type ProgramAccessRow = {
   created_at?: string | null;
   current_day: number | null;
   owned_program: string | null;
+  paused_at?: string | null;
+  priority_rank?: number | null;
+  program_state?: string | null;
   purchase_state: string | null;
+  scheduled_start_date?: string | null;
   started_at?: string | null;
   updated_at?: string | null;
 };
+
+type CompleteProgramLifecycleRow = {
+  completed_at: string | null;
+  completion_state: string | null;
+  current_day: number | null;
+  owned_program: string | null;
+  program_state: string | null;
+  purchase_state: string | null;
+  updated_at: string | null;
+};
+
+type QueuedProgramRow = {
+  owned_program: string | null;
+  priority_rank: number | null;
+  program_state: string | null;
+  updated_at: string | null;
+};
+
+type OwnedProgramPurchaseRow = {
+  completion_state: string | null;
+  owned_program: string | null;
+  priority_rank: number | null;
+  program_state: string | null;
+  purchase_state: string | null;
+  updated_at: string | null;
+};
+
+const PROGRAM_ACCESS_SELECT =
+  'owned_program, purchase_state, completion_state, program_state, current_day, completed_at, archived_at, scheduled_start_date, paused_at, priority_rank, started_at, created_at, updated_at';
+const LEGACY_PROGRAM_ACCESS_SELECT =
+  'owned_program, purchase_state, completion_state, program_state, current_day, completed_at, archived_at, scheduled_start_date, paused_at, started_at, created_at, updated_at';
+
+function buildSnapshotFromAccessRow(
+  userId: string,
+  selectedRow: ProgramAccessRow
+): ProgramAccessSnapshot | null {
+  const ownedProgram = normalizeProgramSlug(selectedRow.owned_program);
+  if (!ownedProgram) return null;
+
+  const snapshot: ProgramAccessSnapshot = {
+    ownerUserId: userId,
+    ownedProgram,
+    purchaseState: (selectedRow.purchase_state as PurchaseState) ?? 'not_owned',
+    completionState: (selectedRow.completion_state as CompletionState) ?? 'not_started',
+    programState: normalizeProgramLifecycleState(selectedRow.program_state),
+    currentDay: selectedRow.current_day,
+    startedAt: selectedRow.started_at ?? selectedRow.scheduled_start_date ?? selectedRow.created_at ?? null,
+    scheduledStartDate: selectedRow.scheduled_start_date ?? null,
+    pausedAt: selectedRow.paused_at ?? null,
+    completedAt: selectedRow.completed_at,
+    archivedAt: selectedRow.archived_at,
+    updatedAt: selectedRow.updated_at ?? null,
+    eligibleProducts: DEFAULT_ELIGIBLE_PRODUCTS,
+    source: 'supabase',
+  };
+
+  snapshot.eligibleProducts = deriveEligibleProducts(snapshot);
+  return snapshot;
+}
+
+function normalizeProgramLifecycleState(value: string | null | undefined): ProgramLifecycleState {
+  switch (value) {
+    case 'purchased':
+    case 'scheduled':
+    case 'active':
+    case 'paused':
+    case 'completed':
+    case 'not_owned':
+      return value;
+    default:
+      return 'active';
+  }
+}
 
 function getPurchaseStateRank(purchaseState: string | null | undefined) {
   switch (purchaseState) {
@@ -188,6 +292,36 @@ function getPurchaseStateRank(purchaseState: string | null | undefined) {
     default:
       return 0;
   }
+}
+
+function isBlockingLifecycleState(value: string | null | undefined) {
+  const state = normalizeProgramLifecycleState(value);
+  return state === 'scheduled' || state === 'active' || state === 'paused';
+}
+
+function getLifecycleSelectionRank(row: ProgramAccessRow) {
+  const state = normalizeProgramLifecycleState(row.program_state);
+
+  switch (state) {
+    case 'active':
+    case 'paused':
+    case 'scheduled':
+      return 5;
+    case 'purchased':
+      return 4;
+    case 'completed':
+      return 3;
+    default:
+      return 0;
+  }
+}
+
+function shouldHydrateProgressForSnapshot(snapshot: ProgramAccessSnapshot | null | undefined) {
+  if (!snapshot?.ownedProgram) {
+    return false;
+  }
+
+  return snapshot.programState !== 'purchased';
 }
 
 function selectPreferredProgramSlug(
@@ -256,6 +390,12 @@ function selectPreferredAccessRow(
   const rankedRows = [...rows].sort((left, right) => {
     const leftProgram = normalizeProgramSlug(left.owned_program);
     const rightProgram = normalizeProgramSlug(right.owned_program);
+    const leftBlocking = isBlockingLifecycleState(left.program_state) ? 1 : 0;
+    const rightBlocking = isBlockingLifecycleState(right.program_state) ? 1 : 0;
+
+    if (leftBlocking !== rightBlocking) {
+      return rightBlocking - leftBlocking;
+    }
 
     if (preferredProgram) {
       const leftPreferred = leftProgram === preferredProgram ? 1 : 0;
@@ -264,6 +404,19 @@ function selectPreferredAccessRow(
       if (leftPreferred !== rightPreferred) {
         return rightPreferred - leftPreferred;
       }
+    }
+
+    const lifecycleStateDelta = getLifecycleSelectionRank(right) - getLifecycleSelectionRank(left);
+
+    if (lifecycleStateDelta !== 0) {
+      return lifecycleStateDelta;
+    }
+
+    const leftPriorityRank = left.priority_rank ?? Number.MAX_SAFE_INTEGER;
+    const rightPriorityRank = right.priority_rank ?? Number.MAX_SAFE_INTEGER;
+
+    if (leftPriorityRank !== rightPriorityRank) {
+      return leftPriorityRank - rightPriorityRank;
     }
 
     const purchaseStateDelta =
@@ -436,10 +589,20 @@ export class AccessService {
 
   static async getServerAccessSnapshot(userId: string, preferredProgram?: ProgramSlug | null) {
     try {
-      const { data, error } = await supabase
+      let { data, error }: { data: unknown[] | null; error: unknown } = await supabase
         .from('program_access')
-        .select('owned_program, purchase_state, completion_state, current_day, completed_at, archived_at, started_at, created_at, updated_at')
+        .select(PROGRAM_ACCESS_SELECT)
         .eq('user_id', userId);
+
+      if (error && isMissingColumnError(error, 'priority_rank')) {
+        const legacyResult = await supabase
+          .from('program_access')
+          .select(LEGACY_PROGRAM_ACCESS_SELECT)
+          .eq('user_id', userId);
+
+        data = legacyResult.data as unknown[] | null;
+        error = legacyResult.error;
+      }
 
       if (error) throw error;
       const ownedRows = ((data ?? []) as ProgramAccessRow[]).filter((row) => {
@@ -447,23 +610,7 @@ export class AccessService {
       });
       const selectedRow = selectPreferredAccessRow(ownedRows, preferredProgram ?? null);
       if (!selectedRow) return null;
-      if (!normalizeProgramSlug(selectedRow.owned_program)) return null;
-
-      const snapshot: ProgramAccessSnapshot = {
-        ownerUserId: userId,
-        ownedProgram: normalizeProgramSlug(selectedRow.owned_program),
-        purchaseState: (selectedRow.purchase_state as PurchaseState) ?? 'not_owned',
-        completionState: (selectedRow.completion_state as CompletionState) ?? 'not_started',
-        currentDay: selectedRow.current_day,
-        startedAt: selectedRow.started_at ?? selectedRow.created_at ?? null,
-        completedAt: selectedRow.completed_at,
-        archivedAt: selectedRow.archived_at,
-        eligibleProducts: ['six_day_reset', 'ninety_day_transform'],
-        source: 'supabase',
-      };
-
-      snapshot.eligibleProducts = deriveEligibleProducts(snapshot);
-      return snapshot;
+      return buildSnapshotFromAccessRow(userId, selectedRow);
     } catch (error) {
       console.error('Failed to fetch program access from Supabase', error);
       return null;
@@ -537,11 +684,13 @@ export class AccessService {
   }
 
   static async syncProgressRecordToSupabase(progress: ProgramProgressRecord) {
+    let didSyncProgress = false;
+
     try {
       const nextPartialDays = progress.partialDays.filter(
         (dayNumber) => !progress.completedDays.includes(dayNumber)
       );
-      const { error } = await supabase.rpc('sync_program_progress', {
+      const { error } = await supabase.rpc('sync_program_progress_v2', {
         p_program_id: progress.programSlug,
         p_current_day: progress.currentDay,
         p_completed_days: progress.completedDays,
@@ -551,8 +700,18 @@ export class AccessService {
       });
 
       if (error) throw error;
+      didSyncProgress = true;
     } catch (error) {
-      console.warn('Failed to sync extended program progress to Supabase, falling back to completed-only sync', error);
+      if (!isMissingFunctionError(error, 'sync_program_progress_v2')) {
+        console.warn('Deferred program progress sync until server ownership is confirmed', {
+          programSlug: progress.programSlug,
+          userId: progress.userId,
+          error,
+        });
+        return;
+      }
+
+      console.warn('Extended program progress RPC is unavailable, falling back to legacy sync', error);
 
       try {
         const { error: fallbackError } = await supabase.rpc('sync_program_progress', {
@@ -564,9 +723,19 @@ export class AccessService {
         });
 
         if (fallbackError) throw fallbackError;
+        didSyncProgress = true;
       } catch (fallbackError) {
         console.error('Failed to sync program progress to Supabase', fallbackError);
       }
+    }
+
+    if (didSyncProgress && isProgramProgressComplete(progress)) {
+      // Keep program_access canonical; progress rows alone should not be the only completion truth.
+      await this.completeProgramLifecycle(
+        progress.userId,
+        progress.programSlug,
+        progress.completedAt ?? undefined
+      );
     }
   }
 
@@ -574,6 +743,421 @@ export class AccessService {
     if (progress) {
       await this.syncProgressRecordToSupabase(progress);
     }
+  }
+
+  static async recordOwnedProgramPurchase(userId: string, programSlug: ProgramSlug) {
+    try {
+      const { data, error } = await supabase.functions.invoke<{
+        access?: OwnedProgramPurchaseRow | null;
+        error?: string;
+        success?: boolean;
+      }>('verify-revenuecat-purchase', {
+        body: {
+          programSlug,
+        },
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      if (!data?.success || !data.access) {
+        throw new Error(data?.error ?? 'Purchase could not be verified.');
+      }
+
+      return ([data.access] as OwnedProgramPurchaseRow[])
+        .map((row) => ({
+          completionState: (row.completion_state as CompletionState | null) ?? 'not_started',
+          programSlug: normalizeProgramSlug(row.owned_program),
+          priorityRank: row.priority_rank,
+          programState: normalizeProgramLifecycleState(row.program_state),
+          purchaseState: (row.purchase_state as PurchaseState | null) ?? 'not_owned',
+          updatedAt: row.updated_at,
+        }))
+        .find((row): row is {
+          completionState: CompletionState;
+          programSlug: ProgramSlug;
+          priorityRank: number | null;
+          programState: ProgramLifecycleState;
+          purchaseState: PurchaseState;
+          updatedAt: string | null;
+        } => Boolean(row.programSlug)) ?? null;
+    } catch (error) {
+      console.warn('Failed to record owned program purchase', {
+        userId,
+        programSlug,
+        error,
+      });
+      throw error;
+    }
+  }
+
+  static async configureProgramStart(userId: string, programSlug: ProgramSlug, scheduledStartDate: string) {
+    const { error } = await supabase.rpc('configure_program_start', {
+      p_program_id: programSlug,
+      p_scheduled_start_date: scheduledStartDate,
+    });
+
+    if (error) {
+      const currentSnapshot = await this.getAccessSnapshot();
+      const canUseLocalFallback =
+        (error.message?.toLowerCase().includes('program is not owned') ||
+          isMissingFunctionError(error, 'configure_program_start')) &&
+        isSnapshotOwnedByUser(currentSnapshot, userId) &&
+        currentSnapshot.ownedProgram === programSlug &&
+        currentSnapshot.purchaseState !== 'not_owned';
+
+      if (!canUseLocalFallback) {
+        throw error;
+      }
+
+      const localProgress =
+        (await this.getProgressRecord(userId, programSlug)) ?? this.buildProgressRecord(userId, programSlug);
+      const scheduledUnlockAt = getScheduledProgramUnlockAt(scheduledStartDate);
+      const localStartedAt = scheduledUnlockAt?.toISOString() ?? currentSnapshot.startedAt ?? new Date().toISOString();
+      const localSnapshot: ProgramAccessSnapshot = {
+        ...currentSnapshot,
+        ownerUserId: userId,
+        ownedProgram: programSlug,
+        programState:
+          scheduledUnlockAt && scheduledUnlockAt.getTime() > Date.now()
+            ? 'scheduled'
+            : 'active',
+        scheduledStartDate,
+        pausedAt: null,
+        startedAt: localStartedAt,
+        ...getStateForProgress(programSlug, localProgress, localStartedAt),
+      };
+
+      localSnapshot.eligibleProducts = deriveEligibleProducts(localSnapshot);
+      await Promise.all([
+        this.saveAccessSnapshot(localSnapshot),
+        this.saveProgressRecord(localProgress),
+      ]);
+
+      return {
+        snapshot: localSnapshot,
+        progress: localProgress,
+      };
+    }
+
+    const snapshot =
+      (await this.getServerAccessSnapshot(userId, programSlug)) ??
+      createDefaultSnapshot('supabase', userId);
+    const shouldHydrateProgress = shouldHydrateProgressForSnapshot(snapshot);
+    const progress = shouldHydrateProgress
+      ? await this.getServerProgressRecord(userId, snapshot.ownedProgram!, snapshot)
+      : null;
+    const nextSnapshot: ProgramAccessSnapshot = shouldHydrateProgress
+      ? {
+          ...snapshot,
+          ...getStateForProgress(
+            snapshot.ownedProgram,
+            progress,
+            snapshot.startedAt,
+            snapshot.pausedAt ? snapshot.currentDay : null
+          ),
+          source: 'supabase',
+        }
+      : snapshot;
+
+    await this.saveAccessSnapshot(nextSnapshot);
+
+    if (progress) {
+      if (nextSnapshot.currentDay) {
+        progress.currentDay = nextSnapshot.currentDay;
+      }
+      await this.saveProgressRecord(progress);
+    }
+
+    return {
+      snapshot: nextSnapshot,
+      progress,
+    };
+  }
+
+  static async completeProgramLifecycle(
+    userId: string,
+    programSlug: ProgramSlug,
+    completedAt?: string | null
+  ) {
+    try {
+      const { data, error } = await supabase.rpc('complete_program_lifecycle', {
+        p_completed_at: completedAt ?? new Date().toISOString(),
+        p_program_id: programSlug,
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      const row = (data?.[0] ?? null) as CompleteProgramLifecycleRow | null;
+      if (!row) {
+        throw new Error(`Program completion returned no row for ${programSlug}`);
+      }
+    } catch (error) {
+      console.warn('Failed to persist program completion to Supabase, using local fallback', {
+        userId,
+        programSlug,
+        error,
+      });
+    }
+
+    const totalDays = getProgramLength(programSlug);
+    const serverSnapshot = await this.getServerAccessSnapshot(userId, programSlug);
+    const currentSnapshot = await this.getAccessSnapshot();
+    const safeSnapshot = serverSnapshot?.ownedProgram === programSlug
+      ? serverSnapshot
+      : isSnapshotOwnedByUser(currentSnapshot, userId)
+        ? currentSnapshot
+        : createDefaultSnapshot('local', userId);
+    const progress =
+      (await this.getProgressRecord(userId, programSlug)) ?? this.buildProgressRecord(userId, programSlug);
+    const finalCompletedAt =
+      serverSnapshot?.completedAt ??
+      progress.completedAt ??
+      completedAt ??
+      new Date().toISOString();
+    const nextSnapshot: ProgramAccessSnapshot = {
+      ...safeSnapshot,
+      ownerUserId: userId,
+      ownedProgram: programSlug,
+      purchaseState: 'owned_completed',
+      completionState: 'completed',
+      programState: 'completed',
+      currentDay: totalDays,
+      pausedAt: null,
+      completedAt: finalCompletedAt,
+      archivedAt: safeSnapshot.archivedAt ?? null,
+      eligibleProducts: [],
+    };
+
+    progress.currentDay = totalDays;
+    progress.completedAt = progress.completedAt ?? finalCompletedAt;
+    nextSnapshot.eligibleProducts = deriveEligibleProducts(nextSnapshot);
+
+    await Promise.all([
+      this.saveAccessSnapshot(nextSnapshot),
+      this.saveProgressRecord(progress),
+    ]);
+
+    return {
+      snapshot: nextSnapshot,
+      progress,
+    };
+  }
+
+  static async pauseProgramForAbsenceIfNeeded(userId: string, snapshot: ProgramAccessSnapshot) {
+    if (!shouldEvaluateAbsencePause(snapshot) || !snapshot.ownedProgram) {
+      return null;
+    }
+
+    const totalDays = getProgramLength(snapshot.ownedProgram);
+    const { data, error } = await supabase
+      .from('user_day_states')
+      .select('day_number, day_state')
+      .eq('user_id', userId)
+      .eq('program_slug', snapshot.ownedProgram)
+      .order('day_number', { ascending: true });
+
+    if (error) {
+      throw error;
+    }
+
+    const pauseDayNumber = getPauseDayNumberForAbsence(
+      ((data ?? []) as UserDayStateLifecycleRow[]).map((dayState) => ({
+        dayNumber: dayState.day_number,
+        dayState: dayState.day_state,
+      })),
+      totalDays
+    );
+
+    if (!pauseDayNumber) {
+      return null;
+    }
+
+    if (shouldSuppressAbsencePauseAfterRecentResume(snapshot, pauseDayNumber)) {
+      return null;
+    }
+
+    return this.pauseProgramForAbsence(userId, snapshot.ownedProgram, pauseDayNumber);
+  }
+
+  static async pauseProgramForAbsence(userId: string, programSlug: ProgramSlug, currentDay: number) {
+    const pausedAt = new Date().toISOString();
+
+    try {
+      const { error } = await supabase.rpc('pause_program_for_absence', {
+        p_current_day: currentDay,
+        p_paused_at: pausedAt,
+        p_program_id: programSlug,
+      });
+
+      if (error) {
+        throw error;
+      }
+    } catch (error) {
+      console.warn('Failed to persist program pause to Supabase, using local fallback', {
+        userId,
+        programSlug,
+        error,
+      });
+    }
+
+    const serverSnapshot = await this.getServerAccessSnapshot(userId, programSlug);
+    const currentSnapshot = await this.getAccessSnapshot();
+    const safeSnapshot = serverSnapshot?.ownedProgram === programSlug
+      ? serverSnapshot
+      : isSnapshotOwnedByUser(currentSnapshot, userId)
+        ? currentSnapshot
+        : createDefaultSnapshot('local', userId);
+    const progress =
+      (await this.getProgressRecord(userId, programSlug)) ?? this.buildProgressRecord(userId, programSlug);
+    const nextSnapshot: ProgramAccessSnapshot = {
+      ...safeSnapshot,
+      ownerUserId: userId,
+      ownedProgram: programSlug,
+      purchaseState: 'owned_active',
+      programState: 'paused',
+      currentDay,
+      pausedAt: safeSnapshot.pausedAt ?? pausedAt,
+      eligibleProducts: [],
+    };
+
+    nextSnapshot.eligibleProducts = deriveEligibleProducts(nextSnapshot);
+    progress.currentDay = currentDay;
+
+    await Promise.all([
+      this.saveAccessSnapshot(nextSnapshot),
+      this.saveProgressRecord(progress),
+    ]);
+
+    return {
+      snapshot: nextSnapshot,
+      progress,
+    };
+  }
+
+  static async pauseProgramManually(userId: string, programSlug: ProgramSlug) {
+    const currentSnapshot = await this.getAccessSnapshot();
+    const currentProgress = await this.getProgressRecord(userId, programSlug);
+    const serverSnapshotBeforePause = await this.getServerAccessSnapshot(userId, programSlug);
+    const safeSnapshot =
+      isSnapshotOwnedByUser(currentSnapshot, userId) && currentSnapshot.ownedProgram === programSlug
+        ? currentSnapshot
+        : createDefaultSnapshot('local', userId);
+    const pauseBaseSnapshot =
+      serverSnapshotBeforePause?.ownedProgram === programSlug ? serverSnapshotBeforePause : safeSnapshot;
+    const currentDay = Math.max(1, pauseBaseSnapshot.currentDay ?? currentProgress?.currentDay ?? 1);
+    const pausedAt = new Date().toISOString();
+
+    try {
+      const { error } = await supabase.rpc('pause_program_manually', {
+        p_current_day: currentDay,
+        p_paused_at: pausedAt,
+        p_program_id: programSlug,
+      });
+
+      if (error) {
+        throw error;
+      }
+    } catch (error) {
+      console.warn('Failed to persist manual program pause to Supabase, using local fallback', {
+        userId,
+        programSlug,
+        error,
+      });
+    }
+
+    const serverSnapshot = await this.getServerAccessSnapshot(userId, programSlug);
+    const progress = currentProgress ?? this.buildProgressRecord(userId, programSlug);
+    const baseSnapshot = serverSnapshot?.ownedProgram === programSlug ? serverSnapshot : pauseBaseSnapshot;
+    const nextSnapshot: ProgramAccessSnapshot = {
+      ...baseSnapshot,
+      ownerUserId: userId,
+      ownedProgram: programSlug,
+      purchaseState: 'owned_active',
+      programState: 'paused',
+      currentDay,
+      pausedAt: serverSnapshot?.pausedAt ?? baseSnapshot.pausedAt ?? pausedAt,
+      eligibleProducts: [],
+    };
+
+    nextSnapshot.eligibleProducts = deriveEligibleProducts(nextSnapshot);
+    progress.currentDay = currentDay;
+
+    await Promise.all([
+      this.saveAccessSnapshot(nextSnapshot),
+      this.saveProgressRecord(progress),
+    ]);
+
+    return {
+      snapshot: nextSnapshot,
+      progress,
+    };
+  }
+
+  static async resumeProgramFromPause(userId: string, programSlug: ProgramSlug) {
+    const currentSnapshot = await this.getAccessSnapshot();
+    const safeSnapshot = isSnapshotOwnedByUser(currentSnapshot, userId)
+      ? currentSnapshot
+      : createDefaultSnapshot('local', userId);
+    const serverSnapshotBeforeResume = await this.getServerAccessSnapshot(userId, programSlug);
+    const resumeBaseSnapshot =
+      serverSnapshotBeforeResume?.ownedProgram === programSlug ? serverSnapshotBeforeResume : safeSnapshot;
+    const currentDay = Math.max(1, resumeBaseSnapshot.currentDay ?? 1);
+    const resumedStartDate = getResumeStartedAtForDay(currentDay);
+    const resumedStartedAt = resumedStartDate.toISOString();
+    const resumedScheduledStartDate = formatLocalDateForProgramStart(resumedStartDate);
+
+    try {
+      const { error } = await supabase.rpc('resume_program_from_pause', {
+        p_program_id: programSlug,
+        p_scheduled_start_date: resumedScheduledStartDate,
+        p_started_at: resumedStartedAt,
+      });
+
+      if (error) {
+        throw error;
+      }
+    } catch (error) {
+      console.warn('Failed to persist program resume to Supabase, using local fallback', {
+        userId,
+        programSlug,
+        error,
+      });
+    }
+
+    const serverSnapshot = await this.getServerAccessSnapshot(userId, programSlug);
+    const progress =
+      (await this.getProgressRecord(userId, programSlug)) ?? this.buildProgressRecord(userId, programSlug);
+    const baseSnapshot = serverSnapshot?.ownedProgram === programSlug ? serverSnapshot : resumeBaseSnapshot;
+    const nextSnapshot: ProgramAccessSnapshot = {
+      ...baseSnapshot,
+      ownerUserId: userId,
+      ownedProgram: programSlug,
+      programState: 'active',
+      pausedAt: null,
+      startedAt: serverSnapshot?.startedAt ?? resumedStartedAt,
+      scheduledStartDate: serverSnapshot?.scheduledStartDate ?? resumedScheduledStartDate,
+      ...getStateForProgress(programSlug, progress, serverSnapshot?.startedAt ?? resumedStartedAt),
+    };
+
+    if (nextSnapshot.currentDay) {
+      progress.currentDay = nextSnapshot.currentDay;
+    }
+
+    nextSnapshot.eligibleProducts = deriveEligibleProducts(nextSnapshot);
+
+    await Promise.all([
+      this.saveAccessSnapshot(nextSnapshot),
+      this.saveProgressRecord(progress),
+    ]);
+
+    return {
+      snapshot: nextSnapshot,
+      progress,
+    };
   }
 
   static async selectActiveProgram(userId: string, programSlug: ProgramSlug) {
@@ -598,6 +1182,10 @@ export class AccessService {
 
     let snapshot = await this.getServerAccessSnapshot(userId, programSlug);
 
+    if (snapshot?.ownedProgram === programSlug && snapshot.programState === 'purchased') {
+      throw new Error(`${programSlug} is waiting for Program Setup and cannot be opened as an active program yet.`);
+    }
+
     if (snapshot?.ownedProgram !== programSlug) {
       const customerInfo = await Purchases.getCustomerInfo();
       const revenueCatOwnedPrograms = getOwnedProgramsFromCustomerInfo(customerInfo);
@@ -618,15 +1206,24 @@ export class AccessService {
         ownedProgram: programSlug,
         purchaseState: 'owned_active',
         completionState: 'in_progress',
+        programState: 'active',
         currentDay: null,
         startedAt:
           safeCachedSnapshot.ownedProgram === programSlug && safeCachedSnapshot.startedAt
             ? safeCachedSnapshot.startedAt
             : new Date().toISOString(),
+        scheduledStartDate:
+          safeCachedSnapshot.ownedProgram === programSlug
+            ? safeCachedSnapshot.scheduledStartDate ?? null
+            : null,
+        pausedAt: null,
       };
     }
 
-    const serverProgress = await this.getServerProgressRecord(userId, programSlug, snapshot);
+    const shouldHydrateProgress = shouldHydrateProgressForSnapshot(snapshot);
+    const serverProgress = shouldHydrateProgress
+      ? await this.getServerProgressRecord(userId, programSlug, snapshot)
+      : null;
     const cachedProgress = await this.getProgressRecord(userId, programSlug);
     const progress =
       serverProgress ??
@@ -634,11 +1231,21 @@ export class AccessService {
         ? cachedProgress
         : this.buildProgressRecord(userId, programSlug));
 
-    const nextSnapshot: ProgramAccessSnapshot = {
-      ...snapshot,
-      ...getStateForProgress(programSlug, progress, snapshot.startedAt),
-      source: 'supabase',
-    };
+    const nextSnapshot: ProgramAccessSnapshot = shouldHydrateProgress
+      ? {
+          ...snapshot,
+          ...getStateForProgress(
+            programSlug,
+            progress,
+            snapshot.startedAt,
+            snapshot.pausedAt ? snapshot.currentDay : null
+          ),
+          source: 'supabase',
+        }
+      : {
+          ...snapshot,
+          source: 'supabase',
+        };
 
     if (progress && nextSnapshot.currentDay) {
       progress.currentDay = nextSnapshot.currentDay;
@@ -665,17 +1272,25 @@ export class AccessService {
     ]);
     const activePreference = preferredProgram ?? localActivePreference ?? serverActivePreference;
     const snapshot = (await this.getServerAccessSnapshot(userId, activePreference)) ?? createDefaultSnapshot('supabase', userId);
-    const progress = snapshot.ownedProgram
-      ? await this.getServerProgressRecord(userId, snapshot.ownedProgram, snapshot)
+    const shouldHydrateProgress = shouldHydrateProgressForSnapshot(snapshot);
+    const progress = shouldHydrateProgress
+      ? await this.getServerProgressRecord(userId, snapshot.ownedProgram!, snapshot)
       : null;
 
-    const nextSnapshot: ProgramAccessSnapshot = snapshot.ownedProgram
+    const nextSnapshot: ProgramAccessSnapshot = shouldHydrateProgress
       ? {
           ...snapshot,
-          ...getStateForProgress(snapshot.ownedProgram, progress, snapshot.startedAt),
+          ...getStateForProgress(
+            snapshot.ownedProgram,
+            progress,
+            snapshot.startedAt,
+            snapshot.pausedAt ? snapshot.currentDay : null
+          ),
           source: 'supabase',
         }
-      : createDefaultSnapshot('supabase', userId);
+      : snapshot.ownedProgram
+        ? snapshot
+        : createDefaultSnapshot('supabase', userId);
 
     if (progress && nextSnapshot.currentDay) {
       progress.currentDay = nextSnapshot.currentDay;
@@ -773,7 +1388,10 @@ export class AccessService {
         ])
       );
 
-      ownedProgram = selectPreferredProgramSlug(candidateOwnedPrograms, [
+      const blockingServerProgram = serverSnapshot?.ownedProgram && isBlockingLifecycleState(serverSnapshot.programState)
+        ? serverSnapshot.ownedProgram
+        : null;
+      ownedProgram = blockingServerProgram ?? selectPreferredProgramSlug(candidateOwnedPrograms, [
         localActiveProgramPreference,
         localSnapshot.ownedProgram,
         existingProgress?.programSlug,
@@ -781,20 +1399,25 @@ export class AccessService {
         serverSnapshot?.ownedProgram,
         profileRecommendedProgram,
       ]);
+      const selectedServerSnapshot = serverSnapshot?.ownedProgram === ownedProgram ? serverSnapshot : null;
+      const selectedProgramState = ownedProgram
+        ? selectedServerSnapshot?.programState ?? localSnapshot.programState ?? 'active'
+        : 'not_owned';
+      const shouldHydrateSelectedProgress = Boolean(ownedProgram && selectedProgramState !== 'purchased');
       const serverProgress =
-        ownedProgram
+        ownedProgram && shouldHydrateSelectedProgress
           ? await this.getServerProgressRecord(
               userId,
               ownedProgram,
-              serverSnapshot?.ownedProgram === ownedProgram ? serverSnapshot : null
+              selectedServerSnapshot
             )
           : null;
       const nextProgress =
-        ownedProgram && serverProgress
+        ownedProgram && shouldHydrateSelectedProgress && serverProgress
           ? serverProgress
-          : ownedProgram && existingProgress?.programSlug === ownedProgram
+          : ownedProgram && shouldHydrateSelectedProgress && existingProgress?.programSlug === ownedProgram
             ? existingProgress
-            : ownedProgram
+            : ownedProgram && shouldHydrateSelectedProgress
               ? this.buildProgressRecord(userId, ownedProgram)
               : null;
 
@@ -806,18 +1429,38 @@ export class AccessService {
         await this.removeProgressRecord();
       }
 
-      const snapshot: ProgramAccessSnapshot = {
+      const baseSnapshot: ProgramAccessSnapshot = selectedServerSnapshot ?? {
         ...createDefaultSnapshot('revenuecat', userId),
         ownedProgram,
+        purchaseState: ownedProgram ? 'owned_active' : 'not_owned',
+        completionState: ownedProgram && selectedProgramState !== 'purchased' ? 'in_progress' : 'not_started',
+        programState: selectedProgramState,
+        currentDay: null,
+        scheduledStartDate:
+          ownedProgram
+            ? localSnapshot.scheduledStartDate ?? null
+            : null,
+        pausedAt:
+          ownedProgram
+            ? localSnapshot.pausedAt ?? null
+            : null,
         startedAt: ownedProgram
-          ? serverSnapshot?.startedAt ?? localSnapshot.startedAt ?? new Date().toISOString()
+          ? localSnapshot.startedAt ?? (selectedProgramState === 'purchased' ? null : new Date().toISOString())
           : null,
-        ...getStateForProgress(
-          ownedProgram,
-          nextProgress,
-          ownedProgram ? serverSnapshot?.startedAt ?? localSnapshot.startedAt ?? new Date().toISOString() : null
-        ),
       };
+      const snapshot: ProgramAccessSnapshot = shouldHydrateSelectedProgress
+        ? {
+            ...baseSnapshot,
+            ...getStateForProgress(
+              ownedProgram,
+              nextProgress,
+              ownedProgram ? baseSnapshot.startedAt ?? new Date().toISOString() : null,
+              ownedProgram && baseSnapshot.pausedAt
+                ? baseSnapshot.currentDay
+                : null
+            ),
+          }
+        : baseSnapshot;
 
       if (nextProgress && snapshot.currentDay) {
         nextProgress.currentDay = snapshot.currentDay;
@@ -865,6 +1508,104 @@ export class AccessService {
     }
   }
 
+  static async reorderOwnedProgramQueue(userId: string, programSlugs: ProgramSlug[]) {
+    try {
+      const { data, error } = await supabase.rpc('reorder_owned_program_queue', {
+        p_program_ids: programSlugs,
+      });
+
+      if (error) {
+        if (isMissingFunctionError(error, 'reorder_owned_program_queue')) {
+          return programSlugs.map((programSlug, index) => ({
+            programSlug,
+            priorityRank: index + 1,
+            programState: 'purchased' as ProgramLifecycleState,
+            updatedAt: new Date().toISOString(),
+          }));
+        }
+        throw error;
+      }
+
+      return ((data ?? []) as QueuedProgramRow[])
+        .map((row) => ({
+          programSlug: normalizeProgramSlug(row.owned_program),
+          priorityRank: row.priority_rank,
+          programState: normalizeProgramLifecycleState(row.program_state),
+          updatedAt: row.updated_at,
+        }))
+        .filter((row): row is {
+          programSlug: ProgramSlug;
+          priorityRank: number | null;
+          programState: ProgramLifecycleState;
+          updatedAt: string | null;
+        } => Boolean(row.programSlug));
+    } catch (error) {
+      if (__DEV__) {
+        console.log('Failed to reorder owned program queue', {
+          userId,
+          programSlugs,
+          error,
+        });
+      }
+      throw error;
+    }
+  }
+
+  static async prepareOwnedProgramSetup(userId: string, programSlug: ProgramSlug) {
+    let { data, error }: { data: unknown | null; error: unknown } = await supabase
+      .from('program_access')
+      .select(PROGRAM_ACCESS_SELECT)
+      .eq('user_id', userId)
+      .eq('owned_program', programSlug)
+      .maybeSingle();
+
+    if (error && isMissingColumnError(error, 'priority_rank')) {
+      const legacyResult = await supabase
+        .from('program_access')
+        .select(LEGACY_PROGRAM_ACCESS_SELECT)
+        .eq('user_id', userId)
+        .eq('owned_program', programSlug)
+        .maybeSingle();
+
+      data = legacyResult.data as unknown | null;
+      error = legacyResult.error;
+    }
+
+    if (error) {
+      throw error;
+    }
+
+    const snapshot = data ? buildSnapshotFromAccessRow(userId, data as ProgramAccessRow) : null;
+
+    if (!snapshot?.ownedProgram || snapshot.purchaseState === 'not_owned') {
+      throw new Error(`Program is not owned: ${programSlug}`);
+    }
+
+    if (snapshot.programState !== 'purchased') {
+      throw new Error(`${programSlug} is not waiting for Program Setup.`);
+    }
+
+    const activeSnapshot = await this.getServerAccessSnapshot(userId);
+    if (
+      activeSnapshot?.ownedProgram &&
+      activeSnapshot.ownedProgram !== programSlug &&
+      isBlockingLifecycleState(activeSnapshot.programState)
+    ) {
+      throw new Error('Another program is already active or scheduled.');
+    }
+
+    await Promise.all([
+      this.saveLocalActiveProgramPreference(userId, programSlug),
+      this.saveAccessSnapshot(snapshot),
+      this.removeProgressRecord(userId, programSlug),
+    ]);
+
+    return {
+      snapshot,
+      progress: null,
+    };
+  }
+
   static async updateProgress(
     userId: string,
     programSlug: ProgramSlug,
@@ -891,6 +1632,8 @@ export class AccessService {
       ownedProgram: programSlug,
       source: safeSnapshot.source,
       startedAt: safeSnapshot.startedAt ?? new Date().toISOString(),
+      scheduledStartDate: safeSnapshot.scheduledStartDate ?? null,
+      pausedAt: safeSnapshot.pausedAt ?? null,
       ...getStateForProgress(programSlug, nextProgress, safeSnapshot.startedAt ?? new Date().toISOString()),
     };
 
