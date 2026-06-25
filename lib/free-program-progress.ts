@@ -1,6 +1,7 @@
 import { hasAnyProgramEntitlement } from '@/lib/access/entitlements';
 import type { ProgramAccessSnapshot, ProgramSlug } from '@/lib/programs/types';
 import { supabase } from '@/lib/supabase';
+import type { Database } from '@/types/database.types';
 
 export const FREE_DETOX_PROGRAM_SLUG = 'free_detox_reset' as const satisfies ProgramSlug;
 export const FREE_DETOX_TOTAL_DAYS = 6;
@@ -15,15 +16,10 @@ export interface FreeProgramProgressRecord {
   updatedAt: string;
 }
 
-type FreeProgramProgressRow = {
-  user_id: string;
-  program_slug: string;
-  current_day: number | null;
-  completed_days: number[] | null;
-  partial_days: number[] | null;
-  completed_at: string | null;
-  updated_at: string | null;
-};
+type FreeProgramProgressSelect = Pick<
+  Database['public']['Tables']['free_program_progress']['Row'],
+  'user_id' | 'program_slug' | 'current_day' | 'completed_days' | 'partial_days' | 'completed_at' | 'updated_at'
+>;
 
 type FreeDetoxAccessInput = {
   access: Pick<ProgramAccessSnapshot, 'ownedProgram' | 'purchaseState'> & {
@@ -51,7 +47,7 @@ function clampCurrentDay(day: number | null | undefined) {
   return Math.max(1, Math.min(FREE_DETOX_TOTAL_DAYS, day as number));
 }
 
-function mapRow(row: FreeProgramProgressRow): FreeProgramProgressRecord {
+function mapRow(row: FreeProgramProgressSelect): FreeProgramProgressRecord {
   return {
     userId: row.user_id,
     programSlug: FREE_DETOX_PROGRAM_SLUG,
@@ -151,8 +147,7 @@ export function buildFreeDetoxProgressAfterDayState(input: {
 }
 
 export async function loadFreeDetoxProgress(userId: string): Promise<FreeProgramProgressRecord | null> {
-  const supabaseAny = supabase as any;
-  const { data, error } = await supabaseAny
+  const { data, error } = await supabase
     .from('free_program_progress')
     .select('user_id, program_slug, current_day, completed_days, partial_days, completed_at, updated_at')
     .eq('user_id', userId)
@@ -163,7 +158,7 @@ export async function loadFreeDetoxProgress(userId: string): Promise<FreeProgram
     throw error;
   }
 
-  return data ? mapRow(data as FreeProgramProgressRow) : null;
+  return data ? mapRow(data) : null;
 }
 
 export async function saveFreeDetoxProgress(input: {
@@ -174,8 +169,7 @@ export async function saveFreeDetoxProgress(input: {
   userId: string;
 }): Promise<FreeProgramProgressRecord> {
   const now = new Date().toISOString();
-  const supabaseAny = supabase as any;
-  const { data, error } = await supabaseAny
+  const { data, error } = await supabase
     .from('free_program_progress')
     .upsert(
       {
@@ -196,5 +190,5 @@ export async function saveFreeDetoxProgress(input: {
     throw error;
   }
 
-  return mapRow(data as FreeProgramProgressRow);
+  return mapRow(data);
 }

@@ -1,5 +1,6 @@
 import { AppStorage } from '@/lib/storage';
 import { supabase } from '@/lib/supabase';
+import type { Json } from '@/types/database.types';
 import { getGuidedIssueLabel, getJourneyConfig } from '@/lib/onboarding.config';
 import {
   getActiveQuestionSequence,
@@ -112,8 +113,7 @@ export function hasMeaningfulOnboardingDraft(answers: OnboardingAnswers) {
 }
 
 export async function loadOnboardingDraft(userId: string) {
-  const supabaseAny = supabase as any;
-  const { data, error } = await supabaseAny
+  const { data, error } = await supabase
     .from('profiles')
     .select('onboarding_complete, questionnaire_answers')
     .eq('id', userId)
@@ -153,12 +153,11 @@ export async function saveOnboardingDraft(args: {
     answers,
   };
 
-  const supabaseAny = supabase as any;
-  const { error } = await supabaseAny.from('profiles').upsert(
+  const { error } = await supabase.from('profiles').upsert(
     {
       id: userId,
       email: email ?? null,
-      questionnaire_answers: draftPayload,
+      questionnaire_answers: draftPayload as unknown as Json,
       updated_at: updatedAt,
     },
     { onConflict: 'id' }
@@ -277,8 +276,6 @@ export async function saveOnboardingQuestionnaire(args: {
     updated_at: updatedAt,
   };
 
-  const supabaseAny = supabase as any;
-
   async function upsertProfile() {
     const profilePayload = {
       id: userId,
@@ -287,12 +284,12 @@ export async function saveOnboardingQuestionnaire(args: {
       phone_verified_at: null,
       onboarding_complete: true,
       recommended_program: resolution.recommendedProgram,
-      questionnaire_answers: questionnaireAnswers,
+      questionnaire_answers: questionnaireAnswers as unknown as Json,
       onboarding_completed_at: updatedAt,
       updated_at: updatedAt,
     };
 
-    const result = await supabaseAny
+    const result = await supabase
       .from('profiles')
       .upsert(profilePayload, { onConflict: 'id' })
       .select(
@@ -310,11 +307,11 @@ export async function saveOnboardingQuestionnaire(args: {
         ...legacyProfilePayload
       } = profilePayload;
 
-      return supabaseAny
+      return supabase
         .from('profiles')
         .upsert(legacyProfilePayload, { onConflict: 'id' })
         .select(
-          'id, email, onboarding_complete, questionnaire_answers, recommended_program, created_at, updated_at, expo_push_token, notifications_enabled, push_opt_in'
+          'id, email, onboarding_complete, questionnaire_answers, recommended_program, created_at, updated_at, free_tier_activated_at, expo_push_token, notifications_enabled, push_opt_in'
         )
         .single();
     }
@@ -343,7 +340,7 @@ export async function saveOnboardingQuestionnaire(args: {
   }
 
   try {
-    const { error: questionnaireRunError } = await supabaseAny
+    const { error: questionnaireRunError } = await supabase
       .from('questionnaire_runs')
       .insert(questionnaireRunPayload);
 

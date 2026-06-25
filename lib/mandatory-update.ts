@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import type { Database } from '@/types/database.types';
 
 export type MandatoryUpdatePlatform = 'ios' | 'android';
 
@@ -169,28 +170,31 @@ export function resolveMandatoryUpdatePreviewState(args: {
   };
 }
 
-function normalizeAppRuntimeConfig(row: Record<string, unknown> | null): AppRuntimeConfig | null {
+function normalizeAppRuntimeConfig(
+  row: Pick<
+    Database['public']['Tables']['app_runtime_config']['Row'],
+    | 'android_store_url'
+    | 'ios_store_url'
+    | 'is_enabled'
+    | 'min_supported_version_android'
+    | 'min_supported_version_ios'
+  > | null
+): AppRuntimeConfig | null {
   if (!row) {
     return null;
   }
 
   return {
-    androidStoreUrl: typeof row.android_store_url === 'string' ? row.android_store_url : '',
-    iosStoreUrl: typeof row.ios_store_url === 'string' ? row.ios_store_url : '',
+    androidStoreUrl: row.android_store_url,
+    iosStoreUrl: row.ios_store_url,
     isEnabled: row.is_enabled !== false,
-    minSupportedVersionAndroid:
-      typeof row.min_supported_version_android === 'string'
-        ? row.min_supported_version_android
-        : '0.0.0',
-    minSupportedVersionIos:
-      typeof row.min_supported_version_ios === 'string'
-        ? row.min_supported_version_ios
-        : '0.0.0',
+    minSupportedVersionAndroid: row.min_supported_version_android,
+    minSupportedVersionIos: row.min_supported_version_ios,
   };
 }
 
 export async function fetchAppRuntimeConfig(): Promise<AppRuntimeConfig | null> {
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('app_runtime_config')
     .select(
       'is_enabled, min_supported_version_ios, min_supported_version_android, ios_store_url, android_store_url'
@@ -202,5 +206,5 @@ export async function fetchAppRuntimeConfig(): Promise<AppRuntimeConfig | null> 
     throw error;
   }
 
-  return normalizeAppRuntimeConfig((data as Record<string, unknown> | null) ?? null);
+  return normalizeAppRuntimeConfig(data);
 }
