@@ -14,16 +14,24 @@ const appPurchaseEmailEndpoint = Deno.env.get("APP_PURCHASE_EMAIL_ENDPOINT");
 const appPurchaseEmailSecret = Deno.env.get("APP_PURCHASE_EMAIL_SECRET");
 const APP_SIX_DAY_PROGRAM = "six_day_reset";
 const APP_NINETY_DAY_PROGRAM = "ninety_day_transform";
+const APP_SMOKING_ALCOHOL_QUIT_PROGRAM = "smoking_alcohol_quit";
 const APP_SLEEP_RESET_PROGRAM = "sleep_disorder_reset";
 const APP_ENERGY_VITALITY_PROGRAM = "energy_vitality";
 const APP_AGE_REVERSAL_PROGRAM = "age_reversal";
 const APP_MALE_VITALITY_PROGRAM = "male_sexual_health";
+const APP_GUT_HEALTH_RESET_PROGRAM = "gut_health_reset";
+const BUNDLE_MALE_SMOKES_ALL = "bundle_male_smokes_all";
+const BUNDLE_MALE_NO_SMOKE = "bundle_male_no_smoke";
+const BUNDLE_FEMALE_SMOKES_ALL = "bundle_female_smokes_all";
+const BUNDLE_FEMALE_NO_SMOKE = "bundle_female_no_smoke";
 const DEFAULT_SIX_DAY_REVENUECAT_ID = "six_day_control";
 const DEFAULT_NINETY_DAY_REVENUECAT_ID = "ninety_day_quit";
+const DEFAULT_SMOKING_ALCOHOL_QUIT_REVENUECAT_ID = "smoking_alcohol_quit";
 const DEFAULT_SLEEP_RESET_REVENUECAT_ID = "sleep_disorder_reset";
 const DEFAULT_ENERGY_VITALITY_REVENUECAT_ID = "energy_vitality";
 const DEFAULT_AGE_REVERSAL_REVENUECAT_ID = "age_reversal";
 const DEFAULT_MALE_VITALITY_REVENUECAT_ID = "male_sexual_health";
+const DEFAULT_GUT_HEALTH_RESET_REVENUECAT_ID = "gut_health_reset";
 const SIX_DAY_REVENUECAT_ALIASES = [
     DEFAULT_SIX_DAY_REVENUECAT_ID,
     "6_day_reset",
@@ -38,6 +46,15 @@ const NINETY_DAY_REVENUECAT_ALIASES = [
     "90daytransform",
     "ninety_day_transform",
     "90_day_quit",
+];
+const SMOKING_ALCOHOL_QUIT_REVENUECAT_ALIASES = [
+    DEFAULT_SMOKING_ALCOHOL_QUIT_REVENUECAT_ID,
+    "21_day_smoking_alcohol_quit",
+    "21-day-smoking-alcohol-quit",
+    "21daysmokingalcoholquit",
+    "smoking_alcohol_quit",
+    "smoking-alcohol-quit",
+    "smokingalcoholquit",
 ];
 const SLEEP_RESET_REVENUECAT_ALIASES = [
     DEFAULT_SLEEP_RESET_REVENUECAT_ID,
@@ -64,6 +81,19 @@ const MALE_VITALITY_REVENUECAT_ALIASES = [
     "male_vitality",
     "malesexualhealth",
 ];
+const GUT_HEALTH_RESET_REVENUECAT_ALIASES = [
+    DEFAULT_GUT_HEALTH_RESET_REVENUECAT_ID,
+    "21_day_gut_reset",
+    "21-day-gut-reset",
+    "21daygutreset",
+    "gut_health_reset",
+    "gut-health-reset",
+    "guthealthreset",
+];
+const BUNDLE_MALE_SMOKES_ALL_ALIASES = [BUNDLE_MALE_SMOKES_ALL];
+const BUNDLE_MALE_NO_SMOKE_ALIASES = [BUNDLE_MALE_NO_SMOKE];
+const BUNDLE_FEMALE_SMOKES_ALL_ALIASES = [BUNDLE_FEMALE_SMOKES_ALL];
+const BUNDLE_FEMALE_NO_SMOKE_ALIASES = [BUNDLE_FEMALE_NO_SMOKE];
 
 const normalize = (value: string | null | undefined) => value?.trim().toLowerCase() ?? "";
 
@@ -117,6 +147,10 @@ const ninetyDayEntitlementIds = parseCandidates(
     Deno.env.get("RC_90_DAY_ENTITLEMENT_ID"),
     NINETY_DAY_REVENUECAT_ALIASES,
 );
+const smokingAlcoholQuitEntitlementIds = parseCandidates(
+    Deno.env.get("RC_SMOKING_ALCOHOL_QUIT_ENTITLEMENT_ID"),
+    SMOKING_ALCOHOL_QUIT_REVENUECAT_ALIASES,
+);
 const sixDayProductIds = parseCandidates(
     Deno.env.get("RC_6_DAY_PRODUCT_IDS"),
     SIX_DAY_REVENUECAT_ALIASES,
@@ -124,6 +158,10 @@ const sixDayProductIds = parseCandidates(
 const ninetyDayProductIds = parseCandidates(
     Deno.env.get("RC_90_DAY_PRODUCT_IDS"),
     NINETY_DAY_REVENUECAT_ALIASES,
+);
+const smokingAlcoholQuitProductIds = parseCandidates(
+    Deno.env.get("RC_SMOKING_ALCOHOL_QUIT_PRODUCT_IDS"),
+    SMOKING_ALCOHOL_QUIT_REVENUECAT_ALIASES,
 );
 const sleepResetEntitlementIds = parseCandidates(
     Deno.env.get("RC_SLEEP_RESET_ENTITLEMENT_ID"),
@@ -141,6 +179,10 @@ const maleVitalityEntitlementIds = parseCandidates(
     Deno.env.get("RC_MALE_VITALITY_ENTITLEMENT_ID"),
     MALE_VITALITY_REVENUECAT_ALIASES,
 );
+const gutHealthResetEntitlementIds = parseCandidates(
+    Deno.env.get("RC_GUT_HEALTH_RESET_ENTITLEMENT_ID"),
+    GUT_HEALTH_RESET_REVENUECAT_ALIASES,
+);
 const sleepResetProductIds = parseCandidates(
     Deno.env.get("RC_SLEEP_RESET_PRODUCT_IDS"),
     SLEEP_RESET_REVENUECAT_ALIASES,
@@ -157,8 +199,33 @@ const maleVitalityProductIds = parseCandidates(
     Deno.env.get("RC_MALE_VITALITY_PRODUCT_IDS"),
     MALE_VITALITY_REVENUECAT_ALIASES,
 );
+const gutHealthResetProductIds = parseCandidates(
+    Deno.env.get("RC_GUT_HEALTH_RESET_PRODUCT_IDS"),
+    GUT_HEALTH_RESET_REVENUECAT_ALIASES,
+);
+const bundleMaleSmokesAllProductIds = parseCandidates(
+    Deno.env.get("RC_BUNDLE_MALE_SMOKES_ALL_PRODUCT_IDS"),
+    BUNDLE_MALE_SMOKES_ALL_ALIASES,
+);
+const bundleMaleNoSmokeProductIds = parseCandidates(
+    Deno.env.get("RC_BUNDLE_MALE_NO_SMOKE_PRODUCT_IDS"),
+    BUNDLE_MALE_NO_SMOKE_ALIASES,
+);
+const bundleFemaleSmokesAllProductIds = parseCandidates(
+    Deno.env.get("RC_BUNDLE_FEMALE_SMOKES_ALL_PRODUCT_IDS"),
+    BUNDLE_FEMALE_SMOKES_ALL_ALIASES,
+);
+const bundleFemaleNoSmokeProductIds = parseCandidates(
+    Deno.env.get("RC_BUNDLE_FEMALE_NO_SMOKE_PRODUCT_IDS"),
+    BUNDLE_FEMALE_NO_SMOKE_ALIASES,
+);
 
 const PROGRAM_MATCHERS = [
+    {
+        programSlug: APP_SMOKING_ALCOHOL_QUIT_PROGRAM,
+        entitlementIds: smokingAlcoholQuitEntitlementIds,
+        productIds: smokingAlcoholQuitProductIds,
+    },
     {
         programSlug: APP_NINETY_DAY_PROGRAM,
         entitlementIds: ninetyDayEntitlementIds,
@@ -188,6 +255,62 @@ const PROGRAM_MATCHERS = [
         programSlug: APP_MALE_VITALITY_PROGRAM,
         entitlementIds: maleVitalityEntitlementIds,
         productIds: maleVitalityProductIds,
+    },
+    {
+        programSlug: APP_GUT_HEALTH_RESET_PROGRAM,
+        entitlementIds: gutHealthResetEntitlementIds,
+        productIds: gutHealthResetProductIds,
+    },
+] as const;
+
+const BUNDLE_MATCHERS = [
+    {
+        bundleId: BUNDLE_MALE_SMOKES_ALL,
+        displayName: "Recovery Compass Complete Bundle",
+        productIds: bundleMaleSmokesAllProductIds,
+        programSlugs: [
+            APP_SMOKING_ALCOHOL_QUIT_PROGRAM,
+            APP_SLEEP_RESET_PROGRAM,
+            APP_ENERGY_VITALITY_PROGRAM,
+            APP_AGE_REVERSAL_PROGRAM,
+            APP_MALE_VITALITY_PROGRAM,
+            APP_GUT_HEALTH_RESET_PROGRAM,
+        ],
+    },
+    {
+        bundleId: BUNDLE_MALE_NO_SMOKE,
+        displayName: "Recovery Compass Complete Bundle",
+        productIds: bundleMaleNoSmokeProductIds,
+        programSlugs: [
+            APP_SLEEP_RESET_PROGRAM,
+            APP_ENERGY_VITALITY_PROGRAM,
+            APP_AGE_REVERSAL_PROGRAM,
+            APP_MALE_VITALITY_PROGRAM,
+            APP_GUT_HEALTH_RESET_PROGRAM,
+        ],
+    },
+    {
+        bundleId: BUNDLE_FEMALE_SMOKES_ALL,
+        displayName: "Recovery Compass Complete Bundle",
+        productIds: bundleFemaleSmokesAllProductIds,
+        programSlugs: [
+            APP_SMOKING_ALCOHOL_QUIT_PROGRAM,
+            APP_SLEEP_RESET_PROGRAM,
+            APP_ENERGY_VITALITY_PROGRAM,
+            APP_AGE_REVERSAL_PROGRAM,
+            APP_GUT_HEALTH_RESET_PROGRAM,
+        ],
+    },
+    {
+        bundleId: BUNDLE_FEMALE_NO_SMOKE,
+        displayName: "Recovery Compass Complete Bundle",
+        productIds: bundleFemaleNoSmokeProductIds,
+        programSlugs: [
+            APP_SLEEP_RESET_PROGRAM,
+            APP_ENERGY_VITALITY_PROGRAM,
+            APP_AGE_REVERSAL_PROGRAM,
+            APP_GUT_HEALTH_RESET_PROGRAM,
+        ],
     },
 ] as const;
 
@@ -229,6 +352,15 @@ const getProgramSlug = (event: Record<string, unknown>) => {
     }
 
     return null;
+};
+
+const getBundlePurchase = (event: Record<string, unknown>) => {
+    const productId = typeof event.product_id === "string" ? event.product_id : null;
+    const matchedBundle = BUNDLE_MATCHERS.find(({ productIds }) =>
+        isMatchingProduct(productId, productIds)
+    );
+
+    return matchedBundle ?? null;
 };
 
 const recordIntegrationFailure = async (
@@ -369,6 +501,7 @@ const getStoreValue = (event: Record<string, unknown>) =>
 
 const dispatchAppPurchaseWelcomeEmail = async ({
     userId,
+    programName,
     programSlug,
     productId,
     revenueCatEventId,
@@ -376,6 +509,7 @@ const dispatchAppPurchaseWelcomeEmail = async ({
     store,
 }: {
     userId: string;
+    programName?: string | null;
     programSlug: string;
     productId: string | null;
     revenueCatEventId: string | null;
@@ -400,6 +534,7 @@ const dispatchAppPurchaseWelcomeEmail = async ({
         },
         body: JSON.stringify({
             userId,
+            programName,
             programSlug,
             revenueCatProductId: productId,
             revenueCatEventId,
@@ -526,6 +661,12 @@ serve(async (req: Request) => {
         const eventType = typeof event.type === "string" ? event.type : "";
         const appUserId = typeof event.app_user_id === "string" ? event.app_user_id : "";
         const purchasedProgram = getProgramSlug(event);
+        const purchasedBundle = getBundlePurchase(event);
+        const purchasedPrograms = purchasedBundle
+            ? [...purchasedBundle.programSlugs]
+            : purchasedProgram
+                ? [purchasedProgram]
+                : [];
         const purchasedProductId = typeof event.product_id === "string" ? event.product_id : null;
         const revenueCatEventId = typeof event.id === "string" ? event.id : null;
         const providerTransactionId =
@@ -553,6 +694,8 @@ serve(async (req: Request) => {
             eventType,
             appUserId,
             purchasedProgram,
+            purchasedBundle: purchasedBundle?.bundleId ?? null,
+            purchasedPrograms,
             purchasedProductId,
             revenueCatEventId,
             providerTransactionId,
@@ -651,70 +794,76 @@ serve(async (req: Request) => {
             }
         }
 
-        if (isPositivePurchaseEvent && purchasedProgram) {
+        if (isPositivePurchaseEvent && purchasedPrograms.length > 0) {
             console.log("RevenueCat attempting program_access upsert", {
                 appUserId,
                 resolvedProfileId,
                 purchasedProgram,
+                purchasedBundle: purchasedBundle?.bundleId ?? null,
+                purchasedPrograms,
                 purchasedProductId,
             });
 
-            const { data: existingAccess, error: accessFetchError } = await supabase
-                .from('program_access')
-                .select('owned_program, completion_state, current_day, completed_at, archived_at')
-                .eq('user_id', resolvedProfileId)
-                .eq('owned_program', purchasedProgram)
-                .maybeSingle();
+            for (const programSlug of purchasedPrograms) {
+                const { data: existingAccess, error: accessFetchError } = await supabase
+                    .from('program_access')
+                    .select('owned_program, completion_state, current_day, completed_at, archived_at')
+                    .eq('user_id', resolvedProfileId)
+                    .eq('owned_program', programSlug)
+                    .maybeSingle();
 
-            if (accessFetchError) {
-                console.error("Program Access Fetch Error:", accessFetchError);
+                if (accessFetchError) {
+                    console.error("Program Access Fetch Error:", accessFetchError);
+                }
+
+                const purchaseState =
+                    existingAccess?.completion_state === 'archived'
+                        ? 'owned_archived'
+                        : existingAccess?.completion_state === 'completed'
+                            ? 'owned_completed'
+                            : 'owned_active';
+
+                const completionState = existingAccess?.completion_state ?? 'in_progress';
+                const currentDay =
+                    existingAccess?.owned_program === programSlug && existingAccess?.current_day
+                        ? existingAccess.current_day
+                        : 1;
+
+                const { error: accessUpsertError } = await supabase
+                    .from('program_access')
+                    .upsert({
+                        user_id: resolvedProfileId,
+                        owned_program: programSlug,
+                        purchase_state: purchaseState,
+                        completion_state: completionState,
+                        current_day: currentDay,
+                        completed_at: existingAccess?.completed_at ?? null,
+                        archived_at: existingAccess?.archived_at ?? null,
+                        revenuecat_product_id: purchasedProductId,
+                    }, { onConflict: 'user_id,owned_program' });
+
+                if (accessUpsertError) {
+                    console.error("Program Access Upsert Error:", accessUpsertError);
+                    throw accessUpsertError;
+                }
+
+                console.log("RevenueCat program_access upsert completed", {
+                    appUserId,
+                    resolvedProfileId,
+                    purchasedProgram: programSlug,
+                    purchasedBundle: purchasedBundle?.bundleId ?? null,
+                    purchaseState,
+                    completionState,
+                    currentDay,
+                });
             }
-
-            const purchaseState =
-                existingAccess?.completion_state === 'archived'
-                    ? 'owned_archived'
-                    : existingAccess?.completion_state === 'completed'
-                        ? 'owned_completed'
-                        : 'owned_active';
-
-            const completionState = existingAccess?.completion_state ?? 'in_progress';
-            const currentDay =
-                existingAccess?.owned_program === purchasedProgram && existingAccess?.current_day
-                    ? existingAccess.current_day
-                    : 1;
-
-            const { error: accessUpsertError } = await supabase
-                .from('program_access')
-                .upsert({
-                    user_id: resolvedProfileId,
-                    owned_program: purchasedProgram,
-                    purchase_state: purchaseState,
-                    completion_state: completionState,
-                    current_day: currentDay,
-                    completed_at: existingAccess?.completed_at ?? null,
-                    archived_at: existingAccess?.archived_at ?? null,
-                    revenuecat_product_id: purchasedProductId,
-                }, { onConflict: 'user_id,owned_program' });
-
-            if (accessUpsertError) {
-                console.error("Program Access Upsert Error:", accessUpsertError);
-                throw accessUpsertError;
-            }
-
-            console.log("RevenueCat program_access upsert completed", {
-                appUserId,
-                resolvedProfileId,
-                purchasedProgram,
-                purchaseState,
-                completionState,
-                currentDay,
-            });
 
             if (shouldSendPurchaseWelcomeEmail) {
                 try {
                     await dispatchAppPurchaseWelcomeEmail({
                         userId: resolvedProfileId,
-                        programSlug: purchasedProgram,
+                        programName: purchasedBundle?.displayName ?? null,
+                        programSlug: purchasedBundle?.bundleId ?? purchasedProgram ?? purchasedPrograms[0],
                         productId: purchasedProductId,
                         revenueCatEventId,
                         providerTransactionId,
@@ -724,6 +873,7 @@ serve(async (req: Request) => {
                     console.log("RevenueCat app purchase welcome email dispatched", {
                         resolvedProfileId,
                         purchasedProgram,
+                        purchasedBundle: purchasedBundle?.bundleId ?? null,
                         revenueCatEventId,
                         providerTransactionId,
                     });
@@ -748,6 +898,8 @@ serve(async (req: Request) => {
                             event_type: eventType,
                             app_user_id: appUserId,
                             purchased_program: purchasedProgram,
+                            purchased_bundle: purchasedBundle?.bundleId ?? null,
+                            purchased_programs: purchasedPrograms,
                             purchased_product_id: purchasedProductId,
                             store,
                         },

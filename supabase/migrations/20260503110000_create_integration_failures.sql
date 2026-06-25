@@ -28,7 +28,7 @@ CREATE INDEX IF NOT EXISTS idx_integration_failures_external_event
 CREATE TRIGGER set_integration_failures_updated_at
   BEFORE UPDATE ON public.integration_failures
   FOR EACH ROW
-  EXECUTE FUNCTION public.set_updated_at();
+  EXECUTE FUNCTION public.update_updated_at_column();
 
 ALTER TABLE public.integration_failures ENABLE ROW LEVEL SECURITY;
 
