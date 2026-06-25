@@ -29,6 +29,8 @@ import {
 } from '@/lib/onboarding.flow';
 import { hasMeaningfulOnboardingDraft, loadOnboardingDraft, saveOnboardingDraft, saveOnboardingQuestionnaire } from '@/lib/onboarding.persistence';
 import { buildRealignmentAnswers } from '@/lib/onboarding.realignment';
+import { getPostOnboardingRoute } from '@/lib/navigation/post-onboarding';
+import { PROGRAM_TAB_ROUTE } from '@/lib/navigation/routes';
 import { AppStorage } from '@/lib/storage';
 import { GENDER_OPTIONS } from '@/lib/onboarding.types';
 import type { GenderOption, GuidedIssueId, JourneyKey, OnboardingPath, OnboardingStep, QuestionDefinition } from '@/lib/onboarding.types';
@@ -108,9 +110,8 @@ export default function Personalization() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { user } = useAuth();
-  const { access, profile } = useProfile();
+  const { access, profile, refreshAccess } = useProfile();
   const params = useLocalSearchParams<{ mode?: string | string[]; program?: string | string[]; resume?: string | string[] }>();
-  const [didRestoreDraft, setDidRestoreDraft] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
   const [isDraftReady, setIsDraftReady] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -238,7 +239,6 @@ export default function Personalization() {
                   ? restoredIndex
                   : Math.max(0, Math.min(returnState.currentStepIndex ?? restoredSteps.length - 1, restoredSteps.length - 1))
               );
-              setDidRestoreDraft(true);
               return;
             }
           }
@@ -263,7 +263,6 @@ export default function Personalization() {
               ? restoredIndex
               : Math.max(0, Math.min(draft.currentStepIndex ?? 0, restoredSteps.length - 1))
           );
-          setDidRestoreDraft(true);
         }
       } catch (error) {
         console.warn('Failed to restore onboarding draft', error);
@@ -308,18 +307,8 @@ export default function Personalization() {
     };
   }, [answers, currentStep.id, isDraftReady, isRealignmentMode, isSaving, stepIndex, user]);
 
-  // ─── Draft restored alert ──────────────────────────────────────────────
-  useEffect(() => {
-    if (!didRestoreDraft) {
-      return;
-    }
-
-    Alert.alert('Progress restored', 'We restored your progress so you can keep going.');
-    setDidRestoreDraft(false);
-  }, [didRestoreDraft]);
-
   // ─── State updaters (unchanged) ────────────────────────────────────────
-  const updateQuickProfile = <K extends 'name' | 'age'>(key: K, value: string) => {
+  const updateQuickProfile = <K extends 'name' | 'phoneNumber' | 'age'>(key: K, value: string) => {
     setAnswers((current) => ({ ...current, [key]: value }));
   };
 
@@ -521,12 +510,17 @@ export default function Personalization() {
       await queryClient.invalidateQueries({ queryKey: ['questionnaire-runs', user.id, 'journeys'] });
 
       if (isRealignmentMode && realignmentProgram) {
-        router.replace('/(tabs)/program');
+        router.replace(PROGRAM_TAB_ROUTE);
         return;
       }
 
-      // The root navigation gate will move authenticated users to the right
-      // next step once onboarding state is persisted.
+      const verifiedAccess = await refreshAccess({ source: 'supabase' });
+
+      router.replace(getPostOnboardingRoute({
+        access: verifiedAccess,
+        accessIsVerified: true,
+        freeTierActivatedAt: persistedProfile.free_tier_activated_at,
+      }));
       return;
     } catch (error: any) {
       Alert.alert('Could not save your onboarding', error?.message ?? 'Please try again.');
@@ -741,6 +735,16 @@ export default function Personalization() {
                 maxLength={80}
               />
             ) : null}
+
+            <InputText
+              label="PHONE (OPTIONAL)"
+              value={answers.phoneNumber}
+              onChangeText={(value) => updateQuickProfile('phoneNumber', value)}
+              placeholder="Optional"
+              keyboardType="phone-pad"
+              inputMode="tel"
+              maxLength={24}
+            />
 
             <LargeNumberInput
               variant="age"

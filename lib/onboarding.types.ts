@@ -11,7 +11,8 @@ export type JourneyKey =
   | 'sleep_disorder_reset'
   | 'energy_vitality'
   | 'age_reversal'
-  | 'male_sexual_health';
+  | 'male_sexual_health'
+  | 'gut_health_reset';
 
 export type GuidedIssueId =
   | 'cravings_smoking_urges'
@@ -20,7 +21,8 @@ export type GuidedIssueId =
   | 'brain_fog'
   | 'stress_overload'
   | 'weight_gain_slowed_metabolism'
-  | 'low_libido_poor_performance';
+  | 'low_libido_poor_performance'
+  | 'gut_discomfort';
 
 export type SecondarySymptomId = GuidedIssueId;
 
@@ -81,6 +83,7 @@ export interface JourneyConfig {
 
 export interface OnboardingAnswers {
   name: string;
+  phoneNumber: string;
   age: string;
   gender: GenderOption | '';
   path: OnboardingPath | null;

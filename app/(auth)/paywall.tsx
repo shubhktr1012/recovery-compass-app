@@ -16,15 +16,28 @@ import Purchases, { PURCHASES_ERROR_CODE, PurchasesPackage } from 'react-native-
 import { Ionicons } from '@expo/vector-icons';
 import { useQueryClient } from '@tanstack/react-query';
 
-import { PROGRAM_METADATA } from '@/content/programs/metadata';
+import { PROGRAM_METADATA, isPublicCatalogProgram } from '@/content/programs/metadata';
 import { captureError } from '@/lib/monitoring';
+import { hasAnyProgramEntitlement } from '@/lib/access/entitlements';
+import { AccessService } from '@/lib/access/service';
 import { ProgramSlug } from '@/lib/programs/types';
 import {
   getDisplayNameForProgram,
   getOwnedProgramsFromCustomerInfo,
   getProgramSlugForPackage,
 } from '@/lib/revenuecat/config';
+import { REVENUECAT_CANONICAL_OFFERING_ID } from '@/lib/revenuecat/identifiers';
 import { hasOnboardingContextMismatch } from '@/lib/onboarding.realignment';
+import {
+  HOME_ROUTE,
+  MY_PROGRAMS_ROUTE,
+  PROGRAM_START_ROUTE,
+  PROGRAM_TAB_ROUTE,
+  WELCOME_ROUTE,
+  buildPersonalizationRoute,
+} from '@/lib/navigation/routes';
+import { assertRevenueCatReady, waitForRevenueCatReady } from '@/lib/revenuecat/runtime';
+import { useAuth } from '@/providers/auth';
 import { useProfile } from '@/providers/profile';
 import { AppTypography } from '@/constants/typography';
 
@@ -37,10 +50,11 @@ import { OWNED_PROGRAMS_QUERY_ROOT } from '@/hooks/useOwnedPrograms';
 
 const ACCESS_CONFIRMATION_RETRY_DELAY_MS = 1500;
 const ACCESS_CONFIRMATION_RETRY_COUNT = 4;
-const PROGRAM_TAB_ROUTE = '/(tabs)/program' as const;
-const PROGRAM_LIBRARY_ROUTE = '/account/programs' as const;
-const REALIGNMENT_ROUTE = '/personalization?mode=realign' as const;
+const OFFERINGS_FETCH_RETRY_DELAY_MS = 650;
+const OFFERINGS_FETCH_RETRY_COUNT = 3;
+const OFFERINGS_STARTUP_RETRY_DELAY_MS = 900;
 const ENABLE_PURCHASE_QA_LOGS = process.env.EXPO_PUBLIC_ENABLE_PURCHASE_QA_LOGS === 'true';
+const ENABLE_FREE_TIER_ENTRY = process.env.EXPO_PUBLIC_ENABLE_FREE_TIER_ENTRY === 'true';
 
 function wait(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -53,8 +67,12 @@ function getRecommendedPrograms(programSlug: ProgramSlug | null | undefined): Pr
     return [];
   }
 
-  if (programSlug === 'six_day_reset') {
-    return ['six_day_reset', 'ninety_day_transform'];
+  if (
+    programSlug === 'six_day_reset' ||
+    programSlug === 'ninety_day_transform' ||
+    programSlug === 'smoking_alcohol_quit'
+  ) {
+    return ['smoking_alcohol_quit'];
   }
 
   return [programSlug];
@@ -93,24 +111,74 @@ function isAlreadyOwnedPurchaseError(error: any, combinedErrorMessage: string) {
 function getPreferredOffering(
   offerings: Awaited<ReturnType<typeof Purchases.getOfferings>>
 ) {
-  // `main_production` is the canonical live catalog. Keep store-specific
-  // offerings as fallback only so stale `main_android` / `main_ios` catalogs
-  // cannot silently override production package mappings.
-  const preferredKeys =
-    Platform.OS === 'ios'
-      ? ['main_production', 'main_ios', 'main', 'default']
-      : Platform.OS === 'android'
-        ? ['main_production', 'main_android', 'main', 'default']
-        : ['main_production', 'main', 'default'];
+  const canonicalOffering = offerings.all[REVENUECAT_CANONICAL_OFFERING_ID];
 
-  for (const key of preferredKeys) {
-    const offering = offerings.all[key];
-    if (offering?.availablePackages?.length) {
-      return offering;
+  if (canonicalOffering?.availablePackages?.length) {
+    return canonicalOffering;
+  }
+
+  if (offerings.current?.availablePackages?.length) {
+    console.warn(
+      `RevenueCat canonical offering '${REVENUECAT_CANONICAL_OFFERING_ID}' is unavailable; falling back to current offering '${offerings.current.identifier}'.`
+    );
+    return offerings.current;
+  }
+
+  return null;
+}
+
+function getErrorText(error: unknown) {
+  if (!error || typeof error !== 'object') {
+    return String(error ?? '');
+  }
+
+  const maybeError = error as {
+    code?: unknown;
+    message?: unknown;
+    underlyingErrorMessage?: unknown;
+  };
+
+  return [
+    maybeError.code,
+    maybeError.message,
+    maybeError.underlyingErrorMessage,
+  ]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
+}
+
+function isTransientAndroidBillingStartupError(error: unknown) {
+  if (Platform.OS !== 'android') {
+    return false;
+  }
+
+  const errorText = getErrorText(error);
+
+  return (
+    errorText.includes('billingwrapper is not attached to a listener') ||
+    errorText.includes('billing service disconnected')
+  );
+}
+
+async function getOfferingsWithStartupRetry() {
+  let lastError: unknown = null;
+
+  for (let attempt = 0; attempt <= OFFERINGS_FETCH_RETRY_COUNT; attempt += 1) {
+    try {
+      return await Purchases.getOfferings();
+    } catch (error) {
+      lastError = error;
+
+      if (!isTransientAndroidBillingStartupError(error) || attempt >= OFFERINGS_FETCH_RETRY_COUNT) {
+        break;
+      }
+
+      await wait(OFFERINGS_FETCH_RETRY_DELAY_MS * (attempt + 1));
     }
   }
 
-  return offerings.current ?? null;
+  throw lastError;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -153,7 +221,16 @@ export default function Paywall() {
   const navigation = useNavigation<any>();
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
-  const { access, profile, refreshAccess, setProgramAccess } = useProfile();
+  const { signOut, user } = useAuth();
+  const {
+    access,
+    profile,
+    refreshAccess,
+    refreshProfile,
+    setProgramAccess,
+    activateFreeTier,
+    isLoading: isProfileLoading,
+  } = useProfile();
 
   const [loading, setLoading] = useState(false);
   const [packages, setPackages] = useState<PurchasesPackage[]>([]);
@@ -162,10 +239,13 @@ export default function Paywall() {
   const [offeringsRetryKey, setOfferingsRetryKey] = useState(0);
   const [selectedPackageId, setSelectedPackageId] = useState<string | null>(null);
   const [canAutoRedirectOwnedUser, setCanAutoRedirectOwnedUser] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
   const hasProgramRouteParam = Array.isArray(params.program)
     ? params.program.some((value) => Boolean(value))
     : Boolean(params.program);
   const targetedProgram = getProgramSlugFromRouteParam(params.program);
+  const revenueCatAppUserId = user?.id ?? profile?.id ?? null;
+  const hasTrustedEntitlement = hasAnyProgramEntitlement(access);
 
   const confirmUnlockedProgram = async (expectedProgram: ProgramSlug | null) => {
     for (let attempt = 0; attempt < ACCESS_CONFIRMATION_RETRY_COUNT; attempt += 1) {
@@ -198,6 +278,10 @@ export default function Paywall() {
   const restoreOwnedPurchase = async (expectedProgram: ProgramSlug | null) => {
     try {
       if (__DEV__) console.log('[Paywall] restoreOwnedPurchase:start', { expectedProgram });
+      await assertRevenueCatReady({
+        expectedAppUserId: revenueCatAppUserId,
+        errorMessage: 'The purchase service is still starting. Please wait a moment and try restoring again.',
+      });
       await Purchases.restorePurchases();
     } catch (error) {
       console.warn('Restore attempt after purchase issue failed', error);
@@ -207,13 +291,41 @@ export default function Paywall() {
   };
 
   useEffect(() => {
+    let isMounted = true;
+    let startupRetryTimer: ReturnType<typeof setTimeout> | null = null;
+
     const getOfferings = async () => {
+      let keepFetchingForStartupRetry = false;
+
       setFetchingOfferings(true);
       setOfferingsLoadFailed(false);
+
       try {
         await refreshAccess();
-        const offerings = await Purchases.getOfferings();
+        const isRevenueCatReady = await waitForRevenueCatReady({
+          expectedAppUserId: revenueCatAppUserId,
+        });
+
+        if (!isMounted) {
+          return;
+        }
+
+        if (!isRevenueCatReady) {
+          keepFetchingForStartupRetry = true;
+          startupRetryTimer = setTimeout(() => {
+            if (isMounted) {
+              setOfferingsRetryKey((key) => key + 1);
+            }
+          }, OFFERINGS_STARTUP_RETRY_DELAY_MS);
+          return;
+        }
+
+        const offerings = await getOfferingsWithStartupRetry();
         const currentOffering = getPreferredOffering(offerings);
+
+        if (!isMounted) {
+          return;
+        }
 
         if (__DEV__) console.log('[Paywall] getOfferings:resolved', {
           platform: Platform.OS,
@@ -241,16 +353,28 @@ export default function Paywall() {
         }
       } catch (e) {
         console.error('Error fetching offerings', e);
+        if (!isMounted) {
+          return;
+        }
         setPackages([]);
         setOfferingsLoadFailed(true);
         void captureError(e, { source: 'paywall', metadata: { stage: 'get_offerings' } });
       } finally {
-        setFetchingOfferings(false);
+        if (isMounted && !keepFetchingForStartupRetry) {
+          setFetchingOfferings(false);
+        }
       }
     };
 
     void getOfferings();
-  }, [offeringsRetryKey, refreshAccess]);
+
+    return () => {
+      isMounted = false;
+      if (startupRetryTimer) {
+        clearTimeout(startupRetryTimer);
+      }
+    };
+  }, [offeringsRetryKey, refreshAccess, revenueCatAppUserId]);
 
   const recommendedProgram = profile?.recommended_program ?? null;
   const needsOnboardingRealignment = hasOnboardingContextMismatch({
@@ -269,41 +393,104 @@ export default function Paywall() {
   }, []);
 
   useEffect(() => {
-    if (!canAutoRedirectOwnedUser || !access.ownedProgram || hasProgramRouteParam) {
+    if (isProfileLoading || !canAutoRedirectOwnedUser) {
       return;
     }
 
-    router.replace(needsOnboardingRealignment ? REALIGNMENT_ROUTE : PROGRAM_TAB_ROUTE);
-  }, [access.ownedProgram, canAutoRedirectOwnedUser, hasProgramRouteParam, needsOnboardingRealignment, router]);
+    if (hasTrustedEntitlement && !hasProgramRouteParam) {
+      router.replace(needsOnboardingRealignment ? buildPersonalizationRoute({ mode: 'realign' }) : PROGRAM_TAB_ROUTE);
+      return;
+    }
+
+    if (profile?.free_tier_activated_at && !hasProgramRouteParam) {
+      router.replace(PROGRAM_TAB_ROUTE);
+      return;
+    }
+  }, [
+    canAutoRedirectOwnedUser,
+    hasProgramRouteParam,
+    hasTrustedEntitlement,
+    isProfileLoading,
+    needsOnboardingRealignment,
+    router,
+    profile?.free_tier_activated_at,
+  ]);
 
   const handleBack = () => {
     if (hasProgramRouteParam) {
       if (navigation.canGoBack?.()) {
         router.back();
       } else {
-        router.replace('/' as const);
+        router.replace(HOME_ROUTE);
       }
       return;
     }
 
-    if (access.ownedProgram) {
-      router.replace(needsOnboardingRealignment ? REALIGNMENT_ROUTE : PROGRAM_TAB_ROUTE);
+    if (hasTrustedEntitlement) {
+      router.replace(needsOnboardingRealignment ? buildPersonalizationRoute({ mode: 'realign' }) : PROGRAM_TAB_ROUTE);
       return;
     }
 
-    navigation.navigate('personalization', { resume: 'review' });
+    router.replace(buildPersonalizationRoute({ resume: 'review' }));
+  };
+
+  const handleContinueFreeAccess = async () => {
+    setLoading(true);
+
+    try {
+      await activateFreeTier();
+      await refreshProfile();
+      router.replace(PROGRAM_TAB_ROUTE);
+    } catch (error: any) {
+      void captureError(error, { source: 'paywall', metadata: { stage: 'start_free_detox' } });
+      Alert.alert(
+        'Could not continue',
+        error?.message ?? 'Please try again in a moment.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSwitchAccount = () => {
+    if (loading || signingOut) {
+      return;
+    }
+
+    Alert.alert(
+      'Switch Account?',
+      "This will sign you out of your current session so you can log into a different account. Don't worry, your progress is saved.",
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Sign Out',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              setSigningOut(true);
+              await signOut();
+              router.replace(WELCOME_ROUTE);
+            } catch (error: any) {
+              Alert.alert('Could not sign out', error?.message ?? 'Please try again.');
+            } finally {
+              setSigningOut(false);
+            }
+          },
+        },
+      ]
+    );
   };
 
   const visibleProgramSlugs = useMemo(() => {
     if (targetedProgram) {
-      return [targetedProgram] as ProgramSlug[];
+      return getRecommendedPrograms(targetedProgram);
     }
 
-    if (access.ownedProgram) {
+    if (hasTrustedEntitlement) {
       return [] as ProgramSlug[];
     }
     return getRecommendedPrograms(recommendedProgram);
-  }, [access.ownedProgram, recommendedProgram, targetedProgram]);
+  }, [hasTrustedEntitlement, recommendedProgram, targetedProgram]);
 
   const eligiblePackages = useMemo<EligiblePackageOption[]>(() => {
     const matchingPackages = packages
@@ -344,7 +531,7 @@ export default function Paywall() {
 
     packages.forEach((pack) => {
       const slug = getProgramSlugForPackage(pack);
-      if (!slug || visibleSlugSet.has(slug) || uniquePackages.has(slug)) {
+      if (!slug || visibleSlugSet.has(slug) || uniquePackages.has(slug) || !isPublicCatalogProgram(slug)) {
         return;
       }
 
@@ -368,10 +555,12 @@ export default function Paywall() {
   const hasVisiblePurchaseIntent = visibleProgramSlugs.length > 0;
   const hasStorePackages = packages.length > 0;
   const purchaseOptionsUnavailable =
-    !access.ownedProgram &&
+    !hasTrustedEntitlement &&
     hasVisiblePurchaseIntent &&
     !fetchingOfferings &&
     eligiblePackages.length === 0;
+  const canContinueFreeAccess =
+    ENABLE_FREE_TIER_ENTRY && !hasTrustedEntitlement && Boolean(profile?.onboarding_complete);
 
   // Default select the primary package
   useEffect(() => {
@@ -400,35 +589,58 @@ export default function Paywall() {
 
   const finalizeUnlockedProgram = async (confirmedProgram: ProgramSlug) => {
     const activeProgram = access.ownedProgram as ProgramSlug | null;
+    const userId = profile?.id ?? access.ownerUserId;
 
     if (!activeProgram || activeProgram === confirmedProgram) {
       await setProgramAccess(confirmedProgram);
       await refreshAccess();
       await queryClient.invalidateQueries({ queryKey: OWNED_PROGRAMS_QUERY_ROOT });
-      router.replace(PROGRAM_TAB_ROUTE);
+      router.replace(PROGRAM_START_ROUTE);
       return;
     }
 
+    if (!userId) {
+      Alert.alert(
+        'Purchase Confirmed',
+        'Your purchase was confirmed, but we could not sync it to your library yet. Please reopen the app and restore purchases.'
+      );
+      return;
+    }
+
+    await AccessService.recordOwnedProgramPurchase(userId, confirmedProgram);
     await refreshAccess();
     await queryClient.invalidateQueries({ queryKey: OWNED_PROGRAMS_QUERY_ROOT });
     Alert.alert(
       'Program Unlocked',
-      `${getDisplayNameForProgram(confirmedProgram)} was added to your library. Set it as current from My Programs when you are ready to personalize it.`
+      `${getDisplayNameForProgram(confirmedProgram)} was added to your library. You can adjust its priority from My Programs.`
     );
-    router.replace(PROGRAM_LIBRARY_ROUTE);
+    router.replace(MY_PROGRAMS_ROUTE);
   };
 
   const handlePurchase = async () => {
     if (!activePackage) return;
 
-    setLoading(true);
     const pack = activePackage;
     const programSlug = getProgramSlugForPackage(pack);
+
+    if (!programSlug || !isPublicCatalogProgram(programSlug)) {
+      Alert.alert(
+        'Program unavailable',
+        'This older program is no longer available for new purchases. Please choose the Smoking & Alcohol Quit Program instead.'
+      );
+      return;
+    }
+
+    setLoading(true);
     logPurchaseQaEvent('purchase_start', pack, programSlug, {
       selectedPackageId,
       expectedProgramSlug: activePackageOption?.slug ?? null,
     });
     try {
+      await assertRevenueCatReady({
+        expectedAppUserId: revenueCatAppUserId,
+        errorMessage: 'The purchase service is still starting. Please wait a moment and try again.',
+      });
       const result = await Purchases.purchasePackage(pack);
       const ownedPrograms = getOwnedProgramsFromCustomerInfo(result.customerInfo);
       logPurchaseQaEvent('purchase_result', pack, programSlug, {
@@ -528,6 +740,10 @@ export default function Paywall() {
         recommendedProgram,
         accessOwnedProgram: access.ownedProgram,
       });
+      await assertRevenueCatReady({
+        expectedAppUserId: revenueCatAppUserId,
+        errorMessage: 'The purchase service is still starting. Please wait a moment and try again.',
+      });
       await Purchases.restorePurchases();
       const snapshot = await refreshAccess();
       if (__DEV__) console.log('[Paywall] handleRestore:resolved', {
@@ -540,6 +756,14 @@ export default function Paywall() {
         Alert.alert('Restore Failed', 'No eligible Recovery Compass purchase was found for this account.');
         return;
       }
+      const restoreUserId = profile?.id ?? snapshot.ownerUserId ?? user?.id ?? null;
+      if (!restoreUserId) {
+        Alert.alert('Restore Failed', 'Please sign in again and retry restore.');
+        return;
+      }
+
+      await AccessService.recordOwnedProgramPurchase(restoreUserId, snapshot.ownedProgram);
+      await refreshAccess({ source: 'supabase' });
       Alert.alert('Success', 'Purchases restored successfully!');
       router.replace(PROGRAM_TAB_ROUTE);
     } catch (e: any) {
@@ -597,23 +821,75 @@ export default function Paywall() {
           paddingBottom: 180 + insets.bottom,
         }}
       >
-        {/* ── Back button ── */}
-        <View style={{ paddingHorizontal: 20, paddingTop: 14 }}>
+        {/* ── Top actions ── */}
+        <View
+          style={{
+            paddingHorizontal: 20,
+            paddingTop: 14,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 12,
+          }}
+        >
           <Pressable
             onPress={handleBack}
             hitSlop={20}
-            style={{
+            style={({ pressed }) => ({
               width: 32,
               height: 32,
               borderRadius: 16,
-              backgroundColor: 'rgba(6,41,12,0.06)',
+              backgroundColor: pressed ? 'rgba(6,41,12,0.12)' : 'rgba(6,41,12,0.06)',
               alignItems: 'center',
               justifyContent: 'center',
-            }}
+            })}
             accessibilityRole="button"
             accessibilityLabel="Go back"
           >
             <Ionicons name="chevron-back" size={14} color="rgba(6,41,12,0.55)" />
+          </Pressable>
+          <Pressable
+            onPress={handleSwitchAccount}
+            disabled={loading || signingOut}
+            hitSlop={12}
+            style={({ pressed }) => ({
+              height: 32,
+              borderRadius: 16,
+              paddingHorizontal: 12,
+              justifyContent: 'center',
+              alignItems: 'center',
+              backgroundColor: pressed ? 'rgba(6,41,12,0.08)' : 'rgba(6,41,12,0.04)',
+              borderWidth: 1,
+              borderColor: 'rgba(6,41,12,0.04)',
+              opacity: loading || signingOut ? 0.55 : 1,
+            })}
+            accessibilityRole="button"
+            accessibilityLabel="Switch to a different account"
+            accessibilityState={{ disabled: loading || signingOut }}
+          >
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              {signingOut ? (
+                <ActivityIndicator size="small" color="rgba(6,41,12,0.4)" style={{ marginRight: 6 }} />
+              ) : (
+                <Ionicons name="person-outline" size={13} color="rgba(6,41,12,0.56)" style={{ marginRight: 6 }} />
+              )}
+              <Text
+                numberOfLines={1}
+                style={{
+                  fontFamily: 'Satoshi-Medium',
+                  fontSize: 12,
+                  color: 'rgba(6,41,12,0.58)',
+                }}
+              >
+                {signingOut ? 'Signing out...' : 'Switch Account'}
+              </Text>
+            </View>
           </Pressable>
         </View>
 
@@ -732,7 +1008,7 @@ export default function Paywall() {
                     : hasStorePackages
                     ? 'Purchase options are temporarily unavailable for this program. Please try again shortly.'
                     : 'Purchase options are temporarily unavailable. Please try again shortly.'
-                  : access.ownedProgram
+                  : hasTrustedEntitlement
                 ? targetedProgram
                   ? `Purchase options for ${getDisplayNameForProgram(targetedProgram)} are not available right now.`
                   : 'Your account has full access to Recovery Compass. Head to the Program tab to continue your journey.'
@@ -783,7 +1059,6 @@ export default function Paywall() {
                 <PurchaseCard
                   key={`${selectionId}:${pack.product.identifier}`}
                   programName={getPackageDisplayName(pack)}
-                  durationDays={meta?.totalDays ?? 0}
                   description={
                     pack.product.description ||
                     (meta ? meta.description : 'A guided Recovery Compass program.')
@@ -795,6 +1070,55 @@ export default function Paywall() {
                 />
               );
             })}
+
+            <Text
+              style={{
+                fontFamily: 'Satoshi-Medium',
+                fontSize: 11,
+                color: 'rgba(6,41,12,0.42)',
+                textAlign: 'center',
+                marginTop: 6,
+                marginBottom: 10,
+                paddingHorizontal: 16,
+                lineHeight: 16,
+              }}
+            >
+              Every program includes the Free Detox Program as a bonus.
+            </Text>
+
+            {/* ── Free-access path (below recommended card) ── */}
+            {canContinueFreeAccess && (
+              <Pressable
+                onPress={handleContinueFreeAccess}
+                disabled={loading}
+                hitSlop={{ top: 14, bottom: 14, left: 20, right: 20 }}
+                style={{
+                  alignSelf: 'center',
+                  minHeight: 40,
+                  paddingTop: 16,
+                  paddingBottom: 4,
+                  paddingHorizontal: 8,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  opacity: loading ? 0.58 : 1,
+                }}
+                accessibilityRole="button"
+                accessibilityLabel="Try the Free Detox Program"
+              >
+                <Text
+                  numberOfLines={1}
+                  style={{
+                    fontFamily: 'Satoshi-Medium',
+                    fontSize: 12,
+                    color: 'rgba(6,41,12,0.38)',
+                    textDecorationLine: 'underline',
+                    textDecorationColor: 'rgba(6,41,12,0.18)',
+                  }}
+                >
+                  Try the Free Detox Program
+                </Text>
+              </Pressable>
+            )}
 
             {secondaryPackageOptions.length > 0 && (
               <View style={{ marginTop: 22 }}>
@@ -819,7 +1143,6 @@ export default function Paywall() {
                     <PurchaseCard
                       key={`${selectionId}:${pack.product.identifier}`}
                       programName={getPackageDisplayName(pack)}
-                      durationDays={meta?.totalDays ?? 0}
                       description={
                         pack.product.description ||
                         (meta ? meta.description : 'A guided Recovery Compass program.')

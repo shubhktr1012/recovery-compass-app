@@ -572,7 +572,7 @@ export default function CitationsScreen() {
             </View>
           </Card>
 
-          <SectionEye>Age reversal safety</SectionEye>
+          <SectionEye>Age Reversal Program safety</SectionEye>
           <Card style={{ padding: 18, marginBottom: 24 }}>
             <Text
               style={{
@@ -583,7 +583,7 @@ export default function CitationsScreen() {
                 marginBottom: 14,
               }}
             >
-              The Age Reversal programme includes facial exercises and recovery routines. Use extra caution and pause immediately if anything feels off.
+              The Age Reversal Program includes facial exercises and recovery routines. Use extra caution and pause immediately if anything feels off.
             </Text>
 
             {AGE_REVERSAL_CAUTION_POINTS.map((point, index) => (

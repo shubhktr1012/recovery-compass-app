@@ -1,6 +1,8 @@
 import React from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import Svg, { Polyline } from 'react-native-svg';
+import { PressableScale } from '@/components/motion/PressableScale';
+import { MotionScale } from '@/lib/motion/tokens';
 
 // ─── Brand tokens ────────────────────────────────────────────────────────────
 const F = {
@@ -36,7 +38,6 @@ function CheckCircle({ isSelected }: { isSelected: boolean }) {
 
 interface PurchaseCardProps {
   programName: string;
-  durationDays: number;
   description: string;
   priceString: string;
   isSelected: boolean;
@@ -48,7 +49,6 @@ interface PurchaseCardProps {
 
 export function PurchaseCard({
   programName,
-  durationDays,
   description,
   priceString,
   isSelected,
@@ -56,10 +56,11 @@ export function PurchaseCard({
   onPress,
 }: PurchaseCardProps) {
   return (
-    <Pressable
+    <PressableScale
       onPress={onPress}
       accessibilityRole="button"
       accessibilityState={{ selected: isSelected }}
+      pressScale={MotionScale.pressLarge}
       style={[
         styles.card,
         isSelected && styles.cardSelected,
@@ -70,9 +71,6 @@ export function PurchaseCard({
         <View style={styles.topRow} collapsable={false}>
           <View style={styles.nameRow} collapsable={false}>
             <Text style={styles.name}>{programName}</Text>
-            <View style={styles.durPill}>
-              <Text style={styles.durText}>{durationDays} days</Text>
-            </View>
           </View>
           {showCheckCircle && <CheckCircle isSelected={isSelected} />}
         </View>
@@ -83,14 +81,10 @@ export function PurchaseCard({
       <View style={[styles.priceStrip, isSelected && styles.priceStripSelected]} collapsable={false}>
         <Text style={styles.price}>{priceString}</Text>
         <View style={styles.priceRight}>
-          <View style={styles.onetimePill}>
-            <View style={styles.onetimeDot} />
-            <Text style={styles.onetimeText}>One-time</Text>
-          </View>
-          <Text style={styles.noSub}>No subscription</Text>
+          <Text style={styles.priceMetaText}>One-time, no subscription</Text>
         </View>
       </View>
-    </Pressable>
+    </PressableScale>
   );
 }
 
@@ -135,19 +129,7 @@ const styles = StyleSheet.create({
     letterSpacing: -0.15,
     marginRight: 8,
   },
-  durPill: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 999,
-    backgroundColor: F.sage,
-  },
-  durText: {
-    fontFamily: 'Satoshi-Bold',
-    fontSize: 8,
-    letterSpacing: 0.64,
-    textTransform: 'uppercase',
-    color: F.forest,
-  },
+
   desc: {
     fontFamily: 'Satoshi-Regular',
     fontSize: 12,
@@ -180,33 +162,10 @@ const styles = StyleSheet.create({
   priceRight: {
     alignItems: 'flex-end',
   },
-  onetimePill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: F.sage,
-    borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 3,
-    marginBottom: 3,
-  },
-  onetimeDot: {
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: 'rgba(6,41,12,0.4)',
-    marginRight: 4,
-  },
-  onetimeText: {
-    fontFamily: 'Satoshi-Bold',
-    fontSize: 9,
-    letterSpacing: 0.54,
-    textTransform: 'uppercase',
-    color: F.forest,
-  },
-  noSub: {
-    fontFamily: 'Satoshi-Regular',
-    fontSize: 9,
-    color: 'rgba(6,41,12,0.28)', // faint-ink
+  priceMetaText: {
+    fontFamily: 'Satoshi-Medium',
+    fontSize: 10,
+    color: 'rgba(6,41,12,0.45)', // subtle-ink
   },
 
   // ── Check circle ──

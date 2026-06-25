@@ -1,8 +1,14 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
 import Svg, { Circle, Defs, Pattern, Rect } from 'react-native-svg';
 
 export function PaperGrain() {
+  // Android can crash when large scrollable SVG overlays are rasterized.
+  // This texture is decorative only, so keep it off Android for stability.
+  if (Platform.OS === 'android') {
+    return null;
+  }
+
   return (
     <View pointerEvents="none" style={[StyleSheet.absoluteFill, { zIndex: 99 }]}>
       <Svg width="100%" height="100%" opacity={0.08}>

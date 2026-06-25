@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, Alert, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useRouter } from 'expo-router';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -14,6 +14,7 @@ import { AppColors } from '@/constants/theme';
 import { AppTypography } from '@/constants/typography';
 import { isStrongPassword, PASSWORD_REQUIREMENTS_HINT } from '@/lib/password';
 import { PasswordStrength } from '@/components/ui/PasswordStrength';
+import { SIGN_IN_ROUTE, WELCOME_ROUTE } from '@/lib/navigation/routes';
 
 const signUpSchema = z.object({
     email: z.string().email('Please enter a valid email'),
@@ -25,7 +26,7 @@ const signUpSchema = z.object({
 type SignUpFormData = z.infer<typeof signUpSchema>;
 
 export default function SignUp() {
-    const navigation = useNavigation<any>();
+    const router = useRouter();
     const [loading, setLoading] = useState(false);
 
     const { control, handleSubmit, formState: { errors } } = useForm<SignUpFormData>({
@@ -64,7 +65,7 @@ export default function SignUp() {
                     [
                         {
                             text: 'Continue',
-                            onPress: () => navigation.navigate('welcome'),
+                            onPress: () => router.replace(WELCOME_ROUTE),
                         },
                         { text: 'Cancel', style: 'cancel' },
                     ]
@@ -97,7 +98,7 @@ export default function SignUp() {
                     'Check your email',
                     'Verify your account, then sign in to continue setup. If this email was already used with Apple/Google, use Sign In instead.'
                 );
-                navigation.navigate('welcome');
+                router.replace(WELCOME_ROUTE);
             }
 
         } catch (error: any) {
@@ -115,11 +116,11 @@ export default function SignUp() {
                     [
                         {
                             text: 'Reset Password',
-                            onPress: () => navigation.navigate('sign-in'),
+                            onPress: () => router.replace(SIGN_IN_ROUTE),
                         },
                         {
                             text: 'Sign In',
-                            onPress: () => navigation.navigate('sign-in'),
+                            onPress: () => router.replace(SIGN_IN_ROUTE),
                         },
                         { text: 'Cancel', style: 'cancel' },
                     ]
@@ -198,7 +199,7 @@ export default function SignUp() {
                         <Text style={styles.footerText}>Already have an account? </Text>
                         <Text
                             style={styles.footerLink}
-                            onPress={() => navigation.navigate('welcome')}
+                            onPress={() => router.replace(WELCOME_ROUTE)}
                         >
                             Sign In
                         </Text>

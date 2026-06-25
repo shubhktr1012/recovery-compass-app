@@ -7,6 +7,7 @@ type QuestionnaireQuickProfile = {
   age?: unknown;
   gender?: unknown;
   name?: unknown;
+  phoneNumber?: unknown;
 };
 
 type QuestionnaireSnapshot = {
@@ -20,7 +21,8 @@ function isJourneyKey(value: unknown): value is JourneyKey {
     value === 'sleep_disorder_reset' ||
     value === 'energy_vitality' ||
     value === 'age_reversal' ||
-    value === 'male_sexual_health'
+    value === 'male_sexual_health' ||
+    value === 'gut_health_reset'
   );
 }
 
@@ -42,6 +44,7 @@ export function getJourneyForProgramSlug(programSlug: ProgramSlug | null | undef
   switch (programSlug) {
     case 'six_day_reset':
     case 'ninety_day_transform':
+    case 'smoking_alcohol_quit':
       return 'smoking';
     case 'sleep_disorder_reset':
       return 'sleep_disorder_reset';
@@ -51,6 +54,8 @@ export function getJourneyForProgramSlug(programSlug: ProgramSlug | null | undef
       return 'age_reversal';
     case 'male_sexual_health':
       return 'male_sexual_health';
+    case 'gut_health_reset':
+      return 'gut_health_reset';
     default:
       return null;
   }
@@ -97,6 +102,7 @@ export function buildRealignmentAnswers(args: {
   }
 
   const name = typeof quickProfile?.name === 'string' ? quickProfile.name.trim() : '';
+  const phoneNumber = typeof quickProfile?.phoneNumber === 'string' ? quickProfile.phoneNumber.trim() : '';
   const age =
     typeof quickProfile?.age === 'number'
       ? String(quickProfile.age)
@@ -108,6 +114,7 @@ export function buildRealignmentAnswers(args: {
   return {
     ...createInitialOnboardingAnswers(),
     name,
+    phoneNumber,
     age,
     gender,
     path: 'self_select',

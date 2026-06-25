@@ -12,11 +12,21 @@ import Purchases, { LOG_LEVEL } from 'react-native-purchases';
 import { LogBox, Platform, Text, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { AppErrorBoundary } from '@/components/AppErrorBoundary';
+import { MandatoryUpdateSheet } from '@/components/runtime/MandatoryUpdateSheet';
 import { AppPreloader } from '@/components/ui/AppPreloader';
+import { useMandatoryAppUpdate } from '@/hooks/useMandatoryAppUpdate';
+import { useNotificationPermissionReviewStatus } from '@/hooks/useNotificationPermissionReviewStatus';
+import { useProgramQueueReviewStatus } from '@/hooks/useProgramQueueReviewStatus';
 import { getPublicEnvState } from '@/lib/env';
 import { installGlobalErrorHandler } from '@/lib/monitoring';
 import { hasOnboardingContextMismatch } from '@/lib/onboarding.realignment';
-import { NotificationService } from '@/lib/notifications';
+import { logEvent } from '@/lib/analytics';
+import { canAccessProgramContent } from '@/lib/access/entitlements';
+import { canAccessFreeDetoxProgram, FREE_DETOX_PROGRAM_SLUG } from '@/lib/free-program-progress';
+import { getNavigationGuardTarget } from '@/lib/navigation/route-guard';
+import { PAYWALL_ROUTE, buildDayDetailRoute } from '@/lib/navigation/routes';
+import { NotificationService, type ProgramNotificationTarget } from '@/lib/notifications';
+import type { ProgramAccessSnapshot } from '@/lib/programs/types';
 import { Session } from '@supabase/supabase-js';
 import ErodeRegular from '@/assets/fonts/Erode-Regular.otf';
 import ErodeItalic from '@/assets/fonts/Erode-Italic.otf';
@@ -45,9 +55,128 @@ LogBox.ignoreLogs([
 const publicEnvState = getPublicEnvState();
 const publicEnv = publicEnvState.env;
 const uninstallGlobalErrorHandler = installGlobalErrorHandler();
+const enablePurchaseQaLogs = process.env.EXPO_PUBLIC_ENABLE_PURCHASE_QA_LOGS === 'true';
+const MANDATORY_UPDATE_DELAY_AFTER_PRELOADER_MS = 1200;
+
+function ProgramNotificationTapRouter({
+  access,
+  enabled,
+  profile,
+  userId,
+}: {
+  access: ProgramAccessSnapshot;
+  enabled: boolean;
+  profile?: UserProfile | null;
+  userId?: string | null;
+}) {
+  const router = useRouter();
+  const rootNavigationState = useRootNavigationState();
+  const lastHandledTargetRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!enabled || !rootNavigationState?.key) {
+      return;
+    }
+
+    let isMounted = true;
+    let subscription: { remove: () => void } | null = null;
+
+    const handleTarget = (target: ProgramNotificationTarget) => {
+      const targetKey = target.planId ?? `${target.programSlug}:${target.dayNumber}:${target.notificationType ?? 'unknown'}`;
+      if (lastHandledTargetRef.current === targetKey) {
+        return;
+      }
+
+      lastHandledTargetRef.current = targetKey;
+      const hasFreeDetoxAccess =
+        target.programSlug === FREE_DETOX_PROGRAM_SLUG &&
+        canAccessFreeDetoxProgram({
+          access,
+          freeTierActivatedAt: profile?.free_tier_activated_at ?? null,
+          userId,
+        });
+      const accessDecision = hasFreeDetoxAccess
+        ? { allowed: true as const }
+        : canAccessProgramContent(access, target.programSlug);
+
+      if (!accessDecision.allowed) {
+        void logEvent({
+          dayNumber: target.dayNumber,
+          eventData: {
+            notificationTier: target.notificationTier,
+            notificationType: target.notificationType,
+            ownedProgram: access.ownedProgram,
+            planId: target.planId,
+            platform: Platform.OS,
+            requestedProgram: target.programSlug,
+            targetKey,
+          },
+          eventType: 'premium_route_blocked',
+          programSlug: target.programSlug,
+          userId,
+        });
+        router.replace(PAYWALL_ROUTE);
+        return;
+      }
+
+      void logEvent({
+        dayNumber: target.dayNumber,
+        eventData: {
+          cardIndex: target.cardIndex,
+          notificationTier: target.notificationTier,
+          notificationType: target.notificationType,
+          planId: target.planId,
+          platform: Platform.OS,
+          targetKey,
+          timeSlot: target.timeSlot,
+        },
+        eventType: 'notification_tap',
+        programSlug: target.programSlug,
+        userId,
+      });
+      router.push(buildDayDetailRoute({
+        programSlug: target.programSlug,
+        dayNumber: target.dayNumber,
+      }));
+    };
+
+    void NotificationService.addProgramNotificationResponseListener(handleTarget)
+      .then((nextSubscription) => {
+        if (!isMounted) {
+          nextSubscription?.remove();
+          return;
+        }
+
+        subscription = nextSubscription;
+      })
+      .catch((error) => {
+        console.warn('Failed to attach program notification tap listener', error);
+      });
+
+    void NotificationService.getLastProgramNotificationResponseTarget()
+      .then((target) => {
+        if (isMounted && target) {
+          handleTarget(target);
+        }
+      })
+      .catch((error) => {
+        console.warn('Failed to read latest program notification response', error);
+      });
+
+    return () => {
+      isMounted = false;
+      subscription?.remove();
+    };
+  }, [access, enabled, profile?.free_tier_activated_at, rootNavigationState?.key, router, userId]);
+
+  return null;
+}
 
 function NavigationGate({
     needsOnboardingRealignment,
+    needsNotificationPermissionReview,
+    needsProgramQueueReview,
+    needsProgramSetup,
     isNavigationReady,
     isRecoveringPassword,
     isSubscribed,
@@ -55,6 +184,9 @@ function NavigationGate({
     session,
 }: {
     needsOnboardingRealignment: boolean;
+    needsNotificationPermissionReview: boolean;
+    needsProgramQueueReview: boolean;
+    needsProgramSetup: boolean;
     isNavigationReady: boolean;
     isRecoveringPassword: boolean;
     isSubscribed: boolean;
@@ -71,44 +203,23 @@ function NavigationGate({
   useEffect(() => {
     if (!isNavigationReady || !rootNavigationState?.key) return;
 
-        const inAuthGroup = segments[0] === '(auth)';
-        const inTabsGroup = segments[0] === '(tabs)';
-        const inPaywall = inAuthGroup && segments[1] === 'paywall';
-        const inDayDetail = segments[0] === 'day-detail';
-        const inResetPassword = inAuthGroup && segments[1] === 'reset-password';
-        const inPersonalization = inAuthGroup && segments[1] === 'personalization';
-        const inManualRealignment = inPersonalization && modeParam === 'realign';
-        const inAccountStack = segments[0] === 'account';
+    const checkRouting = () => {
+      try {
+        if (!isNavigationReady || !rootNavigationState?.key) return;
 
-        const checkRouting = async () => {
-            try {
-                if (!isNavigationReady || !rootNavigationState?.key) return;
-
-                let target: Href | null = null;
-
-                if (isRecoveringPassword) {
-                    if (!inResetPassword) {
-                        target = '/reset-password' as Href;
-                    }
-                } else if (!session) {
-                    if (!inAuthGroup) {
-                        target = '/welcome' as Href;
-                    }
-                } else if (isSubscribed) {
-                    if (needsOnboardingRealignment) {
-                        if (!inPersonalization) {
-                            target = '/personalization?mode=realign' as Href;
-                        }
-                    } else if (!inTabsGroup && !inDayDetail && !inAccountStack && !inPaywall && !inManualRealignment) {
-                        target = '/' as Href;
-                    }
-                } else if (!profile || !profile.onboarding_complete) {
-                    if (segments[1] !== 'personalization') {
-                        target = '/personalization' as Href;
-                    }
-                } else if (!inPaywall) {
-                    target = '/paywall' as Href;
-                }
+        const target = getNavigationGuardTarget({
+          freeTierActivatedAt: profile?.free_tier_activated_at ?? null,
+          hasSession: Boolean(session),
+          isRecoveringPassword,
+          isSubscribed,
+          modeParam,
+          needsOnboardingRealignment,
+          needsNotificationPermissionReview,
+          needsProgramQueueReview,
+          needsProgramSetup,
+          onboardingComplete: profile?.onboarding_complete ?? null,
+          segments,
+        });
 
         if (!target) {
           pendingRedirectRef.current = null;
@@ -117,15 +228,29 @@ function NavigationGate({
 
         if (pendingRedirectRef.current === target) return;
         pendingRedirectRef.current = target;
-        router.navigate(target);
+        router.replace(target);
       } catch (routingError) {
         pendingRedirectRef.current = null;
         console.warn('Route guard skipped due to navigation not being ready yet.', routingError);
       }
     };
 
-    void checkRouting();
-    }, [isNavigationReady, modeParam, needsOnboardingRealignment, rootNavigationState?.key, session, profile, isSubscribed, isRecoveringPassword, router, segments]);
+    checkRouting();
+  }, [
+    isNavigationReady,
+    modeParam,
+    needsOnboardingRealignment,
+    needsNotificationPermissionReview,
+    needsProgramQueueReview,
+    needsProgramSetup,
+    rootNavigationState?.key,
+    session,
+    profile,
+    isSubscribed,
+    isRecoveringPassword,
+    router,
+    segments,
+  ]);
 
   return null;
 }
@@ -133,6 +258,19 @@ function NavigationGate({
 function RootLayoutContent() {
   const { session, isLoading: isAuthLoading, isRecoveringPassword } = useAuth();
   const { access, profile, isSubscribed, isLoading: isProfileLoading } = useProfile();
+  const mandatoryUpdate = useMandatoryAppUpdate();
+  const [hasPreloaderHidden, setHasPreloaderHidden] = useState(false);
+  const [showMandatoryUpdateSheet, setShowMandatoryUpdateSheet] = useState(false);
+  const { isLoading: isQueueReviewLoading, shouldReviewQueue } = useProgramQueueReviewStatus();
+  const isFreeTierActive = Boolean(profile?.free_tier_activated_at);
+  const {
+    isLoading: isNotificationReviewLoading,
+    shouldReviewNotifications,
+  } = useNotificationPermissionReviewStatus({
+    enabled: Boolean(session && (isSubscribed || isFreeTierActive)),
+    notificationsEnabled: Boolean(profile?.notifications_enabled || profile?.push_opt_in),
+    userId: session?.user?.id ?? null,
+  });
   const [fontsLoaded] = useFonts({
     'Erode': ErodeRegular,
     'Erode-Regular': ErodeRegular,
@@ -154,17 +292,48 @@ function RootLayoutContent() {
     'Satoshi-Bold': SatoshiBold,
   });
 
-  const isLoading = isAuthLoading || (session ? isProfileLoading : false);
+  const isLoading = mandatoryUpdate.isLoading || isAuthLoading || (
+    session ? isProfileLoading || isQueueReviewLoading || isNotificationReviewLoading : false
+  );
   const needsOnboardingRealignment = hasOnboardingContextMismatch({
     onboardingComplete: profile?.onboarding_complete,
     ownedProgram: access.ownedProgram,
     questionnaireAnswers: profile?.questionnaire_answers ?? null,
     recommendedProgram: profile?.recommended_program ?? null,
   });
+  const needsProgramSetup = Boolean(
+    access.ownedProgram && access.programState === 'purchased'
+  );
   const isNavigationReady = fontsLoaded && !isLoading;
   const hasConfiguredPurchasesRef = useRef(false);
   const revenueCatLoginInFlightRef = useRef<string | null>(null);
   const lastRevenueCatUserIdRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!isNavigationReady || hasPreloaderHidden) return;
+
+    const timeout = setTimeout(() => {
+      setHasPreloaderHidden(true);
+    }, 100);
+
+    return () => clearTimeout(timeout);
+  }, [hasPreloaderHidden, isNavigationReady]);
+
+  useEffect(() => {
+    if (!mandatoryUpdate.visible || !isNavigationReady || !hasPreloaderHidden) {
+      setShowMandatoryUpdateSheet(false);
+      return;
+    }
+
+    const timeout = setTimeout(() => {
+      if (__DEV__) {
+        console.info('Showing mandatory update sheet.');
+      }
+      setShowMandatoryUpdateSheet(true);
+    }, MANDATORY_UPDATE_DELAY_AFTER_PRELOADER_MS);
+
+    return () => clearTimeout(timeout);
+  }, [hasPreloaderHidden, isNavigationReady, mandatoryUpdate.visible]);
 
   useEffect(() => {
     if (!isNavigationReady) return;
@@ -176,7 +345,7 @@ function RootLayoutContent() {
     if (isAuthLoading) return;
     if (hasConfiguredPurchasesRef.current) return;
 
-    Purchases.setLogLevel(LOG_LEVEL.VERBOSE);
+    Purchases.setLogLevel(__DEV__ || enablePurchaseQaLogs ? LOG_LEVEL.VERBOSE : LOG_LEVEL.WARN);
 
     const iosApiKey = publicEnv.revenueCatAppleKey;
     const androidApiKey = publicEnv.revenueCatGoogleKey;
@@ -227,30 +396,41 @@ function RootLayoutContent() {
     void loginToRevenueCat();
   }, [session?.user?.id]);
 
-  // Initialize Notifications
-  useEffect(() => {
-    if (session?.user?.id) {
-      void NotificationService.initialize();
-    }
-  }, [session?.user?.id]);
-
   return (
     <>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="(auth)" />
-        <Stack.Screen name="account" />
-        <Stack.Screen name="day-detail" />
+      <Stack screenOptions={{ headerShown: false, animation: 'fade' }}>
+        <Stack.Screen name="(tabs)" options={{ animation: 'fade' }} />
+        <Stack.Screen name="(auth)" options={{ animation: 'fade' }} />
+        <Stack.Screen name="account" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="day-detail" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="program-start" options={{ animation: 'fade_from_bottom', gestureEnabled: false }} />
+        <Stack.Screen name="program-queue-review" options={{ animation: 'fade_from_bottom', gestureEnabled: false }} />
+        <Stack.Screen name="notification-permission-review" options={{ animation: 'fade_from_bottom', gestureEnabled: false }} />
+        <Stack.Screen name="program-complete" options={{ animation: 'fade_from_bottom', gestureEnabled: false }} />
       </Stack>
       <NavigationGate
         isNavigationReady={isNavigationReady}
         isRecoveringPassword={isRecoveringPassword}
         isSubscribed={isSubscribed}
         needsOnboardingRealignment={needsOnboardingRealignment}
+        needsNotificationPermissionReview={shouldReviewNotifications}
+        needsProgramQueueReview={shouldReviewQueue}
+        needsProgramSetup={needsProgramSetup}
         profile={profile}
         session={session}
       />
-      <AppPreloader isNavigationReady={isNavigationReady} isAuthenticated={!!session} />
+      <ProgramNotificationTapRouter
+        access={access}
+        enabled={isNavigationReady && Boolean(session)}
+        profile={profile}
+        userId={session?.user?.id ?? null}
+      />
+      <AppPreloader
+        isNavigationReady={isNavigationReady}
+        isAuthenticated={!!session}
+        onHidden={() => setHasPreloaderHidden(true)}
+      />
+      <MandatoryUpdateSheet {...mandatoryUpdate} visible={showMandatoryUpdateSheet} />
     </>
   );
 }

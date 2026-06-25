@@ -18,21 +18,51 @@ import { useQuery } from '@tanstack/react-query';
 
 import { PROGRAM_METADATA } from '@/content/programs/metadata';
 import { useAuth } from '@/providers/auth';
+import { clearDevClockOverride, readDevClockOverride, setDevClockOverride, useMinuteClock } from '@/hooks/useMinuteClock';
 import { useOnboardingResponse } from '@/hooks/useOnboardingResponse';
 import { useDailySteps } from '@/hooks/useDailySteps';
+import { EMPTY_FINALIZED_DAY_STATES, useFinalizedDayStates } from '@/hooks/useFinalizedDayStates';
 import { getProgramStatisticsSummary } from '@/lib/program-statistics';
+import { buildDayStateProgressSummary, buildRollingCompletionSummary } from '@/lib/day-state-summary';
+import {
+  ACCOUNT_SETTINGS_ROUTE,
+  ACCOUNT_STATISTICS_ROUTE,
+  MY_PROGRAMS_ROUTE,
+  PROGRAM_TAB_ROUTE,
+} from '@/lib/navigation/routes';
+import { getProgramScheduleStartSource, isProgramStartPending } from '@/lib/programs/lifecycle';
+import { getProgramScheduledDay } from '@/lib/programs/schedule';
 import { useProfile } from '@/providers/profile';
 import { supabase } from '@/lib/supabase';
+import { NotificationService } from '@/lib/notifications';
+import type { NotificationPlan, NotificationPlanType } from '@/lib/notification-scheduler';
 import { EditProfileSheet } from '@/components/account/EditProfileSheet';
 import { AccountWatermark } from '@/components/ui/TabWatermarks';
 import type { ProgramSlug } from '@/types/content';
 import { AppColors } from '@/constants/theme';
 import { AppTypography } from '@/constants/typography';
 import { resolveProfileIdentity } from '@/lib/profile-identity';
+import { buildWidgetPayload, syncWidgetData } from '@/lib/widget-bridge';
 
 const STAT_CARD_WIDTH = 164;
 const STAT_CARD_GAP = 10;
 const STAT_CARD_SNAP = STAT_CARD_WIDTH + STAT_CARD_GAP;
+const DEV_NOTIFICATION_TYPES: {
+  delaySeconds: number;
+  label: string;
+  timeSlot?: NotificationPlan['data']['timeSlot'];
+  type: NotificationPlanType;
+}[] = [
+  { delaySeconds: 15, label: 'Morning ready', timeSlot: 'morning', type: 'morning_session_ready' },
+  { delaySeconds: 30, label: 'Afternoon check-in', timeSlot: 'afternoon', type: 'afternoon_check_in' },
+  { delaySeconds: 45, label: 'Evening routine', timeSlot: 'evening', type: 'evening_routine' },
+  { delaySeconds: 60, label: 'Missed morning catch-up', type: 'missed_morning_catch_up' },
+  { delaySeconds: 75, label: 'Day completed', type: 'day_completed' },
+  { delaySeconds: 90, label: 'Partial day', type: 'partial_day' },
+  { delaySeconds: 105, label: 'Absence waiting', type: 'absence_waiting' },
+  { delaySeconds: 120, label: 'Absence saved', type: 'absence_last_active' },
+  { delaySeconds: 135, label: 'Paused re-entry', type: 'paused_reentry' },
+];
 
 interface StatCard {
   label: string;
@@ -86,6 +116,7 @@ function getPhaseLabel(dayNumber: number, totalDays: number) {
 
 function getStartReasonPrefix(programSlug: ProgramSlug | null | undefined) {
   switch (programSlug) {
+    case 'smoking_alcohol_quit':
     case 'six_day_reset':
     case 'ninety_day_transform':
       return 'smoking';
@@ -97,6 +128,8 @@ function getStartReasonPrefix(programSlug: ProgramSlug | null | undefined) {
       return 'age';
     case 'male_sexual_health':
       return 'male';
+    case 'gut_health_reset':
+      return 'gut';
     default:
       return null;
   }
@@ -143,7 +176,51 @@ export default function AccountScreen() {
   const dailySteps = useDailySteps();
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [activeStatIndex, setActiveStatIndex] = useState(0);
+  const [devClockOverride, setDevClockOverrideState] = useState<Date | null>(null);
+  const [isSchedulingDevNotification, setIsSchedulingDevNotification] = useState(false);
   const userId = user?.id ?? null;
+  const currentTime = useMinuteClock();
+  const activeProgramSlug = access.ownedProgram as ProgramSlug | null;
+  const activeProgram = activeProgramSlug ? PROGRAM_METADATA[activeProgramSlug] : null;
+  const finalizedDayStatesQuery = useFinalizedDayStates(userId, activeProgramSlug);
+  const finalizedDayStates = finalizedDayStatesQuery.data ?? EMPTY_FINALIZED_DAY_STATES;
+  const dayStateSummary = useMemo(
+    () => buildDayStateProgressSummary(finalizedDayStates),
+    [finalizedDayStates]
+  );
+  const rollingCompletionSummary = useMemo(
+    () => buildRollingCompletionSummary(finalizedDayStates),
+    [finalizedDayStates]
+  );
+  const hasFinalizedDayStateTruth = finalizedDayStates.length > 0;
+  const completedDaysForStats = hasFinalizedDayStateTruth
+    ? dayStateSummary.completedDays
+    : progress?.completedDays ?? [];
+
+  React.useEffect(() => {
+    if (!__DEV__) {
+      return;
+    }
+
+    let isCancelled = false;
+
+    const loadOverride = async () => {
+      try {
+        const value = await readDevClockOverride();
+        if (!isCancelled) {
+          setDevClockOverrideState(value);
+        }
+      } catch (error) {
+        console.error('Failed to load dev clock override', error);
+      }
+    };
+
+    void loadOverride();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, []);
 
   const journalCountQuery = useQuery({
     queryKey: ['journal-count', userId],
@@ -159,7 +236,7 @@ export default function AccountScreen() {
     enabled: Boolean(userId),
   });
 
-  const { currentStreak, bestStreak } = useMemo(() => {
+  const fallbackStreakSummary = useMemo(() => {
     const days = progress?.completedDays ?? [];
     if (days.length === 0) return { currentStreak: 0, bestStreak: 0 };
 
@@ -188,14 +265,20 @@ export default function AccountScreen() {
     return { currentStreak: current, bestStreak: best };
   }, [progress?.completedDays]);
 
-  const activeProgram = access.ownedProgram ? PROGRAM_METADATA[access.ownedProgram as ProgramSlug] : null;
+  const currentStreak = hasFinalizedDayStateTruth
+    ? dayStateSummary.currentStreak
+    : fallbackStreakSummary.currentStreak;
+  const bestStreak = hasFinalizedDayStateTruth
+    ? dayStateSummary.bestStreak
+    : fallbackStreakSummary.bestStreak;
+
   const startReason = useMemo(
     () =>
       getStoredStartReason({
-        programSlug: access.ownedProgram as ProgramSlug | null,
+        programSlug: activeProgramSlug,
         questionnaireAnswers: profile?.questionnaire_answers ?? null,
       }),
-    [access.ownedProgram, profile?.questionnaire_answers]
+    [activeProgramSlug, profile?.questionnaire_answers]
   );
 
   const profileIdentity = resolveProfileIdentity({
@@ -209,23 +292,34 @@ export default function AccountScreen() {
   const displayName = profileIdentity.displayName;
   const displayInitial = profileIdentity.initial;
   const startedDate = formatStartedDate(profile?.created_at);
+  const scheduleStartSource = getProgramScheduleStartSource(access);
+  const scheduledStartPending = isProgramStartPending(access, currentTime);
+  const scheduledProgramDayNumber = activeProgram
+    ? access.completionState === 'completed'
+      ? activeProgram.totalDays
+      : scheduledStartPending
+        ? 1
+      : scheduleStartSource
+        ? getProgramScheduledDay(scheduleStartSource, activeProgram.totalDays, currentTime)
+        : access.currentDay ?? null
+    : null;
 
   const progressSummary = activeProgram
     ? getProgressSummary({
-        currentDay: access.currentDay,
+        currentDay: scheduledProgramDayNumber,
         totalDays: activeProgram.totalDays,
-        completedDays: progress?.completedDays ?? [],
+        completedDays: completedDaysForStats,
         completionState: access.completionState,
       })
     : null;
 
   const activeProgramStatistics = useMemo(() => {
     return getProgramStatisticsSummary(
-      access.ownedProgram as ProgramSlug | null,
+      activeProgramSlug,
       onboardingQuery.data ?? null,
       profile?.questionnaire_answers ?? null
     );
-  }, [access.ownedProgram, onboardingQuery.data, profile?.questionnaire_answers]);
+  }, [activeProgramSlug, onboardingQuery.data, profile?.questionnaire_answers]);
 
   const statCards: StatCard[] = useMemo(() => {
     const baseCards: Omit<StatCard, 'variant'>[] = [
@@ -242,7 +336,7 @@ export default function AccountScreen() {
             : 'Set up in statistics',
       },
       {
-        label: 'All-time reflections',
+        label: 'Reflections',
         value: journalCountQuery.data ?? 0,
         subtitle: 'Written',
         context: 'Across journal entries',
@@ -255,21 +349,32 @@ export default function AccountScreen() {
       },
     ];
 
+    if (hasFinalizedDayStateTruth && rollingCompletionSummary.cardsTotal > 0) {
+      baseCards.push({
+        label: '7-day score',
+        value: `${rollingCompletionSummary.completionPercentage}%`,
+        subtitle: 'Cards completed',
+        context: `${rollingCompletionSummary.cardsCompleted}/${rollingCompletionSummary.cardsTotal} cards · ${rollingCompletionSummary.daysCount} day${rollingCompletionSummary.daysCount === 1 ? '' : 's'}`,
+      });
+    }
+
     if (activeProgram && progressSummary) {
       const phaseNum = Math.min(4, Math.ceil((progressSummary.dayNumber / activeProgram.totalDays) * 4));
-      const completedCount = progress?.completedDays.length ?? 0;
+      const completedCount = access.completionState === 'completed'
+        ? activeProgram.totalDays
+        : completedDaysForStats.length;
 
       baseCards.unshift({
-        label: 'Journey progress',
+        label: 'Days',
         value: `${completedCount}/${activeProgram.totalDays}`,
-        subtitle: 'Days completed',
+        subtitle: 'Completed',
         context: `Day ${progressSummary.dayNumber} · ${activeProgram.name}`,
       });
 
       baseCards.splice(2, 0, {
-        label: 'Program progress',
+        label: 'Progress',
         value: `${progressSummary.percentage}%`,
-        subtitle: 'Completed',
+        subtitle: 'Journey',
         context: access.completionState === 'completed' ? `All 4 phases` : `Phase ${phaseNum} of 4`,
       });
     }
@@ -292,7 +397,7 @@ export default function AccountScreen() {
       ...card,
       variant: index % 2 === 0 ? 'forest' : 'sage',
     }));
-  }, [access.completionState, activeProgram, activeProgramStatistics?.cards, bestStreak, currentStreak, dailySteps.formattedSteps, dailySteps.summary?.permissionState, dailySteps.summary?.providerLabel, journalCountQuery.data, progress?.completedDays.length, progressSummary]);
+  }, [access.completionState, activeProgram, activeProgramStatistics?.cards, bestStreak, completedDaysForStats.length, currentStreak, dailySteps.formattedSteps, dailySteps.summary?.permissionState, dailySteps.summary?.providerLabel, hasFinalizedDayStateTruth, journalCountQuery.data, progressSummary, rollingCompletionSummary.cardsCompleted, rollingCompletionSummary.cardsTotal, rollingCompletionSummary.completionPercentage, rollingCompletionSummary.daysCount]);
 
   const handleStatScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const offsetX = event.nativeEvent.contentOffset.x;
@@ -323,6 +428,153 @@ export default function AccountScreen() {
     }
   };
 
+  const syncWidgetForDevClock = async (now: Date) => {
+    const widgetPayload = buildWidgetPayload({
+      access,
+      progress,
+      steps: dailySteps.summary?.steps ?? 0,
+      now,
+    });
+
+    if (widgetPayload) {
+      await syncWidgetData(widgetPayload);
+    }
+  };
+
+  const getDevClockPresetDate = (hours: number, minutes: number) => {
+    const startSource = getProgramScheduleStartSource(access);
+    const startedAt = startSource ? new Date(startSource) : null;
+    const hasValidStartedAt = startedAt && !Number.isNaN(startedAt.getTime());
+
+    if (hasValidStartedAt && access.completionState !== 'completed') {
+      const currentJourneyDay = Math.max(1, access.currentDay ?? progress?.currentDay ?? 1);
+      const boundaryDate = new Date(
+        startedAt.getFullYear(),
+        startedAt.getMonth(),
+        startedAt.getDate() + currentJourneyDay - 1
+      );
+      boundaryDate.setHours(hours, minutes, 0, 0);
+      return boundaryDate;
+    }
+
+    const fallbackDate = new Date(devClockOverride ?? new Date());
+    fallbackDate.setHours(hours, minutes, 0, 0);
+    return fallbackDate;
+  };
+
+  const applyDevClockPreset = async (hours: number, minutes: number) => {
+    const nextValue = getDevClockPresetDate(hours, minutes);
+    await setDevClockOverride(nextValue);
+    setDevClockOverrideState(nextValue);
+    await syncWidgetForDevClock(nextValue);
+  };
+
+  const handleClearDevClockOverride = async () => {
+    await clearDevClockOverride();
+    setDevClockOverrideState(null);
+    await syncWidgetForDevClock(new Date());
+  };
+
+  const handleScheduleDevNotification = async () => {
+    if (!activeProgram || !access.ownedProgram) {
+      Alert.alert('No active program', 'Open an active program before scheduling a notification test.');
+      return;
+    }
+
+    setIsSchedulingDevNotification(true);
+
+    try {
+      const now = new Date();
+      const dayNumber = Math.max(access.currentDay ?? progress?.currentDay ?? 1, 1);
+      const programSlug = access.ownedProgram as ProgramSlug;
+      const plan: NotificationPlan = {
+        id: `program:${programSlug}:day:${dayNumber}:morning_session_ready`,
+        tier: 'card_reminder',
+        type: 'morning_session_ready',
+        title: 'Recovery Compass test',
+        body: `${activeProgram.name} notification test. Tap to open Day ${dayNumber}.`,
+        triggerAt: new Date(now.getTime() + 15_000),
+        data: {
+          notificationTier: 'card_reminder',
+          notificationType: 'morning_session_ready',
+          programSlug,
+          dayNumber,
+          timeSlot: 'morning',
+        },
+      };
+
+      await NotificationService.scheduleProgramNotificationPlans([plan], { now });
+      Alert.alert('Test scheduled', 'Lock or background the app. A test notification should arrive in about 15 seconds.');
+    } catch (error: any) {
+      Alert.alert('Notification test failed', error?.message ?? 'Could not schedule the test notification.');
+    } finally {
+      setIsSchedulingDevNotification(false);
+    }
+  };
+
+  const handleScheduleDevNotificationLab = async () => {
+    if (!activeProgram || !access.ownedProgram) {
+      Alert.alert('No active program', 'Open an active program before scheduling notification lab tests.');
+      return;
+    }
+
+    setIsSchedulingDevNotification(true);
+
+    try {
+      const now = new Date();
+      const dayNumber = Math.max(access.currentDay ?? progress?.currentDay ?? 1, 1);
+      const programSlug = access.ownedProgram as ProgramSlug;
+      const plans: NotificationPlan[] = DEV_NOTIFICATION_TYPES.map((item) => ({
+        id: `program:${programSlug}:day:${dayNumber}:dev_lab:${item.type}`,
+        tier:
+          item.type === 'missed_morning_catch_up'
+            ? 'missed_card_nudge'
+            : item.type === 'day_completed' || item.type === 'partial_day'
+              ? 'completion_motivation'
+              : item.type.startsWith('absence_') || item.type === 'paused_reentry'
+                ? 'absence_reengagement'
+                : 'card_reminder',
+        type: item.type,
+        title: `Lab: ${item.label}`,
+        body: `${activeProgram.name} notification lab. Tap to open Day ${dayNumber}.`,
+        triggerAt: new Date(now.getTime() + item.delaySeconds * 1000),
+        data: {
+          notificationTier:
+            item.type === 'missed_morning_catch_up'
+              ? 'missed_card_nudge'
+              : item.type === 'day_completed' || item.type === 'partial_day'
+                ? 'completion_motivation'
+                : item.type.startsWith('absence_') || item.type === 'paused_reentry'
+                  ? 'absence_reengagement'
+                  : 'card_reminder',
+          notificationType: item.type,
+          programSlug,
+          dayNumber,
+          ...(item.timeSlot ? { timeSlot: item.timeSlot } : {}),
+        },
+      }));
+
+      await NotificationService.scheduleProgramNotificationPlans(plans, { now });
+      Alert.alert(
+        'Notification Lab scheduled',
+        'Lock or background the app. All notification types will arrive every 15 seconds for the next 2 minutes.'
+      );
+    } catch (error: any) {
+      Alert.alert('Notification Lab failed', error?.message ?? 'Could not schedule notification lab tests.');
+    } finally {
+      setIsSchedulingDevNotification(false);
+    }
+  };
+
+  const devClockLabel = devClockOverride
+    ? new Intl.DateTimeFormat('en-IN', {
+        day: 'numeric',
+        month: 'short',
+        hour: 'numeric',
+        minute: '2-digit',
+      }).format(devClockOverride)
+    : 'Using device time';
+
   return (
     <View style={styles.screen}>
       <StatusBar style="light" />
@@ -340,7 +592,7 @@ export default function AccountScreen() {
               <Text style={styles.headerEyebrow}>Your account</Text>
 
               <TouchableOpacity
-                onPress={() => router.push('/account/settings')}
+                onPress={() => router.push(ACCOUNT_SETTINGS_ROUTE)}
                 activeOpacity={0.8}
                 style={styles.settingsButton}
               >
@@ -385,7 +637,7 @@ export default function AccountScreen() {
             <>
               <Text style={styles.sectionEyebrow}>{access.completionState === 'completed' ? 'Program' : 'Active Program'}</Text>
               <TouchableOpacity
-                onPress={() => router.push('/(tabs)/program')}
+                onPress={() => router.push(PROGRAM_TAB_ROUTE)}
                 activeOpacity={0.9}
                 style={styles.programCard}
               >
@@ -439,7 +691,7 @@ export default function AccountScreen() {
 
           <Text style={styles.sectionEyebrow}>Programs</Text>
           <TouchableOpacity
-            onPress={() => router.push('/account/programs')}
+            onPress={() => router.push(MY_PROGRAMS_ROUTE)}
             activeOpacity={0.78}
             style={styles.programLibraryRow}
           >
@@ -510,7 +762,7 @@ export default function AccountScreen() {
           ) : null}
 
           <TouchableOpacity
-            onPress={() => router.push('/account/statistics')}
+            onPress={() => router.push(ACCOUNT_STATISTICS_ROUTE)}
             activeOpacity={0.78}
             style={styles.viewAllRow}
           >
@@ -543,6 +795,87 @@ export default function AccountScreen() {
               {startedDate ? `Started ${startedDate}` : ''}
             </Text>
           </View>
+
+          {__DEV__ ? (
+            <>
+              <Text style={[styles.sectionEyebrow, { marginTop: 6 }]}>Dev Clock</Text>
+              <View style={styles.devCard}>
+                <Text style={styles.devCardTitle}>Boundary QA</Text>
+                <Text style={styles.devCardText}>
+                  Override app-only time checks. Native notification QA uses the real Android scheduler.
+                </Text>
+                <Text style={styles.devClockState}>{devClockLabel}</Text>
+
+                <View style={styles.devButtonGrid}>
+                  <TouchableOpacity
+                    onPress={() => void applyDevClockPreset(0, 59)}
+                    activeOpacity={0.8}
+                    style={styles.devButton}
+                  >
+                    <Text style={styles.devButtonText}>12:59 AM</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => void applyDevClockPreset(1, 1)}
+                    activeOpacity={0.8}
+                    style={styles.devButton}
+                  >
+                    <Text style={styles.devButtonText}>1:01 AM</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => void applyDevClockPreset(4, 59)}
+                    activeOpacity={0.8}
+                    style={styles.devButton}
+                  >
+                    <Text style={styles.devButtonText}>4:59 AM</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => void applyDevClockPreset(5, 0)}
+                    activeOpacity={0.8}
+                    style={styles.devButton}
+                  >
+                    <Text style={styles.devButtonText}>5:00 AM</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => void applyDevClockPreset(19, 0)}
+                    activeOpacity={0.8}
+                    style={styles.devButton}
+                  >
+                    <Text style={styles.devButtonText}>7:00 PM</Text>
+                  </TouchableOpacity>
+                </View>
+
+                <TouchableOpacity
+                  onPress={() => void handleClearDevClockOverride()}
+                  activeOpacity={0.8}
+                  style={styles.devClearButton}
+                >
+                  <Text style={styles.devClearButtonText}>Clear override</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={() => void handleScheduleDevNotification()}
+                  activeOpacity={0.8}
+                  disabled={isSchedulingDevNotification}
+                  style={[styles.devClearButton, { marginTop: 10, backgroundColor: AppColors.forest }]}
+                >
+                  <Text style={[styles.devClearButtonText, { color: AppColors.white }]}>
+                    {isSchedulingDevNotification ? 'Scheduling...' : 'Test notification in 15s'}
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={() => void handleScheduleDevNotificationLab()}
+                  activeOpacity={0.8}
+                  disabled={isSchedulingDevNotification}
+                  style={[styles.devClearButton, { marginTop: 10, backgroundColor: 'rgba(6,41,12,0.1)' }]}
+                >
+                  <Text style={[styles.devClearButtonText, { color: AppColors.forest }]}>
+                    Test all notification types
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </>
+          ) : null}
         </View>
       </ScrollView>
 
@@ -1015,5 +1348,63 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     color: 'rgba(6,41,12,0.28)',
     marginTop: 12,
+  },
+  devCard: {
+    borderRadius: 20,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: 'rgba(6,41,12,0.06)',
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    gap: 12,
+    shadowColor: '#06290C',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 16,
+    elevation: 2,
+  },
+  devCardTitle: {
+    fontFamily: 'Satoshi-Bold',
+    fontSize: 14,
+    color: AppColors.forest,
+  },
+  devCardText: {
+    ...AppTypography.bodyCompact,
+    color: 'rgba(6,41,12,0.56)',
+  },
+  devClockState: {
+    fontFamily: 'Satoshi-Bold',
+    fontSize: 10,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    color: 'rgba(6,41,12,0.44)',
+  },
+  devButtonGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  devButton: {
+    borderRadius: 999,
+    backgroundColor: 'rgba(6,41,12,0.08)',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+  },
+  devButtonText: {
+    fontFamily: 'Satoshi-Medium',
+    fontSize: 12,
+    color: AppColors.forest,
+  },
+  devClearButton: {
+    alignSelf: 'flex-start',
+    borderRadius: 999,
+    backgroundColor: AppColors.forest,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+  },
+  devClearButtonText: {
+    fontFamily: 'Satoshi-Bold',
+    fontSize: 12,
+    color: '#FFFFFF',
   },
 });
