@@ -3701,6 +3701,7 @@ const audioStyles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
+    paddingBottom: 32,
   },
   watermark: {
     position: 'absolute',
@@ -3763,7 +3764,7 @@ const audioStyles = StyleSheet.create({
     borderRadius: 2,
   },
   progressContainer: {
-    paddingHorizontal: 4,
+    paddingHorizontal: 10,
     paddingTop: 8,
     paddingBottom: 6,
     position: 'relative',
@@ -3785,11 +3786,12 @@ const audioStyles = StyleSheet.create({
   },
   progressThumb: {
     position: 'absolute',
-    right: -6,
+    right: 0,
     top: -5,
     width: 14,
     height: 14,
     borderRadius: 7,
+    transform: [{ translateX: 7 }],
     backgroundColor: '#FFFFFF',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },

@@ -1,4 +1,4 @@
-import { ActivityIndicator, Modal, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Modal, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useEffect, useMemo, useState } from 'react';
 import * as Device from 'expo-device';
 import * as Linking from 'expo-linking';
@@ -13,7 +13,8 @@ import Animated, {
 
 import { AppColors } from '@/constants/theme';
 import { AppTypography } from '@/constants/typography';
-import type { MandatoryUpdateState } from '@/lib/mandatory-update';
+import { buildStoreUrlCandidates, getHttpsStoreUrl, type MandatoryUpdateState } from '@/lib/mandatory-update';
+import { captureError } from '@/lib/monitoring';
 import { useReducedMotionPreference } from '@/lib/motion/accessibility';
 
 interface MandatoryUpdateSheetProps extends MandatoryUpdateState {
@@ -33,21 +34,14 @@ export function MandatoryUpdateSheet({
   const bottomPadding = Math.max(insets.bottom, 16) + 14;
   const sheetProgress = useSharedValue(visible ? 1 : 0);
   const [isOpeningStore, setIsOpeningStore] = useState(false);
-  const storeUrlCandidates = useMemo(() => {
-    if (!storeUrl) return [];
-
-    if (Platform.OS === 'ios' && storeUrl.includes('apps.apple.com')) {
-      const appId = storeUrl.match(/id[0-9]+/)?.[0];
-      return appId ? [`itms-apps://itunes.apple.com/app/${appId}`] : [];
-    }
-
-    if (Platform.OS === 'android' && storeUrl.includes('play.google.com/store/apps/details')) {
-      const packageName = storeUrl.match(/[?&]id=([^&]+)/)?.[1];
-      return packageName ? [`market://details?id=${packageName}`, storeUrl] : [storeUrl];
-    }
-
-    return [storeUrl];
-  }, [storeUrl]);
+  const storeUrlCandidates = useMemo(
+    () => buildStoreUrlCandidates(storeUrl, Platform.OS),
+    [storeUrl]
+  );
+  const httpsStoreUrl = useMemo(
+    () => getHttpsStoreUrl(storeUrl, Platform.OS),
+    [storeUrl]
+  );
 
   useEffect(() => {
     sheetProgress.value = withTiming(visible ? 1 : 0, {
@@ -85,6 +79,15 @@ export function MandatoryUpdateSheet({
     try {
       for (const candidate of storeUrlCandidates) {
         try {
+          const isNativeScheme =
+            candidate.startsWith('itms-apps:') || candidate.startsWith('market:');
+          if (isNativeScheme) {
+            const canOpen = await Linking.canOpenURL(candidate);
+            if (!canOpen) {
+              continue;
+            }
+          }
+
           await Linking.openURL(candidate);
           return;
         } catch {
@@ -97,7 +100,28 @@ export function MandatoryUpdateSheet({
         return;
       }
 
-      console.warn('Unable to open app store update URL.');
+      void captureError(new Error('Unable to open app store update URL'), {
+        source: 'mandatory_update',
+        metadata: {
+          platform: Platform.OS,
+          httpsStoreUrl,
+          candidateCount: storeUrlCandidates.length,
+        },
+      });
+
+      Alert.alert(
+        "Couldn't open the store",
+        'We could not open the store automatically. You can open the update page in your browser instead.',
+        [
+          { style: 'cancel', text: 'Cancel' },
+          {
+            text: 'Open in browser',
+            onPress: () => {
+              void Linking.openURL(httpsStoreUrl);
+            },
+          },
+        ]
+      );
     } finally {
       setIsOpeningStore(false);
     }

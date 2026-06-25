@@ -22,9 +22,62 @@ export interface MandatoryUpdateState {
 const DEFAULT_UPDATE_TITLE = 'Update required';
 const DEFAULT_UPDATE_BODY = 'Please update the app for the best experience.';
 const DEFAULT_UPDATE_CTA = 'Update Now';
-const DEFAULT_IOS_STORE_URL = 'https://apps.apple.com/in/app/recovery-compass-wellness/id6761656102';
-const DEFAULT_ANDROID_STORE_URL =
+export const DEFAULT_IOS_STORE_URL =
+  'https://apps.apple.com/in/app/recovery-compass-wellness/id6761656102';
+export const DEFAULT_ANDROID_STORE_URL =
   'https://play.google.com/store/apps/details?id=com.recoverycompass.app&hl=en_IN';
+
+function resolvePlatformStoreUrl(
+  platform: MandatoryUpdatePlatform,
+  configuredUrl?: string | null
+): string {
+  const trimmed = configuredUrl?.trim();
+  if (trimmed) {
+    return trimmed;
+  }
+
+  return platform === 'ios' ? DEFAULT_IOS_STORE_URL : DEFAULT_ANDROID_STORE_URL;
+}
+
+export function getHttpsStoreUrl(
+  storeUrl: string | null | undefined,
+  platform: MandatoryUpdatePlatform | string
+): string {
+  const resolvedPlatform = platform === 'ios' ? 'ios' : 'android';
+  return resolvePlatformStoreUrl(resolvedPlatform, storeUrl);
+}
+
+export function buildStoreUrlCandidates(
+  storeUrl: string | null | undefined,
+  platform: MandatoryUpdatePlatform | string
+): string[] {
+  const resolvedPlatform = platform === 'ios' ? 'ios' : 'android';
+  const httpsUrl = resolvePlatformStoreUrl(resolvedPlatform, storeUrl);
+  const candidates: string[] = [];
+
+  if (resolvedPlatform === 'ios' && httpsUrl.includes('apps.apple.com')) {
+    const appId = httpsUrl.match(/id[0-9]+/)?.[0];
+    if (appId) {
+      candidates.push(`itms-apps://apps.apple.com/app/${appId}`);
+      candidates.push(`itms-apps://itunes.apple.com/app/${appId}`);
+    }
+  }
+
+  if (resolvedPlatform === 'android' && httpsUrl.includes('play.google.com/store/apps/details')) {
+    const packageName = httpsUrl.match(/[?&]id=([^&]+)/)?.[1];
+    if (packageName) {
+      candidates.push(`market://details?id=${packageName}`);
+      const genericPlayUrl = `https://play.google.com/store/apps/details?id=${packageName}`;
+      if (genericPlayUrl !== httpsUrl) {
+        candidates.push(genericPlayUrl);
+      }
+    }
+  }
+
+  candidates.push(httpsUrl);
+
+  return [...new Set(candidates)];
+}
 
 function parseVersion(value: string | null | undefined): number[] | null {
   const normalized = value?.trim();
@@ -76,7 +129,10 @@ export function resolveMandatoryUpdateState(args: {
   const minimumVersion = platform === 'ios'
     ? config?.minSupportedVersionIos
     : config?.minSupportedVersionAndroid;
-  const storeUrl = platform === 'ios' ? config?.iosStoreUrl : config?.androidStoreUrl;
+  const storeUrl = resolvePlatformStoreUrl(
+    platform,
+    platform === 'ios' ? config?.iosStoreUrl : config?.androidStoreUrl
+  );
   const visible = Boolean(
     config?.isEnabled &&
     storeUrl &&
@@ -98,10 +154,10 @@ export function resolveMandatoryUpdatePreviewState(args: {
   platform: MandatoryUpdatePlatform | string;
 }): MandatoryUpdateState {
   const platform = args.platform === 'ios' ? 'ios' : 'android';
-  const storeUrl =
-    platform === 'ios'
-      ? args.config?.iosStoreUrl || DEFAULT_IOS_STORE_URL
-      : args.config?.androidStoreUrl || DEFAULT_ANDROID_STORE_URL;
+  const storeUrl = resolvePlatformStoreUrl(
+    platform,
+    platform === 'ios' ? args.config?.iosStoreUrl : args.config?.androidStoreUrl
+  );
 
   return {
     body: DEFAULT_UPDATE_BODY,

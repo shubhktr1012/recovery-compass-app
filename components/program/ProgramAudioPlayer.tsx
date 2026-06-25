@@ -593,7 +593,7 @@ const styles = StyleSheet.create({
   },
   au2Prog: {
     width: '100%',
-    paddingHorizontal: 4,
+    paddingHorizontal: 10,
     marginBottom: 32,
   },
   au2Track: {
@@ -610,11 +610,12 @@ const styles = StyleSheet.create({
   },
   au2Thumb: {
     position: 'absolute',
-    right: -5,
+    right: 0,
     top: -4,
     width: 12,
     height: 12,
     borderRadius: 6,
+    transform: [{ translateX: 6 }],
     backgroundColor: '#fff',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
