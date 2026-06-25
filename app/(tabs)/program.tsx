@@ -1,11 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState, memo } from 'react';
-import { Alert, NativeSyntheticEvent, NativeScrollEvent, Pressable, ScrollView, Text, View } from 'react-native';
+import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
 
 import { StatusBar } from 'expo-status-bar';
 import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { useQueryClient } from '@tanstack/react-query';
-import * as Haptics from 'expo-haptics';
 
 import Svg, { Path } from 'react-native-svg';
 
@@ -39,6 +38,7 @@ import { RouteErrorState, RouteLoadingState } from '@/components/navigation/Rout
 import { DayContent, ProgramSlug } from '@/types/content';
 import { programQueryKey } from '@/hooks/contentQueryUtils';
 import { useFreeDetoxProgress } from '@/hooks/useFreeDetoxProgress';
+import { useTimelineAutoScroll } from '@/hooks/useTimelineAutoScroll';
 import { AppTypography } from '@/constants/typography';
 import {
   FREE_DETOX_PROGRAM_SLUG,
@@ -128,6 +128,14 @@ function FreeProgramDiscoveryScreen() {
   );
 
   const progressPercent = Math.max(0, Math.min(100, Math.round((completedDays.length / (program?.totalDays ?? 6)) * 100)));
+  const activeDayNumber = isComplete ? null : nextDay;
+  const {
+    handleCurrentDayLayout,
+    handleDaysContainerLayout,
+    handleScroll,
+    handleTimelineListLayout,
+    scrollRef,
+  } = useTimelineAutoScroll(activeDayNumber, nextDay);
 
   if (!program) {
     if (isProgramLoading) {
@@ -148,91 +156,108 @@ function FreeProgramDiscoveryScreen() {
   }
 
   return (
-    <View className="flex-1 bg-surface">
+    <View className="flex-1 bg-forest">
       <StatusBar style="light" />
-      <ScrollView contentContainerClassName="flex-grow pb-32" bounces={false} showsVerticalScrollIndicator={false}>
-        <View className="bg-forest px-6 pt-16 pb-12 relative overflow-hidden">
-          <ProgramWatermark
-            width={280}
-            height={170}
-            opacity={0.08}
-            style={{ position: 'absolute', right: -20, top: 28 }}
-          />
 
-          <Text className="uppercase" style={[AppTypography.metaMedium, { letterSpacing: 2, color: 'rgba(227, 243, 229, 0.55)' }]}>
-            Free Access
-          </Text>
-          <Text className="text-white mt-2" style={AppTypography.displayHeroTight}>
-            Your Detox <Text className="italic">schedule.</Text>
-          </Text>
-          <Text className="mt-3 max-w-[300px]" style={[AppTypography.bodyCompact, { color: 'rgba(227, 243, 229, 0.62)' }]}>
-            Follow the 6-day free reset one day at a time. Completed days stay open for review.
-          </Text>
+      <View className="bg-forest px-6 pt-16 pb-8 relative z-10 overflow-hidden">
+        <ProgramWatermark
+          width={280}
+          height={170}
+          opacity={0.08}
+          style={{ position: 'absolute', right: -20, top: 28 }}
+        />
 
-          {/* Progress Section */}
-          <View className="mt-5 relative z-10">
-            <View className="flex-row justify-between items-baseline mb-2">
-              <Text className="text-white tracking-[-0.4px]" style={AppTypography.displayMetric}>
-                {completedDays.length} <Text className="tracking-normal" style={[AppTypography.label, { color: 'rgba(227, 243, 229, 0.55)' }]}>of {program.totalDays} days</Text>
+        <Text className="uppercase" style={[AppTypography.metaMedium, { letterSpacing: 2, color: 'rgba(227, 243, 229, 0.55)' }]}>
+          Free Access
+        </Text>
+        <Text className="text-white mt-2" style={AppTypography.displayHeroTight}>
+          Your Detox schedule.
+        </Text>
+        <Text className="mt-3 max-w-[300px]" style={[AppTypography.bodyCompact, { color: 'rgba(227, 243, 229, 0.62)' }]}>
+          Follow the 6-day free reset one day at a time. Completed days stay open for review.
+        </Text>
+
+        <View className="mt-5 relative z-10">
+          <View className="flex-row justify-between items-baseline mb-2">
+            <Text className="text-white tracking-[-0.4px]" style={AppTypography.displayMetric}>
+              {completedDays.length}{' '}
+              <Text className="tracking-normal" style={[AppTypography.label, { color: 'rgba(227, 243, 229, 0.55)' }]}>
+                of {program.totalDays} days
               </Text>
-              <Text style={[AppTypography.metaMedium, { letterSpacing: 0.3, color: 'rgba(227, 243, 229, 0.60)' }]}>
-                {progressPercent}% complete
-              </Text>
-            </View>
+            </Text>
+            <Text style={[AppTypography.metaMedium, { letterSpacing: 0.3, color: 'rgba(227, 243, 229, 0.60)' }]}>
+              {progressPercent}% complete
+            </Text>
+          </View>
 
-            <View className="h-[3px] w-full bg-sage/[0.18] rounded-full overflow-hidden">
-              <View
-                className="h-full bg-sage rounded-full"
-                style={{ width: `${progressPercent}%`, backgroundColor: isComplete ? 'rgba(93,207,122,0.7)' : '#E3F3E5' }}
-              />
-            </View>
+          <View className="h-[3px] w-full bg-sage/[0.18] rounded-full overflow-hidden">
+            <View
+              className="h-full bg-sage rounded-full"
+              style={{ width: `${progressPercent}%`, backgroundColor: isComplete ? 'rgba(93,207,122,0.7)' : '#E3F3E5' }}
+            />
           </View>
         </View>
+      </View>
 
-        <View className="bg-surface rounded-t-[28px] -mt-7 px-5 pt-6 pb-[170px] relative z-20 flex-1">
+      <View className="flex-1 -mt-7 bg-surface rounded-t-[28px] relative z-20 overflow-hidden">
+        <ScrollView
+          ref={scrollRef}
+          className="flex-1"
+          contentContainerClassName="pt-6 pb-[170px]"
+          onScroll={handleScroll}
+          scrollEventThrottle={16}
+          showsVerticalScrollIndicator={false}
+        >
           <PaperGrain />
-          <Text className="uppercase text-forest/35 px-6 mb-4" style={[AppTypography.eyebrow, { letterSpacing: 1.6 }]}>
-            {isComplete ? 'All 6 Days - Revisit Anytime' : 'Day Timeline'}
-          </Text>
+          <View onLayout={handleDaysContainerLayout}>
+            <Text className="uppercase text-forest/35 px-6 mb-4" style={[AppTypography.eyebrow, { letterSpacing: 1.6 }]}>
+              {isComplete ? 'All 6 Days - Revisit Anytime' : 'Day Timeline'}
+            </Text>
 
-          <View className="px-5">
-            {program.days.map((day, index) => {
-              const isCompleted = completedDays.includes(day.dayNumber);
-              const isPartial = partialDays.includes(day.dayNumber) && !isCompleted;
-              const isLocked = !isComplete && !isCompleted && !isPartial && day.dayNumber > unlockedThroughDay;
-              const isCurrent = !isComplete && day.dayNumber === nextDay && !isCompleted && !isPartial;
-              const nextLockedDayNumber = isComplete ? null : Math.min(program.totalDays, unlockedThroughDay + 1);
+            <View className="px-5" onLayout={handleTimelineListLayout}>
+              {program.days.map((day, index) => {
+                const isCompleted = completedDays.includes(day.dayNumber);
+                const isPartial = partialDays.includes(day.dayNumber) && !isCompleted;
+                const isLocked = !isComplete && !isCompleted && !isPartial && day.dayNumber > unlockedThroughDay;
+                const isCurrent = !isComplete && day.dayNumber === nextDay && !isCompleted && !isPartial;
+                const nextLockedDayNumber = isComplete ? null : Math.min(program.totalDays, unlockedThroughDay + 1);
 
-              return (
-                <StaggeredItem key={`${FREE_DETOX_PROGRAM_SLUG}-${day.dayNumber}`} index={index}>
-                  <ProgramTimelineNode
-                    day={day}
-                    isFirst={index === 0}
-                    isLast={index === program.days.length - 1}
-                    isLocked={isLocked}
-                    isCompleted={isCompleted}
-                    isPartial={isPartial}
-                    isSkipped={false}
-                    isCurrent={isCurrent}
-                    isReturningUser={completedDays.length > 0 || partialDays.length > 0}
-                    activeProgram={FREE_DETOX_PROGRAM_SLUG}
-                    nextLockedDayNumber={nextLockedDayNumber}
-                    availabilityLabel={isLocked && day.dayNumber === nextLockedDayNumber ? `Complete Day ${Math.max(1, day.dayNumber - 1)} first` : null}
-                    onPress={() =>
-                      router.push(
-                        buildDayDetailRoute({
-                          programSlug: FREE_DETOX_PROGRAM_SLUG,
-                          dayNumber: day.dayNumber,
-                        })
-                      )
-                    }
-                  />
-                </StaggeredItem>
-              );
-            })}
+                return (
+                  <StaggeredItem key={`${FREE_DETOX_PROGRAM_SLUG}-${day.dayNumber}`} index={index}>
+                    <ProgramTimelineNode
+                      day={day}
+                      isFirst={index === 0}
+                      isLast={index === program.days.length - 1}
+                      isLocked={isLocked}
+                      isCompleted={isCompleted}
+                      isPartial={isPartial}
+                      isSkipped={false}
+                      isCurrent={isCurrent}
+                      isReturningUser={completedDays.length > 0 || partialDays.length > 0}
+                      activeProgram={FREE_DETOX_PROGRAM_SLUG}
+                      nextLockedDayNumber={nextLockedDayNumber}
+                      availabilityLabel={
+                        isLocked && day.dayNumber === nextLockedDayNumber
+                          ? `Complete Day ${Math.max(1, day.dayNumber - 1)} first`
+                          : null
+                      }
+                      onLayout={isCurrent ? handleCurrentDayLayout : undefined}
+                      onPress={() =>
+                        router.push(
+                          buildDayDetailRoute({
+                            programSlug: FREE_DETOX_PROGRAM_SLUG,
+                            dayNumber: day.dayNumber,
+                          })
+                        )
+                      }
+                    />
+                  </StaggeredItem>
+                );
+              })}
+            </View>
           </View>
-        </View>
-      </ScrollView>
+        </ScrollView>
+      </View>
     </View>
   );
 }
@@ -433,95 +458,13 @@ function ProgramScreenContent({
     return hoursSinceUpdate >= 72;
   }, [progress?.updatedAt]);
 
-  // Haptics & Scroll Tracking
-  const scrollRef = useRef<ScrollView>(null);
-  const surfaceSectionY = useRef<number>(0);
-  const daysContainerY = useRef<number>(0);
-  const timelineListY = useRef<number>(0);
-  const currentDayRelativeY = useRef<number | null>(null);
-  const currentDayHeight = useRef<number | null>(null);
-  const hasFiredHaptic = useRef<boolean>(false);
-  const hasAutoScrolledRef = useRef(false);
-  const TIMELINE_TOP_INSET = 20;
-
-  const getCurrentDayScrollY = useCallback(() => {
-    if (currentDayRelativeY.current === null) {
-      return null;
-    }
-
-    return Math.max(
-      0,
-      surfaceSectionY.current +
-        daysContainerY.current +
-        timelineListY.current +
-        currentDayRelativeY.current -
-        TIMELINE_TOP_INSET
-    );
-  }, []);
-
-  const scrollToCurrentDay = useCallback(
-    (animated = false) => {
-      const targetY = getCurrentDayScrollY();
-      if (targetY === null || activeDayNumber == null) {
-        return false;
-      }
-
-      scrollRef.current?.scrollTo({ animated, y: targetY });
-      return true;
-    },
-    [activeDayNumber, getCurrentDayScrollY]
-  );
-
-  const tryAutoScrollToCurrentDay = useCallback(() => {
-    if (hasAutoScrolledRef.current || activeDayNumber == null) {
-      return;
-    }
-
-    const didScroll = scrollToCurrentDay(false);
-    if (didScroll) {
-      hasAutoScrolledRef.current = true;
-    }
-  }, [activeDayNumber, scrollToCurrentDay]);
-
-  useEffect(() => {
-    hasAutoScrolledRef.current = false;
-    currentDayRelativeY.current = null;
-    currentDayHeight.current = null;
-  }, [activeDayNumber, activeProgram]);
-
-  useFocusEffect(
-    useCallback(() => {
-      hasAutoScrolledRef.current = false;
-      requestAnimationFrame(() => {
-        tryAutoScrollToCurrentDay();
-      });
-    }, [tryAutoScrollToCurrentDay])
-  );
-
-  const handleScroll = useCallback((e: NativeSyntheticEvent<NativeScrollEvent>) => {
-    if (currentDayRelativeY.current === null || currentDayHeight.current === null) return;
-    
-    const { contentOffset, layoutMeasurement } = e.nativeEvent;
-    const scrollCenterY = contentOffset.y + (layoutMeasurement.height / 2);
-    
-    const absoluteTop =
-      surfaceSectionY.current +
-      daysContainerY.current +
-      timelineListY.current +
-      currentDayRelativeY.current;
-    
-    const snapTop = absoluteTop + (currentDayHeight.current * 0.25);
-    const snapBottom = absoluteTop + (currentDayHeight.current * 0.75);
-    
-    if (scrollCenterY >= snapTop && scrollCenterY <= snapBottom) {
-      if (!hasFiredHaptic.current) {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-        hasFiredHaptic.current = true;
-      }
-    } else {
-      hasFiredHaptic.current = false;
-    }
-  }, []);
+  const {
+    handleCurrentDayLayout,
+    handleDaysContainerLayout,
+    handleScroll,
+    handleTimelineListLayout,
+    scrollRef,
+  } = useTimelineAutoScroll(activeDayNumber, activeProgram);
 
   if (!program) {
     if (isProgramLoading) {
@@ -546,97 +489,94 @@ function ProgramScreenContent({
   return (
     <View className="flex-1 bg-forest">
       <StatusBar style="light" />
-      <ScrollView
-        ref={scrollRef}
-        contentContainerClassName="flex-grow"
-        onScroll={handleScroll}
-        scrollEventThrottle={16}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* HEADER AREA */}
-        <View className="bg-forest px-6 pt-16 pb-[52px] overflow-hidden relative">
-          <ProgramWatermark
-            width={280}
-            height={170}
-            opacity={0.06}
-            style={{ position: 'absolute', right: -20, top: 50 }}
-          />
 
-          <View className="mb-[18px] relative z-10 mt-8">
-            <Text className="uppercase" style={[AppTypography.metaMedium, { letterSpacing: 2, color: 'rgba(227, 243, 229, 0.55)' }]}>
-              {isCompletedTimeline ? 'Completed Journey' : 'Current Journey'}
-            </Text>
-          </View>
-          
-          <Text className="tracking-[-0.6px] text-white relative z-10 pr-4" style={AppTypography.displayHeroTight}>
-            {program.name}
+      <View className="bg-forest px-6 pt-16 pb-8 overflow-hidden relative z-10">
+        <ProgramWatermark
+          width={280}
+          height={170}
+          opacity={0.06}
+          style={{ position: 'absolute', right: -20, top: 50 }}
+        />
+
+        <View className="mb-[18px] relative z-10 mt-8">
+          <Text className="uppercase" style={[AppTypography.metaMedium, { letterSpacing: 2, color: 'rgba(227, 243, 229, 0.55)' }]}>
+            {isCompletedTimeline ? 'Completed Journey' : 'Current Journey'}
           </Text>
-          
-          <Text
-            className="pr-8 mt-2 relative z-10 max-w-[280px]"
-            style={[AppTypography.bodyCompact, { color: 'rgba(227, 243, 229, 0.60)' }]}
-          >
-            {isCompletedTimeline
-              ? `You completed this reset. All ${totalDays} days are now available to revisit.` 
-              : program.description}
-          </Text>
-
-          <View className="mt-4 relative z-10">
-            <View className="flex-row justify-between items-baseline mb-2">
-              <Text className="text-white tracking-[-0.4px]" style={AppTypography.displayMetric}>
-                {isCompletedTimeline ? totalDays : Math.min(unlockedThroughDay, program.totalDays)} <Text className="tracking-normal" style={[AppTypography.label, { color: 'rgba(227, 243, 229, 0.55)' }]}>of {totalDays} days</Text>
-              </Text>
-              <Text style={[AppTypography.metaMedium, { letterSpacing: 0.3, color: 'rgba(227, 243, 229, 0.60)' }]}>
-                {progressPercent}% complete
-              </Text>
-            </View>
-
-            <View className="h-[3px] w-full bg-sage/[0.18] rounded-full overflow-hidden">
-              <View
-                className="h-full bg-sage rounded-full"
-                style={{ width: `${progressPercent}%`, backgroundColor: isCompletedTimeline ? 'rgba(93,207,122,0.7)' : '#E3F3E5' }}
-              />
-            </View>
-            
-            {nextUnlockLabel && !isCompletedTimeline ? (
-              <Text className="mt-[6px]" style={[AppTypography.meta, { letterSpacing: 0.2, color: 'rgba(227, 243, 229, 0.40)' }]}>
-                {nextUnlockLabel}
-              </Text>
-            ) : null}
-
-            {(canPauseJourney || isPausedJourney) && access.ownedProgram === activeProgram ? (
-              <Pressable
-                onPress={isPausedJourney ? handleResumeJourney : handlePauseJourney}
-                disabled={isManualPausePending}
-                accessibilityRole="button"
-                accessibilityLabel={isManualPausePending ? 'Pausing journey' : isPausedJourney ? 'Resume journey' : 'Pause journey'}
-                className="self-start mt-3 rounded-full border border-sage/18 bg-white/8 px-4 py-2"
-                style={{ opacity: isManualPausePending ? 0.62 : 1 }}
-              >
-                <Text className="text-sage" style={AppTypography.metaMedium}>
-                  {isManualPausePending ? 'Pausing...' : isPausedJourney ? 'Resume journey' : 'Pause journey'}
-                </Text>
-              </Pressable>
-            ) : null}
-            {showAutomaticPauseNotice && isPausedJourney ? (
-              <Text className="mt-2" style={[AppTypography.meta, { color: 'rgba(227, 243, 229, 0.45)' }]}>
-                Paused automatically after missed days. Resume when you are ready.
-              </Text>
-            ) : null}
-          </View>
         </View>
 
-        {/* CONTENT AREA OVERLAP */}
-        <View
-          className="bg-surface rounded-t-[28px] -mt-7 pt-6 pb-[170px] relative z-20 flex-1"
-          onLayout={(event) => {
-            surfaceSectionY.current = event.nativeEvent.layout.y;
-          }}
+        <Text className="tracking-[-0.6px] text-white relative z-10 pr-4" style={AppTypography.displayHeroTight}>
+          {program.name}
+        </Text>
+
+        <Text
+          className="pr-8 mt-2 relative z-10 max-w-[280px]"
+          style={[AppTypography.bodyCompact, { color: 'rgba(227, 243, 229, 0.60)' }]}
+        >
+          {isCompletedTimeline
+            ? `You completed this reset. All ${totalDays} days are now available to revisit.`
+            : program.description}
+        </Text>
+
+        <View className="mt-4 relative z-10">
+          <View className="flex-row justify-between items-baseline mb-2">
+            <Text className="text-white tracking-[-0.4px]" style={AppTypography.displayMetric}>
+              {isCompletedTimeline ? totalDays : Math.min(unlockedThroughDay, program.totalDays)}{' '}
+              <Text className="tracking-normal" style={[AppTypography.label, { color: 'rgba(227, 243, 229, 0.55)' }]}>
+                of {totalDays} days
+              </Text>
+            </Text>
+            <Text style={[AppTypography.metaMedium, { letterSpacing: 0.3, color: 'rgba(227, 243, 229, 0.60)' }]}>
+              {progressPercent}% complete
+            </Text>
+          </View>
+
+          <View className="h-[3px] w-full bg-sage/[0.18] rounded-full overflow-hidden">
+            <View
+              className="h-full bg-sage rounded-full"
+              style={{ width: `${progressPercent}%`, backgroundColor: isCompletedTimeline ? 'rgba(93,207,122,0.7)' : '#E3F3E5' }}
+            />
+          </View>
+
+          {nextUnlockLabel && !isCompletedTimeline ? (
+            <Text className="mt-[6px]" style={[AppTypography.meta, { letterSpacing: 0.2, color: 'rgba(227, 243, 229, 0.40)' }]}>
+              {nextUnlockLabel}
+            </Text>
+          ) : null}
+
+          {(canPauseJourney || isPausedJourney) && access.ownedProgram === activeProgram ? (
+            <Pressable
+              onPress={isPausedJourney ? handleResumeJourney : handlePauseJourney}
+              disabled={isManualPausePending}
+              accessibilityRole="button"
+              accessibilityLabel={isManualPausePending ? 'Pausing journey' : isPausedJourney ? 'Resume journey' : 'Pause journey'}
+              className="self-start mt-3 rounded-full border border-sage/18 bg-white/8 px-4 py-2"
+              style={{ opacity: isManualPausePending ? 0.62 : 1 }}
+            >
+              <Text className="text-sage" style={AppTypography.metaMedium}>
+                {isManualPausePending ? 'Pausing...' : isPausedJourney ? 'Resume journey' : 'Pause journey'}
+              </Text>
+            </Pressable>
+          ) : null}
+          {showAutomaticPauseNotice && isPausedJourney ? (
+            <Text className="mt-2" style={[AppTypography.meta, { color: 'rgba(227, 243, 229, 0.45)' }]}>
+              Paused automatically after missed days. Resume when you are ready.
+            </Text>
+          ) : null}
+        </View>
+      </View>
+
+      <View className="flex-1 -mt-7 bg-surface rounded-t-[28px] relative z-20 overflow-hidden">
+        <ScrollView
+          ref={scrollRef}
+          className="flex-1"
+          contentContainerClassName="pt-6 pb-[170px]"
+          onScroll={handleScroll}
+          scrollEventThrottle={16}
+          showsVerticalScrollIndicator={false}
         >
           <PaperGrain />
-          <View onLayout={(e) => { daysContainerY.current = e.nativeEvent.layout.y; }}>
-            
-          {isArchivedReset && isCompletedTimeline ? (
+          <View onLayout={handleDaysContainerLayout}>
+            {isArchivedReset && isCompletedTimeline ? (
               <View className="mx-5 mb-4 bg-white rounded-[20px] px-[18px] py-4 shadow-sm shadow-forest/5" style={{ shadowColor: '#06290C', shadowOpacity: 0.06, shadowRadius: 24, shadowOffset: { width: 0, height: 8 }, borderLeftWidth: 3, borderLeftColor: '#06290C' }}>
                 <Text className="uppercase text-forest/40" style={[AppTypography.eyebrow, { letterSpacing: 1.4 }]}>
                   {`What's Next`}
@@ -667,12 +607,7 @@ function ProgramScreenContent({
               {isCompletedTimeline ? `All ${totalDays} Days · Revisit Anytime` : 'Day Timeline'}
             </Text>
 
-            <View
-              className="px-5"
-              onLayout={(event) => {
-                timelineListY.current = event.nativeEvent.layout.y;
-              }}
-            >
+            <View className="px-5" onLayout={handleTimelineListLayout}>
               {program.days.length === 0 ? (
                 <View className="rounded-3xl border border-dashed border-gray-300 bg-white px-5 py-6 mt-4 mx-1">
                   <Text className="font-satoshi text-center text-gray-500">
@@ -728,13 +663,7 @@ function ProgramScreenContent({
                             : buildDayDetailRoute({ programSlug: activeProgram, dayNumber: day.dayNumber })
                         )
                       }
-                      onLayout={isCurrent ? (event) => {
-                        currentDayRelativeY.current = event.nativeEvent.layout.y;
-                        currentDayHeight.current = event.nativeEvent.layout.height;
-                        requestAnimationFrame(() => {
-                          tryAutoScrollToCurrentDay();
-                        });
-                      } : undefined}
+                      onLayout={isCurrent ? handleCurrentDayLayout : undefined}
                     />
                   );
 
@@ -747,8 +676,8 @@ function ProgramScreenContent({
               )}
             </View>
           </View>
-        </View>
-      </ScrollView>
+        </ScrollView>
+      </View>
     </View>
   );
 }
