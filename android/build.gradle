@@ -1,0 +1,35 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+
+buildscript {
+  repositories {
+    google()
+    mavenCentral()
+  }
+  dependencies {
+    classpath('com.android.tools.build:gradle')
+    classpath('com.google.gms:google-services:4.4.1')
+    classpath('com.facebook.react:react-native-gradle-plugin')
+    classpath('org.jetbrains.kotlin:kotlin-gradle-plugin')
+  }
+}
+
+allprojects {
+  repositories {
+    google()
+    mavenCentral()
+    maven { url 'https://www.jitpack.io' }
+  }
+}
+
+subprojects { subproject ->
+  if (subproject.name == "react-native-screens") {
+    subproject.plugins.withId("com.android.library") {
+      // RN Screens' new-architecture CMake target links fbjni directly.
+      // Keep this aligned with React Native 0.81's fbjni version.
+      subproject.dependencies.add("implementation", "com.facebook.fbjni:fbjni:0.7.0")
+    }
+  }
+}
+
+apply plugin: "expo-root-project"
+apply plugin: "com.facebook.react.rootproject"

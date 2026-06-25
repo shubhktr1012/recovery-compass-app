@@ -82,8 +82,5 @@ docs/claude-files-temporary/
 
 app-example
 
-# generated native folders
-/android
-
 # Graphify lives at workspace root (recovery-compass/graphify-out/), not in this repo
 graphify-out/
