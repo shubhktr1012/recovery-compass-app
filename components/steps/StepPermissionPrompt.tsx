@@ -1,4 +1,3 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useMemo, useState } from 'react';
 import {
@@ -13,20 +12,18 @@ import {
 } from 'react-native';
 
 import { AppColors } from '@/constants/theme';
+import {
+  markStepPermissionPromptDismissed,
+  readStepPermissionPromptDismissed,
+} from '@/lib/step-permission-prompt';
 import type { DailyStepSummary } from '@/lib/steps';
 import { useAuth } from '@/providers/auth';
-
-const PROMPT_DISMISSED_KEY_PREFIX = 'rc_step_permission_prompt_dismissed';
 
 interface StepPermissionPromptProps {
   enableStepTracking: () => Promise<DailyStepSummary>;
   isEnabling: boolean;
   isLoading: boolean;
   summary: DailyStepSummary | null;
-}
-
-function getDismissedKey(userId: string) {
-  return `${PROMPT_DISMISSED_KEY_PREFIX}:${userId}`;
 }
 
 export function StepPermissionPrompt({
@@ -53,9 +50,9 @@ export function StepPermissionPrompt({
       }
 
       try {
-        const value = await AsyncStorage.getItem(getDismissedKey(userId));
+        const hasDismissed = await readStepPermissionPromptDismissed(userId);
         if (isMounted) {
-          setDismissed(value === '1');
+          setDismissed(hasDismissed);
           setIsReady(true);
         }
       } catch {
@@ -88,7 +85,7 @@ export function StepPermissionPrompt({
 
   const dismiss = async () => {
     if (userId) {
-      await AsyncStorage.setItem(getDismissedKey(userId), '1');
+      await markStepPermissionPromptDismissed(userId);
     }
     setDismissed(true);
   };
