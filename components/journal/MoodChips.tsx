@@ -47,7 +47,7 @@ export function MoodChips({ value, onChange }: MoodChipsProps) {
           fontSize: 10,
           letterSpacing: 1.2,
           textTransform: 'uppercase',
-          color: 'rgba(6,41,12,0.45)',
+          color: 'rgba(26, 46, 31, 0.45)',
           marginBottom: 8,
         }}
       >
@@ -106,9 +106,9 @@ function MoodChip({
             paddingHorizontal: 14,
             paddingVertical: 6,
             borderRadius: 999,
-            backgroundColor: isSelected ? AppColors.sage : AppColors.surface,
+            backgroundColor: isSelected ? AppColors.forest : AppColors.canvas,
             borderWidth: 1,
-            borderColor: isSelected ? 'rgba(6,41,12,0.12)' : AppColors.hairline,
+            borderColor: isSelected ? AppColors.forest : AppColors.hairline,
           },
         ]}
       >
@@ -116,7 +116,7 @@ function MoodChip({
           style={{
             fontFamily: 'Satoshi-Medium',
             fontSize: 12,
-            color: isSelected ? AppColors.forest : 'rgba(6,41,12,0.62)',
+            color: isSelected ? AppColors.white : AppColors.inkMuted,
             letterSpacing: 0.2,
           }}
         >

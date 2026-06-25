@@ -2,19 +2,22 @@ import React from 'react';
 import { Text, View } from 'react-native';
 import Svg, { Path, Circle, Polyline, Polygon, Rect } from 'react-native-svg';
 import { PressableScale } from '@/components/motion/PressableScale';
+import { AppColors, AppRadii, AppShadows } from '@/constants/theme';
 import { AppTypography } from '@/constants/typography';
 import { MotionScale } from '@/lib/motion/tokens';
 
-// ─── Brand tokens ───────────────────────────────────────────────────────────
 const F = {
-  forest: '#06290C',
-  sage: '#E3F3E5',
-  sageSoft: '#E3F2E5',
+  forest: AppColors.forest,
+  sage: AppColors.sage,
+  sageSoft: AppColors.sageSoft,
   cream: '#FFF7E6',
   amber: '#9A5B13',
   amberSoft: '#F7E2B5',
-  surface: '#F5F5F7',
-  canvas: '#FFFFFF',
+  surface: AppColors.paper,
+  canvas: AppColors.canvas,
+  inkMuted: AppColors.inkMuted,
+  inkSubtle: AppColors.inkSubtle,
+  hairline: AppColors.hairline,
 };
 
 // ─── SVG helpers ─────────────────────────────────────────────────────────────
@@ -125,17 +128,12 @@ function CurrentDayCard({ day, isPartial, isReturningUser, onPress }: {
       <View
         style={{
           backgroundColor: F.canvas,
-          borderRadius: 20,
+          borderRadius: AppRadii.md + 4,
           overflow: 'hidden',
-          // premium soft tactile shadow and border
           borderWidth: 1,
-          borderColor: 'rgba(6, 41, 12, 0.04)',
-          shadowColor: '#06290C',
-          shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.07,
-          shadowRadius: 16,
-          elevation: 4,
+          borderColor: F.hairline,
           marginBottom: 0,
+          ...AppShadows.neutral,
         }}
       >
         {/* Dark forest header */}
@@ -197,7 +195,7 @@ function CurrentDayCard({ day, isPartial, isReturningUser, onPress }: {
           <Text
             style={{
               ...AppTypography.bodyCompact,
-              color: 'rgba(6,41,12,0.62)',
+              color: F.inkMuted,
               marginBottom: 12,
             }}
           >
@@ -209,7 +207,7 @@ function CurrentDayCard({ day, isPartial, isReturningUser, onPress }: {
             {/* Duration */}
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
               <ClockSvg />
-              <Text style={{ fontFamily: 'Satoshi-Regular', fontSize: 11, color: 'rgba(6,41,12,0.45)' }}>
+              <Text style={{ fontFamily: 'Satoshi-Regular', fontSize: 11, color: F.inkSubtle }}>
                 {day.durationMinutes} min session
               </Text>
             </View>
@@ -410,19 +408,15 @@ function AvailableDayCard({ day, onPress }: { day: ProgramCardDay; onPress?: () 
       <View
         style={{
           backgroundColor: F.canvas,
-          borderRadius: 18,
+          borderRadius: AppRadii.md + 2,
           borderWidth: 1,
-          borderColor: 'rgba(6, 41, 12, 0.05)',
+          borderColor: F.hairline,
           paddingHorizontal: 16,
           paddingVertical: 12,
           flexDirection: 'row',
           alignItems: 'center',
           gap: 12,
-          shadowColor: '#06290C',
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.03,
-          shadowRadius: 8,
-          elevation: 1,
+          ...AppShadows.soft,
         }}
       >
         <View

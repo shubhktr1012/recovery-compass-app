@@ -7,8 +7,12 @@ module.exports = {
       colors: {
         forest: "#06290C",
         sage: "#E3F3E5",
-        sageSoft: "#E3F2E5",
-        surface: "#F5F5F7",
+        sageSoft: "#EEF6EF",
+        paper: "#FAFAFA",
+        canvas: "#FFFFFF",
+        surface: "#FAFAFA",
+        stone: "#F5F5F4",
+        ink: "#1A2E1F",
         success: "#056936",
         danger: "#EF4444",
         background: "oklch(1 0 0)", // White

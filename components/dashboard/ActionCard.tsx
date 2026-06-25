@@ -2,6 +2,7 @@ import { View, Text } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Svg, Path, Circle, Polygon } from 'react-native-svg';
 import { PressableScale } from '@/components/motion/PressableScale';
+import { AppRadii, AppShadows } from '@/constants/theme';
 import { AppTypography } from '@/constants/typography';
 import { buildDayDetailRoute } from '@/lib/navigation/routes';
 import { MotionScale } from '@/lib/motion/tokens';
@@ -45,8 +46,12 @@ export function ActionCard({
       onPress={isLocked ? undefined : handlePress}
       disabled={isLocked}
       pressScale={MotionScale.pressLarge}
-      className="bg-white rounded-3xl overflow-hidden shadow-sm shadow-forest/5"
-      style={isLocked ? { opacity: 0.88 } : undefined}
+      className="bg-white overflow-hidden"
+      style={{
+        borderRadius: AppRadii.lg,
+        ...(isLocked ? { opacity: 0.88 } : {}),
+        ...AppShadows.neutral,
+      }}
     >
       <View className="bg-forest px-5 pt-5 pb-4 relative overflow-hidden">
         <Svg 
@@ -63,11 +68,14 @@ export function ActionCard({
         <Text className="text-sage/70 uppercase mb-1.5 relative z-10" style={[AppTypography.metaMedium, { letterSpacing: 1.44 }]}>
           Today&apos;s Session
         </Text>
-        <Text className="text-white tracking-[-0.01em] relative z-10" style={AppTypography.displayMetric}>
+        <Text
+          className="text-white tracking-[-0.01em] relative z-10 pr-14"
+          style={[AppTypography.displayMetric, { lineHeight: 28 }]}
+        >
           {dayTitle}
         </Text>
         <Text
-          className="text-white/60 mt-1.5 relative z-10"
+          className="text-white/60 mt-1.5 relative z-10 pr-12"
           style={AppTypography.body}
         >
           {dayPreview}
@@ -93,7 +101,7 @@ export function ActionCard({
                 {`${estimatedMinutes} min session`}
               </Text>
             </View>
-            <View className="flex-row items-center gap-2 rounded-full px-4 py-2.5 bg-forest shadow-sm shadow-forest/20">
+            <View className="flex-row items-center gap-2 rounded-full px-4 py-2.5 bg-forest" style={AppShadows.cta}>
               <Svg width="11" height="11" viewBox="0 0 24 24" fill="#fff" stroke="none">
                 <Polygon points="5,3 19,12 5,21" />
               </Svg>

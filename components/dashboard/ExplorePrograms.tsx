@@ -6,6 +6,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import type { ProgramContent } from '@/types/content';
 import { SkeletonCircle, SkeletonLine, SkeletonTitle } from '@/components/ui/Skeleton';
 import { AppTypography } from '@/constants/typography';
+import { AppRadii, AppShadows } from '@/constants/theme';
 import { getAppWebHandoffUrl } from '@/lib/app-web-handoff';
 
 const DIET_PLAN_WEBSITE_PATH = '/diet-plan';
@@ -281,6 +282,8 @@ export function ExplorePrograms({
     });
   };
 
+  const programCardStyle = { borderRadius: AppRadii.md + 4, ...AppShadows.soft };
+
   return (
     <View className="mt-2">
       <View className="px-0.5 mb-3">
@@ -292,7 +295,8 @@ export function ExplorePrograms({
           {[0, 1].map((index) => (
             <View
               key={index}
-              className={`bg-white rounded-[20px] p-4 shadow-sm shadow-forest/5 flex-row gap-3.5 items-start ${index === 0 ? 'mb-2.5' : ''}`}
+              className={`bg-white p-4 flex-row gap-3.5 items-start ${index === 0 ? 'mb-2.5' : ''}`}
+              style={programCardStyle}
             >
               <SkeletonCircle className="bg-forest/10" />
               <View className="flex-1 pt-1">
@@ -308,7 +312,7 @@ export function ExplorePrograms({
           ))}
         </>
       ) : programs.length === 0 ? (
-        <View className="bg-white rounded-[20px] p-4 shadow-sm shadow-forest/5">
+        <View className="bg-white p-4" style={programCardStyle}>
           <Text
             className="text-forest/55"
             style={AppTypography.body}
@@ -321,9 +325,10 @@ export function ExplorePrograms({
           <Pressable
             key={program.slug}
             onPress={() => handleProgramPress(program.slug)}
-            className={`bg-white rounded-[20px] p-4 shadow-sm shadow-forest/5 flex-row gap-3.5 items-start ${index < programs.length - 1 ? 'mb-2.5' : ''}`}
+            className={`bg-white p-4 flex-row gap-3.5 items-start ${index < programs.length - 1 ? 'mb-2.5' : ''}`}
+            style={programCardStyle}
           >
-            <View className="w-[44px] h-[44px] rounded-2xl bg-[#E3F2E5] items-center justify-center shrink-0">
+            <View className="w-[44px] h-[44px] rounded-2xl bg-sageSoft items-center justify-center shrink-0">
               <ProgramIcon category={program.category} />
             </View>
             <View className="flex-1">

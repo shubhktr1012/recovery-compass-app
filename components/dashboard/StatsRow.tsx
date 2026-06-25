@@ -11,6 +11,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { Skeleton } from '@/components/ui/Skeleton';
+import { AppColors, AppRadii, AppShadows } from '@/constants/theme';
 import { AppTypography } from '@/constants/typography';
 import type { DashboardStatItem } from '@/lib/dashboard-statistics';
 
@@ -96,14 +97,11 @@ export function StatsRow({ items }: StatsRowProps) {
         return (
           <View
             key={item.id}
-            className="flex-1 rounded-[20px] overflow-hidden"
+            className="flex-1 overflow-hidden"
             style={{
-              backgroundColor: isFirst ? '#06290C' : '#FFFFFF',
-              shadowColor: isFirst ? '#06290C' : '#06290C',
-              shadowOffset: { width: 0, height: isFirst ? 6 : 2 },
-              shadowOpacity: isFirst ? 0.22 : 0.06,
-              shadowRadius: isFirst ? 14 : 8,
-              elevation: isFirst ? 8 : 3,
+              borderRadius: AppRadii.md + 4,
+              backgroundColor: isFirst ? AppColors.forest : AppColors.canvas,
+              ...(isFirst ? AppShadows.cta : AppShadows.soft),
             }}
           >
             <View className="p-3.5 pt-3 flex-col">
@@ -116,7 +114,7 @@ export function StatsRow({ items }: StatsRowProps) {
                     height: 28,
                     backgroundColor: isFirst
                       ? 'rgba(227,243,229,0.15)'
-                      : '#E3F2E5',
+                      : AppColors.sageSoft,
                   }}
                 >
                   <Svg
