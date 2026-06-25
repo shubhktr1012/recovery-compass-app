@@ -1,6 +1,7 @@
 import Expo
 import React
 import ReactAppDependencyProvider
+import UIKit
 
 @UIApplicationMain
 public class AppDelegate: ExpoAppDelegate {
@@ -23,11 +24,32 @@ public class AppDelegate: ExpoAppDelegate {
 
 #if os(iOS) || os(tvOS)
     window = UIWindow(frame: UIScreen.main.bounds)
+    PrivacyProtectionController.shared.configure(window: window)
     factory.startReactNative(
       withModuleName: "main",
       in: window,
       launchOptions: launchOptions)
 #endif
+    NotificationCenter.default.addObserver(
+      self,
+      selector: #selector(handleScreenCaptureStateChanged),
+      name: UIScreen.capturedDidChangeNotification,
+      object: nil
+    )
+    NotificationCenter.default.addObserver(
+      self,
+      selector: #selector(handleApplicationWillResignActive),
+      name: UIApplication.willResignActiveNotification,
+      object: nil
+    )
+    NotificationCenter.default.addObserver(
+      self,
+      selector: #selector(handleApplicationDidBecomeActive),
+      name: UIApplication.didBecomeActiveNotification,
+      object: nil
+    )
+
+    PrivacyProtectionController.shared.handleScreenCaptureStateChanged()
 
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
@@ -49,6 +71,111 @@ public class AppDelegate: ExpoAppDelegate {
   ) -> Bool {
     let result = RCTLinkingManager.application(application, continue: userActivity, restorationHandler: restorationHandler)
     return super.application(application, continue: userActivity, restorationHandler: restorationHandler) || result
+  }
+
+  @objc private func handleScreenCaptureStateChanged() {
+    PrivacyProtectionController.shared.handleScreenCaptureStateChanged()
+  }
+
+  @objc private func handleApplicationWillResignActive() {
+    PrivacyProtectionController.shared.handleApplicationWillResignActive()
+  }
+
+  @objc private func handleApplicationDidBecomeActive() {
+    PrivacyProtectionController.shared.handleApplicationDidBecomeActive()
+  }
+}
+
+private final class PrivacyProtectionController {
+  static let shared = PrivacyProtectionController()
+
+  private weak var window: UIWindow?
+  private var isEnabled = false
+  private var privacyOverlayView: UIView?
+
+  func configure(window: UIWindow?) {
+    self.window = window
+    updateScreenCapturePrivacyOverlay()
+  }
+
+  func setEnabled(_ enabled: Bool) {
+    isEnabled = enabled
+    updateScreenCapturePrivacyOverlay()
+  }
+
+  func handleScreenCaptureStateChanged() {
+    updateScreenCapturePrivacyOverlay()
+  }
+
+  func handleApplicationWillResignActive() {
+    guard isEnabled else { return }
+    showPrivacyOverlay(reason: "Recovery Compass is private")
+  }
+
+  func handleApplicationDidBecomeActive() {
+    updateScreenCapturePrivacyOverlay()
+  }
+
+  private func updateScreenCapturePrivacyOverlay() {
+    guard isEnabled else {
+      hidePrivacyOverlay()
+      return
+    }
+
+    if UIScreen.main.isCaptured {
+      showPrivacyOverlay(reason: "Privacy Protected")
+    } else {
+      hidePrivacyOverlay()
+    }
+  }
+
+  private func showPrivacyOverlay(reason: String) {
+    guard let window else { return }
+
+    if privacyOverlayView?.superview === window {
+      privacyOverlayView?.subviews.compactMap { $0 as? UILabel }.first?.text = reason
+      return
+    }
+
+    let overlay = UIView(frame: window.bounds)
+    overlay.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+    overlay.backgroundColor = UIColor(red: 0.02, green: 0.16, blue: 0.05, alpha: 1.0)
+
+    let label = UILabel()
+    label.translatesAutoresizingMaskIntoConstraints = false
+    label.text = reason
+    label.textColor = UIColor.white.withAlphaComponent(0.82)
+    label.font = UIFont.systemFont(ofSize: 15, weight: .semibold)
+    label.textAlignment = .center
+
+    overlay.addSubview(label)
+    NSLayoutConstraint.activate([
+      label.centerXAnchor.constraint(equalTo: overlay.centerXAnchor),
+      label.centerYAnchor.constraint(equalTo: overlay.centerYAnchor)
+    ])
+
+    window.addSubview(overlay)
+    privacyOverlayView = overlay
+  }
+
+  private func hidePrivacyOverlay() {
+    privacyOverlayView?.removeFromSuperview()
+    privacyOverlayView = nil
+  }
+}
+
+@objc(PrivacyProtection)
+class PrivacyProtection: NSObject {
+  @objc
+  static func requiresMainQueueSetup() -> Bool {
+    true
+  }
+
+  @objc(setEnabled:)
+  func setEnabled(_ enabled: Bool) {
+    DispatchQueue.main.async {
+      PrivacyProtectionController.shared.setEnabled(enabled)
+    }
   }
 }
 

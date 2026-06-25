@@ -267,11 +267,11 @@ struct SmallWidgetView: View {
 
     private var progressFraction: Double {
         guard data.totalDays > 0 else { return 0 }
-        return Double(data.currentDay) / Double(data.totalDays)
+        return Double(data.safeProgressDayCount) / Double(data.totalDays)
     }
 
     var body: some View {
-        Link(destination: data.isEmpty ? WidgetData.homeURL : (data.isDayCompleted ? data.journalURL : data.resumeURL)) {
+        Link(destination: data.isEmpty || data.sessionLocked ? WidgetData.homeURL : (data.isDayCompleted ? data.journalURL : data.resumeURL)) {
             VStack(alignment: .leading, spacing: 0) {
                 if data.isEmpty {
                     // ── Empty / not logged in ────────────────────────
@@ -290,6 +290,25 @@ struct SmallWidgetView: View {
                     Image(systemName: "arrow.right")
                         .font(.system(size: 11, weight: .semibold))
                         .foregroundColor(subtleText)
+
+                } else if data.sessionLocked {
+                    HStack(spacing: 5) {
+                        CompassMark(color: subtleText, size: 13)
+                        Text("Recovery Compass")
+                            .font(RCFont.satoshi(11, weight: .semibold))
+                            .foregroundColor(subtleText)
+                    }
+                    Spacer()
+                    Text("Day \(data.currentDay)")
+                        .font(RCFont.erode(28, weight: .bold))
+                        .foregroundColor(primaryText)
+                        .padding(.top, 1)
+                    Text(data.availabilityLabel ?? "Check back soon")
+                        .font(RCFont.satoshi(11, weight: .medium))
+                        .foregroundColor(subtleText)
+                        .lineLimit(1)
+                        .padding(.top, 2)
+                    Spacer()
 
                 } else if data.isDayCompleted {
                     // ── Day completed ────────────────────────────────
@@ -395,7 +414,7 @@ struct MediumWidgetView: View {
 
     private var progressFraction: Double {
         guard data.totalDays > 0 else { return 0 }
-        return Double(data.currentDay) / Double(data.totalDays)
+        return Double(data.safeProgressDayCount) / Double(data.totalDays)
     }
 
     var body: some View {
@@ -431,6 +450,51 @@ struct MediumWidgetView: View {
                     .background(pillBg)
                     .clipShape(RoundedRectangle(cornerRadius: 999))
                 }
+
+            } else if data.sessionLocked {
+                HStack(spacing: 5) {
+                    CompassMark(color: subtleText, size: 13)
+                    Text("Recovery Compass")
+                        .font(RCFont.satoshi(11, weight: .semibold))
+                        .foregroundColor(subtleText)
+                    Spacer()
+                    Text("Day \(data.currentDay) of \(data.totalDays)")
+                        .font(RCFont.satoshi(11, weight: .semibold))
+                        .foregroundColor(subtleText)
+                        .monospacedDigit()
+                }
+
+                Spacer(minLength: 8)
+
+                HStack(alignment: .center) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Next session")
+                            .font(RCFont.satoshi(11, weight: .semibold))
+                            .foregroundColor(subtleText)
+                        Text(data.availabilityLabel ?? "Check back soon")
+                            .font(RCFont.erode(16, weight: .semibold))
+                            .foregroundColor(primaryText)
+                            .lineLimit(2)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    Spacer()
+                    ProgressRing(pct: progressFraction, isDark: isDark, size: 52)
+                }
+
+                Spacer(minLength: 8)
+
+                GeometryReader { geo in
+                    ZStack(alignment: .leading) {
+                        RoundedRectangle(cornerRadius: 999)
+                            .fill(trackColor)
+                            .frame(height: 4)
+                        RoundedRectangle(cornerRadius: 999)
+                            .fill(fillColor)
+                            .frame(width: max(4, geo.size.width * progressFraction), height: 4)
+                    }
+                }
+                .frame(height: 4)
+                .padding(.bottom, 0)
 
             } else if data.isDayCompleted {
                 // ── Day completed ─────────────────────────────────
@@ -480,7 +544,7 @@ struct MediumWidgetView: View {
                             .frame(height: 4)
                         RoundedRectangle(cornerRadius: 999)
                             .fill(fillColor)
-                            .frame(width: geo.size.width, height: 4)
+                            .frame(width: max(4, geo.size.width * progressFraction), height: 4)
                     }
                 }
                 .frame(height: 4)
@@ -639,40 +703,49 @@ private struct RCWidgetBackground: View {
 
 private let darkSampleData = WidgetData(
     programSlug: "age_reversal",
-    programName: "Female Age Reversal",
+    programName: "Age Reversal Program",
     currentDay: 14,
     totalDays: 90,
     cardIndex: 2,
     totalCards: 8,
     streak: 7,
     steps: 4821,
+    progressDayCount: 13,
     isDayCompleted: false,
+    isSessionLocked: false,
+    availabilityLabel: nil,
     updatedAt: ISO8601DateFormatter().string(from: Date())
 )
 
 private let lightSampleData = WidgetData(
     programSlug: "ninety_day_transform",
-    programName: "90-Day Smoking Reset",
+    programName: "Smoking Reset",
     currentDay: 14,
     totalDays: 90,
     cardIndex: 2,
     totalCards: 8,
     streak: 7,
     steps: 4821,
+    progressDayCount: 13,
     isDayCompleted: false,
+    isSessionLocked: false,
+    availabilityLabel: nil,
     updatedAt: ISO8601DateFormatter().string(from: Date())
 )
 
 private let completedSampleData = WidgetData(
     programSlug: "age_reversal",
-    programName: "Female Age Reversal",
+    programName: "Age Reversal Program",
     currentDay: 14,
     totalDays: 90,
     cardIndex: 7,
     totalCards: 8,
     streak: 7,
     steps: 4821,
+    progressDayCount: 14,
     isDayCompleted: true,
+    isSessionLocked: false,
+    availabilityLabel: nil,
     updatedAt: ISO8601DateFormatter().string(from: Date())
 )
 

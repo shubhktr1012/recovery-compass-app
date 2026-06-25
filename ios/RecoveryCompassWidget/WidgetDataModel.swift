@@ -19,7 +19,10 @@ struct WidgetData: Codable {
     let totalCards: Int
     let streak: Int
     let steps: Int
+    let progressDayCount: Int?
     let isDayCompleted: Bool
+    let isSessionLocked: Bool?
+    let availabilityLabel: String?
     let updatedAt: String    // ISO8601 timestamp
 
     static let appGroupID = "group.com.recoverycompass.shared"
@@ -46,13 +49,29 @@ struct WidgetData: Codable {
             print("[WidgetDebug] WidgetData.load -> placeholder")
             return WidgetData.placeholder
         }
-        print("[WidgetDebug] WidgetData.load -> data programSlug=\(decoded.programSlug) currentDay=\(decoded.currentDay) completed=\(decoded.isDayCompleted) updatedAt=\(decoded.updatedAt)")
+        print("[WidgetDebug] WidgetData.load -> data programSlug=\(decoded.programSlug) currentDay=\(decoded.currentDay) progressDayCount=\(decoded.safeProgressDayCount) completed=\(decoded.isDayCompleted) updatedAt=\(decoded.updatedAt)")
         return decoded
     }
 
     /// True when no real session data has been synced from the app yet.
     var isEmpty: Bool {
         programName.isEmpty || programName == "Recovery Compass"
+    }
+
+    var sessionLocked: Bool {
+        isSessionLocked ?? false
+    }
+
+    var safeProgressDayCount: Int {
+        if let progressDayCount {
+            return min(max(progressDayCount, 0), max(totalDays, 0))
+        }
+
+        if isDayCompleted {
+            return min(max(currentDay, 0), max(totalDays, 0))
+        }
+
+        return min(max(currentDay - 1, 0), max(totalDays, 0))
     }
 
     static let placeholder = WidgetData(
@@ -64,7 +83,10 @@ struct WidgetData: Codable {
         totalCards: 0,
         streak: 0,
         steps: 0,
+        progressDayCount: 0,
         isDayCompleted: false,
+        isSessionLocked: false,
+        availabilityLabel: nil,
         updatedAt: ""
     )
 }
