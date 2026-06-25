@@ -7,6 +7,10 @@ vi.mock('react-native', () => ({
   Platform: { OS: 'ios' },
 }));
 
+vi.mock('@/lib/monitoring', () => ({
+  captureNotificationScheduleHealth: vi.fn(async () => undefined),
+}));
+
 vi.mock('expo-device', () => ({
   isDevice: true,
 }));

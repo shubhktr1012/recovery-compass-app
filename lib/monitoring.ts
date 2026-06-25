@@ -1,9 +1,12 @@
+import { Platform } from 'react-native';
+
 import { supabase } from '@/lib/supabase';
 
 type MonitoringSource =
   | 'audio'
   | 'error_boundary'
   | 'global_js'
+  | 'notifications'
   | 'paywall'
   | 'profile'
   | 'unknown';
@@ -12,6 +15,17 @@ interface ErrorContext {
   componentStack?: string | null;
   metadata?: Record<string, unknown> | null;
   source?: MonitoringSource;
+}
+
+export interface NotificationScheduleHealthSnapshot {
+  cancelledCount: number;
+  currentDay?: number | null;
+  moduleAvailable: boolean;
+  permissionStatus: string;
+  plannedCount: number;
+  programSlug?: string | null;
+  programState?: string | null;
+  scheduledCount: number;
 }
 
 function toSerializableMetadata(metadata?: Record<string, unknown> | null) {
@@ -25,6 +39,40 @@ function toSerializableMetadata(metadata?: Record<string, unknown> | null) {
     return {
       serialization_error: true,
     };
+  }
+}
+
+export async function captureNotificationScheduleHealth(
+  snapshot: NotificationScheduleHealthSnapshot
+) {
+  try {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return;
+    }
+
+    const { error: insertError } = await supabase.from('client_error_events').insert({
+      user_id: user.id,
+      source: 'notifications',
+      message: 'notification_schedule_health',
+      stack: null,
+      component_stack: null,
+      metadata: toSerializableMetadata({
+        ...snapshot,
+        platform: Platform.OS,
+        recordedAt: new Date().toISOString(),
+        scheduleGap: snapshot.plannedCount - snapshot.scheduledCount,
+      }),
+    });
+
+    if (insertError) {
+      throw insertError;
+    }
+  } catch (reportingError) {
+    console.warn('Failed to report notification schedule health', reportingError);
   }
 }
 

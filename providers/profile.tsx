@@ -21,6 +21,7 @@ import * as FileSystem from 'expo-file-system/legacy';
 import { buildWidgetPayload, syncWidgetData } from '@/lib/widget-bridge';
 import { validateDisplayNameInput } from '@/lib/profile-identity';
 import { rescheduleProgramNotificationsForAccess } from '@/lib/notification-runtime';
+import { hasOpenedAppToday, markAppOpenedToday } from '@/lib/notification-app-open';
 import { getCurrentNotificationPermissionStateAsync } from '@/lib/notification-permissions';
 import { isMissingAnyColumnError } from '@/lib/db-compat';
 import { registerExpoPushTokenWithServer } from '@/lib/push-token-registration';
@@ -75,6 +76,7 @@ export const PROFILE_QUERY_KEY = (userId: string | null) => ['profile', userId];
 const PROFILE_IMAGE_BUCKET = 'profile-images';
 const PROFILE_IMAGE_SIGNED_URL_TTL_SECONDS = 60 * 60 * 24 * 7;
 const DEFAULT_ELIGIBLE_PRODUCTS: ProgramSlug[] = ['smoking_alcohol_quit'];
+const NOTIFICATION_RESCHEDULE_DEBOUNCE_MS = 400;
 
 function isAbsoluteUrl(value: string) {
   return /^https?:\/\//i.test(value);
@@ -217,6 +219,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const userId = user?.id ?? null;
   const previousUserIdRef = useRef<string | null>(null);
   const lastRegisteredPushTokenRef = useRef<string | null>(null);
+  const notificationRescheduleGenerationRef = useRef(0);
   const profileQuery = useQuery({
     queryKey: PROFILE_QUERY_KEY(userId),
     queryFn: () => {
@@ -1058,37 +1061,59 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
   }, [pushError]);
 
   useEffect(() => {
-    if (!userId || profileQuery.isPending) {
+    if (!userId || profileQuery.isPending || isAccessLoading) {
       return;
     }
 
     let isCancelled = false;
 
-    void rescheduleProgramNotificationsForAccess({
-      access: {
-        ownedProgram: access.ownedProgram,
-        purchaseState: access.purchaseState,
-        completionState: access.completionState,
-        programState: access.programState,
-        currentDay: access.currentDay,
-        scheduledStartDate: access.scheduledStartDate,
-        pausedAt: access.pausedAt,
-        completedAt: access.completedAt,
-      },
-      openedToday: true,
-      profile: {
-        free_tier_activated_at: profileQuery.data?.free_tier_activated_at ?? null,
-        notifications_enabled: Boolean(profileQuery.data?.notifications_enabled) || notificationPermissionGranted,
-        push_opt_in: Boolean(profileQuery.data?.push_opt_in) || notificationPermissionGranted,
-      },
-      userId,
-    }).catch((error) => {
-      if (isCancelled) return;
-      console.warn('Failed to refresh program notification schedule', error);
-    });
+    const timeoutId = setTimeout(() => {
+      if (isCancelled) {
+        return;
+      }
+
+      const generation = ++notificationRescheduleGenerationRef.current;
+
+      void (async () => {
+        const openedToday = await hasOpenedAppToday();
+        if (isCancelled || generation !== notificationRescheduleGenerationRef.current) {
+          return;
+        }
+
+        await rescheduleProgramNotificationsForAccess({
+          access: {
+            ownedProgram: access.ownedProgram,
+            purchaseState: access.purchaseState,
+            completionState: access.completionState,
+            programState: access.programState,
+            currentDay: access.currentDay,
+            scheduledStartDate: access.scheduledStartDate,
+            pausedAt: access.pausedAt,
+            completedAt: access.completedAt,
+          },
+          openedToday,
+          profile: {
+            free_tier_activated_at: profileQuery.data?.free_tier_activated_at ?? null,
+            notifications_enabled: Boolean(profileQuery.data?.notifications_enabled) || notificationPermissionGranted,
+            push_opt_in: Boolean(profileQuery.data?.push_opt_in) || notificationPermissionGranted,
+          },
+          userId,
+        });
+
+        if (isCancelled || generation !== notificationRescheduleGenerationRef.current) {
+          return;
+        }
+
+        await markAppOpenedToday();
+      })().catch((error) => {
+        if (isCancelled) return;
+        console.warn('Failed to refresh program notification schedule', error);
+      });
+    }, NOTIFICATION_RESCHEDULE_DEBOUNCE_MS);
 
     return () => {
       isCancelled = true;
+      clearTimeout(timeoutId);
     };
   }, [
     access.completedAt,
@@ -1099,6 +1124,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     access.programState,
     access.purchaseState,
     access.scheduledStartDate,
+    isAccessLoading,
     notificationRefreshNonce,
     notificationPermissionGranted,
     profileQuery.data?.free_tier_activated_at,

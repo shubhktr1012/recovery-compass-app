@@ -11,7 +11,9 @@ import {
 } from '@/hooks/contentQueryUtils';
 import {
   buildProgramNotificationPlan,
+  type DayCompletionNotificationState,
   type NotificationPlanType,
+  type NotificationPlannerDay,
   type NotificationTemplateOverrides,
 } from '@/lib/notification-scheduler';
 import { NotificationService, type ScheduleProgramNotificationsResult } from '@/lib/notifications';
@@ -23,6 +25,8 @@ import {
   loadFreeDetoxProgress,
   type FreeProgramProgressRecord,
 } from '@/lib/free-program-progress';
+import { isSameLocalCalendarDay } from '@/lib/notification-app-open';
+import type { DayStateCardDetail } from '@/lib/day-states';
 import { getLatestConsecutiveSkippedDayCount } from '@/lib/programs/absence';
 import { getEffectiveScheduleDate } from '@/lib/programs/schedule';
 import type { ProgramAccessSnapshot } from '@/lib/programs/types';
@@ -52,6 +56,9 @@ type NotificationRuntimeAccess = Pick<
 type NotificationRuntimeDayState = {
   dayNumber: number;
   dayState: DayState;
+  cardsCompleted: number;
+  cardsTotal: number;
+  cardDetails: DayStateCardDetail[];
 };
 
 type NotificationTemplateRow = {
@@ -96,6 +103,13 @@ const EMPTY_RESULT: ScheduleProgramNotificationsResult = {
 };
 const ROLLING_NOTIFICATION_DAYS = 7;
 
+function buildNotificationScheduleOptions(now: Date, access?: NotificationRuntimeAccess) {
+  return {
+    now,
+    programState: access?.programState ?? null,
+  };
+}
+
 export async function rescheduleProgramNotificationsForAccess(
   args: RescheduleProgramNotificationsArgs
 ): Promise<ScheduleProgramNotificationsResult> {
@@ -106,7 +120,10 @@ export async function rescheduleProgramNotificationsForAccess(
   );
 
   if (!notificationsEnabled || !args.userId) {
-    return notificationService.scheduleProgramNotificationPlans([], { now });
+    return notificationService.scheduleProgramNotificationPlans(
+      [],
+      buildNotificationScheduleOptions(now, args.access)
+    );
   }
 
   if (isSchedulableAccess(args.access)) {
@@ -140,7 +157,10 @@ async function scheduleAccessNotifications(args: RescheduleProgramNotificationsA
   const dayNumber = args.access.currentDay;
 
   if (!programSlug || !dayNumber) {
-    return args.notificationService.scheduleProgramNotificationPlans([], { now: args.now });
+    return args.notificationService.scheduleProgramNotificationPlans(
+      [],
+      buildNotificationScheduleOptions(args.now, args.access)
+    );
   }
 
   try {
@@ -171,19 +191,37 @@ async function scheduleAccessNotifications(args: RescheduleProgramNotificationsA
           userId: args.userId,
         });
 
+        const isCurrentProgramDay = scheduleDay.dayNumber === dayNumber;
+        const dayStateRow = dayStates.find((row) => row.dayNumber === scheduleDay.dayNumber);
+        const dayCompletion =
+          isCurrentProgramDay && dayStateRow && dayStateRow.dayState !== 'skipped'
+            ? buildDayCompletionFromState(day, dayStateRow)
+            : null;
+        const completedCardIndexes =
+          isCurrentProgramDay && dayStateRow ? getCompletedCardIndexes(dayStateRow) : undefined;
+
         plans.push(
           ...buildProgramNotificationPlan({
             access: {
               ...args.access,
               currentDay: scheduleDay.dayNumber,
             },
-            consecutiveAbsentDays: scheduleDay.dayNumber === dayNumber ? consecutiveAbsentDays : null,
+            completedCardIndexes,
+            consecutiveAbsentDays: isCurrentProgramDay ? consecutiveAbsentDays : null,
             day,
+            dayCompletion,
             notificationsEnabled: args.notificationsEnabled,
             notificationTemplates,
             now: args.now,
-            openedToday: scheduleDay.dayNumber === dayNumber ? args.openedToday ?? true : true,
+            openedToday: resolveOpenedTodayForScheduleDay({
+              openedToday: args.openedToday,
+              isCurrentProgramDay,
+            }),
             programName: PROGRAM_METADATA[programSlug].name,
+            repeatTierOneDaily:
+              isCurrentProgramDay &&
+              isSameLocalCalendarDay(scheduleDay.scheduleDate, args.now) &&
+              (args.access.programState === 'active' || args.access.programState === 'scheduled'),
             scheduleDate: scheduleDay.scheduleDate,
           })
         );
@@ -202,7 +240,10 @@ async function scheduleAccessNotifications(args: RescheduleProgramNotificationsA
       return EMPTY_RESULT;
     }
 
-    return args.notificationService.scheduleProgramNotificationPlans(plans, { now: args.now });
+    return args.notificationService.scheduleProgramNotificationPlans(
+      plans,
+      buildNotificationScheduleOptions(args.now, args.access)
+    );
   } catch (error) {
     console.warn('Failed to reschedule program notifications', {
       error,
@@ -220,13 +261,27 @@ async function scheduleFreeDetoxNotifications(args: RescheduleProgramNotificatio
   userId: string;
 }): Promise<ScheduleProgramNotificationsResult> {
   if (!args.profile?.free_tier_activated_at) {
-    return args.notificationService.scheduleProgramNotificationPlans([], { now: args.now });
+    if (isAccessBootstrapPending(args.access)) {
+      return EMPTY_RESULT;
+    }
+
+    return args.notificationService.scheduleProgramNotificationPlans(
+      [],
+      buildNotificationScheduleOptions(args.now, args.access)
+    );
   }
 
   try {
     const hasPaidAccess = await (args.loadHasPaidProgramAccess ?? loadHasPaidProgramAccess)(args.userId);
     if (hasPaidAccess) {
-      return args.notificationService.scheduleProgramNotificationPlans([], { now: args.now });
+      if (isAccessBootstrapPending(args.access)) {
+        return EMPTY_RESULT;
+      }
+
+      return args.notificationService.scheduleProgramNotificationPlans(
+        [],
+        buildNotificationScheduleOptions(args.now, args.access)
+      );
     }
 
     const progress =
@@ -234,7 +289,10 @@ async function scheduleFreeDetoxNotifications(args: RescheduleProgramNotificatio
       createEmptyFreeDetoxProgress(args.userId);
 
     if (progress.completedAt || progress.completedDays.includes(FREE_DETOX_TOTAL_DAYS)) {
-      return args.notificationService.scheduleProgramNotificationPlans([], { now: args.now });
+      return args.notificationService.scheduleProgramNotificationPlans(
+        [],
+        buildNotificationScheduleOptions(args.now, args.access)
+      );
     }
 
     const currentDay = getNextFreeDetoxDay(progress);
@@ -304,7 +362,10 @@ async function scheduleFreeDetoxNotifications(args: RescheduleProgramNotificatio
       return EMPTY_RESULT;
     }
 
-    return args.notificationService.scheduleProgramNotificationPlans(plans, { now: args.now });
+    return args.notificationService.scheduleProgramNotificationPlans(
+      plans,
+      buildNotificationScheduleOptions(args.now, access)
+    );
   } catch (error) {
     console.warn('Failed to reschedule Free Detox notifications', {
       error,
@@ -517,6 +578,15 @@ function normalizeNotificationPlanType(value: string): NotificationPlanType | nu
   return validTypes.includes(value as NotificationPlanType) ? (value as NotificationPlanType) : null;
 }
 
+function isAccessBootstrapPending(access: NotificationRuntimeAccess) {
+  return (
+    !access.ownedProgram &&
+    access.purchaseState === 'not_owned' &&
+    access.completionState === 'not_started' &&
+    access.programState === 'not_owned'
+  );
+}
+
 function isSchedulableAccess(access: NotificationRuntimeAccess) {
   if (!access.ownedProgram || !access.currentDay) {
     return false;
@@ -602,7 +672,7 @@ async function loadNotificationDayStates(
 ): Promise<NotificationRuntimeDayState[]> {
   const { data, error } = await supabase
     .from('user_day_states')
-    .select('day_number, day_state')
+    .select('day_number, day_state, cards_completed, cards_total, card_details')
     .eq('user_id', userId)
     .eq('program_slug', programSlug)
     .order('day_number', { ascending: true });
@@ -611,10 +681,52 @@ async function loadNotificationDayStates(
     throw error;
   }
 
-  return ((data ?? []) as { day_number: number; day_state: string }[]).map((row) => ({
+  return ((data ?? []) as {
+    day_number: number;
+    day_state: string;
+    cards_completed: number;
+    cards_total: number;
+    card_details: unknown;
+  }[]).map((row) => ({
     dayNumber: row.day_number,
     dayState: row.day_state === 'completed' || row.day_state === 'partial' ? row.day_state : 'skipped',
+    cardsCompleted: row.cards_completed ?? 0,
+    cardsTotal: row.cards_total ?? 0,
+    cardDetails: parseNotificationCardDetails(row.card_details),
   }));
+}
+
+function parseNotificationCardDetails(value: unknown): DayStateCardDetail[] {
+  return Array.isArray(value) ? (value as DayStateCardDetail[]) : [];
+}
+
+function buildDayCompletionFromState(
+  day: NotificationPlannerDay,
+  dayStateRow: NotificationRuntimeDayState
+): DayCompletionNotificationState {
+  return {
+    dayState: dayStateRow.dayState,
+    completedCount: dayStateRow.cardsCompleted,
+    totalCount: dayStateRow.cardsTotal || day.cards.length,
+  };
+}
+
+function getCompletedCardIndexes(dayStateRow: NotificationRuntimeDayState) {
+  return dayStateRow.cardDetails
+    .filter((detail) => detail.outcome === 'completed')
+    .map((detail) => detail.card_index);
+}
+
+function resolveOpenedTodayForScheduleDay(args: {
+  openedToday?: boolean;
+  isCurrentProgramDay: boolean;
+}) {
+  if (!args.isCurrentProgramDay) {
+    // Rolling future program days only schedule tier-1 card reminders.
+    return true;
+  }
+
+  return args.openedToday ?? false;
 }
 
 async function loadHasPaidProgramAccess(userId: string) {

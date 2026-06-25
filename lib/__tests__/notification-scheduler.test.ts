@@ -266,6 +266,23 @@ describe('buildProgramNotificationPlan', () => {
     expect(plan[0].triggerAt).toEqual(new Date(2026, 4, 20, 9, 0));
   });
 
+  it('uses daily repeat for tier-1 reminders when repeatTierOneDaily is enabled', () => {
+    const plan = buildPlan({
+      now: new Date(2026, 4, 19, 15, 0),
+      repeatTierOneDaily: true,
+    });
+
+    const tierOne = plan.filter((notification) =>
+      ['morning_session_ready', 'afternoon_check_in', 'evening_routine'].includes(notification.type)
+    );
+
+    expect(tierOne.length).toBeGreaterThan(0);
+    expect(tierOne.every((notification) => notification.repeats === 'daily')).toBe(true);
+    expect(tierOne.find((notification) => notification.type === 'evening_routine')?.triggerAt).toEqual(
+      new Date(2026, 4, 19, 19, 0)
+    );
+  });
+
   it('keeps stable IDs and analytics-ready data payloads', () => {
     const [first] = buildPlan();
 

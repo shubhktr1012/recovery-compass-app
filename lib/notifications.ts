@@ -2,6 +2,7 @@ import { Platform } from 'react-native';
 import * as Device from 'expo-device';
 
 import type { NotificationPlan, NotificationPlanType, NotificationTier } from '@/lib/notification-scheduler';
+import { captureNotificationScheduleHealth } from '@/lib/monitoring';
 import type { ProgramSlug } from '@/types/content';
 import type { TimeSlot } from '@/types/resolver';
 
@@ -29,6 +30,7 @@ const PROGRAM_SLUGS: ProgramSlug[] = [
 interface NotificationServiceOptions {
   notificationsModule?: NotificationsModule | null;
   now?: Date;
+  programState?: string | null;
 }
 
 export interface ScheduleProgramNotificationsResult {
@@ -222,6 +224,28 @@ async function getPermissionStatusForQaLog(notificationsModule: NotificationsMod
   }
 }
 
+function reportNotificationScheduleHealth(args: {
+  cancelledCount: number;
+  moduleAvailable: boolean;
+  permissionStatus: string;
+  plans: NotificationPlan[];
+  programState?: string | null;
+  scheduledCount: number;
+}) {
+  const firstPlan = args.plans[0];
+
+  void captureNotificationScheduleHealth({
+    cancelledCount: args.cancelledCount,
+    currentDay: firstPlan?.data.dayNumber ?? null,
+    moduleAvailable: args.moduleAvailable,
+    permissionStatus: args.permissionStatus,
+    plannedCount: args.plans.length,
+    programSlug: firstPlan?.data.programSlug ?? null,
+    programState: args.programState ?? null,
+    scheduledCount: args.scheduledCount,
+  });
+}
+
 export const NotificationService = {
   async addProgramNotificationResponseListener(
     onTarget: (target: ProgramNotificationTarget) => void,
@@ -287,6 +311,15 @@ export const NotificationService = {
         });
       }
 
+      reportNotificationScheduleHealth({
+        cancelledCount: 0,
+        moduleAvailable: false,
+        permissionStatus: 'unavailable',
+        plans,
+        programState: options?.programState,
+        scheduledCount: 0,
+      });
+
       return {
         cancelledIds: [],
         scheduledIds: [],
@@ -336,6 +369,15 @@ export const NotificationService = {
         scheduledIds,
       });
     }
+
+    reportNotificationScheduleHealth({
+      cancelledCount: cancelledIds.length,
+      moduleAvailable: true,
+      permissionStatus,
+      plans,
+      programState: options?.programState,
+      scheduledCount: scheduledIds.length,
+    });
 
     return {
       cancelledIds,

@@ -88,6 +88,8 @@ export interface BuildProgramNotificationPlanArgs {
   dayCompletion?: DayCompletionNotificationState | null;
   consecutiveAbsentDays?: number | null;
   notificationTemplates?: NotificationTemplateOverrides;
+  /** When true, Tier 1 reminders repeat daily (survives reschedule after trigger time). */
+  repeatTierOneDaily?: boolean;
 }
 
 const MORNING_REMINDER_TIME = { hour: 6, minute: 30 };
@@ -216,8 +218,11 @@ function buildTierOneCardReminders(
       type: 'morning_session_ready',
       title: morningCopy.title,
       body: morningCopy.body,
-      triggerAt: getConfiguredTriggerDate(args, 'morning_session_ready', MORNING_REMINDER_TIME),
+      triggerAt: args.repeatTierOneDaily
+        ? getNextDailyTriggerDate(now, args.notificationTemplates?.morning_session_ready?.triggerTime ?? MORNING_REMINDER_TIME)
+        : getConfiguredTriggerDate(args, 'morning_session_ready', MORNING_REMINDER_TIME),
       timeSlot: 'morning',
+      repeats: args.repeatTierOneDaily ? 'daily' : undefined,
     })
   );
 
@@ -243,9 +248,12 @@ function buildTierOneCardReminders(
         type: 'afternoon_check_in',
         title: afternoonCopy.title,
         body: afternoonCopy.body,
-        triggerAt: getConfiguredTriggerDate(args, 'afternoon_check_in', AFTERNOON_REMINDER_TIME),
+        triggerAt: args.repeatTierOneDaily
+          ? getNextDailyTriggerDate(now, args.notificationTemplates?.afternoon_check_in?.triggerTime ?? AFTERNOON_REMINDER_TIME)
+          : getConfiguredTriggerDate(args, 'afternoon_check_in', AFTERNOON_REMINDER_TIME),
         cardIndex: afternoonCard.index,
         timeSlot: 'afternoon',
+        repeats: args.repeatTierOneDaily ? 'daily' : undefined,
       })
     );
   }
@@ -272,14 +280,17 @@ function buildTierOneCardReminders(
         type: 'evening_routine',
         title: eveningCopy.title,
         body: eveningCopy.body,
-        triggerAt: getConfiguredTriggerDate(args, 'evening_routine', EVENING_REMINDER_TIME),
+        triggerAt: args.repeatTierOneDaily
+          ? getNextDailyTriggerDate(now, args.notificationTemplates?.evening_routine?.triggerTime ?? EVENING_REMINDER_TIME)
+          : getConfiguredTriggerDate(args, 'evening_routine', EVENING_REMINDER_TIME),
         cardIndex: eveningCard.index,
         timeSlot: 'evening',
+        repeats: args.repeatTierOneDaily ? 'daily' : undefined,
       })
     );
   }
 
-  return plans.filter((plan) => isFutureNotification(plan, now)).slice(0, 3);
+  return plans.filter((plan) => plan.repeats === 'daily' || isFutureNotification(plan, now)).slice(0, 3);
 }
 
 function buildTierTwoMissedCardNudge(

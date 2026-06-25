@@ -8,6 +8,10 @@ vi.mock('react-native', () => ({
   Platform: { OS: 'ios' },
 }));
 
+vi.mock('@/lib/monitoring', () => ({
+  captureNotificationScheduleHealth: vi.fn(async () => undefined),
+}));
+
 vi.mock('expo-device', () => ({
   isDevice: true,
 }));
@@ -123,6 +127,7 @@ describe('rescheduleProgramNotificationsForAccess', () => {
       loadDayStates: vi.fn(async () => []),
       notificationService,
       now: new Date(2026, 4, 19, 5, 30),
+      openedToday: true,
       profile: { notifications_enabled: true },
       userId: 'user-1',
     });
@@ -144,7 +149,59 @@ describe('rescheduleProgramNotificationsForAccess', () => {
           type: 'morning_session_ready',
         }),
       ]),
-      { now: new Date(2026, 4, 19, 5, 30) }
+      expect.objectContaining({ now: new Date(2026, 4, 19, 5, 30), programState: 'active' })
+    );
+  });
+
+  it('marks the current program day tier-1 reminders as daily repeats', async () => {
+    const notificationService = createNotificationService();
+
+    await rescheduleProgramNotificationsForAccess({
+      access: activeAccess,
+      loadDayContent: vi.fn(async (_programSlug: string, requestedDayNumber: number) =>
+        createDayContent(requestedDayNumber)
+      ),
+      loadDayStates: vi.fn(async () => []),
+      notificationService,
+      now: new Date(2026, 4, 19, 15, 0),
+      openedToday: true,
+      profile: { notifications_enabled: true },
+      userId: 'user-1',
+    });
+
+    const scheduledPlans = notificationService.scheduleProgramNotificationPlans.mock.calls[0]?.[0] ?? [];
+    const todayMorning = scheduledPlans.find(
+      (plan: { id: string }) => plan.id === 'program:energy_vitality:day:2:morning_session_ready'
+    );
+    const futureMorning = scheduledPlans.find(
+      (plan: { id: string }) => plan.id === 'program:energy_vitality:day:3:morning_session_ready'
+    );
+
+    expect(todayMorning?.repeats).toBe('daily');
+    expect(futureMorning?.repeats).toBeUndefined();
+  });
+
+  it('plans missed-morning catch-up when the app has not been opened today', async () => {
+    const notificationService = createNotificationService();
+
+    await rescheduleProgramNotificationsForAccess({
+      access: activeAccess,
+      loadDayContent: vi.fn(async () => createDayContent(2)),
+      loadDayStates: vi.fn(async () => []),
+      notificationService,
+      now: new Date(2026, 4, 19, 5, 30),
+      openedToday: false,
+      profile: { notifications_enabled: true },
+      userId: 'user-1',
+    });
+
+    expect(notificationService.scheduleProgramNotificationPlans).toHaveBeenCalledWith(
+      expect.arrayContaining([
+        expect.objectContaining({
+          type: 'missed_morning_catch_up',
+        }),
+      ]),
+      expect.objectContaining({ now: new Date(2026, 4, 19, 5, 30), programState: 'active' })
     );
   });
 
@@ -183,7 +240,7 @@ describe('rescheduleProgramNotificationsForAccess', () => {
           type: 'morning_session_ready',
         }),
       ]),
-      { now: new Date(2026, 4, 19, 5, 30) }
+      expect.objectContaining({ now: new Date(2026, 4, 19, 5, 30), programState: 'active' })
     );
   });
 
@@ -256,7 +313,7 @@ describe('rescheduleProgramNotificationsForAccess', () => {
     expect(loadDayContent).not.toHaveBeenCalled();
     expect(notificationService.scheduleProgramNotificationPlans).toHaveBeenCalledWith(
       [],
-      expect.objectContaining({ now: expect.any(Date) })
+      expect.objectContaining({ now: expect.any(Date), programState: 'active' })
     );
   });
 
@@ -316,7 +373,7 @@ describe('rescheduleProgramNotificationsForAccess', () => {
           type: 'morning_session_ready',
         }),
       ]),
-      { now: new Date(2026, 4, 19, 5, 30) }
+      expect.objectContaining({ now: new Date(2026, 4, 19, 5, 30), programState: 'active' })
     );
   });
 
@@ -383,8 +440,35 @@ describe('rescheduleProgramNotificationsForAccess', () => {
           title: 'Free Detox is ready',
         }),
       ]),
-      { now: new Date(2026, 4, 19, 5, 30) }
+      expect.objectContaining({ now: new Date(2026, 4, 19, 5, 30), programState: 'active' })
     );
+  });
+
+  it('preserves existing notifications while paid-program access is still bootstrapping', async () => {
+    const notificationService = createNotificationService();
+    const loadHasPaidProgramAccess = vi.fn(async () => true);
+
+    const result = await rescheduleProgramNotificationsForAccess({
+      access: {
+        ...activeAccess,
+        completedAt: null,
+        completionState: 'not_started',
+        currentDay: null,
+        ownedProgram: null,
+        programState: 'not_owned',
+        purchaseState: 'not_owned',
+      },
+      loadHasPaidProgramAccess,
+      notificationService,
+      profile: {
+        notifications_enabled: true,
+      },
+      userId: 'user-1',
+    });
+
+    expect(loadHasPaidProgramAccess).not.toHaveBeenCalled();
+    expect(notificationService.scheduleProgramNotificationPlans).not.toHaveBeenCalled();
+    expect(result).toEqual({ cancelledIds: [], scheduledIds: [] });
   });
 
   it('suppresses Free Detox reminders when the user owns any paid program', async () => {
@@ -398,11 +482,11 @@ describe('rescheduleProgramNotificationsForAccess', () => {
       access: {
         ...activeAccess,
         completedAt: null,
-        completionState: 'not_started',
+        completionState: 'completed',
         currentDay: null,
-        ownedProgram: null,
-        programState: 'not_owned',
-        purchaseState: 'not_owned',
+        ownedProgram: 'energy_vitality',
+        programState: 'completed',
+        purchaseState: 'owned_completed',
       },
       loadDayContent,
       loadHasPaidProgramAccess,
@@ -418,7 +502,7 @@ describe('rescheduleProgramNotificationsForAccess', () => {
     expect(loadDayContent).not.toHaveBeenCalled();
     expect(notificationService.scheduleProgramNotificationPlans).toHaveBeenCalledWith(
       [],
-      expect.objectContaining({ now: expect.any(Date) })
+      expect.objectContaining({ now: expect.any(Date), programState: 'completed' })
     );
   });
 
@@ -440,7 +524,7 @@ describe('rescheduleProgramNotificationsForAccess', () => {
 
     expect(notificationService.scheduleProgramNotificationPlans).toHaveBeenCalledWith(
       [],
-      expect.objectContaining({ now: expect.any(Date) })
+      expect.objectContaining({ now: expect.any(Date), programState: 'completed' })
     );
   });
 
