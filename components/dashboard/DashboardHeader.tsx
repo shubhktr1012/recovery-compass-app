@@ -72,7 +72,7 @@ export function DashboardHeader({
 
         <Text className="uppercase text-sage/60 relative z-10" style={[AppTypography.metaMedium, { letterSpacing: 1.44 }]}>{greetingLabel}</Text>
         <Text className="text-white tracking-[-0.02em] relative z-10 mt-0.5" style={AppTypography.displayWelcome}>
-          Welcome back, <Text className="font-erode-medium-italic">{firstName}.</Text>
+          Welcome back, {firstName}.
         </Text>
 
         <View className="relative z-10 mt-4 flex-row items-center">

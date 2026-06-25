@@ -434,10 +434,69 @@ function ProgramScreenContent({
   }, [progress?.updatedAt]);
 
   // Haptics & Scroll Tracking
+  const scrollRef = useRef<ScrollView>(null);
+  const surfaceSectionY = useRef<number>(0);
   const daysContainerY = useRef<number>(0);
+  const timelineListY = useRef<number>(0);
   const currentDayRelativeY = useRef<number | null>(null);
   const currentDayHeight = useRef<number | null>(null);
   const hasFiredHaptic = useRef<boolean>(false);
+  const hasAutoScrolledRef = useRef(false);
+  const TIMELINE_TOP_INSET = 20;
+
+  const getCurrentDayScrollY = useCallback(() => {
+    if (currentDayRelativeY.current === null) {
+      return null;
+    }
+
+    return Math.max(
+      0,
+      surfaceSectionY.current +
+        daysContainerY.current +
+        timelineListY.current +
+        currentDayRelativeY.current -
+        TIMELINE_TOP_INSET
+    );
+  }, []);
+
+  const scrollToCurrentDay = useCallback(
+    (animated = false) => {
+      const targetY = getCurrentDayScrollY();
+      if (targetY === null || activeDayNumber == null) {
+        return false;
+      }
+
+      scrollRef.current?.scrollTo({ animated, y: targetY });
+      return true;
+    },
+    [activeDayNumber, getCurrentDayScrollY]
+  );
+
+  const tryAutoScrollToCurrentDay = useCallback(() => {
+    if (hasAutoScrolledRef.current || activeDayNumber == null) {
+      return;
+    }
+
+    const didScroll = scrollToCurrentDay(false);
+    if (didScroll) {
+      hasAutoScrolledRef.current = true;
+    }
+  }, [activeDayNumber, scrollToCurrentDay]);
+
+  useEffect(() => {
+    hasAutoScrolledRef.current = false;
+    currentDayRelativeY.current = null;
+    currentDayHeight.current = null;
+  }, [activeDayNumber, activeProgram]);
+
+  useFocusEffect(
+    useCallback(() => {
+      hasAutoScrolledRef.current = false;
+      requestAnimationFrame(() => {
+        tryAutoScrollToCurrentDay();
+      });
+    }, [tryAutoScrollToCurrentDay])
+  );
 
   const handleScroll = useCallback((e: NativeSyntheticEvent<NativeScrollEvent>) => {
     if (currentDayRelativeY.current === null || currentDayHeight.current === null) return;
@@ -445,7 +504,11 @@ function ProgramScreenContent({
     const { contentOffset, layoutMeasurement } = e.nativeEvent;
     const scrollCenterY = contentOffset.y + (layoutMeasurement.height / 2);
     
-    const absoluteTop = daysContainerY.current + currentDayRelativeY.current;
+    const absoluteTop =
+      surfaceSectionY.current +
+      daysContainerY.current +
+      timelineListY.current +
+      currentDayRelativeY.current;
     
     const snapTop = absoluteTop + (currentDayHeight.current * 0.25);
     const snapBottom = absoluteTop + (currentDayHeight.current * 0.75);
@@ -480,15 +543,11 @@ function ProgramScreenContent({
     );
   }
 
-  // Determine split Program Name so the final "Program" word can be styled separately.
-  const nameParts = program.name.split(' ');
-  const namePrefix = nameParts.slice(0, -1).join(' ');
-  const nameItalic = nameParts[nameParts.length - 1];
-
   return (
     <View className="flex-1 bg-forest">
       <StatusBar style="light" />
-      <ScrollView 
+      <ScrollView
+        ref={scrollRef}
         contentContainerClassName="flex-grow"
         onScroll={handleScroll}
         scrollEventThrottle={16}
@@ -510,7 +569,7 @@ function ProgramScreenContent({
           </View>
           
           <Text className="tracking-[-0.6px] text-white relative z-10 pr-4" style={AppTypography.displayHeroTight}>
-            {namePrefix} <Text className="italic">{nameItalic}</Text>
+            {program.name}
           </Text>
           
           <Text
@@ -568,7 +627,12 @@ function ProgramScreenContent({
         </View>
 
         {/* CONTENT AREA OVERLAP */}
-        <View className="bg-surface rounded-t-[28px] -mt-7 pt-6 pb-[170px] relative z-20 flex-1">
+        <View
+          className="bg-surface rounded-t-[28px] -mt-7 pt-6 pb-[170px] relative z-20 flex-1"
+          onLayout={(event) => {
+            surfaceSectionY.current = event.nativeEvent.layout.y;
+          }}
+        >
           <PaperGrain />
           <View onLayout={(e) => { daysContainerY.current = e.nativeEvent.layout.y; }}>
             
@@ -603,7 +667,12 @@ function ProgramScreenContent({
               {isCompletedTimeline ? `All ${totalDays} Days · Revisit Anytime` : 'Day Timeline'}
             </Text>
 
-            <View className="px-5">
+            <View
+              className="px-5"
+              onLayout={(event) => {
+                timelineListY.current = event.nativeEvent.layout.y;
+              }}
+            >
               {program.days.length === 0 ? (
                 <View className="rounded-3xl border border-dashed border-gray-300 bg-white px-5 py-6 mt-4 mx-1">
                   <Text className="font-satoshi text-center text-gray-500">
@@ -659,9 +728,12 @@ function ProgramScreenContent({
                             : buildDayDetailRoute({ programSlug: activeProgram, dayNumber: day.dayNumber })
                         )
                       }
-                      onLayout={isCurrent ? (e: any) => {
-                        currentDayRelativeY.current = e.nativeEvent.layout.y;
-                        currentDayHeight.current = e.nativeEvent.layout.height;
+                      onLayout={isCurrent ? (event) => {
+                        currentDayRelativeY.current = event.nativeEvent.layout.y;
+                        currentDayHeight.current = event.nativeEvent.layout.height;
+                        requestAnimationFrame(() => {
+                          tryAutoScrollToCurrentDay();
+                        });
                       } : undefined}
                     />
                   );
