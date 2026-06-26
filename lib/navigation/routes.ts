@@ -5,7 +5,6 @@ import type { ProgramSlug } from '@/types/content';
 type PersonalizationRouteParams = {
   mode?: 'realign';
   program?: ProgramSlug;
-  resume?: 'review';
 };
 
 export const HOME_ROUTE = '/' as Href;

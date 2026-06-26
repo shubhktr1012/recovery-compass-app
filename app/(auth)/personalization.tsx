@@ -31,7 +31,6 @@ import { hasMeaningfulOnboardingDraft, loadOnboardingDraft, saveOnboardingDraft,
 import { buildRealignmentAnswers } from '@/lib/onboarding.realignment';
 import { getPostOnboardingRoute } from '@/lib/navigation/post-onboarding';
 import { PROGRAM_TAB_ROUTE } from '@/lib/navigation/routes';
-import { AppStorage } from '@/lib/storage';
 import { GENDER_OPTIONS } from '@/lib/onboarding.types';
 import type { GenderOption, GuidedIssueId, JourneyKey, OnboardingPath, OnboardingStep, QuestionDefinition } from '@/lib/onboarding.types';
 import { useAuth } from '@/providers/auth';
@@ -99,24 +98,17 @@ function getProgramSlugFromRouteParam(value: string | string[] | undefined): Pro
   return candidate in PROGRAM_METADATA ? (candidate as ProgramSlug) : null;
 }
 
-const PAYWALL_RETURN_STATE_VERSION = 'onboarding_paywall_return_v1';
-
-function getPaywallReturnStateKey(userId: string) {
-  return `onboarding:paywall-return:${userId}`;
-}
-
 // ─── Screen ─────────────────────────────────────────────────────────────────
 export default function Personalization() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const { access, profile, refreshAccess } = useProfile();
-  const params = useLocalSearchParams<{ mode?: string | string[]; program?: string | string[]; resume?: string | string[] }>();
+  const params = useLocalSearchParams<{ mode?: string | string[]; program?: string | string[] }>();
   const [stepIndex, setStepIndex] = useState(0);
   const [isDraftReady, setIsDraftReady] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [answers, setAnswers] = useState(createInitialOnboardingAnswers);
-  const resumeMode = Array.isArray(params.resume) ? params.resume[0] : params.resume;
   const mode = Array.isArray(params.mode) ? params.mode[0] : params.mode;
   const isRealignmentMode = mode === 'realign';
   const ownedProgram = access.ownedProgram as ProgramSlug | null;
@@ -208,42 +200,6 @@ export default function Personalization() {
           return;
         }
 
-        const shouldRestorePaywallReturn = resumeMode === 'review';
-
-        if (shouldRestorePaywallReturn) {
-          const rawReturnState = await AppStorage.getItem(getPaywallReturnStateKey(user.id));
-
-          if (rawReturnState) {
-            const returnState = JSON.parse(rawReturnState) as {
-              version?: string;
-              currentStepId?: string;
-              currentStepIndex?: number;
-              answers?: ReturnType<typeof createInitialOnboardingAnswers>;
-            };
-
-            if (
-              returnState.version === PAYWALL_RETURN_STATE_VERSION &&
-              returnState.answers
-            ) {
-              const restoredAnswers = {
-                ...createInitialOnboardingAnswers(),
-                ...returnState.answers,
-                questionValues: returnState.answers.questionValues ?? {},
-              };
-              const restoredSteps = buildOnboardingSteps(restoredAnswers);
-              const restoredIndex = restoredSteps.findIndex((step) => step.id === returnState.currentStepId);
-
-              setAnswers(restoredAnswers);
-              setStepIndex(
-                restoredIndex >= 0
-                  ? restoredIndex
-                  : Math.max(0, Math.min(returnState.currentStepIndex ?? restoredSteps.length - 1, restoredSteps.length - 1))
-              );
-              return;
-            }
-          }
-        }
-
         const draft = await loadOnboardingDraft(user.id);
         if (!isMounted) return;
 
@@ -278,7 +234,7 @@ export default function Personalization() {
     return () => {
       isMounted = false;
     };
-  }, [isRealignmentMode, profile?.questionnaire_answers, realignmentProgram, resumeMode, user]);
+  }, [isRealignmentMode, profile?.questionnaire_answers, realignmentProgram, user]);
 
   // ─── Auto-save draft ───────────────────────────────────────────────────
   useEffect(() => {
@@ -484,20 +440,6 @@ export default function Personalization() {
     setIsSaving(true);
 
     try {
-      if (isRealignmentMode) {
-        await AppStorage.removeItem(getPaywallReturnStateKey(user.id));
-      } else {
-        await AppStorage.setItem(
-          getPaywallReturnStateKey(user.id),
-          JSON.stringify({
-            version: PAYWALL_RETURN_STATE_VERSION,
-            currentStepId: currentStep.id,
-            currentStepIndex: stepIndex,
-            answers,
-          })
-        );
-      }
-
       const { persistedOnboarding, persistedProfile } = await saveOnboardingQuestionnaire({
         answers,
         email: user.email,
@@ -541,6 +483,18 @@ export default function Personalization() {
     }
 
     if (stepIndex === steps.length - 1) {
+      if (!isRealignmentMode && currentStep.type === 'recommendation') {
+        Alert.alert(
+          'Submit your answers?',
+          "Once submitted, your questionnaire answers can't be changed. Review them now, then continue to your program options.",
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { text: 'Continue', onPress: () => void saveAndContinue() },
+          ]
+        );
+        return;
+      }
+
       await saveAndContinue();
       return;
     }

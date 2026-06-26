@@ -149,6 +149,16 @@ describe('navigation guard target', () => {
     ).toBe(PAYWALL_ROUTE);
   });
 
+  it('redirects unpaid completed-onboarding users away from personalization', () => {
+    expect(
+      guardTarget({
+        isSubscribed: false,
+        onboardingComplete: true,
+        segments: ['(auth)', 'personalization'],
+      })
+    ).toBe(PAYWALL_ROUTE);
+  });
+
   it('allows free-tier users to reach day detail for free journeys', () => {
     expect(
       guardTarget({

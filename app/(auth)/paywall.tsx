@@ -9,7 +9,6 @@ import {
   View,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import Purchases, { PURCHASES_ERROR_CODE, PurchasesPackage } from 'react-native-purchases';
@@ -29,7 +28,6 @@ import {
 import { REVENUECAT_CANONICAL_OFFERING_ID } from '@/lib/revenuecat/identifiers';
 import { hasOnboardingContextMismatch } from '@/lib/onboarding.realignment';
 import {
-  HOME_ROUTE,
   MY_PROGRAMS_ROUTE,
   PROGRAM_START_ROUTE,
   PROGRAM_TAB_ROUTE,
@@ -45,6 +43,7 @@ import { AppTypography } from '@/constants/typography';
 import { PreviewCard } from '@/components/paywall/PreviewCard';
 import { TrustStampBar } from '@/components/paywall/TrustStampBar';
 import { PurchaseCard } from '@/components/paywall/PurchaseCard';
+import { FreeDetoxHeaderCta, FreeDetoxOfferCard } from '@/components/paywall/FreeDetoxOfferCard';
 import { StickyCtaFooter } from '@/components/paywall/StickyCtaFooter';
 import { OWNED_PROGRAMS_QUERY_ROOT } from '@/hooks/useOwnedPrograms';
 
@@ -218,7 +217,6 @@ type EligiblePackageOption = {
 export default function Paywall() {
   const params = useLocalSearchParams<{ program?: string | string[] }>();
   const router = useRouter();
-  const navigation = useNavigation<any>();
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
   const { signOut, user } = useAuth();
@@ -415,24 +413,6 @@ export default function Paywall() {
     router,
     profile?.free_tier_activated_at,
   ]);
-
-  const handleBack = () => {
-    if (hasProgramRouteParam) {
-      if (navigation.canGoBack?.()) {
-        router.back();
-      } else {
-        router.replace(HOME_ROUTE);
-      }
-      return;
-    }
-
-    if (hasTrustedEntitlement) {
-      router.replace(needsOnboardingRealignment ? buildPersonalizationRoute({ mode: 'realign' }) : PROGRAM_TAB_ROUTE);
-      return;
-    }
-
-    router.replace(buildPersonalizationRoute({ resume: 'review' }));
-  };
 
   const handleContinueFreeAccess = async () => {
     setLoading(true);
@@ -833,22 +813,6 @@ export default function Paywall() {
           }}
         >
           <Pressable
-            onPress={handleBack}
-            hitSlop={20}
-            style={({ pressed }) => ({
-              width: 32,
-              height: 32,
-              borderRadius: 16,
-              backgroundColor: pressed ? 'rgba(6,41,12,0.12)' : 'rgba(6,41,12,0.06)',
-              alignItems: 'center',
-              justifyContent: 'center',
-            })}
-            accessibilityRole="button"
-            accessibilityLabel="Go back"
-          >
-            <Ionicons name="chevron-back" size={14} color="rgba(6,41,12,0.55)" />
-          </Pressable>
-          <Pressable
             onPress={handleSwitchAccount}
             disabled={loading || signingOut}
             hitSlop={12}
@@ -891,6 +855,15 @@ export default function Paywall() {
               </Text>
             </View>
           </Pressable>
+          {canContinueFreeAccess ? (
+            <FreeDetoxHeaderCta
+              onPress={handleContinueFreeAccess}
+              disabled={loading}
+              loading={loading}
+            />
+          ) : (
+            <View style={{ width: 32 }} />
+          )}
         </View>
 
         {/* ── Centered headline block (always rendered) ── */}
@@ -1071,53 +1044,12 @@ export default function Paywall() {
               );
             })}
 
-            <Text
-              style={{
-                fontFamily: 'Satoshi-Medium',
-                fontSize: 11,
-                color: 'rgba(6,41,12,0.42)',
-                textAlign: 'center',
-                marginTop: 6,
-                marginBottom: 10,
-                paddingHorizontal: 16,
-                lineHeight: 16,
-              }}
-            >
-              Every program includes the Free Detox Program as a bonus.
-            </Text>
-
-            {/* ── Free-access path (below recommended card) ── */}
             {canContinueFreeAccess && (
-              <Pressable
+              <FreeDetoxOfferCard
                 onPress={handleContinueFreeAccess}
                 disabled={loading}
-                hitSlop={{ top: 14, bottom: 14, left: 20, right: 20 }}
-                style={{
-                  alignSelf: 'center',
-                  minHeight: 40,
-                  paddingTop: 16,
-                  paddingBottom: 4,
-                  paddingHorizontal: 8,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  opacity: loading ? 0.58 : 1,
-                }}
-                accessibilityRole="button"
-                accessibilityLabel="Try the Free Detox Program"
-              >
-                <Text
-                  numberOfLines={1}
-                  style={{
-                    fontFamily: 'Satoshi-Medium',
-                    fontSize: 12,
-                    color: 'rgba(6,41,12,0.38)',
-                    textDecorationLine: 'underline',
-                    textDecorationColor: 'rgba(6,41,12,0.18)',
-                  }}
-                >
-                  Try the Free Detox Program
-                </Text>
-              </Pressable>
+                loading={loading}
+              />
             )}
 
             {secondaryPackageOptions.length > 0 && (
