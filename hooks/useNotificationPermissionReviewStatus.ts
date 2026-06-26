@@ -2,7 +2,9 @@ import { useCallback, useEffect, useState } from 'react';
 
 import {
   hasReviewedNotificationPermission,
+  hasReviewedNotificationPermissionSync,
   markNotificationPermissionReviewCompleted,
+  subscribeNotificationPermissionReviewStatus,
 } from '@/lib/notification-permission-review';
 
 type UseNotificationPermissionReviewStatusArgs = {
@@ -16,15 +18,40 @@ export function useNotificationPermissionReviewStatus({
   notificationsEnabled,
   userId,
 }: UseNotificationPermissionReviewStatusArgs) {
-  const [hasReviewed, setHasReviewed] = useState(false);
-  const [hasResolvedStoredReview, setHasResolvedStoredReview] = useState(false);
+  const [hasReviewed, setHasReviewed] = useState(
+    () => (userId ? hasReviewedNotificationPermissionSync(userId) : false)
+  );
+  const [hasResolvedStoredReview, setHasResolvedStoredReview] = useState(
+    () => (userId ? hasReviewedNotificationPermissionSync(userId) : false)
+  );
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (!userId) {
+      return;
+    }
+
+    return subscribeNotificationPermissionReviewStatus(() => {
+      if (hasReviewedNotificationPermissionSync(userId)) {
+        setHasReviewed(true);
+        setHasResolvedStoredReview(true);
+        setIsLoading(false);
+      }
+    });
+  }, [userId]);
 
   useEffect(() => {
     let isMounted = true;
 
     if (!enabled || !userId || notificationsEnabled) {
       setHasReviewed(false);
+      setHasResolvedStoredReview(true);
+      setIsLoading(false);
+      return;
+    }
+
+    if (hasReviewedNotificationPermissionSync(userId)) {
+      setHasReviewed(true);
       setHasResolvedStoredReview(true);
       setIsLoading(false);
       return;
@@ -60,6 +87,7 @@ export function useNotificationPermissionReviewStatus({
     if (!userId) return;
     await markNotificationPermissionReviewCompleted(userId);
     setHasReviewed(true);
+    setHasResolvedStoredReview(true);
   }, [userId]);
 
   return {

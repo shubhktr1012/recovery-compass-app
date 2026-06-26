@@ -1,8 +1,8 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
-import { Redirect, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 
@@ -56,11 +56,6 @@ export default function NotificationPermissionReviewScreen() {
     notificationsEnabled,
     userId,
   });
-
-  const finishReview = useCallback(async () => {
-    await markReviewed();
-    router.replace(HOME_ROUTE);
-  }, [markReviewed, router]);
 
   const syncNotificationPreference = useCallback(
     async ({
@@ -132,25 +127,30 @@ export default function NotificationPermissionReviewScreen() {
     setIsSaving(true);
 
     try {
-      await finishReview();
+      await markReviewed();
       await Haptics.selectionAsync().catch(() => undefined);
+      router.replace(HOME_ROUTE);
     } catch (error: any) {
       Alert.alert('Could not continue', error?.message ?? 'Please try again.');
     } finally {
       setIsSaving(false);
     }
-  }, [finishReview, isSaving]);
+  }, [isSaving, markReviewed, router]);
 
-  if (isProfileLoading || isReviewLoading) {
+  useEffect(() => {
+    if (isProfileLoading || isReviewLoading || shouldReviewNotifications) {
+      return;
+    }
+
+    router.replace(HOME_ROUTE);
+  }, [isProfileLoading, isReviewLoading, router, shouldReviewNotifications]);
+
+  if (isProfileLoading || isReviewLoading || !shouldReviewNotifications) {
     return (
       <View className="flex-1 items-center justify-center bg-surface">
         <ActivityIndicator color={AppColors.forest} />
       </View>
     );
-  }
-
-  if (!shouldReviewNotifications) {
-    return <Redirect href={HOME_ROUTE} />;
   }
 
   return (
