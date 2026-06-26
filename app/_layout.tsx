@@ -18,6 +18,7 @@ import { useMandatoryAppUpdate } from '@/hooks/useMandatoryAppUpdate';
 import { useNotificationPermissionReviewStatus } from '@/hooks/useNotificationPermissionReviewStatus';
 import { useProgramQueueReviewStatus } from '@/hooks/useProgramQueueReviewStatus';
 import { getPublicEnvState } from '@/lib/env';
+import { ensureScreenCaptureAllowedOnLaunch } from '@/lib/privacy-protection';
 import { installGlobalErrorHandler } from '@/lib/monitoring';
 import { hasOnboardingContextMismatch } from '@/lib/onboarding.realignment';
 import { logEvent } from '@/lib/analytics';
@@ -437,6 +438,10 @@ function RootLayoutContent() {
 
 export default function RootLayout() {
   const [boundaryResetCount, setBoundaryResetCount] = useState(0);
+
+  useEffect(() => {
+    ensureScreenCaptureAllowedOnLaunch();
+  }, []);
 
   useEffect(() => () => {
     uninstallGlobalErrorHandler();

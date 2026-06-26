@@ -15,6 +15,7 @@
     "typecheck": "./node_modules/.bin/tsc --noEmit",
     "version:sync": "node ./scripts/sync-app-version.mjs",
     "version:check": "node ./scripts/sync-app-version.mjs --check",
+    "release:prepare-ios": "node ./scripts/prepare-ios-release-build.mjs",
     "generate:program-content": "node ./scripts/generate-program-content.mjs",
     "canonical:normalize": "node ./scripts/normalize-program-content.mjs",
     "canonical:validate": "node ./scripts/validate-canonical-content.mjs",

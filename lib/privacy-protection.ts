@@ -16,6 +16,10 @@ let nextScopeId = 0;
 let currentNativeState = false;
 let didWarnMissingNativeModule = false;
 
+export function isScreenCaptureAllowed() {
+  return process.env.EXPO_PUBLIC_ALLOW_SCREEN_CAPTURE === 'true';
+}
+
 function setNativePrivacyProtectionEnabled(enabled: boolean) {
   if (currentNativeState === enabled) {
     return;
@@ -35,7 +39,22 @@ function setNativePrivacyProtectionEnabled(enabled: boolean) {
 }
 
 function applyPrivacyProtectionState() {
+  if (isScreenCaptureAllowed()) {
+    setNativePrivacyProtectionEnabled(false);
+    return;
+  }
+
   setNativePrivacyProtectionEnabled(activeScopes.size > 0);
+}
+
+/** Clears scoped protection when store-asset screenshot mode is enabled. */
+export function ensureScreenCaptureAllowedOnLaunch() {
+  if (!isScreenCaptureAllowed()) {
+    return;
+  }
+
+  activeScopes.clear();
+  applyPrivacyProtectionState();
 }
 
 export function useScopedPrivacyProtection(enabled: boolean, scopeName = 'protected-screen') {
@@ -48,7 +67,7 @@ export function useScopedPrivacyProtection(enabled: boolean, scopeName = 'protec
 
   useFocusEffect(
     useCallback(() => {
-      if (!enabled || !scopeIdRef.current) {
+      if (isScreenCaptureAllowed() || !enabled || !scopeIdRef.current) {
         return undefined;
       }
 
